@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary: #007aff;
-            --bg: #f4f7f9;
+            --bg: #f2f2f7;
             --card: #ffffff;
             --text: #1c1c1e;
             --sub: #8e8e93;
@@ -16,49 +16,51 @@
             --danger: #ff3b30;
         }
 
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; line-height: 1.5; }
-        .container { max-width: 480px; margin: auto; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 450px; margin: auto; }
         
-        .card { background: var(--card); padding: 24px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
+        .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; }
         
         /* Header */
         .header-main { text-align: center; margin-bottom: 24px; }
-        .header-main h1 { font-size: 12px; letter-spacing: 1.5px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 800; }
-        .header-main .event-name { font-size: 26px; font-weight: 900; color: var(--primary); margin-top: 6px; display: block; letter-spacing: -0.5px; }
+        .header-main h1 { font-size: 11px; letter-spacing: 1.2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 700; }
+        .header-main .event-name { font-size: 24px; font-weight: 800; color: var(--text); margin-top: 4px; display: block; letter-spacing: -0.5px; }
 
         /* Grilla de Información */
-        .info-grid { background: #f9fafb; padding: 20px; border-radius: 18px; margin-bottom: 24px; border: 1px solid #edf1f7; }
-        .info-item { font-size: 15px; margin-bottom: 10px; display: flex; align-items: flex-start; justify-content: space-between; }
-        .info-item b { color: var(--sub); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; font-weight: 700; }
-        .info-item span { text-align: right; font-weight: 600; max-width: 70%; }
+        .info-grid { background: #f9f9fb; padding: 18px; border-radius: 18px; margin-bottom: 24px; border: 1px solid #eee; }
+        .info-item { font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
+        .info-item span { font-weight: 600; color: var(--text); }
 
         /* Formulario */
-        label { font-size: 11px; font-weight: 800; color: var(--sub); display: block; margin: 20px 0 8px 4px; text-transform: uppercase; }
-        input { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #e5e5ea; font-size: 16px; box-sizing: border-box; transition: 0.2s; background: #fff; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(0,122,255,0.08); }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; box-sizing: border-box; margin-bottom: 12px; background: #fff; transition: 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
-        button { width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 16px; }
-        .btn-primary { background: var(--primary); color: white; margin-top: 10px; }
-        .btn-outline { background: white; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 12px; font-size: 14px; }
+        button { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; font-size: 14px; }
         .btn-whatsapp { background: var(--success); color: white; margin-top: 20px; }
-        .btn-admin { background: #000; color: white; margin-top: 40px; font-size: 14px; }
-        .btn-soporte { background: #f1f3f5; color: var(--primary); font-size: 13px; margin-top: 30px; border: 1px solid #e2e4e7; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-admin { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; font-weight: 600; }
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 20px; border-radius: 10px; padding: 10px; width: 100%; }
 
-        /* Stats */
-        .stats-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #fafbfc; border-radius: 16px; overflow: hidden; border: 1px solid #eee; }
-        .stats-table td { padding: 14px 18px; font-size: 15px; border-bottom: 1px solid #f0f0f0; }
-        .stats-table tr:last-child td { border-bottom: none; }
-        .stat-val { font-weight: 800; float: right; color: var(--text); }
+        /* Stats Table */
+        .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; }
+        .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
+        .stat-val { font-weight: 700; float: right; }
 
-        /* Lista */
-        .admin-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f2f2f7; }
-        .estado-btn { padding: 10px 14px; border-radius: 12px; font-size: 11px; color: white; font-weight: 800; text-align: center; min-width: 140px; cursor: pointer; border: none; }
+        /* Lista de Inscriptos (PRO) */
+        .admin-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
+        .player-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+        .player-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+        .player-phone { font-size: 11px; color: var(--sub); margin-top: 1px; }
+
+        .estado-btn { padding: 6px 10px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; min-width: 110px; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
 
         .hidden { display: none !important; }
-        .footer-credits { text-align: center; margin-top: 40px; font-size: 10px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -75,84 +77,79 @@
             <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
             <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
             <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
-            <div class="info-item" style="margin-top:12px; border-top: 1px solid #eee; padding-top: 12px;">
-                <b>💰 Valor</b> <span id="txt-valor" style="font-size: 18px; color: var(--primary);">$0</span>
-            </div>
-            <div class="info-item"><b>🏦 Alias</b> <span id="txt-alias" style="color: var(--danger); font-size: 16px;">-</span></div>
+            <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+            <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 16px;">$0</span></div>
+            <div class="info-item"><b>🏦 Alias</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
         </div>
 
         <div id="form-container">
             <input id="in-nom" placeholder="Nombre y Apellido">
-            <input id="in-cel" placeholder="WhatsApp" style="margin-top: 12px;">
+            <input id="in-cel" placeholder="WhatsApp">
             <button class="btn-primary" onclick="inscribirse()">Anotarme ahora</button>
         </div>
-        
-        <div id="msg-cerrado" class="hidden" style="text-align: center; padding: 30px; font-weight: 900; color: var(--danger);">
-            🚫 INSCRIPCIONES CERRADAS
-        </div>
+        <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
     </div>
 
     <div class="card hidden" id="view-success">
         <div style="text-align: center; padding: 10px 0;">
-            <div style="font-size: 60px; margin-bottom: 15px;">✅</div>
-            <h2 style="margin: 0; font-size: 24px; font-weight: 900;">¡Anotado correctamente!</h2>
-            <div style="background: #f1f3f5; padding: 24px; border-radius: 20px; margin: 24px 0; border: 1px solid #e5e5ea;">
-                <span id="ex-monto" style="font-size: 32px; font-weight: 900; color: var(--text);">$0</span>
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
-                <span id="ex-alias" style="font-size: 18px; font-weight: 800; color: var(--primary);">-</span>
+            <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+            <h2 style="margin: 0; font-size: 22px; font-weight: 800;">¡Anotado correctamente!</h2>
+            <p style="color: var(--sub); margin: 8px 0 20px 0; font-size: 15px;">Transferí para asegurar tu lugar:</p>
+            
+            <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 24px;">
+                <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
+                <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
+                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">alias.mp</span>
             </div>
+
             <button class="btn-whatsapp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-            <button class="btn-outline" onclick="location.reload()">Volver</button>
+            <button class="btn-outline" onclick="location.reload()">Volver al inicio</button>
         </div>
     </div>
 
     <div class="card hidden" id="view-admin">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2 style="margin:0; font-size: 20px;">Configuración</h2>
-            <button onclick="location.reload()" style="background: #f1f3f5; width: auto; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700;">Cerrar</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0; font-size: 18px;">Configuración</h2>
+            <button onclick="location.reload()" style="background: #f2f2f7; width: auto; padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;">Cerrar</button>
         </div>
 
         <label>Staff y Evento</label>
-        <input id="ed-org-name" placeholder="Nombre del Evento">
-        <input id="ed-staff" placeholder="Nombre del Organizador" style="margin-top: 10px;">
-        <input id="ed-celu" placeholder="WhatsApp Organizador (549...)" style="margin-top: 10px;">
-
+        <input id="ed-org-name" placeholder="Nombre Evento">
+        <input id="ed-staff" placeholder="Nombre Organizador">
+        <input id="ed-celu" placeholder="WhatsApp Organizador">
+        
         <label>Fecha y Club</label>
         <input id="ed-fec" type="date">
-        <input id="ed-hor" placeholder="Horario" style="margin-top: 10px;">
-        <input id="ed-lug" placeholder="Lugar" style="margin-top: 10px;">
-
-        <label>Precio y Alias</label>
-        <input id="ed-val" type="number" placeholder="Costo">
-        <input id="ed-ali" placeholder="Alias MP" style="margin-top: 10px;">
-        <input id="ed-cup" type="number" placeholder="Cupos totales" style="margin-top: 10px;">
+        <input id="ed-hor" placeholder="Horario">
+        <input id="ed-lug" placeholder="Club">
+        
+        <label>Precios y Cupos</label>
+        <input id="ed-val" type="number" placeholder="Valor">
+        <input id="ed-ali" placeholder="Alias MP">
+        <input id="ed-cup" type="number" placeholder="Cupos">
         
         <label>Seguridad</label>
         <input id="ed-pass" type="password" placeholder="Clave admin">
 
-        <button class="btn-primary" onclick="guardar()" style="margin-top: 25px;">💾 Guardar Cambios</button>
-        <button id="btnLock" onclick="toggleBloqueo()"></button>
+        <button class="btn-primary" onclick="guardar()" style="margin-top: 10px;">💾 Guardar Cambios</button>
+        <button id="btnLock" onclick="toggleBloqueo()" style="margin-top: 10px;"></button>
 
         <table class="stats-table">
             <tr><td>🎾 Cupos Totales <span id="st-cupo" class="stat-val">-</span></td></tr>
             <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
             <tr><td>💸 Pagaron <span id="st-pag" class="stat-val">-</span></td></tr>
-            <tr><td>🤝 Pagan en cancha <span id="st-res" class="stat-val">-</span></td></tr>
+            <tr><td>🤝 En cancha <span id="st-res" class="stat-val">-</span></td></tr>
             <tr><td>⏳ Pendientes <span id="st-pend" class="stat-val">-</span></td></tr>
         </table>
 
-        <div id="lista-admin" style="margin-top: 20px; border-top: 2px solid #f2f2f7;"></div>
-
-        <button class="btn-soporte" onclick="window.open('https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20soporte%20técnico%20con%20Cancha%20Abierta')">
-            🆘 Soporte Técnico (Mariano)
-        </button>
+        <div id="lista-admin" style="margin-top: 20px;"></div>
+        
+        <button class="btn-soporte" onclick="window.open('https://wa.me/5491166463800')">🆘 Soporte Mariano</button>
     </div>
 
-    <button id="btnSwitch" class="btn-admin" onclick="abrirAdmin()">⚙️ Panel de Organizador</button>
+    <button id="btnSwitch" class="btn-admin" onclick="abrirAdmin()">⚙️ PANEL DE ORGANIZADOR</button>
 
-    <div class="footer-credits">
-        MARIANO BLUMENFELD — CANCHA ABIERTA V3
-    </div>
+    <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
 
 <script type="module">
@@ -162,7 +159,6 @@
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id') || 'demo';
     const evRef = ref(db, 'eventos/' + id);
@@ -206,21 +202,14 @@
             cupo: parseInt(document.getElementById('ed-cup').value) || 0,
             celuOrganizador: document.getElementById('ed-celu').value.replace(/\D/g,''),
             password: document.getElementById('ed-pass').value
-        }).then(() => alert("¡Configuración guardada!"));
+        }).then(() => alert("Guardado"));
     };
 
     window.inscribirse = () => {
         const n = document.getElementById('in-nom').value.trim();
         const c = document.getElementById('in-cel').value.trim();
         if(!n || !c) return alert("Faltan datos");
-        
-        ev.inscriptos.push({ 
-            id: Date.now(), 
-            statusTime: Date.now(), 
-            nombre: n, 
-            celular: c, 
-            estado: 'pendiente' 
-        });
+        ev.inscriptos.push({ id: Date.now(), statusTime: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
         set(ref(db, 'eventos/'+id+'/inscriptos'), ev.inscriptos).then(() => {
             document.getElementById('view-user').classList.add('hidden');
             document.getElementById('view-success').classList.remove('hidden');
@@ -238,14 +227,12 @@
     window.toggleBloqueo = () => update(evRef, { bloqueado: !ev.bloqueado });
 
     window.enviarWhatsapp = () => {
-        const m = `✅ Hola! Soy ${document.getElementById('in-nom').value}. Envío comprobante de $${ev.valor} para ${ev.organiza}`;
-        window.open(`https://wa.me/${ev.celuOrganizador}?text=${encodeURIComponent(m)}`);
+        window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola! Envío comprobante de pago de $${ev.valor}`);
     };
 
     function render() {
         document.getElementById('txt-evento-name').innerText = (ev.organiza || "Cargando...").toUpperCase();
         document.getElementById('txt-organizador').innerText = ev.organizador_nombre || "A confirmar";
-        
         let fAmi = ev.fecha || 'A confirmar';
         if(ev.fecha) {
             const fO = new Date(ev.fecha + "T00:00:00");
@@ -262,7 +249,6 @@
         const bLock = document.getElementById('btnLock');
         bLock.innerText = ev.bloqueado ? "🔓 ABRIR INSCRIPCIONES" : "🔒 CERRAR INSCRIPCIONES";
         bLock.style.background = ev.bloqueado ? "var(--success)" : "var(--danger)";
-        bLock.style.marginTop = "12px";
         document.getElementById('form-container').className = ev.bloqueado ? "hidden" : "";
         document.getElementById('msg-cerrado').className = ev.bloqueado ? "" : "hidden";
 
@@ -270,7 +256,6 @@
         const pag = ins.filter(x => x.estado === 'pagado').length;
         const res = ins.filter(x => x.estado === 'reservado').length;
         const pen = ins.filter(x => x.estado === 'pendiente').length;
-
         document.getElementById('st-cupo').innerText = ev.cupo || 0;
         document.getElementById('st-lib').innerText = (ev.cupo || 0) - (pag + res);
         document.getElementById('st-pag').innerText = pag;
@@ -286,13 +271,15 @@
         let html = "";
         listaOrdenada.forEach((p) => {
             const label = p.estado === 'reservado' ? 'PAGAN EN CANCHA' : p.estado.toUpperCase();
-            html += `
-            <div class="admin-item">
-                <div><b>${p.nombre}</b><br><small style="color:var(--sub)">${p.celular}</small></div>
+            html += `<div class="admin-item">
+                <div class="player-info">
+                    <span class="player-name">${p.nombre}</span>
+                    <span class="player-phone">${p.celular}</span>
+                </div>
                 <button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${label}</button>
             </div>`;
         });
-        document.getElementById('lista-admin').innerHTML = html || "<p style='text-align:center; padding:30px; color:#999;'>Sin inscriptos</p>";
+        document.getElementById('lista-admin').innerHTML = html || "<p style='text-align:center; padding:20px; color:#999; font-size:12px;'>No hay inscriptos aún</p>";
     }
 </script>
 </body>

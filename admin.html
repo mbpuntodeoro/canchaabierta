@@ -5,59 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Panel - Cancha Abierta</title>
     <style>
-        :root { --primary: #007AFF; --bg: #F5F7FA; --text: #1c1c1e; --sub: #8e8e93; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 20px; margin: 0; color: var(--text); }
-        .container { max-width: 650px; margin: auto; }
-        .card { background: white; padding: 25px; border-radius: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; }
-        h1, h2 { margin: 0 0 15px 0; font-weight: 800; letter-spacing: -0.5px; }
+        :root {
+            --primary: #007AFF;
+            --bg: #F8F9FB;
+            --card: #ffffff;
+            --text: #1C1C1E;
+            --sub: #8E8E93;
+            --border: #E5E5EA;
+        }
+
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 500px; margin: auto; }
         
-        label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 5px; margin-left: 5px; }
-        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--primary); }
+        /* Card Login */
+        .login-card { background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); text-align: center; margin-top: 100px; border: 1px solid var(--border); }
         
-        .btn-main { background: var(--primary); color: white; width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 16px; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
+        /* Cards General */
+        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 16px; border: 1px solid var(--border); }
         
-        .cliente { padding: 20px 0; border-bottom: 1px solid #F2F2F7; }
-        .cliente:last-child { border-bottom: none; }
-        .cli-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .cli-name { font-size: 18px; font-weight: 800; color: var(--text); }
-        .cli-stats { font-size: 11px; color: var(--sub); font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 20px; }
+        h2 { font-size: 14px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; margin-top: 0; margin-bottom: 15px; }
+
+        /* Inputs Premium */
+        label { font-size: 10px; font-weight: 700; color: var(--sub); text-transform: uppercase; display: block; margin: 0 0 6px 4px; }
+        input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; background: #fff; margin-bottom: 12px; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.05); }
+
+        /* Botones Master */
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Lista de Clientes */
+        .cliente-item { padding: 16px 0; border-bottom: 1px solid #F2F2F7; }
+        .cliente-item:last-child { border-bottom: none; }
         
-        .link-box { background: #f8f9fb; border-radius: 10px; padding: 10px; margin-bottom: 12px; border: 1px solid #edf1f7; }
-        .link-label { font-size: 9px; font-weight: 800; color: var(--sub); margin-bottom: 4px; display: block; }
+        .cli-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .cli-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
         
-        .cli-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-small { padding: 10px 14px; border-radius: 10px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; background: #f2f2f7; color: var(--text); transition: 0.2s; }
-        .btn-copy { background: #E1F0FF; color: var(--primary); }
-        .btn-copy-short { background: #E5FFE5; color: #34c759; }
-        .btn-suspend { background: #FFE5E5; color: #ff3b30; }
-        .btn-active { background: #E5FFE5; color: #34c759; }
-        .btn-del { color: #888; margin-left: auto; }
+        /* Badges de Estado */
+        .status-badge { font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 6px; cursor: pointer; text-transform: uppercase; border: none; }
+        .active { background: #E5FFE5; color: #34c759; }
+        .suspended { background: #FFE5E5; color: #ff3b30; }
+
+        /* Sección de Links dentro de cada cliente */
+        .link-manager { background: #F9FAFB; padding: 12px; border-radius: 14px; margin: 10px 0; border: 1px solid #F0F0F2; }
+        .link-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .link-row:last-child { margin-bottom: 0; }
+        .link-input-small { margin-bottom: 0; padding: 8px 10px; font-size: 12px; flex: 1; }
         
-        .hidden { display: none; }
+        .btn-action { padding: 8px 12px; border-radius: 8px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; background: #fff; border: 1px solid var(--border); transition: 0.2s; }
+        .btn-action:hover { background: #f2f2f7; }
+        .btn-save { background: var(--text); color: #fff; border: none; }
+        .btn-blue-soft { background: #E1F0FF; color: var(--primary); border: none; }
+        .btn-green-soft { background: #E5FFE5; color: #34c759; border: none; }
+
+        .cli-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .cli-stats { font-size: 11px; font-weight: 600; color: var(--sub); }
+        .btn-del { color: #FF3B30; font-size: 18px; background: none; border: none; cursor: pointer; padding: 5px; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="login" class="card" style="max-width:320px; margin: 100px auto; text-align: center;">
-    <h1>🔐 Master</h1>
-    <input type="password" id="p" placeholder="Contraseña Master">
-    <button class="btn-main" onclick="entrar()">Ingresar</button>
-</div>
-
-<div id="panel" class="container hidden">
-    <div class="card">
-        <h2>🚀 Crear Nuevo Cliente</h2>
-        <label>Nombre del Organizador</label>
-        <input type="text" id="n" placeholder="Ej: Sergio Padel">
-        <label>Link Corto (Opcional)</label>
-        <input type="text" id="lc" placeholder="Ej: bit.ly/sergio-padel">
-        <button class="btn-main" onclick="crear()">Generar Acceso</button>
+<div class="container">
+    <div id="login" class="login-card">
+        <h1>MASTER PANEL</h1>
+        <input type="password" id="p" placeholder="Contraseña Master">
+        <button class="btn-main" onclick="entrar()">Ingresar</button>
     </div>
-    
-    <div class="card">
-        <h2>📁 Gestión de Clientes</h2>
-        <div id="lista">Cargando eventos...</div>
+
+    <div id="panel" class="hidden">
+        <div class="card">
+            <h2>🚀 Nuevo Organizador</h2>
+            <label>Nombre del Evento</label>
+            <input type="text" id="n" placeholder="Ej: Sergio Padel">
+            <button class="btn-main" onclick="crear()">Crear Acceso</button>
+        </div>
+
+        <div class="card">
+            <h2>📁 Mis Clientes</h2>
+            <div id="lista">Cargando...</div>
+        </div>
     </div>
 </div>
 
@@ -80,23 +109,18 @@
 
     window.crear = () => {
         const n = document.getElementById('n').value.trim();
-        const lc = document.getElementById('lc').value.trim();
         if(!n) return;
         const id = n.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
         
         set(ref(db, 'eventos/' + id), { 
             organiza: n, 
-            linkCorto: lc,
             cupo: 30, 
             activo: true, 
             bloqueado: false,
             password: "123",
             valor: 15000,
             alias: "tu.alias.mp"
-        }).then(() => {
-            document.getElementById('n').value = "";
-            document.getElementById('lc').value = "";
-        });
+        }).then(() => { document.getElementById('n').value = ""; });
     };
 
     function cargar() {
@@ -110,41 +134,48 @@
                 const ev = data[id];
                 const insCount = ev.inscriptos ? ev.inscriptos.length : 0;
                 const linkLargo = `${baseURL}?id=${id}`;
-                const linkCorto = ev.linkCorto || "No definido";
-                
-                const statusLabel = ev.activo ? "SUSPENDER" : "ACTIVAR";
-                const statusClass = ev.activo ? "btn-suspend" : "btn-active";
+                const linkCorto = ev.linkCorto || "";
                 
                 list.innerHTML += `
-                    <div class="cliente">
-                        <div class="cli-header">
-                            <div>
-                                <div class="cli-name">${ev.organiza}</div>
-                                <div class="cli-stats">👥 ${insCount} inscriptos | 🆔 ${id}</div>
-                            </div>
-                            <button class="btn-small ${statusClass}" onclick="toggleActivo('${id}', ${ev.activo})">${statusLabel}</button>
+                    <div class="cliente-item">
+                        <div class="cli-top">
+                            <span class="cli-name">${ev.organiza}</span>
+                            <button class="status-badge ${ev.activo ? 'active' : 'suspended'}" onclick="toggleActivo('${id}', ${ev.activo})">
+                                ${ev.activo ? 'Activo' : 'Suspendido'}
+                            </button>
                         </div>
                         
-                        <div class="link-box">
-                            <span class="link-label">LINK CORTO: ${linkCorto}</span>
-                            <div class="cli-actions">
-                                <button class="btn-small btn-copy-short" onclick="copiar('${linkCorto}', 'corto')">✂️ Copiar Corto</button>
-                                <button class="btn-small btn-copy" onclick="copiar('${linkLargo}', 'largo')">🔗 Copiar Largo</button>
+                        <div class="link-manager">
+                            <label>Link Corto (Bitly / Personalizado)</label>
+                            <div class="link-row">
+                                <input type="text" class="link-input-small" id="lc-${id}" value="${linkCorto}" placeholder="Pegar link corto aquí">
+                                <button class="btn-action btn-save" onclick="guardarLink('${id}')">💾</button>
+                            </div>
+                            <div class="link-row" style="margin-top:10px;">
+                                <button class="btn-action btn-blue-soft" onclick="copiar('${linkLargo}', 'largo')">🔗 Copiar Largo</button>
+                                <button class="btn-action btn-green-soft" onclick="copiar('${linkCorto}', 'corto')">✂️ Copiar Corto</button>
+                                <button class="btn-action" onclick="window.open('${linkLargo}')">✏️ Editar</button>
                             </div>
                         </div>
 
-                        <div class="cli-actions">
-                            <button class="btn-small" onclick="window.open('${linkLargo}')">✏️ Editar Evento</button>
-                            <button class="btn-small btn-del" onclick="borrar('${id}')">🗑️</button>
+                        <div class="cli-bottom">
+                            <span class="cli-stats">👥 ${insCount} inscriptos | ID: ${id}</span>
+                            <button class="btn-del" onclick="borrar('${id}')">🗑️</button>
                         </div>
                     </div>`;
             }
         });
     }
 
+    window.guardarLink = (id) => {
+        const nuevoLink = document.getElementById(`lc-${id}`).value.trim();
+        update(ref(db, 'eventos/' + id), { linkCorto: nuevoLink })
+        .then(() => alert("Link corto guardado"));
+    };
+
     window.copiar = (url, tipo) => {
-        if(tipo === 'corto' && (url === "No definido" || url === "")) {
-            alert("No hay un link corto guardado para este cliente.");
+        if(!url || url === "") {
+            alert("No hay link disponible para copiar.");
             return;
         }
         navigator.clipboard.writeText(url);
@@ -155,7 +186,7 @@
         update(ref(db, 'eventos/' + id), { activo: !actual });
     };
 
-    window.borrar = (id) => { if(confirm("¿Eliminar este cliente?")) remove(ref(db, 'eventos/'+id)); };
+    window.borrar = (id) => { if(confirm("¿Eliminar definitivamente?")) remove(ref(db, 'eventos/'+id)); };
 </script>
 </body>
 </html>

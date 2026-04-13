@@ -35,7 +35,7 @@
         .info-item span { font-weight: 600; color: var(--text); text-align: right; }
         .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
 
-        /* Formulario y Labels */
+        /* Labels e Inputs */
         label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 6px; margin-left: 4px; letter-spacing: 0.5px; }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; outline: none; transition: 0.2s; }
         .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
@@ -46,25 +46,25 @@
         .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
         .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
         .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
+        
+        .btn-copy-alias { background: #e1f0ff; color: var(--primary); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; margin-top: 12px; cursor: pointer; display: inline-block; }
 
-        /* Stats Table */
+        /* Stats y Lista */
         .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
-        /* Lista Inscriptos */
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
-        .admin-item:last-child { border-bottom: none; }
         .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-phone { font-size: 11px; color: var(--sub); }
 
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; transition: 0.2s; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
 
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; cursor: pointer; border: none; }
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; border: none; cursor: pointer; }
 
         .hidden { display: none !important; }
         .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
@@ -99,10 +99,8 @@
             </div>
 
             <div id="form-container">
-                <label>Nombre y Apellido</label>
-                <input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
-                <label>WhatsApp</label>
-                <input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
+                <label>Nombre y Apellido</label><input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
+                <label>WhatsApp</label><input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
                 <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
             </div>
             <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
@@ -118,6 +116,8 @@
                     <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
                     <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
                     <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">alias.mp</span>
+                    <br>
+                    <button class="btn-copy-alias" onclick="copiarAlias()">📋 Copiar Alias</button>
                 </div>
 
                 <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
@@ -130,32 +130,26 @@
                 <h2 style="margin:0; font-size: 18px;">Configuración</h2>
                 <button onclick="location.reload()" style="background: #f2f2f7; border:none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
             </div>
-
             <label>Tipo de Evento</label>
-            <select id="ed-rec" class="input-std" style="width:100%; height: 50px; background: #fff; margin-bottom: 16px;">
+            <select id="ed-rec" class="input-std" style="height: 50px; background: #fff;">
                 <option value="unico">Evento Único</option>
                 <option value="semanal">Recurrente (Cada 7 días)</option>
             </select>
-
             <label>Nombre del Evento</label><input id="ed-org-name" class="input-std">
             <label>Organizador</label><input id="ed-staff" class="input-std">
             <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
-            
             <label>Fecha</label><input id="ed-fec" class="input-std" type="date">
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div>
                 <div style="flex: 1;"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div>
             </div>
-            
             <label>Lugar</label><input id="ed-lug" class="input-std">
             <label>Valor ($)</label><input id="ed-val" class="input-std" type="number">
             <label>Alias MP</label><input id="ed-ali" class="input-std">
             <label>Cupos</label><input id="ed-cup" class="input-std" type="number">
             <label>Clave Admin</label><input id="ed-pass" class="input-std" type="password">
-
             <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
             <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
-
             <table class="stats-table">
                 <tr><td>🎾 Cupos <span id="st-cupo" class="stat-val">-</span></td></tr>
                 <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
@@ -169,7 +163,6 @@
 
         <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
     </div>
-
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
 
@@ -188,8 +181,6 @@
     onValue(evRef, (snap) => {
         ev = snap.val() || {};
         if (!ev.inscriptos) ev.inscriptos = [];
-        
-        // Lógica de Tiempo y Reset Automático
         if (ev.fecha && ev.horaFin) {
             const ahora = new Date();
             const fechaFin = new Date(ev.fecha + "T" + ev.horaFin);
@@ -207,6 +198,10 @@
         }
         render();
     });
+
+    window.copiarAlias = () => {
+        navigator.clipboard.writeText(ev.alias).then(() => alert("¡Alias copiado!"));
+    };
 
     window.abrirAdmin = () => {
         const p = prompt("Clave:");
@@ -273,20 +268,14 @@
 
     function render() {
         document.getElementById('txt-evento-name').innerText = (ev.organiza || "Cargando...").toUpperCase();
-        document.getElementById('txt-organizador').innerText = ev.organizador_nombre ? "Organiza: " + ev.organizador_nombre : "Organizador a confirmar";
-        
+        document.getElementById('txt-organizador').innerText = ev.organizador_nombre ? "Organiza: " + ev.organizador_nombre : "A confirmar";
         let fAmi = ev.fecha || 'A confirmar';
         if(ev.fecha) {
             const fO = new Date(ev.fecha + "T00:00:00");
             fAmi = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(fO);
         }
         document.getElementById('txt-fecha').innerText = fAmi.toUpperCase();
-        
-        // Formato de Horario
-        const hInicio = ev.hora || '--:--';
-        const hFin = ev.horaFin || '--:--';
-        document.getElementById('txt-hora').innerText = `DE ${hInicio} HS A ${hFin} HS`;
-        
+        document.getElementById('txt-hora').innerText = `DE ${ev.hora || '--:--'} HS A ${ev.horaFin || '--:--'} HS`;
         document.getElementById('txt-lugar').innerText = ev.lugar || 'A confirmar';
         document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString();
         document.getElementById('txt-alias').innerText = ev.alias || '-';
@@ -309,7 +298,6 @@
         document.getElementById('st-res').innerText = res;
         document.getElementById('st-pend').innerText = pen;
 
-        // Orden de Lista Prioritario y FIFO
         const weight = { 'pagado': 1, 'reservado': 2, 'pendiente': 3 };
         const listaOrdenada = [...ins].sort((a, b) => {
             if (weight[a.estado] !== weight[b.estado]) return weight[a.estado] - weight[b.estado];

@@ -3,188 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Cancha Abierta</title>
+    <title>Master Panel - Cancha Abierta</title>
     <style>
-        :root {
-            --primary: #007AFF;
-            --bg: #F5F7FA;
-            --card: #FFFFFF;
-            --text: #1C1C1E;
-            --sub: #8E8E93;
-            --danger: #FF3B30;
-            --success: #34C759;
-            --warning: #FFCC00;
-        }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 700px; margin: auto; }
-        
-        /* Login */
-        #login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .login-card { background: var(--card); padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 320px; }
-        
-        /* Cards */
-        .card { background: var(--card); padding: 24px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 24px; }
-        h2 { font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 20px; }
-        
-        /* Inputs & Buttons */
-        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; font-size: 16px; margin-bottom: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--primary); }
-        
-        .btn { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-main { background: var(--primary); color: white; width: 100%; justify-content: center; font-size: 16px; }
-        .btn-main:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        /* Client List */
-        .client-item { padding: 20px 0; border-bottom: 1px solid #F2F2F7; }
-        .client-item:last-child { border: none; }
-        .client-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .client-name { font-size: 17px; font-weight: 600; }
-        .client-links { margin-bottom: 15px; }
-        .link-row { font-size: 12px; color: var(--sub); word-break: break-all; margin-top: 4px; display: block; text-decoration: none; }
-        .link-short { color: var(--success); font-weight: 600; font-size: 13px; }
-        
-        /* Action Buttons */
-        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-icon { width: 40px; height: 40px; padding: 0; justify-content: center; background: #F2F2F7; color: var(--text); }
-        .btn-icon:hover { background: #E5E5EA; }
-        .btn-red { color: var(--danger); }
-        .btn-blue { color: var(--primary); }
-        .btn-green { color: var(--success); }
-        .btn-orange { color: var(--warning); }
-
-        .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
-        .status-ok { background: #E3F9E5; color: var(--success); }
-        .status-off { background: #FFE5E5; color: var(--danger); }
-
-        .hidden { display: none !important; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #F5F7FA; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        h1, h2 { margin-top: 0; color: #1c1c1e; }
+        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; }
+        button { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-main { background: #007AFF; color: white; width: 100%; font-size: 16px; }
+        .cliente { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #F2F2F7; }
+        .btn-icon { background: #F2F2F7; margin-left: 5px; font-size: 18px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-
-<div id="login-overlay">
-    <div class="login-card">
-        <h1 style="font-size: 24px; margin-bottom: 8px;">Cancha Abierta</h1>
-        <p style="color: var(--sub); margin-bottom: 24px;">Panel de Control</p>
-        <input type="password" id="master-pass" placeholder="Contraseña">
-        <button class="btn btn-main" onclick="checkLogin()">Entrar</button>
-    </div>
+<div id="login" class="card" style="max-width:320px; margin: 100px auto; text-align: center;">
+    <h1>🔐 Master</h1>
+    <input type="password" id="p" placeholder="Contraseña Master">
+    <button class="btn-main" onclick="entrar()">Ingresar</button>
 </div>
 
-<div class="container hidden" id="main-content">
+<div id="panel" class="container hidden">
     <div class="card">
         <h2>🚀 Nuevo Organizador</h2>
-        <input type="text" id="nuevo-nombre" placeholder="Nombre (ej: Sergio Padel)">
-        <button class="btn btn-main" onclick="crearCliente()">Crear Acceso</button>
+        <input type="text" id="n" placeholder="Nombre del Evento">
+        <button class="btn-main" onclick="crear()">Crear Acceso</button>
     </div>
-
     <div class="card">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin:0;">📁 Mis Clientes</h2>
-            <button onclick="location.reload()" class="btn btn-icon" style="font-size: 16px;">🔄</button>
-        </div>
-        <div id="lista-clientes">Cargando...</div>
+        <h2>📁 Mis Clientes</h2>
+        <div id="lista">Cargando...</div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    const firebaseConfig = {
-        databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com"
-    };
-
+    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    
+    // LINK DINÁMICO DE TU GITHUB
     const baseURL = "https://mbpuntodeoro.github.io/canchaabierta/v.html";
 
-    window.checkLogin = () => {
-        if(document.getElementById('master-pass').value === "Cancha2026") {
-            document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            cargarClientes();
-        } else { alert("Contraseña incorrecta"); }
+    window.entrar = () => {
+        if(document.getElementById('p').value === "Cancha2026") {
+            document.getElementById('login').classList.add('hidden');
+            document.getElementById('panel').classList.remove('hidden');
+            cargar();
+        } else { alert("Error"); }
     };
 
-    window.crearCliente = () => {
-        const nombre = document.getElementById('nuevo-nombre').value.trim();
-        if(!nombre) return;
-        const id = nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        
-        set(ref(db, 'eventos/' + id), {
-            organiza: nombre,
-            activo: true,
-            bloqueado: false,
-            cupo: 20,
-            valor: 0,
-            alias: "tu.alias.mp",
+    window.crear = () => {
+        const n = document.getElementById('n').value.trim();
+        if(!n) return;
+        const id = n.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        set(ref(db, 'eventos/' + id), { 
+            organiza: n, 
+            cupo: 30, 
+            activo: true, 
             password: "123",
-            inscriptos: []
+            valor: 0,
+            alias: "tu.alias"
         }).then(() => {
-            document.getElementById('nuevo-nombre').value = "";
-            alert("¡Organizador creado con éxito!");
+            document.getElementById('n').value = "";
         });
     };
 
-    function cargarClientes() {
-        onValue(ref(db, 'eventos'), (snapshot) => {
-            const data = snapshot.val();
-            const lista = document.getElementById('lista-clientes');
-            lista.innerHTML = "";
-            
+    function cargar() {
+        onValue(ref(db, 'eventos'), (snap) => {
+            const data = snap.val();
+            const list = document.getElementById('lista');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = "No hay eventos"; return; }
             for(let id in data) {
-                const ev = data[id];
-                const cacheBuster = Date.now();
-                const urlLarga = `${baseURL}?id=${id}&v=${cacheBuster}`;
-                const bitly = ev.bitly || "Sin link corto configurado";
-                
-                const item = document.createElement('div');
-                item.className = 'client-item';
-                item.innerHTML = `
-                    <div class="client-header">
-                        <div>
-                            <span class="client-name">${ev.organiza}</span>
-                            <span class="status-badge ${ev.activo ? 'status-ok' : 'status-off'}">${ev.activo ? 'Activo' : 'Suspendido'}</span>
-                        </div>
+                const url = `${baseURL}?id=${id}`;
+                list.innerHTML += `<div class="cliente">
+                    <div><b>${data[id].organiza}</b></div>
+                    <div>
+                        <button class="btn-icon" onclick="window.open('${url}')">✏️</button>
+                        <button class="btn-icon" style="color:red" onclick="borrar('${id}')">🗑️</button>
                     </div>
-                    <div class="client-links">
-                        <a href="${ev.bitly || '#'}" target="_blank" class="link-row link-short">${bitly}</a>
-                        <span class="link-row">${urlLarga}</span>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-icon btn-blue" title="Editar" onclick="window.open('${urlLarga}')">✏️</button>
-                        <button class="btn btn-icon btn-green" title="Link Corto" onclick="window.setBitly('${id}')">💾</button>
-                        <button class="btn btn-icon" title="Copiar URL" onclick="window.copiar('${urlLarga}')">🔗</button>
-                        <button class="btn btn-icon btn-orange" title="Suspender/Activar" onclick="window.toggleActivo('${id}', ${ev.activo})">🚫</button>
-                        <button class="btn btn-icon btn-red" title="Eliminar" onclick="window.eliminar('${id}')">🗑️</button>
-                    </div>
-                `;
-                lista.appendChild(item);
+                </div>`;
             }
         });
     }
 
-    window.copiar = (txt) => {
-        navigator.clipboard.writeText(txt);
-        alert("Link copiado al portapapeles");
-    };
-
-    window.setBitly = (id) => {
-        const link = prompt("Ingresá el link corto (Bitly):");
-        if(link !== null) update(ref(db, 'eventos/' + id), { bitly: link });
-    };
-
-    window.toggleActivo = (id, actual) => {
-        update(ref(db, 'eventos/' + id), { activo: !actual });
-    };
-
-    window.eliminar = (id) => {
-        if(confirm("¿Estás seguro de eliminar este organizador? Se borrarán todos sus datos.")) {
-            remove(ref(db, 'eventos/' + id));
-        }
-    };
+    window.borrar = (id) => { if(confirm("¿Eliminar evento?")) remove(ref(db, 'eventos/'+id)); };
 </script>
-
 </body>
 </html>

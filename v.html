@@ -35,12 +35,11 @@
         .info-item span { font-weight: 600; color: var(--text); text-align: right; }
         .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
 
-        /* Labels e Inputs */
+        /* Formulario */
         label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 6px; margin-left: 4px; letter-spacing: 0.5px; }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; outline: none; transition: 0.2s; }
         .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
-        /* Botones */
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; display: block; text-align: center; text-decoration: none; }
         .btn-blue { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
         .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
@@ -49,22 +48,24 @@
         
         .btn-copy-alias { background: #e1f0ff; color: var(--primary); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; margin-top: 12px; cursor: pointer; display: inline-block; }
 
-        /* Stats y Lista */
+        /* Stats Table */
         .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
+        /* Lista Inscriptos */
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
+        .admin-item:last-child { border-bottom: none; }
         .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-phone { font-size: 11px; color: var(--sub); }
 
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; transition: 0.2s; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
 
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; border: none; cursor: pointer; }
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; cursor: pointer; border: none; }
 
         .hidden { display: none !important; }
         .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
@@ -154,7 +155,7 @@
                 <tr><td>🎾 Cupos <span id="st-cupo" class="stat-val">-</span></td></tr>
                 <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
                 <tr><td>💸 Pagaron <span id="st-pag" class="stat-val">-</span></td></tr>
-                <tr><td>🤝 En cancha <span id="st-res" class="stat-val">-</span></td></tr>
+                <tr><td>🤝 Paga en cancha <span id="st-res" class="stat-val">-</span></td></tr>
                 <tr><td>⏳ Pendientes <span id="st-pend" class="stat-val">-</span></td></tr>
             </table>
             <div id="lista-admin" style="margin-top: 20px;"></div>
@@ -306,7 +307,7 @@
 
         let html = "";
         listaOrdenada.forEach((p) => {
-            const label = p.estado === 'reservado' ? 'EN CANCHA' : p.estado.toUpperCase();
+            const label = p.estado === 'reservado' ? 'PAGA EN CANCHA' : p.estado.toUpperCase();
             html += `<div class="admin-item">
                 <div class="player-info">
                     <span class="player-name">${p.nombre}</span>

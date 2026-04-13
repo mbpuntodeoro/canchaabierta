@@ -123,7 +123,7 @@
         update(ref(db, 'eventos/' + id), { activo: !actual });
     };
 
-    window.borrar = (id) => { if(confirm("¿Eliminar este evento y todos sus datos permanentemente?")) remove(ref(db, 'eventos/'+id)); };
+    window.borrar = (id) => { if(confirm("¿Eliminar este evento?")) remove(ref(db, 'eventos/'+id)); };
 </script>
 </body>
 </html>

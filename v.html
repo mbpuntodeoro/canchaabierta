@@ -31,40 +31,38 @@
         /* Info Grid */
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .info-item:last-child { margin-bottom: 0; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         .info-item span { font-weight: 600; color: var(--text); text-align: right; }
         .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
 
-        /* Form & Buttons */
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 12px; background: #fff; transition: 0.2s; outline: none; }
+        /* Labels y Formulario */
+        label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 6px; margin-left: 4px; letter-spacing: 0.5px; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; transition: 0.2s; outline: none; }
         .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
+        /* Botones */
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; display: block; text-align: center; text-decoration: none; }
         .btn-blue { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
         .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
         .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
         .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
 
-        /* Stats Table */
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; border: none; cursor: pointer; }
+
+        /* Stats y Lista */
         .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
-        /* Inscriptos List */
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
-        .admin-item:last-child { border-bottom: none; }
         .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-phone { font-size: 11px; color: var(--sub); margin-top: 2px; }
 
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; transition: 0.2s; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
-
-        /* Support Button */
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; cursor: pointer; border: none; }
 
         .hidden { display: none !important; }
         .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
@@ -90,8 +88,10 @@
         </div>
 
         <div id="form-container">
-            <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
-            <input id="in-cel" class="input-std" placeholder="WhatsApp">
+            <label>Nombre y Apellido</label>
+            <input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
+            <label>WhatsApp</label>
+            <input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
             <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
         </div>
         <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
@@ -106,7 +106,7 @@
             <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 24px;">
                 <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
                 <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
-                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">alias.mp</span>
+                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">-</span>
             </div>
 
             <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
@@ -120,16 +120,35 @@
             <button onclick="location.reload()" style="background: #f2f2f7; border:none; width: auto; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
         </div>
 
-        <input id="ed-org-name" class="input-std" placeholder="Nombre Evento">
-        <input id="ed-staff" class="input-std" placeholder="Organizador">
-        <input id="ed-celu" class="input-std" placeholder="WhatsApp Organizador">
+        <label>Nombre del Evento</label>
+        <input id="ed-org-name" class="input-std" placeholder="Ej: Lasigues El Abierto">
+        
+        <label>Nombre del Organizador</label>
+        <input id="ed-staff" class="input-std" placeholder="Ej: Sergio Padel">
+        
+        <label>WhatsApp Organizador (549...)</label>
+        <input id="ed-celu" class="input-std" placeholder="Para recibir comprobantes">
+        
+        <label>Fecha del Evento</label>
         <input id="ed-fec" class="input-std" type="date">
-        <input id="ed-hor" class="input-std" placeholder="Horario">
-        <input id="ed-lug" class="input-std" placeholder="Lugar">
-        <input id="ed-val" class="input-std" type="number" placeholder="Precio">
-        <input id="ed-ali" class="input-std" placeholder="Alias MP">
-        <input id="ed-cup" class="input-std" type="number" placeholder="Cupos">
-        <input id="ed-pass" class="input-std" type="password" placeholder="Clave admin">
+        
+        <label>Horario</label>
+        <input id="ed-hor" class="input-std" placeholder="Ej: 19:00 a 21:00 hs">
+        
+        <label>Club / Lugar</label>
+        <input id="ed-lug" class="input-std" placeholder="Ej: Club Padel Pro">
+        
+        <label>Valor Inscripción ($)</label>
+        <input id="ed-val" class="input-std" type="number" placeholder="Ej: 15000">
+        
+        <label>Alias Mercado Pago</label>
+        <input id="ed-ali" class="input-std" placeholder="Para que te transfieran">
+        
+        <label>Cupos Totales</label>
+        <input id="ed-cup" class="input-std" type="number" placeholder="Ej: 30">
+        
+        <label>Clave de Acceso al Panel</label>
+        <input id="ed-pass" class="input-std" type="password" placeholder="Para entrar a este modo">
 
         <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
         <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
@@ -144,7 +163,7 @@
 
         <div id="lista-admin" style="margin-top: 20px;"></div>
         
-        <button class="btn-soporte" onclick="window.open('https://wa.me/5491166463800?text=Hola%20Mariano%20necesito%20ayuda')">🆘 Soporte Mariano</button>
+        <a href="https://wa.me/5491166463800" target="_blank" class="btn-soporte"><span>🆘</span> Soporte Mariano</a>
     </div>
 
     <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
@@ -176,6 +195,7 @@
             document.getElementById('view-user').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
             document.getElementById('btnSwitch').classList.add('hidden');
+            
             document.getElementById('ed-org-name').value = ev.organiza || "";
             document.getElementById('ed-staff').value = ev.organizador_nombre || "";
             document.getElementById('ed-lug').value = ev.lugar || "";

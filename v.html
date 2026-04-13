@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscripción - Cancha Abierta</title>
+    <title>Cancha Abierta - Inscripción</title>
     <style>
         :root {
             --primary: #007aff;
@@ -16,6 +16,7 @@
             --danger: #ff3b30;
         }
 
+        * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 450px; margin: auto; }
         
@@ -33,30 +34,29 @@
         .info-item span { font-weight: 600; color: var(--text); }
 
         /* Formulario */
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; box-sizing: border-box; margin-bottom: 12px; background: #fff; transition: 0.2s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 12px; background: #fff; transition: 0.2s; outline: none; }
+        .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
-        button { border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; width: 100%; padding: 14px; font-size: 15px; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); margin-top: 10px; font-size: 14px; width: 100%; padding: 14px; }
-        .btn-whatsapp { background: var(--success); color: white; margin-top: 20px; width: 100%; padding: 14px; }
-        .btn-admin { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; font-weight: 600; width: 100%; padding: 14px; }
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 20px; border-radius: 10px; padding: 12px; width: 100%; text-align: center; display: block; text-decoration: none; }
+        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; display: block; text-align: center; text-decoration: none; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
+        .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
+        .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
 
         /* Stats Table */
-        .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; }
+        .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
-        /* LISTA DE INSCRIPTOS (CORREGIDA) */
-        .admin-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f2f2f7; gap: 12px; }
+        /* LISTA DE INSCRIPTOS (MAQUETADO REFORZADO) */
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
         .admin-item:last-child { border-bottom: none; }
         
-        .player-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .player-phone { font-size: 11px; color: var(--sub); margin-top: 1px; }
+        .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .player-phone { font-size: 11px; color: var(--sub); margin-top: 2px; }
 
-        .estado-btn { padding: 8px 12px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; min-width: 110px; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; transition: 0.2s; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
@@ -85,9 +85,9 @@
         </div>
 
         <div id="form-container">
-            <input id="in-nom" placeholder="Nombre y Apellido">
-            <input id="in-cel" placeholder="WhatsApp">
-            <button class="btn-primary" onclick="inscribirse()">Anotarme ahora</button>
+            <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
+            <input id="in-cel" class="input-std" placeholder="WhatsApp">
+            <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
         </div>
         <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
     </div>
@@ -104,37 +104,34 @@
                 <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">alias.mp</span>
             </div>
 
-            <button class="btn-whatsapp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-            <button class="btn-outline" onclick="location.reload()">Volver al inicio</button>
+            <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
+            <button class="btn-full btn-light" onclick="location.reload()">Volver al inicio</button>
         </div>
     </div>
 
     <div class="card hidden" id="view-admin">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2 style="margin:0; font-size: 18px;">Configuración</h2>
-            <button onclick="location.reload()" style="background: #f2f2f7; width: auto; padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;">Cerrar</button>
+            <button onclick="location.reload()" style="background: #f2f2f7; border:none; width: auto; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
         </div>
 
         <label>Staff y Evento</label>
-        <input id="ed-org-name" placeholder="Nombre Evento">
-        <input id="ed-staff" placeholder="Nombre Organizador">
-        <input id="ed-celu" placeholder="WhatsApp Organizador">
-        
+        <input id="ed-org-name" class="input-std" placeholder="Nombre Evento">
+        <input id="ed-staff" class="input-std" placeholder="Organizador">
+        <input id="ed-celu" class="input-std" placeholder="WhatsApp Organizador">
         <label>Fecha y Club</label>
-        <input id="ed-fec" type="date">
-        <input id="ed-hor" placeholder="Horario">
-        <input id="ed-lug" placeholder="Club">
-        
-        <label>Precios y Cupos</label>
-        <input id="ed-val" type="number" placeholder="Valor">
-        <input id="ed-ali" placeholder="Alias MP">
-        <input id="ed-cup" type="number" placeholder="Cupos">
-        
+        <input id="ed-fec" class="input-std" type="date">
+        <input id="ed-hor" class="input-std" placeholder="Hora">
+        <input id="ed-lug" class="input-std" placeholder="Club">
+        <label>Precio y Cupos</label>
+        <input id="ed-val" class="input-std" type="number">
+        <input id="ed-ali" class="input-std" placeholder="Alias MP">
+        <input id="ed-cup" class="input-std" type="number">
         <label>Seguridad</label>
-        <input id="ed-pass" type="password" placeholder="Clave admin">
+        <input id="ed-pass" class="input-std" type="password">
 
-        <button class="btn-primary" onclick="guardar()" style="margin-top: 10px;">💾 Guardar Cambios</button>
-        <button id="btnLock" onclick="toggleBloqueo()" style="margin-top: 10px; width:100%"></button>
+        <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
+        <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
 
         <table class="stats-table">
             <tr><td>🎾 Cupos Totales <span id="st-cupo" class="stat-val">-</span></td></tr>
@@ -146,10 +143,10 @@
 
         <div id="lista-admin" style="margin-top: 20px;"></div>
         
-        <a href="https://wa.me/5491166463800" target="_blank" class="btn-soporte">🆘 Soporte Mariano</a>
+        <a href="https://wa.me/5491166463800" target="_blank" class="btn-full btn-light" style="font-size: 12px; margin-top:20px;">🆘 Soporte Mariano</a>
     </div>
 
-    <button id="btnSwitch" class="btn-admin" onclick="abrirAdmin()">⚙️ PANEL DE ORGANIZADOR</button>
+    <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
 
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
@@ -173,12 +170,11 @@
     });
 
     window.abrirAdmin = () => {
-        const p = prompt("Contraseña:");
+        const p = prompt("Clave:");
         if (p === ev.password || p === "Cancha2026") {
             document.getElementById('view-user').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
             document.getElementById('btnSwitch').classList.add('hidden');
-            
             document.getElementById('ed-org-name').value = ev.organiza || "";
             document.getElementById('ed-staff').value = ev.organizador_nombre || "";
             document.getElementById('ed-lug').value = ev.lugar || "";
@@ -251,6 +247,7 @@
         const bLock = document.getElementById('btnLock');
         bLock.innerText = ev.bloqueado ? "🔓 ABRIR INSCRIPCIONES" : "🔒 CERRAR INSCRIPCIONES";
         bLock.style.background = ev.bloqueado ? "var(--success)" : "var(--danger)";
+        bLock.style.color = "white";
         document.getElementById('form-container').className = ev.bloqueado ? "hidden" : "";
         document.getElementById('msg-cerrado').className = ev.bloqueado ? "" : "hidden";
 
@@ -272,7 +269,7 @@
 
         let html = "";
         listaOrdenada.forEach((p) => {
-            const label = p.estado === 'reservado' ? 'PAGAN EN CANCHA' : p.estado.toUpperCase();
+            const label = p.estado === 'reservado' ? 'EN CANCHA' : p.estado.toUpperCase();
             html += `<div class="admin-item">
                 <div class="player-info">
                     <span class="player-name">${p.nombre}</span>

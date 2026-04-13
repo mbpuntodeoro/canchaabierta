@@ -5,15 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Panel - Cancha Abierta</title>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; background: #F5F7FA; padding: 20px; margin: 0; }
-        .container { max-width: 600px; margin: auto; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        h1, h2 { margin-top: 0; color: #1c1c1e; }
-        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; }
-        button { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-main { background: #007AFF; color: white; width: 100%; font-size: 16px; }
-        .cliente { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #F2F2F7; }
-        .btn-icon { background: #F2F2F7; margin-left: 5px; font-size: 18px; }
+        :root { --primary: #007AFF; --bg: #F5F7FA; --text: #1c1c1e; --sub: #8e8e93; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 20px; margin: 0; color: var(--text); }
+        .container { max-width: 650px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; }
+        h1, h2 { margin: 0 0 15px 0; font-weight: 800; letter-spacing: -0.5px; }
+        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 16px; }
+        
+        .cliente { padding: 18px 0; border-bottom: 1px solid #F2F2F7; }
+        .cliente:last-child { border-bottom: none; }
+        .cli-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .cli-name { font-size: 18px; font-weight: 700; }
+        .cli-stats { font-size: 12px; color: var(--sub); font-weight: 600; text-transform: uppercase; }
+        
+        .cli-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-small { padding: 8px 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: #f2f2f7; color: var(--text); }
+        .btn-copy { background: #E1F0FF; color: var(--primary); }
+        .btn-suspend { background: #FFE5E5; color: #ff3b30; }
+        .btn-active { background: #E5FFE5; color: #34c759; }
+        .btn-del { color: #888; }
+        
         .hidden { display: none; }
     </style>
 </head>
@@ -26,25 +38,24 @@
 
 <div id="panel" class="container hidden">
     <div class="card">
-        <h2>🚀 Nuevo Organizador</h2>
-        <input type="text" id="n" placeholder="Nombre del Evento">
-        <button class="btn-main" onclick="crear()">Crear Acceso</button>
+        <h2>🚀 Crear Nuevo Cliente</h2>
+        <input type="text" id="n" placeholder="Nombre del Organizador o Evento">
+        <button class="btn-main" onclick="crear()">Generar Acceso</button>
     </div>
+    
     <div class="card">
-        <h2>📁 Mis Clientes</h2>
-        <div id="lista">Cargando...</div>
+        <h2>📁 Gestión de Clientes</h2>
+        <div id="lista">Cargando eventos...</div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
-    // LINK DINÁMICO DE TU GITHUB
     const baseURL = "https://mbpuntodeoro.github.io/canchaabierta/v.html";
 
     window.entrar = () => {
@@ -52,7 +63,7 @@
             document.getElementById('login').classList.add('hidden');
             document.getElementById('panel').classList.remove('hidden');
             cargar();
-        } else { alert("Error"); }
+        } else { alert("Acceso denegado"); }
     };
 
     window.crear = () => {
@@ -63,12 +74,11 @@
             organiza: n, 
             cupo: 30, 
             activo: true, 
+            bloqueado: false,
             password: "123",
-            valor: 0,
-            alias: "tu.alias"
-        }).then(() => {
-            document.getElementById('n').value = "";
-        });
+            valor: 15000,
+            alias: "tu.alias.mp"
+        }).then(() => document.getElementById('n').value = "");
     };
 
     function cargar() {
@@ -76,21 +86,44 @@
             const data = snap.val();
             const list = document.getElementById('lista');
             list.innerHTML = "";
-            if(!data) { list.innerHTML = "No hay eventos"; return; }
+            if(!data) { list.innerHTML = "No hay eventos activos."; return; }
+            
             for(let id in data) {
-                const url = `${baseURL}?id=${id}`;
-                list.innerHTML += `<div class="cliente">
-                    <div><b>${data[id].organiza}</b></div>
-                    <div>
-                        <button class="btn-icon" onclick="window.open('${url}')">✏️</button>
-                        <button class="btn-icon" style="color:red" onclick="borrar('${id}')">🗑️</button>
-                    </div>
-                </div>`;
+                const ev = data[id];
+                const insCount = ev.inscriptos ? ev.inscriptos.length : 0;
+                const link = `${baseURL}?id=${id}`;
+                const statusLabel = ev.activo ? "SUSPENDER" : "ACTIVAR";
+                const statusClass = ev.activo ? "btn-suspend" : "btn-active";
+                
+                list.innerHTML += `
+                    <div class="cliente">
+                        <div class="cli-header">
+                            <div>
+                                <div class="cli-name">${ev.organiza}</div>
+                                <div class="cli-stats">👥 ${insCount} inscriptos | 🆔 ${id}</div>
+                            </div>
+                            <button class="btn-small ${statusClass}" onclick="toggleActivo('${id}', ${ev.activo})">${statusLabel}</button>
+                        </div>
+                        <div class="cli-actions">
+                            <button class="btn-small btn-copy" onclick="copiar('${link}')">🔗 Copiar Link</button>
+                            <button class="btn-small" onclick="window.open('${link}')">✏️ Editar</button>
+                            <button class="btn-small btn-del" onclick="borrar('${id}')">🗑️ Eliminar</button>
+                        </div>
+                    </div>`;
             }
         });
     }
 
-    window.borrar = (id) => { if(confirm("¿Eliminar evento?")) remove(ref(db, 'eventos/'+id)); };
+    window.copiar = (url) => {
+        navigator.clipboard.writeText(url);
+        alert("Link copiado al portapapeles");
+    };
+
+    window.toggleActivo = (id, actual) => {
+        update(ref(db, 'eventos/' + id), { activo: !actual });
+    };
+
+    window.borrar = (id) => { if(confirm("¿Eliminar este evento y todos sus datos permanentemente?")) remove(ref(db, 'eventos/'+id)); };
 </script>
 </body>
 </html>

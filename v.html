@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancha Abierta - V2</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background:#f4f6f9; margin:0; padding:16px; color: #1c1c1e; }
+        .container { max-width:500px; margin:auto; }
+        /* FRANJA DE VALIDACIÓN */
+        .version-tag { background: #007aff; color: white; text-align: center; font-size: 10px; padding: 4px; border-radius: 8px 8px 0 0; font-weight: bold; }
+        .card { background:white; padding:20px; border-radius: 0 0 18px 18px; margin-bottom:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card-config { border-radius: 18px; }
+        h1 { font-size:18px; margin-top:0; }
+        label { font-size:11px; margin-top:10px; display:block; color:#666; font-weight: bold; text-transform: uppercase; }
+        input { width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-top:5px; box-sizing: border-box; font-size: 14px; }
+        button { width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background:#007aff; color:white; }
+        .btn-admin { background:#000; color:white; margin-top:20px; width:100%; }
+        .btn-whatsapp { background:#25D366; color:white; font-size: 16px; width:100%; }
+        .estado-btn { padding:6px 12px; border-radius:16px; font-size:11px; color:white; font-weight: bold; text-transform: uppercase; min-width: 115px; text-align: center; }
+        .pagado { background:#34c759; }
+        .reservado { background:#ffcc00; color:#000; } /* Pagan en cancha */
+        .pendiente { background:#ff3b30; }
+        .admin-item { display:flex; justify-content:space-between; align-items: center; padding:12px 0; border-bottom:1px solid #eee; }
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #f8f9fa; border-radius: 12px; border: 1px solid #eee; }
+        .stats-table td { padding: 12px 15px; font-size: 15px; border-bottom: 1px solid #eee; display: block; width: 100%; box-sizing: border-box; }
+        .hidden { display:none !important; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="version-tag">SISTEMA ACTUALIZADO V2.0</div>
+    <div class="card" id="view-user">
+        <h1>🎾 INSCRIPCIÓN <span id="tagId" style="font-size:10px; opacity:0.5"></span></h1>
+        <div id="infoEvento" style="font-weight: bold; color: #007aff; margin-bottom: 5px; font-size: 18px;">Cargando...</div>
+        <div id="infoFechaHora" style="font-weight: bold; color: #1c1c1e; margin-bottom: 10px; font-size: 14px; background: #eef2f7; padding: 8px; border-radius: 8px;"></div>
+        <div id="infoDetalles" style="font-size:14px;">
+            📍 <span id="txt-lugar">-</span><br>
+            💰 Valor: $<span id="txt-valor">0</span><br>
+            🏦 ALIAS: <span id="txt-alias" style="color:#d9534f; font-weight:bold;">-</span>
+        </div>
+        <div id="formInscripcion" style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+            <input id="in-nom" placeholder="Nombre y Apellido">
+            <input id="in-cel" placeholder="WhatsApp">
+            <button class="btn-primary" onclick="inscribirse()">Anotarme</button>
+        </div>
+        <div id="msgBloqueo" class="hidden">CERRADO</div>
+    </div>
+
+    <div class="card card-config hidden" id="view-admin">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin:0;">Configuración</h2>
+            <button onclick="window.toggleModo()" style="width:auto; padding:5px; font-size:10px;">Cerrar</button>
+        </div>
+        <label>Organiza</label> <input id="ed-org">
+        <label>Lugar</label> <input id="ed-lug">
+        <label>📅 Fecha del Evento</label> <input id="ed-fec" type="date">
+        <label>🕒 Horario (Ej: 19 a 21hs)</label> <input id="ed-hor">
+        <label>Valor ($)</label> <input id="ed-val" type="number">
+        <label>Alias</label> <input id="ed-ali">
+        <label>Cupos</label> <input id="ed-cup" type="number">
+        <label>Tu WhatsApp</label> <input id="ed-celu">
+        <label>Clave Admin</label> <input id="ed-pass" type="password">
+        <button class="btn-primary" onclick="guardar()">💾 Guardar Cambios</button>
+        <button id="btnLock" onclick="toggleBloqueo()" style="width:100%"></button>
+        
+        <table class="stats-table">
+            <tr><td id="st-cupo" style="font-weight:bold;">Cupos: -</td></tr>
+            <tr><td id="st-lib" style="font-weight:bold; color: #34c759;">✅ Libres: -</td></tr>
+            <tr><td id="st-pag">💸 Pagaron: -</td></tr>
+            <tr><td id="st-res">🤝 Pagan en cancha: -</td></tr>
+            <tr><td id="st-pend">⏳ Pendientes: -</td></tr>
+            <tr><td id="st-total" style="font-size:12px; color:#999; border:none;">Total Inscriptos: -</td></tr>
+        </table>
+        <div id="lista-admin" style="margin-top:20px;"></div>
+    </div>
+    <button id="btnSwitch" class="btn-admin" onclick="abrirAdmin()">⚙️ Modo Organizador</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const id = new URLSearchParams(window.location.search).get('id') || 'demo';
+    const evRef = ref(db, 'eventos/' + id);
+    let ev = {};
+
+    onValue(evRef, (snap) => {
+        ev = snap.val() || {};
+        if (!ev.inscriptos) ev.inscriptos = [];
+        render();
+    });
+
+    window.abrirAdmin = () => {
+        const p = prompt("Clave:");
+        if (p === ev.password || p === "Cancha2026") { window.toggleModo(); }
+    };
+
+    window.toggleModo = () => {
+        document.getElementById('view-user').classList.toggle('hidden');
+        document.getElementById('view-admin').classList.toggle('hidden');
+        if(!document.getElementById('view-admin').classList.contains('hidden')){
+            document.getElementById('ed-org').value = ev.organiza || "";
+            document.getElementById('ed-lug').value = ev.lugar || "";
+            document.getElementById('ed-fec').value = ev.fecha || "";
+            document.getElementById('ed-hor').value = ev.hora || "";
+            document.getElementById('ed-val').value = ev.valor || 0;
+            document.getElementById('ed-ali').value = ev.alias || "";
+            document.getElementById('ed-cup').value = ev.cupo || 0;
+            document.getElementById('ed-celu').value = ev.celuOrganizador || "";
+            document.getElementById('ed-pass').value = ev.password || "";
+        }
+    };
+
+    window.guardar = () => {
+        update(evRef, {
+            organiza: document.getElementById('ed-org').value,
+            lugar: document.getElementById('ed-lug').value,
+            fecha: document.getElementById('ed-fec').value,
+            hora: document.getElementById('ed-hor').value,
+            valor: parseInt(document.getElementById('ed-val').value) || 0,
+            alias: document.getElementById('ed-ali').value,
+            cupo: parseInt(document.getElementById('ed-cup').value) || 0,
+            celuOrganizador: document.getElementById('ed-celu').value.replace(/\D/g,''),
+            password: document.getElementById('ed-pass').value
+        }).then(() => alert("¡Guardado!"));
+    };
+
+    window.inscribirse = () => {
+        const n = document.getElementById('in-nom').value;
+        const c = document.getElementById('in-cel').value;
+        if(!n || !c) return alert("Faltan datos");
+        ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
+        set(ref(db, 'eventos/'+id+'/inscriptos'), ev.inscriptos).then(() => { location.reload(); });
+    };
+
+    window.cambiar = (originalId) => {
+        const idx = ev.inscriptos.findIndex(x => x.id === originalId);
+        const ciclos = ["pendiente", "reservado", "pagado"];
+        ev.inscriptos[idx].estado = ciclos[(ciclos.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
+        set(ref(db, 'eventos/'+id+'/inscriptos'), ev.inscriptos);
+    };
+
+    window.toggleBloqueo = () => update(evRef, { bloqueado: !ev.bloqueado });
+
+    function render() {
+        document.getElementById('tagId').innerText = id.toUpperCase();
+        document.getElementById('infoEvento').innerText = (ev.organiza || "Cargando...").toUpperCase();
+        
+        let fAmi = ev.fecha || 'A confirmar';
+        if(ev.fecha) {
+            const fO = new Date(ev.fecha + "T00:00:00");
+            fAmi = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(fO);
+        }
+        document.getElementById('infoFechaHora').innerText = `📅 ${fAmi.toUpperCase()} | 🕒 ${ev.hora || '--:--'} hs`;
+        document.getElementById('txt-lugar').innerText = ev.lugar || '-';
+        document.getElementById('txt-valor').innerText = (ev.valor || 0).toLocaleString();
+        document.getElementById('txt-alias').innerText = ev.alias || '-';
+
+        const bL = document.getElementById('btnLock');
+        bL.innerText = ev.bloqueado ? "🔓 ABRIR" : "🔒 CERRAR";
+        bL.style.background = ev.bloqueado ? "#34c759" : "#ff3b30";
+        
+        const ins = ev.inscriptos || [];
+        const pag = ins.filter(x => x.estado === 'pagado').length;
+        const res = ins.filter(x => x.estado === 'reservado').length;
+        const pend = ins.filter(x => x.estado === 'pendiente').length;
+
+        document.getElementById('st-cupo').innerText = "🎾 Cupos: " + (ev.cupo || 0);
+        document.getElementById('st-lib').innerText = "✅ Libres: " + ((ev.cupo || 0) - (pag + res));
+        document.getElementById('st-pag').innerText = "💸 Pagaron: " + pag;
+        document.getElementById('st-res').innerText = "🤝 Pagan en cancha: " + res;
+        document.getElementById('st-pend').innerText = "⏳ Pendientes: " + pend;
+        document.getElementById('st-total').innerText = "👥 Total Inscriptos: " + ins.length;
+
+        let h = "";
+        const listaOrdenada = [...ins].sort((a, b) => b.id - a.id);
+        listaOrdenada.forEach((p) => {
+            const label = p.estado === 'reservado' ? 'EN CANCHA' : p.estado.toUpperCase();
+            h += `<div class="admin-item">
+                <div><b>${p.nombre}</b><br><small>${p.celular}</small></div>
+                <div class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${label}</div>
+            </div>`;
+        });
+        document.getElementById('lista-admin').innerHTML = h || "Sin inscriptos";
+    }
+</script>
+</body>
+</html>

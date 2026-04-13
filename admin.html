@@ -10,26 +10,35 @@
         .container { max-width: 650px; margin: auto; }
         .card { background: white; padding: 25px; border-radius: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; }
         h1, h2 { margin: 0 0 15px 0; font-weight: 800; letter-spacing: -0.5px; }
-        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .btn-main { background: var(--primary); color: white; width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 16px; }
         
-        .cliente { padding: 18px 0; border-bottom: 1px solid #F2F2F7; }
+        label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 5px; margin-left: 5px; }
+        input { width: 100%; padding: 14px; border: 1px solid #E5E5EA; border-radius: 12px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 16px; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
+        
+        .cliente { padding: 20px 0; border-bottom: 1px solid #F2F2F7; }
         .cliente:last-child { border-bottom: none; }
-        .cli-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .cli-name { font-size: 18px; font-weight: 700; }
-        .cli-stats { font-size: 12px; color: var(--sub); font-weight: 600; text-transform: uppercase; }
+        .cli-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .cli-name { font-size: 18px; font-weight: 800; color: var(--text); }
+        .cli-stats { font-size: 11px; color: var(--sub); font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        
+        .link-box { background: #f8f9fb; border-radius: 10px; padding: 10px; margin-bottom: 12px; border: 1px solid #edf1f7; }
+        .link-label { font-size: 9px; font-weight: 800; color: var(--sub); margin-bottom: 4px; display: block; }
         
         .cli-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-small { padding: 8px 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; background: #f2f2f7; color: var(--text); }
+        .btn-small { padding: 10px 14px; border-radius: 10px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; background: #f2f2f7; color: var(--text); transition: 0.2s; }
         .btn-copy { background: #E1F0FF; color: var(--primary); }
+        .btn-copy-short { background: #E5FFE5; color: #34c759; }
         .btn-suspend { background: #FFE5E5; color: #ff3b30; }
         .btn-active { background: #E5FFE5; color: #34c759; }
-        .btn-del { color: #888; }
+        .btn-del { color: #888; margin-left: auto; }
         
         .hidden { display: none; }
     </style>
 </head>
 <body>
+
 <div id="login" class="card" style="max-width:320px; margin: 100px auto; text-align: center;">
     <h1>🔐 Master</h1>
     <input type="password" id="p" placeholder="Contraseña Master">
@@ -39,7 +48,10 @@
 <div id="panel" class="container hidden">
     <div class="card">
         <h2>🚀 Crear Nuevo Cliente</h2>
-        <input type="text" id="n" placeholder="Nombre del Organizador o Evento">
+        <label>Nombre del Organizador</label>
+        <input type="text" id="n" placeholder="Ej: Sergio Padel">
+        <label>Link Corto (Opcional)</label>
+        <input type="text" id="lc" placeholder="Ej: bit.ly/sergio-padel">
         <button class="btn-main" onclick="crear()">Generar Acceso</button>
     </div>
     
@@ -68,17 +80,23 @@
 
     window.crear = () => {
         const n = document.getElementById('n').value.trim();
+        const lc = document.getElementById('lc').value.trim();
         if(!n) return;
         const id = n.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        
         set(ref(db, 'eventos/' + id), { 
             organiza: n, 
+            linkCorto: lc,
             cupo: 30, 
             activo: true, 
             bloqueado: false,
             password: "123",
             valor: 15000,
             alias: "tu.alias.mp"
-        }).then(() => document.getElementById('n').value = "");
+        }).then(() => {
+            document.getElementById('n').value = "";
+            document.getElementById('lc').value = "";
+        });
     };
 
     function cargar() {
@@ -91,7 +109,9 @@
             for(let id in data) {
                 const ev = data[id];
                 const insCount = ev.inscriptos ? ev.inscriptos.length : 0;
-                const link = `${baseURL}?id=${id}`;
+                const linkLargo = `${baseURL}?id=${id}`;
+                const linkCorto = ev.linkCorto || "No definido";
+                
                 const statusLabel = ev.activo ? "SUSPENDER" : "ACTIVAR";
                 const statusClass = ev.activo ? "btn-suspend" : "btn-active";
                 
@@ -104,26 +124,38 @@
                             </div>
                             <button class="btn-small ${statusClass}" onclick="toggleActivo('${id}', ${ev.activo})">${statusLabel}</button>
                         </div>
+                        
+                        <div class="link-box">
+                            <span class="link-label">LINK CORTO: ${linkCorto}</span>
+                            <div class="cli-actions">
+                                <button class="btn-small btn-copy-short" onclick="copiar('${linkCorto}', 'corto')">✂️ Copiar Corto</button>
+                                <button class="btn-small btn-copy" onclick="copiar('${linkLargo}', 'largo')">🔗 Copiar Largo</button>
+                            </div>
+                        </div>
+
                         <div class="cli-actions">
-                            <button class="btn-small btn-copy" onclick="copiar('${link}')">🔗 Copiar Link</button>
-                            <button class="btn-small" onclick="window.open('${link}')">✏️ Editar</button>
-                            <button class="btn-small btn-del" onclick="borrar('${id}')">🗑️ Eliminar</button>
+                            <button class="btn-small" onclick="window.open('${linkLargo}')">✏️ Editar Evento</button>
+                            <button class="btn-small btn-del" onclick="borrar('${id}')">🗑️</button>
                         </div>
                     </div>`;
             }
         });
     }
 
-    window.copiar = (url) => {
+    window.copiar = (url, tipo) => {
+        if(tipo === 'corto' && (url === "No definido" || url === "")) {
+            alert("No hay un link corto guardado para este cliente.");
+            return;
+        }
         navigator.clipboard.writeText(url);
-        alert("Link copiado al portapapeles");
+        alert("Link " + tipo + " copiado!");
     };
 
     window.toggleActivo = (id, actual) => {
         update(ref(db, 'eventos/' + id), { activo: !actual });
     };
 
-    window.borrar = (id) => { if(confirm("¿Eliminar este evento?")) remove(ref(db, 'eventos/'+id)); };
+    window.borrar = (id) => { if(confirm("¿Eliminar este cliente?")) remove(ref(db, 'eventos/'+id)); };
 </script>
 </body>
 </html>

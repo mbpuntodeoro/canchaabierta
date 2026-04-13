@@ -24,8 +24,8 @@
         
         /* Header */
         .header-main { text-align: center; margin-bottom: 28px; }
-        .header-brand { font-size: 10px; letter-spacing: 2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .event-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 8px; display: block; letter-spacing: -1px; line-height: 1.1; }
+        .header-brand { font-size: 10px; letter-spacing: 2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 700; }
+        .event-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 4px; display: block; letter-spacing: -1px; line-height: 1.1; }
         .organizer-subtitle { font-size: 14px; color: var(--primary); font-weight: 600; margin-top: 6px; display: block; }
 
         /* Info Grid */
@@ -35,9 +35,9 @@
         .info-item span { font-weight: 600; color: var(--text); text-align: right; }
         .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
 
-        /* Labels y Formulario */
+        /* Formulario y Labels */
         label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 6px; margin-left: 4px; letter-spacing: 0.5px; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; transition: 0.2s; outline: none; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; outline: none; transition: 0.2s; }
         .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
         /* Botones */
@@ -47,22 +47,24 @@
         .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
         .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
 
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; border: none; cursor: pointer; }
-
-        /* Stats y Lista */
+        /* Stats */
         .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
+        /* Lista Inscriptos */
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
         .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .player-phone { font-size: 11px; color: var(--sub); margin-top: 2px; }
+        .player-phone { font-size: 11px; color: var(--sub); }
 
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
+
+        /* Soporte */
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; cursor: pointer; border: none; }
 
         .hidden { display: none !important; }
         .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
@@ -71,102 +73,88 @@
 <body>
 
 <div class="container">
-    <div class="card" id="view-user">
-        <div class="header-main">
-            <div class="header-brand">🎾 INSCRIPCIÓN CANCHA ABIERTA</div>
-            <span id="txt-evento-name" class="event-title">...</span>
-            <span id="txt-organizador" class="organizer-subtitle">...</span>
+    <div class="card hidden" id="view-suspended">
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 50px; margin-bottom: 20px;">⏸️</div>
+            <h2 style="margin: 0; font-size: 24px; font-weight: 900;">Evento Suspendido</h2>
+            <p style="color: var(--sub); margin-top: 10px;">Este evento no se encuentra activo en este momento. Consultá con el organizador.</p>
         </div>
-
-        <div class="info-grid">
-            <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
-            <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
-            <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
-            <hr class="separator">
-            <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 16px;">$0</span></div>
-            <div class="info-item"><b>🏦 Alias MP</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
-        </div>
-
-        <div id="form-container">
-            <label>Nombre y Apellido</label>
-            <input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
-            <label>WhatsApp</label>
-            <input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
-            <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
-        </div>
-        <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
     </div>
 
-    <div class="card hidden" id="view-success">
-        <div style="text-align: center; padding: 10px 0;">
-            <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-            <h2 style="margin: 0; font-size: 22px; font-weight: 800;">¡Anotado correctamente!</h2>
-            <p style="color: var(--sub); margin: 8px 0 20px 0; font-size: 15px;">Transferí para asegurar tu lugar:</p>
-            
-            <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 24px;">
-                <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
-                <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
-                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">-</span>
+    <div id="main-content">
+        <div class="card" id="view-user">
+            <div class="header-main">
+                <div class="header-brand">🎾 INSCRIPCIÓN CANCHA ABIERTA</div>
+                <span id="txt-evento-name" class="event-title">...</span>
+                <span id="txt-organizador" class="organizer-subtitle">...</span>
             </div>
 
-            <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-            <button class="btn-full btn-light" onclick="location.reload()">Volver al inicio</button>
+            <div class="info-grid">
+                <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
+                <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
+                <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
+                <hr class="separator">
+                <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 16px;">$0</span></div>
+                <div class="info-item"><b>🏦 Alias MP</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
+            </div>
+
+            <div id="form-container">
+                <label>Nombre y Apellido</label>
+                <input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
+                <label>WhatsApp</label>
+                <input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
+                <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
+            </div>
+            <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
         </div>
-    </div>
 
-    <div class="card hidden" id="view-admin">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin:0; font-size: 18px;">Configuración</h2>
-            <button onclick="location.reload()" style="background: #f2f2f7; border:none; width: auto; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
+        <div class="card hidden" id="view-success">
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+                <h2 style="margin: 0; font-size: 22px; font-weight: 800;">¡Anotado correctamente!</h2>
+                <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin: 24px 0;">
+                    <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
+                    <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
+                    <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary);">-</span>
+                </div>
+                <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
+                <button class="btn-full btn-light" onclick="location.reload()">Volver</button>
+            </div>
         </div>
 
-        <label>Nombre del Evento</label>
-        <input id="ed-org-name" class="input-std" placeholder="Ej: Lasigues El Abierto">
-        
-        <label>Nombre del Organizador</label>
-        <input id="ed-staff" class="input-std" placeholder="Ej: Sergio Padel">
-        
-        <label>WhatsApp Organizador (549...)</label>
-        <input id="ed-celu" class="input-std" placeholder="Para recibir comprobantes">
-        
-        <label>Fecha del Evento</label>
-        <input id="ed-fec" class="input-std" type="date">
-        
-        <label>Horario</label>
-        <input id="ed-hor" class="input-std" placeholder="Ej: 19:00 a 21:00 hs">
-        
-        <label>Club / Lugar</label>
-        <input id="ed-lug" class="input-std" placeholder="Ej: Club Padel Pro">
-        
-        <label>Valor Inscripción ($)</label>
-        <input id="ed-val" class="input-std" type="number" placeholder="Ej: 15000">
-        
-        <label>Alias Mercado Pago</label>
-        <input id="ed-ali" class="input-std" placeholder="Para que te transfieran">
-        
-        <label>Cupos Totales</label>
-        <input id="ed-cup" class="input-std" type="number" placeholder="Ej: 30">
-        
-        <label>Clave de Acceso al Panel</label>
-        <input id="ed-pass" class="input-std" type="password" placeholder="Para entrar a este modo">
+        <div class="card hidden" id="view-admin">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin:0; font-size: 18px;">Configuración</h2>
+                <button onclick="location.reload()" style="background: #f2f2f7; border:none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
+            </div>
 
-        <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
-        <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
+            <label>Nombre del Evento</label><input id="ed-org-name" class="input-std">
+            <label>Organizador</label><input id="ed-staff" class="input-std">
+            <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
+            <label>Fecha</label><input id="ed-fec" class="input-std" type="date">
+            <label>Horario</label><input id="ed-hor" class="input-std">
+            <label>Lugar</label><input id="ed-lug" class="input-std">
+            <label>Valor ($)</label><input id="ed-val" class="input-std" type="number">
+            <label>Alias MP</label><input id="ed-ali" class="input-std">
+            <label>Cupos</label><input id="ed-cup" class="input-std" type="number">
+            <label>Clave Admin</label><input id="ed-pass" class="input-std" type="password">
 
-        <table class="stats-table">
-            <tr><td>🎾 Cupos Totales <span id="st-cupo" class="stat-val">-</span></td></tr>
-            <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
-            <tr><td>💸 Pagaron <span id="st-pag" class="stat-val">-</span></td></tr>
-            <tr><td>🤝 En cancha <span id="st-res" class="stat-val">-</span></td></tr>
-            <tr><td>⏳ Pendientes <span id="st-pend" class="stat-val">-</span></td></tr>
-        </table>
+            <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
+            <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
 
-        <div id="lista-admin" style="margin-top: 20px;"></div>
-        
-        <a href="https://wa.me/5491166463800" target="_blank" class="btn-soporte"><span>🆘</span> Soporte Mariano</a>
+            <table class="stats-table">
+                <tr><td>🎾 Cupos <span id="st-cupo" class="stat-val">-</span></td></tr>
+                <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
+                <tr><td>💸 Pagaron <span id="st-pag" class="stat-val">-</span></td></tr>
+                <tr><td>🤝 En cancha <span id="st-res" class="stat-val">-</span></td></tr>
+                <tr><td>⏳ Pendientes <span id="st-pend" class="stat-val">-</span></td></tr>
+            </table>
+            <div id="lista-admin" style="margin-top: 20px;"></div>
+            <button class="btn-soporte" onclick="window.open('https://wa.me/5491166463800')">🆘 Soporte Mariano</button>
+        </div>
+
+        <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
     </div>
-
-    <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
 
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
@@ -185,6 +173,16 @@
 
     onValue(evRef, (snap) => {
         ev = snap.val() || {};
+        
+        // DOBLE CHEQUEO: Suspensión
+        if(ev.activo === false) {
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('view-suspended').classList.remove('hidden');
+        } else {
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('view-suspended').classList.add('hidden');
+        }
+
         if (!ev.inscriptos) ev.inscriptos = [];
         render();
     });
@@ -195,7 +193,6 @@
             document.getElementById('view-user').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
             document.getElementById('btnSwitch').classList.add('hidden');
-            
             document.getElementById('ed-org-name').value = ev.organiza || "";
             document.getElementById('ed-staff').value = ev.organizador_nombre || "";
             document.getElementById('ed-lug').value = ev.lugar || "";
@@ -269,7 +266,6 @@
         const bLock = document.getElementById('btnLock');
         bLock.innerText = ev.bloqueado ? "🔓 ABRIR INSCRIPCIONES" : "🔒 CERRAR INSCRIPCIONES";
         bLock.style.background = ev.bloqueado ? "var(--success)" : "var(--danger)";
-        bLock.style.color = "white";
         document.getElementById('form-container').className = ev.bloqueado ? "hidden" : "";
         document.getElementById('msg-cerrado').className = ev.bloqueado ? "" : "hidden";
 

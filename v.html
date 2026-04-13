@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancha Abierta - Inscripción</title>
+    <title>Inscripción - Cancha Abierta</title>
     <style>
         :root {
             --primary: #007aff;
@@ -22,47 +22,51 @@
         
         .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
         
-        /* Header */
-        .header-main { text-align: center; margin-bottom: 24px; }
-        .header-main h1 { font-size: 11px; letter-spacing: 1.2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 700; }
-        .header-main .event-name { font-size: 24px; font-weight: 800; color: var(--text); margin-top: 4px; display: block; letter-spacing: -0.5px; }
+        /* HEADER REFINADO */
+        .header-main { text-align: center; margin-bottom: 28px; }
+        .header-brand { font-size: 10px; letter-spacing: 2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .event-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 8px; display: block; letter-spacing: -1px; line-height: 1.1; }
+        .organizer-subtitle { font-size: 14px; color: var(--primary); font-weight: 600; margin-top: 6px; display: block; }
 
-        /* Grilla de Información */
-        .info-grid { background: #f9f9fb; padding: 18px; border-radius: 18px; margin-bottom: 24px; border: 1px solid #eee; }
-        .info-item { font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
-        .info-item span { font-weight: 600; color: var(--text); }
+        /* INFO GRID ESTILO APPLE */
+        .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
+        .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .info-item:last-child { margin-bottom: 0; }
+        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .info-item span { font-weight: 600; color: var(--text); text-align: right; }
+        .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
 
         /* Formulario */
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 12px; background: #fff; transition: 0.2s; outline: none; }
         .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
         
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; display: block; text-align: center; text-decoration: none; }
-        .btn-blue { background: var(--primary); color: white; }
+        .btn-blue { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
         .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
         .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
         .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
+
+        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; border: none; cursor: pointer; }
 
         /* Stats Table */
         .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
         .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
         .stat-val { font-weight: 700; float: right; }
 
-        /* LISTA DE INSCRIPTOS (MAQUETADO REFORZADO) */
+        /* Lista de Inscriptos */
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
         .admin-item:last-child { border-bottom: none; }
-        
         .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-phone { font-size: 11px; color: var(--sub); margin-top: 2px; }
 
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; transition: 0.2s; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; padding: 0; line-height: 32px; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
 
         .hidden { display: none !important; }
-        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -70,18 +74,18 @@
 <div class="container">
     <div class="card" id="view-user">
         <div class="header-main">
-            <h1>🎾 INSCRIPCIÓN CANCHA ABIERTA</h1>
-            <span id="txt-evento-name" class="event-name">Cargando...</span>
+            <div class="header-brand">🎾 INSCRIPCIÓN CANCHA ABIERTA</div>
+            <span id="txt-evento-name" class="event-title">...</span>
+            <span id="txt-organizador" class="organizer-subtitle">...</span>
         </div>
 
         <div class="info-grid">
             <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
             <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
             <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
-            <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
-            <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+            <hr class="separator">
             <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 16px;">$0</span></div>
-            <div class="info-item"><b>🏦 Alias</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
+            <div class="info-item"><b>🏦 Alias MP</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
         </div>
 
         <div id="form-container">
@@ -89,19 +93,19 @@
             <input id="in-cel" class="input-std" placeholder="WhatsApp">
             <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
         </div>
-        <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
+        <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px; font-size: 14px;">🚫 INSCRIPCIONES CERRADAS</div>
     </div>
 
     <div class="card hidden" id="view-success">
         <div style="text-align: center; padding: 10px 0;">
             <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-            <h2 style="margin: 0; font-size: 22px; font-weight: 800;">¡Anotado correctamente!</h2>
+            <h2 style="margin: 0; font-size: 22px; font-weight: 900;">¡Anotado correctamente!</h2>
             <p style="color: var(--sub); margin: 8px 0 20px 0; font-size: 15px;">Transferí para asegurar tu lugar:</p>
             
             <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 24px;">
                 <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
                 <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
-                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">alias.mp</span>
+                <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">-</span>
             </div>
 
             <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
@@ -115,19 +119,22 @@
             <button onclick="location.reload()" style="background: #f2f2f7; border:none; width: auto; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
         </div>
 
-        <label>Staff y Evento</label>
+        <label style="font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase;">Staff y Evento</label>
         <input id="ed-org-name" class="input-std" placeholder="Nombre Evento">
-        <input id="ed-staff" class="input-std" placeholder="Organizador">
-        <input id="ed-celu" class="input-std" placeholder="WhatsApp Organizador">
-        <label>Fecha y Club</label>
+        <input id="ed-staff" class="input-std" placeholder="Nombre Organizador">
+        <input id="ed-celu" class="input-std" placeholder="WhatsApp Organizador (549...)">
+        
+        <label style="font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase;">Fecha y Club</label>
         <input id="ed-fec" class="input-std" type="date">
         <input id="ed-hor" class="input-std" placeholder="Hora">
         <input id="ed-lug" class="input-std" placeholder="Club">
-        <label>Precio y Cupos</label>
+        
+        <label style="font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase;">Precio y Cupos</label>
         <input id="ed-val" class="input-std" type="number">
         <input id="ed-ali" class="input-std" placeholder="Alias MP">
         <input id="ed-cup" class="input-std" type="number">
-        <label>Seguridad</label>
+        
+        <label style="font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase;">Seguridad</label>
         <input id="ed-pass" class="input-std" type="password">
 
         <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
@@ -143,7 +150,7 @@
 
         <div id="lista-admin" style="margin-top: 20px;"></div>
         
-        <a href="https://wa.me/5491166463800" target="_blank" class="btn-full btn-light" style="font-size: 12px; margin-top:20px;">🆘 Soporte Mariano</a>
+        <a href="https://wa.me/5491166463800" target="_blank" class="btn-soporte">🆘 Soporte Mariano</a>
     </div>
 
     <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
@@ -175,6 +182,7 @@
             document.getElementById('view-user').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
             document.getElementById('btnSwitch').classList.add('hidden');
+            
             document.getElementById('ed-org-name').value = ev.organiza || "";
             document.getElementById('ed-staff').value = ev.organizador_nombre || "";
             document.getElementById('ed-lug').value = ev.lugar || "";
@@ -230,7 +238,8 @@
 
     function render() {
         document.getElementById('txt-evento-name').innerText = (ev.organiza || "Cargando...").toUpperCase();
-        document.getElementById('txt-organizador').innerText = ev.organizador_nombre || "A confirmar";
+        document.getElementById('txt-organizador').innerText = ev.organizador_nombre ? "Organiza: " + ev.organizador_nombre : "Organizador a confirmar";
+        
         let fAmi = ev.fecha || 'A confirmar';
         if(ev.fecha) {
             const fO = new Date(ev.fecha + "T00:00:00");

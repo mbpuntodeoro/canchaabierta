@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscripción - Cancha Abierta</title>
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; }
         .container { max-width: 480px; margin: auto; }
@@ -14,7 +14,7 @@
         .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; margin: 5px 0; text-transform: uppercase; }
         .header span { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
 
-        /* HUB / CARTELERA */
+        /* CARTELERA */
         .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; }
         .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
         .hub-row { background: var(--card); padding: 18px; border-radius: 22px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); }
@@ -22,7 +22,7 @@
         .hub-main { flex: 1; min-width: 0; }
         .hub-title { font-size: 14px; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* EVENTO INDIVIDUAL */
+        /* FORMULARIO / CARD */
         .card { background: var(--card); padding: 28px; border-radius: 28px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); margin-bottom: 20px; }
         .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -34,6 +34,8 @@
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn-ghost { background: #f2f2f7; color: var(--text); box-shadow: none; border: 1px solid #e5e5e7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         
+        /* CAJA ROJA DE INSTRUCCIONES */
+        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; line-height: 1.4; }
         .msg-lleno { background: #fff; color: var(--danger); padding: 30px; border-radius: 22px; font-size: 18px; font-weight: 900; text-align: center; border: 2px solid #f2f2f7; }
         
         .hidden { display: none !important; }
@@ -43,7 +45,7 @@
 <body>
 <div class="container">
     <div id="view-suspended" class="hidden" style="padding: 40px 0;">
-        <div class="msg-lleno">🚫 INSCRIPCIONES SUSPENDIDAS<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">Contactá al organizador para más información.</span></div>
+        <div class="msg-lleno">🚫 INSCRIPCIONES SUSPENDIDAS<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">Contactá al organizador.</span></div>
     </div>
     
     <div id="view-hub" class="hidden">
@@ -69,14 +71,24 @@
         </div>
     </div>
 
-    <div id="view-success" class="card hidden" style="text-align:center;">
-        <h2 style="font-size:28px; font-weight:900;">¡Anotado!</h2>
-        <p style="font-size:14px; color:var(--sub);">Transferí para asegurar tu lugar:</p>
-        <div style="background:#f2f2f7; padding:20px; border-radius:20px; margin:20px 0;">
-            <span id="ex-alias" style="font-weight:800; color:var(--primary); font-size:18px;"></span>
+    <div class="card hidden" id="view-success">
+        <div style="text-align: center;">
+            <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+            <h2 style="font-size: 28px; font-weight: 900; margin-bottom:20px;">¡Estás anotado!</h2>
+            
+            <div class="msg-instrucciones">Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.</div>
+            
+            <div style="background: #f2f2f7; padding: 25px; border-radius: 24px; margin-bottom: 25px;">
+                <span style="font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 5px;">Importe a transferir:</span>
+                <span id="ex-monto" style="font-size: 38px; font-weight: 900; display: block; color: #000; margin-bottom: 15px;">$0</span>
+                
+                <span id="ex-alias" style="color: var(--primary); font-weight: 800; font-size: 18px; display: block; margin-bottom: 15px;">-</span>
+                <button onclick="copiarAlias()" style="background:#fff; color:var(--primary); border:1.5px solid #e5e5e7; padding:12px 20px; border-radius:14px; font-weight:800; cursor:pointer; width: 100%;">📋 Copiar Alias</button>
+            </div>
+            
+            <button class="btn-full" style="background:#34c759" onclick="enviarWa()">📲 Enviar comprobante</button>
+            <button class="btn-full" style="color:var(--sub); border:none; background:none; font-weight:700; margin-top: 15px;" onclick="location.reload()">VOLVER AL INICIO</button>
         </div>
-        <button class="btn-full" style="background:#34c759" onclick="enviarWa()">📲 Enviar comprobante</button>
-        <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; margin-top:20px; cursor:pointer;">VOLVER</button>
     </div>
 
     <div id="btn-admin-access" class="hidden" style="margin-top: 20px; padding: 0 10px;">
@@ -97,69 +109,46 @@
     const orgId = params.get('org'), currentId = params.get('id');
     let ev = {}, cuenta = {};
 
-    function fFec(f) { if (!f) return '-'; const ds=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${ds[dt.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
+    function fFec(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
+    // Arreglo función fecha rápida
+    const getF = (f) => { if(!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
 
     if (orgId) {
-        const linkAdmin = document.getElementById('link-admin');
-        if (linkAdmin) {
-            linkAdmin.href = `d.html?org=${orgId}`;
-            document.getElementById('btn-admin-access').classList.remove('hidden');
-        }
-
-        onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), (snap) => {
-            cuenta = snap.val() || { cuentaSuspendida: false, consumoActual: 0 };
-            if (cuenta.cuentaSuspendida === true) {
+        document.getElementById('link-admin').href = `d.html?org=${orgId}`;
+        document.getElementById('btn-admin-access').classList.remove('hidden');
+        onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), s => {
+            cuenta = s.val() || {};
+            if (cuenta.cuentaSuspendida) {
+                document.getElementById('view-suspended').classList.remove('hidden');
                 document.getElementById('view-hub').classList.add('hidden');
                 document.getElementById('view-event').classList.add('hidden');
                 document.getElementById('btn-admin-access').classList.add('hidden');
-                document.getElementById('view-suspended').classList.remove('hidden');
             }
         });
     }
 
     if (orgId && !currentId) {
         document.getElementById('view-hub').classList.remove('hidden');
-        onValue(ref(db, 'hubs/' + orgId), async (snap) => {
+        onValue(ref(db, 'hubs/' + orgId), async snap => {
             const data = snap.val() || {};
             document.getElementById('hub-name').innerText = (data.nombre || orgId).toUpperCase();
             const list = document.getElementById('hub-list'); list.innerHTML = "";
             let lastDate = "";
-            
-            const canchas = data.canchas || [];
-            let eventsData = [];
-            for (let id of canchas) {
+            let evs = [];
+            for (let id of (data.canchas || [])) {
                 const s = await get(ref(db, 'eventos/' + id));
-                if (s.exists()) {
-                    let d = s.val(); d.id = id;
-                    eventsData.push(d);
-                }
+                if (s.exists()) { let d = s.val(); d.id = id; evs.push(d); }
             }
-            eventsData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-
-            eventsData.forEach(d => {
-                if (d.fecha !== lastDate) {
-                    list.innerHTML += `<div class="day-header">${fFec(d.fecha)}</div>`;
-                    lastDate = d.fecha;
-                }
-                // FORMATO DE HORA: XX:XX A XX:XX HS
-                const hFull = `${d.hora} A ${d.horaFin || '--:--'} HS`;
-                // NOMBRE + CATEGORÍA
-                const tFull = `${d.organiza} - ${d.categorias || 'Todas'}`;
-
-                list.innerHTML += `
-                    <a href="?id=${d.id}&org=${orgId}" class="hub-row">
-                        <div class="hub-time">${hFull}</div>
-                        <div class="hub-main">
-                            <b class="hub-title">${tFull}</b>
-                            <small style="color:var(--sub)">📍 ${d.lugar}</small>
-                        </div>
-                    </a>`;
+            evs.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+            evs.forEach(d => {
+                if (d.fecha !== lastDate) { list.innerHTML += `<div class="day-header">${getF(d.fecha)}</div>`; lastDate = d.fecha; }
+                list.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${d.hora} A ${d.horaFin || '--'} HS</div><div class="hub-main"><b class="hub-title">${d.organiza} - ${d.categorias || ''}</b><small style="color:var(--sub)">📍 ${d.lugar}</small></div></a>`;
             });
         });
     }
 
     if (currentId) {
-        onValue(ref(db, 'eventos/' + currentId), async (snap) => {
+        onValue(ref(db, 'eventos/' + currentId), async snap => {
             ev = snap.val() || {};
             const ahora = new Date();
             const fechaFin = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
@@ -169,42 +158,29 @@
                 const confirmados = (ev.inscriptos || []).filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha');
                 const recaudado = confirmados.length * (ev.valor || 0);
                 await push(ref(db, 'facturacion/' + orgId + '/ingresos'), { fecha: ev.fecha, monto: recaudado, evento: ev.organiza, ts: Date.now() });
-
                 if (ahora > fPrueba) {
                     let cargo = (cuenta.costoCancha || 7000);
-                    if (!cuenta.abonoCobrado) {
-                        cargo += (cuenta.costoAbono || 25000);
-                        await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { abonoCobrado: true });
-                    }
+                    if (!cuenta.abonoCobrado) { cargo += (cuenta.costoAbono || 25000); await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { abonoCobrado: true }); }
                     await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { consumoActual: (cuenta.consumoActual || 0) + cargo });
                 }
                 await update(ref(db, 'eventos/' + currentId), { facturado: true });
-
                 if (ev.rrule && ev.rrule.includes('WEEKLY')) {
                     const prx = obtenerProximaFecha(ev.rrule);
-                    if (prx) {
-                        update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], facturado: false, inscripcionesCerradas: false });
-                        return;
-                    }
+                    if (prx) update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], facturado: false, inscripcionesCerradas: false });
                 }
             }
 
-            if (cuenta.cuentaSuspendida !== true) {
+            if (!cuenta.cuentaSuspendida) {
                 document.getElementById('view-event').classList.remove('hidden');
                 document.getElementById('txt-event-name').innerText = `${ev.organiza} - ${ev.categorias || ''}`;
-                document.getElementById('txt-fecha').innerText = fFec(ev.fecha);
-                document.getElementById('txt-hora').innerText = `${ev.hora} A ${ev.horaFin || '--:--'} HS`;
+                document.getElementById('txt-fecha').innerText = getF(ev.fecha);
+                document.getElementById('txt-hora').innerText = `${ev.hora} A ${ev.horaFin || '--'} HS`;
                 document.getElementById('txt-lugar').innerText = ev.lugar || "-";
                 document.getElementById('txt-valor').innerText = `$${(ev.valor || 0).toLocaleString()}`;
-                
-                const ocupados = (ev.inscriptos || []).length;
-                if (ocupados >= (ev.cupo || 0) || ev.inscripcionesCerradas || ev.suspendido) {
+                if ((ev.inscriptos || []).length >= (ev.cupo || 0) || ev.inscripcionesCerradas || ev.suspendido) {
                     document.getElementById('form-ins').classList.add('hidden');
                     document.getElementById('msg-cerrado').classList.remove('hidden');
                     if(ev.suspendido) document.getElementById('msg-cerrado').innerText = "🚫 CANCHA SUSPENDIDA";
-                } else {
-                    document.getElementById('form-ins').classList.remove('hidden');
-                    document.getElementById('msg-cerrado').classList.add('hidden');
                 }
             }
         });
@@ -212,16 +188,22 @@
 
     window.inscribirse = () => {
         const n = document.getElementById('in-nom').value.trim(), c = document.getElementById('in-cel').value.trim();
-        if (!n || !c) return alert("Por favor, completá tus datos.");
+        if (!n || !c) return alert("Completá tus datos");
         if (!ev.inscriptos) ev.inscriptos = [];
         ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
         set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => {
             document.getElementById('view-event').classList.add('hidden');
-            document.getElementById('view-success').classList.remove('hidden');
-            document.getElementById('ex-alias').innerText = ev.alias;
+            renderSuccess();
         });
     };
 
+    function renderSuccess() {
+        document.getElementById('view-success').classList.remove('hidden');
+        document.getElementById('ex-monto').innerText = `$${(ev.valor || 0).toLocaleString()}`;
+        document.getElementById('ex-alias').innerText = ev.alias || "-";
+    }
+
+    window.copiarAlias = () => { navigator.clipboard.writeText(ev.alias).then(() => alert("Alias copiado")); };
     window.enviarWa = () => window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola,%20me%20anoté%20a%20${ev.organiza}%20el%20día%20${ev.fecha}.%20Acá%20tengo%20el%20comprobante.`);
 
     function obtenerProximaFecha(rrule) {

@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Dashboard - Centro de Mandos</title>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; --cta: #FF9500; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; }
         * { box-sizing: border-box; transition: all 0.2s ease; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 600px; margin: auto; }
         
         h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
 
-        /* TARJETA ORGANIZADOR (VISTA CERRADA) */
+        /* TARJETA ORGANIZADOR */
         .org-card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.01); overflow: hidden; }
         .org-header-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .org-info-main b { font-size: 18px; text-transform: uppercase; letter-spacing: -0.5px; }
@@ -20,7 +20,7 @@
 
         .header-actions { display: flex; gap: 8px; align-items: center; }
 
-        /* DETALLE (VISTA ABIERTA) */
+        /* DETALLE EXPANDIBLE */
         .org-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f2f2f7; display: none; }
         .org-detail.active { display: block; animation: fadeIn 0.3s ease; }
 
@@ -37,9 +37,8 @@
         .btn-suspend { background: var(--warning); color: #000; }
         .btn-active { background: var(--success); color: white; }
         .btn-delete { background: #ffebeb; color: var(--danger); }
-        .btn-cta { background: var(--cta); color: white; }
 
-        /* HERRAMIENTAS DE LINK CORTO */
+        /* INPUTS LINKS */
         .link-tool { margin-top: 10px; border-top: 1px dotted #ddd; padding-top: 12px; }
         .input-short { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-size: 11px; margin-bottom: 8px; outline: none; background: #fff; }
         
@@ -47,9 +46,6 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 32px; width: 100%; max-width: 400px; }
-
-        /* CABALLO DE TROYA NARANJA */
-        .banner-sell { margin-top: 30px; padding: 24px; background: #fff; border-radius: 28px; text-align: center; border: 2px dashed var(--cta); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .hidden { display: none !important; }
@@ -65,16 +61,6 @@
     <button class="btn btn-dark" style="width:100%; padding:20px; border-radius:20px; margin-top:20px; font-size:15px;" onclick="abrirModal('org')">
         + Nuevo Organizador
     </button>
-
-    <div class="banner-sell">
-        <p style="font-size: 13px; font-weight: 700; margin-bottom: 16px; line-height: 1.4;">
-            ¿Tu Cancha Abierta es un caos de mensajes?<br>
-            <span style="color: var(--cta);">Pasala a piloto automático.</span>
-        </p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta" class="btn btn-cta" style="width:100%; padding:18px; border-radius:18px; text-decoration:none;">
-            Mariano, ayudame con mi cancha abierta 🎾
-        </a>
-    </div>
 </div>
 
 <div id="modal-nuevo" class="modal-overlay">
@@ -146,7 +132,7 @@
                             </div>
                         </div>
                         <div class="link-tool">
-                            <input id="link-${id}" class="input-short" placeholder="Pegar link corto (TinyURL/Bitly)..." value="${d.linkCorto || ''}">
+                            <input id="link-${id}" class="input-short" placeholder="Link corto (TinyURL/Bitly)..." value="${d.linkCorto || ''}">
                             <div style="display:flex; gap:5px;">
                                 <button class="btn btn-gray" style="flex:1; font-size:10px; padding:8px;" onclick="guardarLinkCorto('${id}')">💾 Guardar</button>
                                 <button class="btn btn-gray" style="flex:1; font-size:10px; padding:8px;" onclick="copiarLinkCorto('${id}')">📋 Copiar Link Corto</button>
@@ -159,33 +145,28 @@
         });
     });
 
-    // Lógica UI
     window.toggleOrg = (id) => {
         const detail = document.getElementById('detail-' + id);
         const btn = document.getElementById('btn-label-' + id);
         const isActive = detail.classList.contains('active');
-        
         document.querySelectorAll('.org-detail').forEach(d => d.classList.remove('active'));
         document.querySelectorAll('.header-actions .btn-outline[id^="btn-label"]').forEach(b => b.innerText = "Administrar");
-
         if (!isActive) {
             detail.classList.add('active');
             btn.innerText = "Cerrar";
         }
     };
 
-    // Lógica Firebase
     window.toggleSuspender = (id, estado) => update(ref(db, 'eventos/' + id), { suspendido: !estado });
     
     window.guardarLinkCorto = (id) => {
         const url = document.getElementById('link-' + id).value.trim();
-        update(ref(db, 'eventos/' + id), { linkCorto: url }).then(() => alert("Link corto guardado con éxito"));
+        update(ref(db, 'eventos/' + id), { linkCorto: url }).then(() => alert("Link corto guardado"));
     };
 
     window.copiarLinkCorto = (id) => {
         const url = document.getElementById('link-' + id).value;
-        if(url) navigator.clipboard.writeText(url).then(() => alert("Link corto copiado al portapapeles!"));
-        else alert("No hay un link corto guardado para esta cancha.");
+        if(url) navigator.clipboard.writeText(url).then(() => alert("Link corto copiado!"));
     };
 
     window.copiar = (txt, msg) => navigator.clipboard.writeText(txt).then(() => alert(msg));
@@ -218,7 +199,7 @@
         const id = document.getElementById('in-org-id').value.trim().toLowerCase().replace(/\s+/g, '-');
         const eventName = document.getElementById('in-event-name').value;
         if(!id || !eventName) return alert("Faltan datos");
-        const eventId = `${id}-principal`;
+        const eventId = `${id}-1`;
         await set(ref(db, 'eventos/' + eventId), { organiza: eventName, lugar: "Sede", fecha: "2026-04-20", hora: "20:00", horaFin: "22:00", valor: 0, password: "1234" });
         await set(ref(db, 'hubs/' + id), [eventId]);
         cerrarModal();
@@ -237,7 +218,7 @@
     };
 
     window.eliminarCancha = async (orgId, eventId) => {
-        if(!confirm("¿Estás seguro de borrar esta cancha? Se perderán todos los datos de inscriptos.")) return;
+        if(!confirm("¿Borrar cancha?")) return;
         const snap = await get(ref(db, 'hubs/' + orgId));
         const ids = snap.val().filter(id => id !== eventId);
         await set(ref(db, 'hubs/' + orgId), ids);
@@ -245,7 +226,7 @@
     };
 
     window.eliminarOrganizador = async (orgId) => {
-        if(!confirm("¿Borrar TODO el organizador? Esto quitará el acceso a su cartelera.")) return;
+        if(!confirm("¿Borrar todo el cliente?")) return;
         await remove(ref(db, 'hubs/' + orgId));
     };
 </script>

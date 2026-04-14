@@ -102,21 +102,37 @@
                 "El abono se paga con las señas de menos de 1 jugador por turno. <span style="color:var(--primary)">Tu tiempo vale más.</span>"
             </p>
         </div>
-        <p style="text-align:center; font-size:10px; color:var(--sub); margin:20px 0; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Mariano Blumenfeld - Gestión Deportiva</p>
     </div>
 </div>
 
 <div id="modal-cancha" class="modal hidden">
     <div class="modal-content">
         <h2 id="edit-title" style="margin:0 0 15px 0; letter-spacing:-1px;">Gestionar</h2>
-        <label>Nombre Cancha</label><input id="ed-organiza" class="input-std">
-        <label>Lugar</label><input id="ed-lugar" class="input-std">
+        
+        <label>Nombre Cancha</label>
+        <input id="ed-organiza" class="input-std">
+        
+        <label>Lugar</label>
+        <input id="ed-lugar" class="input-std">
+        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <div><label>Fecha</label><input id="ed-fecha" class="input-std" type="date"></div>
-            <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
+            <div>
+                <label>Horarios</label>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <input id="ed-hora" class="input-std" type="time" style="padding:10px; font-size:13px;">
+                    <span style="font-size:10px; font-weight:900;">A</span>
+                    <input id="ed-hora-fin" class="input-std" type="time" style="padding:10px; font-size:13px;">
+                </div>
+            </div>
         </div>
-        <label>Categorías</label><input id="ed-cat" class="input-std">
-        <label>Tipo Evento</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Única vez</option><option value="WEEKLY">Semanal</option></select>
+
+        <label>Categorías</label>
+        <input id="ed-cat" class="input-std" placeholder="Ej: 7ma y 6ta">
+
+        <label>Tipo Evento</label>
+        <select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Única vez</option><option value="WEEKLY">Semanal</option></select>
+        
         <div id="box-recurrencia" class="hidden">
             <label>Días</label>
             <div class="days-grid">
@@ -129,15 +145,24 @@
                 <input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label>
             </div>
         </div>
+
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"></div>
-            <div><label>Cupos</label><input id="ed-cupo" class="input-std" type="number"></div>
+            <div><label>Precio por Jugador ($)</label><input id="ed-valor" class="input-std" type="number"></div>
+            <div><label>Cupos Totales</label><input id="ed-cupo" class="input-std" type="number"></div>
         </div>
-        <label>Alias MP</label><input id="ed-alias" class="input-std">
-        <label>WhatsApp</label><input id="ed-whatsapp" class="input-std">
-        <label>Estado</label><select id="ed-status" class="input-std"><option value="activo">🟢 Activa</option><option value="cerrado">🔒 Cerrada</option><option value="suspendido">🚫 Suspendida</option></select>
+
+        <label>Alias Mercado Pago</label>
+        <input id="ed-alias" class="input-std">
+
+        <label>WhatsApp de contacto</label>
+        <input id="ed-whatsapp" class="input-std">
+
+        <label>Estado</label>
+        <select id="ed-status" class="input-std"><option value="activo">🟢 Activa</option><option value="cerrado">🔒 Cerrada</option><option value="suspendido">🚫 Suspendida</option></select>
+
         <h4 style="margin:20px 0 10px 5px; font-size:11px; text-transform:uppercase;">Jugadores (<span id="count-players">0</span>)</h4>
         <div id="players-list"></div>
+
         <button class="btn-full" onclick="guardarCancha()" style="margin-top:20px;">💾 Guardar Cambios</button>
         <button class="btn-full" onclick="cerrarModal()" style="background:#f2f2f7; color:var(--text); margin-top:10px;">Cancelar</button>
     </div>
@@ -176,16 +201,12 @@
             const d = snap.val() || {}; const c = d.cuenta || {};
             const hoy = new Date(); const fC = new Date((c.fechaFinCiclo || "2000-01-01") + "T23:59:59");
             const fP = new Date((c.fechaFinPrueba || "2000-01-01") + "T23:59:59");
-            
-            // Cálculos
             let totalRec = 0; Object.values(d.ingresos || {}).forEach(i => totalRec += i.monto);
             document.getElementById('txt-ingresos').innerText = '$' + totalRec.toLocaleString();
             document.getElementById('txt-costo').innerText = '$' + (c.consumoActual || 0).toLocaleString();
             document.getElementById('txt-limite').innerText = 'LÍMITE: $' + (c.limiteCredito || 30000).toLocaleString();
             document.getElementById('bar-fill').style.width = Math.min((c.consumoActual / (c.limiteCredito || 30000) * 100), 100) + '%';
             document.getElementById('txt-ratio').innerText = totalRec > 0 ? (c.consumoActual / totalRec * 100).toFixed(1) + '% costo' : '0% costo';
-
-            // Plan
             const dot = document.getElementById('plan-dot'), st = document.getElementById('plan-txt-status'), msg = document.getElementById('plan-msg-main');
             if (hoy < fP) { dot.className="dot trial-dot"; st.innerText="Prueba Gratis"; msg.innerText=`Vence en ${Math.ceil((fP-hoy)/(1000*60*60*24))} días.`; }
             else if (hoy <= fC) { dot.className="dot active-dot"; st.innerText="Plan Activo"; msg.innerText=`Al día hasta el ${c.fechaFinCiclo.split('-').reverse().join('/')}.`; }
@@ -203,7 +224,7 @@
             evs.forEach(d => {
                 const div = document.createElement('div'); div.className = "cancha-card";
                 const ico = d.suspendido ? '🚫' : d.inscripcionesCerradas ? '🔒' : '🎾';
-                div.innerHTML = `<div class="cancha-info"><b>${ico} ${d.organiza} - ${d.lugar}</b><span>${fFec(d.fecha)} - ${d.hora} HS | ${(d.inscriptos||[]).length}/${d.cupo}</span></div><button class="btn-manage" onclick="abrirCancha('${d.id}')">Gestionar</button>`;
+                div.innerHTML = `<div class="cancha-info"><b>${ico} ${d.organiza} - ${d.lugar}</b><span>${fFec(d.fecha)} - ${d.hora} A ${d.horaFin || '--:--'} HS | ${(d.inscriptos||[]).length}/${d.cupo}</span></div><button class="btn-manage" onclick="abrirCancha('${d.id}')">Gestionar</button>`;
                 list.appendChild(div);
             });
         });
@@ -220,6 +241,7 @@
         document.getElementById('ed-lugar').value = cEv.lugar || "";
         document.getElementById('ed-fecha').value = cEv.fecha || "";
         document.getElementById('ed-hora').value = cEv.hora || "";
+        document.getElementById('ed-hora-fin').value = cEv.horaFin || "";
         document.getElementById('ed-cat').value = cEv.categorias || "";
         document.getElementById('ed-valor').value = cEv.valor || 0;
         document.getElementById('ed-cupo').value = cEv.cupo || 0;
@@ -250,7 +272,7 @@
         }
         const up = {
             organiza: document.getElementById('ed-organiza').value, lugar: document.getElementById('ed-lugar').value,
-            fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value,
+            fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value,
             categorias: document.getElementById('ed-cat').value, valor: parseInt(document.getElementById('ed-valor').value),
             cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value,
             celuOrganizador: document.getElementById('ed-whatsapp').value, suspendido: st === 'suspendido',

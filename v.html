@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscripción - Cancha Abierta</title>
+    <title>Cancha Abierta - Plataforma de Inscripción</title>
     <style>
         :root {
             --primary: #007aff;
@@ -22,303 +22,232 @@
         
         .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); position: relative; }
         
-        /* Header */
-        .header-main { text-align: center; margin-bottom: 28px; }
-        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); margin: 0; text-transform: uppercase; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .event-title { font-size: 26px; font-weight: 900; color: var(--text); margin-top: 8px; display: block; letter-spacing: -1px; line-height: 1.1; }
-        .organizer-subtitle { font-size: 14px; color: var(--primary); font-weight: 600; margin-top: 6px; display: block; }
+        /* Cartelera (Hub) */
+        .hub-title { font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 20px; letter-spacing: -1px; }
+        .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; }
+        .hub-item:active { transform: scale(0.98); background: #f9f9fb; }
+        .hub-item .date { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .hub-item .name { font-size: 18px; font-weight: 800; color: var(--text); }
+        .hub-item .meta { font-size: 12px; color: var(--sub); font-weight: 600; }
 
-        /* Info Grid */
+        /* Estilos de siempre */
+        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; }
+        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; }
+        
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .info-item span { font-weight: 600; color: var(--text); text-align: right; }
-        .separator { height: 1px; background: #e5e5ea; margin: 12px 0; border: none; }
-
-        /* Formulario */
-        label { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; display: block; margin-bottom: 6px; margin-left: 4px; letter-spacing: 0.5px; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; background: #fff; outline: none; transition: 0.2s; }
-        .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
+        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
         
-        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 15px; display: block; text-align: center; text-decoration: none; }
-        .btn-blue { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
-        .btn-wsp { background: var(--success); color: white; margin-top: 20px; }
-        .btn-light { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); margin-top: 10px; }
-        .btn-dark { background: #1c1c1e; color: white; margin-top: 40px; font-size: 13px; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; }
+        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-dark { background: #1c1c1e; color: white; margin-top: 20px; font-size: 12px; }
         
-        .btn-copy-alias { background: #e1f0ff; color: var(--primary); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; border: none; margin-top: 12px; cursor: pointer; display: inline-block; }
+        /* Banner de Venta (Caballo de Troya) */
+        .banner-sell { margin-top: 40px; padding: 20px; background: #fff; border-radius: 22px; text-align: center; border: 2px dashed var(--primary); }
+        .banner-sell p { font-size: 13px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
 
-        /* Stats y Lista */
-        .stats-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: #fff; border-radius: 14px; border: 1px solid #efefef; overflow: hidden; }
-        .stats-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
-        .stat-val { font-weight: 700; float: right; }
+        .hidden { display: none !important; }
+        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; }
 
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; width: 100%; gap: 10px; }
-        .player-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .player-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .player-phone { font-size: 11px; color: var(--sub); }
-
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; text-align: center; border: none; text-transform: uppercase; cursor: pointer; flex-shrink: 0; line-height: 32px; transition: 0.2s; }
+        /* Admin Styles */
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
+        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); }
         .reservado { background: var(--warning); color: #000; }
         .pendiente { background: var(--danger); }
-
-        .btn-soporte { background: #f2f2f7; color: var(--primary); font-size: 12px; margin-top: 30px; border-radius: 14px; padding: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-weight: 700; cursor: pointer; border: none; }
-
-        .hidden { display: none !important; }
-        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card hidden" id="view-expired">
-        <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 50px; margin-bottom: 20px;">🏟️</div>
-            <h2 style="margin: 0; font-size: 24px; font-weight: 900; line-height: 1.1;">NO HAY EVENTOS DISPONIBLES</h2>
-            <p style="color: var(--sub); margin-top: 15px; font-size: 14px;">Las inscripciones han finalizado. Consultá próximas fechas.</p>
-        </div>
+    
+    <div id="view-hub" class="hidden">
+        <div class="header-brand">🎾 CANCHAS ABIERTAS</div>
+        <h1 id="hub-org-name" class="hub-title">Cargando cartelera...</h1>
+        <div id="hub-list"></div>
     </div>
 
-    <div id="main-content">
-        <div class="card" id="view-user">
-            <div class="header-main">
-                <div class="header-brand">🎾 INSCRIPCIÓN CANCHA ABIERTA</div>
-                <span id="txt-evento-name" class="event-title">...</span>
-                <span id="txt-organizador" class="organizer-subtitle">...</span>
-            </div>
+    <div id="view-event" class="hidden">
+        <div class="card">
+            <div class="header-brand">🎾 INSCRIPCIÓN</div>
+            <span id="txt-event-name" class="event-title">...</span>
+            <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
 
             <div class="info-grid">
                 <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
                 <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
                 <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
-                <hr class="separator">
-                <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 16px;">$0</span></div>
-                <div class="info-item"><b>🏦 Alias MP</b> <span id="txt-alias" style="color: var(--danger); font-size: 14px;">-</span></div>
+                <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div>
             </div>
 
             <div id="form-container">
-                <label>Nombre y Apellido</label><input id="in-nom" class="input-std" placeholder="Ej: Juan Perez">
-                <label>WhatsApp</label><input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
+                <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
+                <input id="in-cel" class="input-std" placeholder="WhatsApp (Ej: 1123456789)">
                 <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
             </div>
             <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
         </div>
-
-        <div class="card hidden" id="view-success">
-            <div style="text-align: center; padding: 10px 0;">
-                <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-                <h2 style="margin: 0; font-size: 22px; font-weight: 800;">¡Anotado correctamente!</h2>
-                <p style="color: var(--sub); margin: 8px 0 20px 0; font-size: 15px;">Transferí para asegurar tu lugar:</p>
-                
-                <div style="background: #f8f9fb; padding: 24px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 24px;">
-                    <span id="ex-monto" style="font-size: 36px; font-weight: 900; color: var(--text); display: block;">$0</span>
-                    <div style="height: 1px; background: #eee; margin: 15px auto; width: 60%;"></div>
-                    <span id="ex-alias" style="font-size: 18px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px;">-</span>
-                    <br>
-                    <button class="btn-copy-alias" onclick="copiarAlias()">📋 Copiar Alias</button>
-                </div>
-
-                <button class="btn-full btn-wsp" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-                <button class="btn-full btn-light" onclick="location.reload()">Volver al inicio</button>
-            </div>
-        </div>
-
-        <div class="card hidden" id="view-admin">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin:0; font-size: 18px;">Configuración</h2>
-                <button onclick="location.reload()" style="background: #f2f2f7; border:none; padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor:pointer;">Cerrar</button>
-            </div>
-            <label>Tipo de Evento</label>
-            <select id="ed-rec" class="input-std" style="height: 50px; background: #fff;">
-                <option value="unico">Evento Único</option>
-                <option value="semanal">Recurrente (Cada 7 días)</option>
-            </select>
-            <label>Nombre del Evento</label><input id="ed-org-name" class="input-std">
-            <label>Organizador</label><input id="ed-staff" class="input-std">
-            <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
-            <label>Fecha</label><input id="ed-fec" class="input-std" type="date">
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div>
-                <div style="flex: 1;"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div>
-            </div>
-            <label>Lugar</label><input id="ed-lug" class="input-std">
-            <label>Valor ($)</label><input id="ed-val" class="input-std" type="number">
-            <label>Alias MP</label><input id="ed-ali" class="input-std">
-            <label>Cupos</label><input id="ed-cup" class="input-std" type="number">
-            <label>Clave Admin</label><input id="ed-pass" class="input-std" type="password">
-            <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
-            <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
-            <table class="stats-table">
-                <tr><td>🎾 Cupos <span id="st-cupo" class="stat-val">-</span></td></tr>
-                <tr><td>✅ Libres <span id="st-lib" class="stat-val" style="color: var(--success);">-</span></td></tr>
-                <tr><td>💸 Pagaron <span id="st-pag" class="stat-val">-</span></td></tr>
-                <tr><td>🤝 Paga en cancha <span id="st-res" class="stat-val">-</span></td></tr>
-                <tr><td>⏳ Pendientes <span id="st-pend" class="stat-val">-</span></td></tr>
-            </table>
-            <div id="lista-admin" style="margin-top: 20px;"></div>
-            <button class="btn-soporte" onclick="window.open('https://wa.me/5491166463800')">🆘 Soporte Mariano</button>
-        </div>
-
-        <button id="btnSwitch" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ PANEL ORGANIZADOR</button>
+        <button class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ GESTIONAR ESTA CANCHA</button>
     </div>
+
+    <div class="card hidden" id="view-success">
+        <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 50px;">✅</div>
+            <h2 style="font-weight: 800;">¡Anotado!</h2>
+            <p style="color: var(--sub); font-size: 14px;">Transferí para asegurar tu lugar:</p>
+            <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin: 20px 0;">
+                <span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span>
+                <span id="ex-alias" style="color: var(--primary); font-weight: 700;">alias.mp</span><br><br>
+                <button class="btn-copy-alias" style="background:#e1f0ff; color:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:700;" onclick="copiarAlias()">📋 Copiar Alias</button>
+            </div>
+            <button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
+            <button class="btn-full" style="margin-top:10px; color:var(--sub);" onclick="location.reload()">Volver</button>
+        </div>
+    </div>
+
+    <div class="card hidden" id="view-admin">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0; font-size: 18px;">Configuración</h2>
+            <button onclick="location.reload()" style="background:#eee; border:none; padding:8px 12px; border-radius:10px; font-size:11px;">Cerrar</button>
+        </div>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">CATEGORÍAS (Ej: C5/C6)</label>
+        <input id="ed-cat" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL TURNO</label>
+        <input id="ed-org-name" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">FECHA</label>
+        <input id="ed-fec" class="input-std" type="date">
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;"><label style="font-size:10px; font-weight:800;">INICIO</label><input id="ed-hor" class="input-std" type="time"></div>
+            <div style="flex: 1;"><label style="font-size:10px; font-weight:800;">FIN</label><input id="ed-hor-fin" class="input-std" type="time"></div>
+        </div>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">CUPOS DISPONIBLES</label>
+        <input id="ed-cup" class="input-std" type="number">
+        <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
+        <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
+        
+        <div id="lista-admin" style="margin-top: 30px;"></div>
+    </div>
+
+    <div class="banner-sell">
+        <p>¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--primary);">Pasala a piloto automático y recuperá tu tiempo.</span></p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta%20y%20quiero%20cotizar" class="btn-full btn-blue" style="font-size: 12px;">SISTEMATIZAR MI ORGANIZACIÓN 🚀</a>
+    </div>
+
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const params = new URLSearchParams(window.location.search);
-    const id = params.get('id') || 'demo';
-    const evRef = ref(db, 'eventos/' + id);
+    
+    // LOGICA MULTI-CANCHA
+    const orgId = params.get('org'); // Link Madre
+    const eventId = params.get('id') || (orgId ? null : 'demo'); // Link Directo
+    
+    let currentId = eventId;
     let ev = {};
 
-    onValue(evRef, (snap) => {
-        ev = snap.val() || {};
-        if (!ev.inscriptos) ev.inscriptos = [];
-        if (ev.fecha && ev.horaFin) {
-            const ahora = new Date();
-            const fechaFin = new Date(ev.fecha + "T" + ev.horaFin);
-            if (ahora > fechaFin) {
-                if (ev.recurrencia === 'semanal') {
-                    const nuevaFecha = new Date(fechaFin);
-                    nuevaFecha.setDate(nuevaFecha.getDate() + 7);
-                    update(evRef, { fecha: nuevaFecha.toISOString().split('T')[0], inscriptos: [], bloqueado: false });
-                    return;
-                } else {
-                    document.getElementById('main-content').classList.add('hidden');
-                    document.getElementById('view-expired').classList.remove('hidden');
-                }
-            }
-        }
-        render();
-    });
+    if (orgId && !eventId) {
+        // MODO CARTELERA
+        document.getElementById('view-hub').classList.remove('hidden');
+        document.getElementById('hub-org-name').innerText = orgId.toUpperCase();
+        onValue(ref(db, 'hubs/' + orgId), (snap) => {
+            const list = snap.val() || [];
+            let html = "";
+            list.forEach(id => {
+                get(ref(db, 'eventos/' + id)).then(s => {
+                    const data = s.val();
+                    const item = document.createElement('a');
+                    item.className = 'hub-item';
+                    item.href = `?id=${id}&org=${orgId}`;
+                    item.innerHTML = `
+                        <span class="date">${data.fecha || 'A confirmar'}</span>
+                        <span class="name">${data.organiza}</span>
+                        <span class="meta">${data.lugar} | ${data.hora} HS</span>
+                    `;
+                    document.getElementById('hub-list').appendChild(item);
+                });
+            });
+        });
+    } else {
+        // MODO EVENTO INDIVIDUAL
+        document.getElementById('view-event').classList.remove('hidden');
+        onValue(ref(db, 'eventos/' + currentId), (snap) => {
+            ev = snap.val() || {};
+            render();
+        });
+    }
 
-    window.copiarAlias = () => {
-        navigator.clipboard.writeText(ev.alias).then(() => alert("¡Alias copiado!"));
-    };
-
-    window.abrirAdmin = () => {
-        const p = prompt("Clave:");
-        if (p === ev.password || p === "Cancha2026") {
-            // LIMPIEZA DE VISTAS PARA QUE NO SE AMONTONEN
-            document.getElementById('view-user').classList.add('hidden');
-            document.getElementById('view-success').classList.add('hidden');
-            
-            document.getElementById('view-admin').classList.remove('hidden');
-            document.getElementById('btnSwitch').classList.add('hidden');
-            
-            document.getElementById('ed-rec').value = ev.recurrencia || "unico";
-            document.getElementById('ed-org-name').value = ev.organiza || "";
-            document.getElementById('ed-staff').value = ev.organizador_nombre || "";
-            document.getElementById('ed-lug').value = ev.lugar || "";
-            document.getElementById('ed-fec').value = ev.fecha || "";
-            document.getElementById('ed-hor').value = ev.hora || "";
-            document.getElementById('ed-hor-fin').value = ev.horaFin || "";
-            document.getElementById('ed-val').value = ev.valor || 0;
-            document.getElementById('ed-ali').value = ev.alias || "";
-            document.getElementById('ed-cup').value = ev.cupo || 0;
-            document.getElementById('ed-celu').value = ev.celuOrganizador || "";
-            document.getElementById('ed-pass').value = ev.password || "";
-        }
-    };
-
-    window.guardar = () => {
-        update(evRef, {
-            recurrencia: document.getElementById('ed-rec').value,
-            organiza: document.getElementById('ed-org-name').value,
-            organizador_nombre: document.getElementById('ed-staff').value,
-            lugar: document.getElementById('ed-lug').value,
-            fecha: document.getElementById('ed-fec').value,
-            hora: document.getElementById('ed-hor').value,
-            horaFin: document.getElementById('ed-hor-fin').value,
-            valor: parseInt(document.getElementById('ed-val').value) || 0,
-            alias: document.getElementById('ed-ali').value,
-            cupo: parseInt(document.getElementById('ed-cup').value) || 0,
-            celuOrganizador: document.getElementById('ed-celu').value.replace(/\D/g,''),
-            password: document.getElementById('ed-pass').value
-        }).then(() => alert("Guardado"));
-    };
-
+    // FUNCIONES DE SIEMPRE (Inscribirse, Guardar, etc.)
     window.inscribirse = () => {
         const n = document.getElementById('in-nom').value.trim();
         const c = document.getElementById('in-cel').value.trim();
         if(!n || !c) return alert("Faltan datos");
-        ev.inscriptos.push({ id: Date.now(), statusTime: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
-        set(ref(db, 'eventos/'+id+'/inscriptos'), ev.inscriptos).then(() => {
-            document.getElementById('view-user').classList.add('hidden');
+        if(!ev.inscriptos) ev.inscriptos = [];
+        ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
+        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => {
+            document.getElementById('view-event').classList.add('hidden');
             document.getElementById('view-success').classList.remove('hidden');
         });
     };
 
-    window.cambiar = (originalId) => {
-        const idx = ev.inscriptos.findIndex(x => x.id === originalId);
-        const ciclos = ["pendiente", "reservado", "pagado"];
-        ev.inscriptos[idx].estado = ciclos[(ciclos.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
-        ev.inscriptos[idx].statusTime = Date.now(); 
-        set(ref(db, 'eventos/'+id+'/inscriptos'), ev.inscriptos);
+    window.abrirAdmin = () => {
+        const p = prompt("Clave:");
+        if (p === "1234") {
+            document.getElementById('view-event').classList.add('hidden');
+            document.getElementById('view-admin').classList.remove('hidden');
+            document.getElementById('ed-cat').value = ev.categorias || "";
+            document.getElementById('ed-org-name').value = ev.organiza || "";
+            document.getElementById('ed-fec').value = ev.fecha || "";
+            document.getElementById('ed-hor').value = ev.hora || "";
+            document.getElementById('ed-hor-fin').value = ev.horaFin || "";
+            document.getElementById('ed-cup').value = ev.cupo || 0;
+        }
     };
 
-    window.toggleBloqueo = () => update(evRef, { bloqueado: !ev.bloqueado });
+    window.guardar = () => {
+        update(ref(db, 'eventos/'+currentId), {
+            categorias: document.getElementById('ed-cat').value,
+            organiza: document.getElementById('ed-org-name').value,
+            fecha: document.getElementById('ed-fec').value,
+            hora: document.getElementById('ed-hor').value,
+            horaFin: document.getElementById('ed-hor-fin').value,
+            cupo: parseInt(document.getElementById('ed-cup').value) || 0
+        }).then(() => alert("Guardado"));
+    };
 
-    window.enviarWhatsapp = () => {
-        window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola! Envío comprobante de pago de $${ev.valor}`);
+    window.cambiar = (oid) => {
+        const idx = ev.inscriptos.findIndex(x => x.id === oid);
+        const estados = ["pendiente", "reservado", "pagado"];
+        ev.inscriptos[idx].estado = estados[(estados.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
+        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos);
     };
 
     function render() {
-        document.getElementById('txt-evento-name').innerText = (ev.organiza || "Cargando...").toUpperCase();
-        document.getElementById('txt-organizador').innerText = ev.organizador_nombre ? "Organiza: " + ev.organizador_nombre : "A confirmar";
-        let fAmi = ev.fecha || 'A confirmar';
-        if(ev.fecha) {
-            const fO = new Date(ev.fecha + "T00:00:00");
-            fAmi = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(fO);
-        }
-        document.getElementById('txt-fecha').innerText = fAmi.toUpperCase();
-        document.getElementById('txt-hora').innerText = `DE ${ev.hora || '--:--'} HS A ${ev.horaFin || '--:--'} HS`;
-        document.getElementById('txt-lugar').innerText = ev.lugar || 'A confirmar';
-        document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString();
-        document.getElementById('txt-alias').innerText = ev.alias || '-';
-        document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0).toLocaleString();
+        document.getElementById('txt-event-name').innerText = (ev.organiza || "Cargando...").toUpperCase();
+        document.getElementById('txt-cat').innerText = ev.categorias || "TODAS LAS CATEGORÍAS";
+        document.getElementById('txt-fecha').innerText = ev.fecha || '-';
+        document.getElementById('txt-hora').innerText = `DE ${ev.hora || '--'} A ${ev.horaFin || '--'} HS`;
+        document.getElementById('txt-lugar').innerText = ev.lugar || '-';
+        document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0);
+        document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0);
         document.getElementById('ex-alias').innerText = ev.alias || '-';
 
-        const bLock = document.getElementById('btnLock');
-        bLock.innerText = ev.bloqueado ? "🔓 ABRIR INSCRIPCIONES" : "🔒 CERRAR INSCRIPCIONES";
-        bLock.style.background = ev.bloqueado ? "var(--success)" : "var(--danger)";
-        document.getElementById('form-container').className = ev.bloqueado ? "hidden" : "";
-        document.getElementById('msg-cerrado').className = ev.bloqueado ? "" : "hidden";
-
-        const ins = ev.inscriptos || [];
-        const pag = ins.filter(x => x.estado === 'pagado').length;
-        const res = ins.filter(x => x.estado === 'reservado').length;
-        const pen = ins.filter(x => x.estado === 'pendiente').length;
-        document.getElementById('st-cupo').innerText = ev.cupo || 0;
-        document.getElementById('st-lib').innerText = (ev.cupo || 0) - (pag + res);
-        document.getElementById('st-pag').innerText = pag;
-        document.getElementById('st-res').innerText = res;
-        document.getElementById('st-pend').innerText = pen;
-
-        const weight = { 'pagado': 1, 'reservado': 2, 'pendiente': 3 };
-        const listaOrdenada = [...ins].sort((a, b) => {
-            if (weight[a.estado] !== weight[b.estado]) return weight[a.estado] - weight[b.estado];
-            return (a.statusTime || a.id) - (b.statusTime || b.id);
-        });
-
         let html = "";
-        listaOrdenada.forEach((p) => {
-            const label = p.estado === 'reservado' ? 'PAGA EN CANCHA' : p.estado.toUpperCase();
+        (ev.inscriptos || []).forEach(p => {
+            const lbl = p.estado === 'reservado' ? 'PAGA EN CANCHA' : p.estado.toUpperCase();
             html += `<div class="admin-item">
-                <div class="player-info">
-                    <span class="player-name">${p.nombre}</span>
-                    <span class="player-phone">${p.celular}</span>
-                </div>
-                <button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${label}</button>
+                <div class="player-info"><span class="player-name"><b>${p.nombre}</b></span></div>
+                <button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${lbl}</button>
             </div>`;
         });
-        document.getElementById('lista-admin').innerHTML = html || "<p style='text-align:center; padding:20px; color:#999; font-size:12px;'>No hay inscriptos aún</p>";
+        document.getElementById('lista-admin').innerHTML = html;
     }
 </script>
 </body>

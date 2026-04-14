@@ -23,15 +23,21 @@
         .btn-add { background: #1c1c1e; color: white; width: 100%; margin-top: 20px; padding: 15px; border-radius: 15px; font-weight: 700; border: none; cursor: pointer; }
         .btn-save { background: var(--success); color: white; width: 100%; padding: 15px; border-radius: 12px; font-weight: 700; border: none; margin-top: 10px; }
 
-        .input-std { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 14px; }
-        .hidden { display: none; }
+        .input-std { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 14px; outline: none; }
+        
         .event-list { margin-top: 15px; border-top: 1px solid #f2f2f7; padding-top: 15px; }
         .event-item { font-size: 13px; padding: 8px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #f9f9fb; }
         .event-item a { color: var(--primary); text-decoration: none; font-weight: 600; }
-        
-        /* Modal simple */
-        #modal-nuevo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; }
+
+        /* MODAL CORREGIDO */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); display: none; /* Invisible por defecto */
+            align-items: center; justify-content: center; padding: 20px; z-index: 100; 
+        }
+        .modal-overlay.active { display: flex; } /* Se muestra solo con esta clase */
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -44,12 +50,13 @@
 
     <div id="org-list">Cargando organizadores...</div>
 
-    <button class="btn-add" onclick="mostrarModal()">+ Nuevo Organizador</button>
+    <button class="btn-add" onclick="abrirModal()">+ Nuevo Organizador</button>
 </div>
 
-<div id="modal-nuevo" class="hidden">
+<div id="modal-nuevo" class="modal-overlay">
     <div class="modal-content">
         <h2 style="margin-top:0; letter-spacing:-1px;">Nuevo Cliente</h2>
+        
         <label style="font-size:10px; font-weight:800; color:var(--sub);">ID DEL ORGANIZADOR (PARA EL LINK)</label>
         <input id="new-org-id" class="input-std" placeholder="Ej: wini-padel">
         
@@ -60,13 +67,13 @@
         <input id="new-organizador" class="input-std" placeholder="Ej: Wini">
 
         <button class="btn-save" onclick="crearOrganizador()">🚀 Crear y Activar</button>
-        <button class="btn" onclick="mostrarModal()" style="width:100%; background:none; color:var(--sub); margin-top:10px;">Cancelar</button>
+        <button class="btn" onclick="cerrarModal()" style="width:100%; background:none; color:var(--sub); margin-top:10px;">Cancelar</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
@@ -97,7 +104,6 @@
             `;
             container.appendChild(card);
             
-            // Cargar detalle de eventos
             events.forEach(id => {
                 get(ref(db, 'eventos/' + id)).then(s => {
                     const d = s.val();
@@ -113,7 +119,19 @@
         });
     });
 
-    // 2. Lógica para crear Organizador Nuevo
+    // 2. Funciones del Modal Corregidas
+    window.abrirModal = () => {
+        document.getElementById('modal-nuevo').classList.add('active');
+    };
+
+    window.cerrarModal = () => {
+        document.getElementById('modal-nuevo').classList.remove('active');
+        // Limpiar inputs al cerrar
+        document.getElementById('new-org-id').value = "";
+        document.getElementById('new-event-name').value = "";
+        document.getElementById('new-organizador').value = "";
+    };
+
     window.crearOrganizador = async () => {
         const orgId = document.getElementById('new-org-id').value.trim().toLowerCase().replace(/\s+/g, '-');
         const eventName = document.getElementById('new-event-name').value.trim();
@@ -122,38 +140,24 @@
         if(!orgId || !eventName || !organizador) return alert("Completá todos los campos");
 
         const eventId = `${orgId}-principal`;
-
-        // Crear el evento inicial
         const nuevoEvento = {
             organiza: eventName,
             organizador: organizador,
             lugar: "A confirmar",
             fecha: "2026-01-01",
-            hora: "20:00",
-            horaFin: "22:00",
-            valor: 0,
-            alias: "tu.alias.mp",
-            celuOrganizador: "11",
-            categorias: "A definir",
-            password: "1234",
-            inscriptos: []
+            hora: "20:00", horaFin: "22:00",
+            valor: 0, alias: "tu.alias", celuOrganizador: "11",
+            categorias: "A definir", password: "1234", inscriptos: []
         };
 
         try {
-            // Guardar Evento
             await set(ref(db, 'eventos/' + eventId), nuevoEvento);
-            // Guardar Hub (vínculo)
             await set(ref(db, 'hubs/' + orgId), [eventId]);
-            
-            alert("¡Organizador creado con éxito!");
-            mostrarModal(); // Cerrar
+            alert("¡Organizador creado!");
+            cerrarModal();
         } catch (e) {
-            alert("Error al crear: " + e.message);
+            alert("Error: " + e.message);
         }
-    };
-
-    window.mostrarModal = () => {
-        document.getElementById('modal-nuevo').classList.toggle('hidden');
     };
 
     window.toggleEvents = (id) => {

@@ -9,14 +9,10 @@
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
         .card { background: var(--card); padding: 22px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
-        
-        /* HERO */
         .hero { background: #1d1d1f; color: white; padding: 25px; position: relative; }
         .hero span { font-size: 11px; text-transform: uppercase; opacity: 0.7; font-weight: 800; letter-spacing: 1px; }
         .hero h2 { font-size: 38px; margin: 8px 0; letter-spacing: -1.5px; font-weight: 900; }
         .ratio-tag { position: absolute; top: 25px; right: 25px; background: rgba(255,255,255,0.15); color: white; padding: 5px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; }
-
-        /* PLAN STATUS (EL BLOQUE CLAVE) */
         .plan-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         .active-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
@@ -24,25 +20,20 @@
         .expired-dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
         .plan-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
         .plan-sub { font-size: 13px; color: var(--sub); font-weight: 600; margin: 5px 0 15px 0; line-height: 1.3; }
-
-        /* CANCHAS */
         .cancha-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 20px; border: 1.5px solid #f2f2f7; margin-bottom: 8px; }
         .cancha-info b { display: block; font-size: 14px; text-transform: uppercase; line-height: 1.2; }
         .cancha-info span { font-size: 11px; color: var(--sub); font-weight: 700; }
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 11px; cursor: pointer; }
-
-        /* MODAL */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 28px; max-height: 90vh; overflow-y: auto; }
-        
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
         .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; margin-bottom: 10px; }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; background: var(--primary); color: white; cursor: pointer; font-size: 15px; }
         .hidden { display: none !important; }
-        
         .player-row { display: flex; align-items: center; padding: 10px; background: #f8f9fb; border-radius: 12px; margin-bottom: 5px; gap: 10px; }
         .btn-status { flex: 1; padding: 8px; border-radius: 8px; border: none; color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; }
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: #FF9500; }
+        .share-box { display: flex; background: #eef6ff; padding: 12px; border-radius: 15px; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -54,16 +45,24 @@
     </div>
 
     <div id="dash-view" class="hidden">
-        <header style="margin: 10px 0 20px 10px;">
-            <span id="org-name-top" style="font-size:12px; font-weight:800; color:var(--sub); text-transform:uppercase;">...</span>
-            <h1 style="margin:0; font-size:28px; font-weight:900; letter-spacing:-1px;">Tu Negocio</h1>
+        <header style="margin: 10px 0 20px 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span id="org-name-top" style="font-size:12px; font-weight:800; color:var(--sub); text-transform:uppercase;">...</span>
+                <h1 style="margin:0; font-size:28px; font-weight:900; letter-spacing:-1px;">Tu Negocio</h1>
+            </div>
+            <button class="btn-manage" onclick="cerrarSesion()" style="background:#f2f2f7; color:var(--text);">Salir</button>
         </header>
+
+        <div class="share-box">
+            <span id="txt-url-cartelera" style="font-size: 12px; font-weight: 700; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;">Cargando link...</span>
+            <button onclick="copiarLink()" style="border:none; background:var(--primary); color:white; padding:6px 12px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">COPIAR LINK</button>
+        </div>
 
         <div class="card hero">
             <div class="ratio-tag" id="txt-ratio">0% costo</div>
             <span>Recaudación Real (Mes)</span>
             <h2 id="txt-ingresos">$0</h2>
-            <p style="font-size:11px; opacity:0.6; margin:0; font-weight:600;">Calculado sobre turnos finalizados</p>
+            <p style="font-size:11px; opacity:0.6; margin:0; font-weight:600;">Sobre turnos finalizados</p>
         </div>
 
         <div class="card">
@@ -73,10 +72,13 @@
                 <div class="plan-title" id="plan-txt-status">...</div>
             </div>
             <p class="plan-sub" id="plan-msg-main">...</p>
-            <button class="btn-full" id="btn-action-plan" onclick="window.open('https://wa.me/5491166463800')">Activar Plan</button>
+            <button class="btn-full" id="btn-action-plan" onclick="window.open('https://wa.me/5491166463800')">Consultar</button>
         </div>
 
-        <h3 style="margin: 25px 0 12px 10px; font-size:12px; color:var(--sub); text-transform:uppercase; letter-spacing:1px;">Gestión de Turnos</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:25px 0 12px 10px;">
+            <h3 style="margin:0; font-size:12px; color:var(--sub); text-transform:uppercase; letter-spacing:1px;">Mis Turnos</h3>
+            <button onclick="nuevoTurno()" style="background:var(--text); color:white; border:none; padding:6px 12px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">+ NUEVO TURNO</button>
+        </div>
         <div id="canchas-list"></div>
 
         <div class="card" style="margin-top:20px;">
@@ -85,29 +87,44 @@
             <div style="background:#f2f2f7; height:8px; border-radius:10px; margin:12px 0; overflow:hidden;">
                 <div id="bar-fill" style="background:var(--primary); height:100%; width:0%; transition:1s;"></div>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--sub); margin-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--sub);">
                 <span>CONSUMO</span>
                 <span id="txt-limite">LÍMITE: $0</span>
             </div>
-            <p style="font-size:12px; color:var(--sub); font-weight:600; line-height:1.4; border-top:1px solid #f2f2f7; padding-top:15px; margin:0;">
-                "El abono se paga con las señas de menos de 1 jugador por turno. <span style="color:var(--primary)">Tu tiempo vale más.</span>"
-            </p>
         </div>
-        <p style="text-align:center; font-size:11px; color:var(--sub); margin:20px 0; font-weight:600;">El abono no depende del mes calendario.</p>
     </div>
 </div>
 
 <div id="modal-cancha" class="modal hidden">
     <div class="modal-content">
         <h2 id="edit-title" style="margin:0 0 20px 0; letter-spacing:-1px;">Gestionar</h2>
+        
+        <label>Nombre del Turno (Ej: MIXTA)</label>
+        <input id="ed-organiza" class="input-std">
+        
+        <label>Lugar</label>
+        <input id="ed-lugar" class="input-std">
+
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div><label>Fecha</label><input id="ed-fecha" class="input-std" type="date"></div>
             <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-            <div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"></div>
         </div>
-        <label>Inscripciones</label>
-        <select id="ed-status" class="input-std"><option value="abiertas">Abiertas</option><option value="cerradas">Cerradas</option></select>
-        <h4 style="margin:20px 0 10px 5px; font-size:11px; text-transform:uppercase;">Jugadores</h4>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"></div>
+            <div><label>Cupos</label><input id="ed-cupo" class="input-std" type="number"></div>
+        </div>
+
+        <label>Estado del Turno</label>
+        <select id="ed-status" class="input-std">
+            <option value="activo">🟢 Activo / Abierto</option>
+            <option value="cerrado">🔒 Cerrado / Completo</option>
+            <option value="suspendido">🚫 Suspendido</option>
+        </select>
+
+        <h4 style="margin:20px 0 10px 5px; font-size:11px; text-transform:uppercase;">Jugadores (<span id="count-players">0</span>)</h4>
         <div id="players-list"></div>
+
         <button class="btn-full" onclick="guardarCancha()" style="margin-top:20px;">Guardar Cambios</button>
         <button class="btn-full" onclick="cerrarModal()" style="background:#f2f2f7; color:var(--text); margin-top:10px;">Cerrar</button>
     </div>
@@ -115,24 +132,27 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, get, onValue, update, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const params = new URLSearchParams(window.location.search);
     const orgId = params.get('org');
-    let currentCanchaId = null, currentEv = {};
+    let currentCanchaId = null, currentEv = {}, passMaster = "";
 
     function fFecha(f) { const ds=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${ds[dt.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
 
     window.validarAcceso = async () => {
         const pass = document.getElementById('pass-dash').value;
         const hSnap = await get(ref(db, 'hubs/'+orgId));
-        const canchas = hSnap.val()?.canchas || [];
+        const dataHub = hSnap.val() || {};
+        const canchas = dataHub.canchas || [];
         const evSnap = await get(ref(db, 'eventos/'+canchas[0]));
         if(evSnap.val()?.password === pass) {
+            passMaster = pass;
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('dash-view').classList.remove('hidden');
+            document.getElementById('txt-url-cartelera').innerText = dataHub.urlCorta || `v.html?org=${orgId}`;
             initDash();
         } else { alert("Clave Incorrecta"); }
     };
@@ -151,30 +171,22 @@
             const ratio = totalRecaudado > 0 ? (c.consumoActual / totalRecaudado * 100).toFixed(1) : 0;
             document.getElementById('txt-ratio').innerText = ratio + '% costo';
 
-            // LÓGICA DE TU PLAN
             const hoy = new Date();
             const fPrueba = new Date((c.fechaFinPrueba || "2000-01-01") + "T23:59:59");
             const fCiclo = new Date((c.fechaFinCiclo || "2000-01-01") + "T23:59:59");
             const dot = document.getElementById('plan-dot');
             const statusTxt = document.getElementById('plan-txt-status');
             const msgTxt = document.getElementById('plan-msg-main');
-            const btn = document.getElementById('btn-action-plan');
 
             if (hoy < fPrueba) {
-                dot.className = "dot trial-dot";
-                statusTxt.innerText = "Modo Prueba Gratis";
-                msgTxt.innerText = `Finaliza en ${Math.ceil((fPrueba-hoy)/(1000*60*60*24))} días. Estás usando todas las funciones sin cargo.`;
-                btn.innerText = "Activar Plan Pro";
+                dot.className = "dot trial-dot"; statusTxt.innerText = "Prueba Gratis";
+                msgTxt.innerText = `Vence en ${Math.ceil((fPrueba-hoy)/(1000*60*60*24))} días.`;
             } else if (hoy <= fCiclo) {
-                dot.className = "dot active-dot";
-                statusTxt.innerText = "🟢 Activo hasta el " + c.fechaFinCiclo.split('-').reverse().join('/');
-                msgTxt.innerText = `Te quedan ${Math.ceil((fCiclo-hoy)/(1000*60*60*24))} días. Tu abono dura 30 días desde que lo activás.`;
-                btn.innerText = "Renovar ahora";
+                dot.className = "dot active-dot"; statusTxt.innerText = "Plan Activo";
+                msgTxt.innerText = `Vence el ${c.fechaFinCiclo.split('-').reverse().join('/')}. Te quedan ${Math.ceil((fCiclo-hoy)/(1000*60*60*24))} días.`;
             } else {
-                dot.className = "dot expired-dot";
-                statusTxt.innerText = "🔴 Vencido el " + (c.fechaFinCiclo || "").split('-').reverse().join('/');
-                msgTxt.innerText = `Venció hace ${Math.ceil((hoy-fCiclo)/(1000*60*60*24))} días. Para seguir creando turnos necesitás renovarlo.`;
-                btn.innerText = "Activar Plan";
+                dot.className = "dot expired-dot"; statusTxt.innerText = "Plan Vencido";
+                msgTxt.innerText = "Renová para seguir operando.";
             }
         });
 
@@ -188,7 +200,8 @@
             evs.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             evs.forEach(d => {
                 const div = document.createElement('div'); div.className = "cancha-card";
-                div.innerHTML = `<div class="cancha-info"><b>${d.organiza} - ${d.lugar}</b><span>${fFecha(d.fecha)} - ${d.hora} HS | ${(d.inscriptos||[]).length}/${d.cupo} Jugadores</span></div><button class="btn-manage" onclick="abrirCancha('${d.id}')">Gestionar</button>`;
+                const statusIco = d.suspendido ? '🚫' : d.inscripcionesCerradas ? '🔒' : '🎾';
+                div.innerHTML = `<div class="cancha-info"><b>${statusIco} ${d.organiza} - ${d.lugar}</b><span>${fFecha(d.fecha)} - ${d.hora} HS | ${(d.inscriptos||[]).length}/${d.cupo}</span></div><button class="btn-manage" onclick="abrirCancha('${d.id}')">Gestionar</button>`;
                 list.appendChild(div);
             });
         });
@@ -196,15 +209,66 @@
 
     window.abrirCancha = async (id) => {
         currentCanchaId = id; const s = await get(ref(db, 'eventos/'+id)); currentEv = s.val();
-        document.getElementById('edit-title').innerText = currentEv.organiza;
-        document.getElementById('ed-hora').value = currentEv.hora;
-        document.getElementById('ed-valor').value = currentEv.valor;
-        document.getElementById('ed-status').value = currentEv.inscripcionesCerradas ? 'cerradas' : 'abiertas';
+        document.getElementById('ed-organiza').value = currentEv.organiza || "";
+        document.getElementById('ed-lugar').value = currentEv.lugar || "";
+        document.getElementById('ed-fecha').value = currentEv.fecha || "";
+        document.getElementById('ed-hora').value = currentEv.hora || "";
+        document.getElementById('ed-valor').value = currentEv.valor || 0;
+        document.getElementById('ed-cupo').value = currentEv.cupo || 0;
+        document.getElementById('ed-status').value = currentEv.suspendido ? 'suspendido' : currentEv.inscripcionesCerradas ? 'cerrado' : 'activo';
+        
         const pList = document.getElementById('players-list'); pList.innerHTML = "";
-        (currentEv.inscriptos || []).forEach((p, idx) => {
+        const ins = currentEv.inscriptos || [];
+        document.getElementById('count-players').innerText = ins.length;
+        ins.forEach((p, idx) => {
             pList.innerHTML += `<div class="player-row"><span>${p.nombre}</span><button class="btn-status ${p.estado}" onclick="cambiarPago(${idx})">${p.estado}</button><button onclick="borrarPlayer(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;">✕</button></div>`;
         });
         document.getElementById('modal-cancha').classList.remove('hidden');
+    };
+
+    window.guardarCancha = () => {
+        const st = document.getElementById('ed-status').value;
+        const updates = {
+            organiza: document.getElementById('ed-organiza').value,
+            lugar: document.getElementById('ed-lugar').value,
+            fecha: document.getElementById('ed-fecha').value,
+            hora: document.getElementById('ed-hora').value,
+            valor: parseInt(document.getElementById('ed-valor').value),
+            cupo: parseInt(document.getElementById('ed-cupo').value),
+            suspendido: st === 'suspendido',
+            inscripcionesCerradas: st === 'cerrado'
+        };
+        update(ref(db, 'eventos/'+currentCanchaId), updates).then(() => { alert("Guardado!"); cerrarModal(); });
+    };
+
+    window.nuevoTurno = async () => {
+        const idNuevo = orgId + "-" + Date.now();
+        const hSnap = await get(ref(db, 'hubs/'+orgId));
+        let canchas = hSnap.val()?.canchas || [];
+        
+        const nuevoEv = {
+            organiza: "NUEVO TURNO",
+            lugar: "Sede Central",
+            fecha: new Date().toISOString().split('T')[0],
+            hora: "19:00",
+            horaFin: "20:30",
+            valor: 15000,
+            cupo: 20,
+            password: passMaster,
+            celuOrganizador: currentEv.celuOrganizador || "",
+            alias: currentEv.alias || "",
+            inscriptos: []
+        };
+
+        await set(ref(db, 'eventos/'+idNuevo), nuevoEv);
+        canchas.push(idNuevo);
+        await update(ref(db, 'hubs/'+orgId), { canchas: canchas });
+        alert("Turno creado. Ahora podés editarlo.");
+    };
+
+    window.copiarLink = () => {
+        const url = document.getElementById('txt-url-cartelera').innerText;
+        navigator.clipboard.writeText(url).then(() => alert("Link copiado"));
     };
 
     window.cambiarPago = (idx) => {
@@ -220,11 +284,8 @@
         }
     };
 
-    window.guardarCancha = () => {
-        update(ref(db, 'eventos/'+currentCanchaId), { hora: document.getElementById('ed-hora').value, valor: parseInt(document.getElementById('ed-valor').value), inscripcionesCerradas: document.getElementById('ed-status').value === 'cerradas' }).then(() => cerrarModal());
-    };
-
     window.cerrarModal = () => document.getElementById('modal-cancha').classList.add('hidden');
+    window.cerrarSesion = () => location.reload();
 </script>
 </body>
 </html>

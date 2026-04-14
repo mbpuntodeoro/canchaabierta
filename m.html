@@ -5,62 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Dashboard - Cancha Abierta</title>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; }
+        * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -1px; margin: 0; }
-
-        /* TARJETA ORGANIZADOR */
-        .org-card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02); }
+        .container { max-width: 650px; margin: auto; }
+        .org-card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.05); }
         .org-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .org-info h2 { margin: 0; font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--text); }
-        .hub-link { font-size: 11px; color: var(--primary); font-weight: 600; cursor: pointer; display: block; margin-top: 4px; }
-
-        /* LISTA DE CANCHAS */
         .event-box { background: #f9f9fb; border-radius: 16px; padding: 15px; margin-top: 15px; border: 1px solid #eee; }
-        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .event-item { padding: 15px 0; border-bottom: 1px solid #eee; }
         .event-item:last-child { border-bottom: none; }
-        .event-data b { font-size: 14px; display: block; }
-        .event-data span { font-size: 11px; color: var(--sub); }
-
+        
         /* BOTONES */
-        .btn-group { display: flex; gap: 6px; }
-        .btn-small { padding: 8px 12px; border-radius: 10px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-small { padding: 8px 12px; border-radius: 10px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #eee; color: var(--text); }
-        .btn-outline { background: white; border: 1px solid #ddd; color: var(--sub); }
-        .btn-danger { background: #ffebeb; color: var(--danger); }
+        .btn-suspend { background: var(--warning); color: #000; }
+        .btn-active { background: var(--success); color: white; }
         
-        .btn-add-cancha { width: 100%; background: #f2f2f7; color: var(--primary); margin-top: 10px; border: 1.5px dashed var(--primary); padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        .btn-master { width: 100%; background: var(--text); color: white; padding: 16px; border-radius: 16px; font-weight: 700; border: none; margin-top: 20px; cursor: pointer; }
-
-        /* MODAL */
+        .input-short { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 11px; margin: 8px 0; outline: none; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; }
-        .input-std { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin: 10px 0; font-size: 14px; outline: none; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>Centro de Mandos</h1>
-        <div style="font-size: 20px;">🏟️</div>
-    </div>
-
-    <div id="org-list">Cargando tus organizaciones...</div>
-
-    <button class="btn-master" onclick="abrirModal('org')">+ Nuevo Organizador (Cliente)</button>
+    <h1 style="font-weight:900; letter-spacing:-1px;">Centro de Mandos 🏟️</h1>
+    <div id="org-list">Cargando...</div>
+    <button style="width:100%; background:#1c1c1e; color:white; padding:18px; border-radius:18px; border:none; font-weight:700; margin-top:20px; cursor:pointer;" onclick="abrirModal('org')">+ Nuevo Organizador</button>
 </div>
 
 <div id="modal-nuevo" class="modal-overlay">
-    <div class="modal-content" id="modal-body">
-        </div>
+    <div class="modal-content" id="modal-body"></div>
 </div>
 
 <script type="module">
@@ -70,10 +48,8 @@
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     const BASE_URL = "https://mbpuntodeoro.github.io/canchaabierta/v.html";
 
-    // 1. CARGA DE DATOS
     onValue(ref(db, 'hubs'), (snap) => {
         const hubs = snap.val() || {};
         const container = document.getElementById('org-list');
@@ -83,42 +59,49 @@
             const eventIds = hubs[orgId] || [];
             const card = document.createElement('div');
             card.className = 'org-card';
-            
             card.innerHTML = `
                 <div class="org-header">
-                    <div class="org-info">
-                        <h2>${orgId}</h2>
-                        <span class="hub-link" onclick="copiar('${BASE_URL}?org=${orgId}')">📋 Copiar Link Cartelera</span>
+                    <div>
+                        <h2 style="margin:0; text-transform:uppercase; font-size:18px;">${orgId}</h2>
+                        <span style="font-size:10px; color:var(--primary); cursor:pointer;" onclick="copiar('${BASE_URL}?org=${orgId}')">📋 Copiar Link Cartelera</span>
                     </div>
-                    <button class="btn-small btn-danger" onclick="eliminarOrganizador('${orgId}')">Eliminar Org</button>
                 </div>
-                
-                <div class="event-box" id="box-${orgId}">
-                    <p style="font-size:10px; font-weight:800; color:var(--sub); margin-bottom:10px;">CANCHAS ACTIVAS</p>
+                <div class="event-box">
                     <div id="list-${orgId}">Cargando canchas...</div>
-                    <button class="btn-add-cancha" onclick="abrirModal('cancha', '${orgId}')">+ Agregar Cancha</button>
+                    <button style="width:100%; background:none; border:1px dashed var(--primary); color:var(--primary); padding:10px; border-radius:10px; font-weight:700; margin-top:10px; cursor:pointer;" onclick="abrirModal('cancha', '${orgId}')">+ Nueva Cancha</button>
                 </div>
             `;
             container.appendChild(card);
 
             const listDiv = document.getElementById('list-' + orgId);
             listDiv.innerHTML = "";
-
             eventIds.forEach(id => {
                 get(ref(db, 'eventos/' + id)).then(s => {
                     const d = s.val();
                     if(!d) return;
                     const item = document.createElement('div');
                     item.className = 'event-item';
+                    const btnEstadoTxt = d.suspendido ? "HABILITAR" : "SUSPENDER";
+                    const btnEstadoClase = d.suspendido ? "btn-active" : "btn-suspend";
+
                     item.innerHTML = `
-                        <div class="event-data">
-                            <b>${d.organiza}</b>
-                            <span>${id}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="line-height:1.2">
+                                <b style="font-size:14px;">${d.organiza}</b><br>
+                                <span style="font-size:10px; color:#8e8e93;">ID: ${id}</span>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-small ${btnEstadoClase}" onclick="toggleSuspender('${id}', ${d.suspendido || false})">${btnEstadoTxt}</button>
+                                <a href="v.html?id=${id}" target="_blank" class="btn-small btn-blue" style="text-decoration:none">Gestionar</a>
+                                <button class="btn-small btn-gray" onclick="eliminarCancha('${orgId}', '${id}')">🗑️</button>
+                            </div>
                         </div>
-                        <div class="btn-group">
-                            <button class="btn-small btn-gray" onclick="copiar('${BASE_URL}?id=${id}')">Link</button>
-                            <a href="v.html?id=${id}" target="_blank" class="btn-small btn-blue" style="text-decoration:none">Gestionar</a>
-                            <button class="btn-small btn-outline" onclick="eliminarCancha('${orgId}', '${id}')">🗑️</button>
+                        <div style="margin-top:10px;">
+                            <input id="link-${id}" class="input-short" placeholder="Pegar link corto (TinyURL/Bitly) aquí..." value="${d.linkCorto || ''}">
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-small btn-gray" style="flex:1" onclick="guardarLinkCorto('${id}')">💾 Guardar Link</button>
+                                <button class="btn-small btn-gray" style="flex:1" onclick="copiarLinkCorto('${id}')">📋 Copiar</button>
+                            </div>
                         </div>
                     `;
                     listDiv.appendChild(item);
@@ -127,82 +110,70 @@
         });
     });
 
-    // 2. LOGICA DE MODALES
+    window.toggleSuspender = (id, estadoActual) => {
+        update(ref(db, 'eventos/' + id), { suspendido: !estadoActual });
+    };
+
+    window.guardarLinkCorto = (id) => {
+        const url = document.getElementById('link-' + id).value.trim();
+        update(ref(db, 'eventos/' + id), { linkCorto: url }).then(() => alert("Link corto guardado"));
+    };
+
+    window.copiarLinkCorto = (id) => {
+        const url = document.getElementById('link-' + id).value;
+        if(!url) return alert("No hay link corto guardado");
+        navigator.clipboard.writeText(url).then(() => alert("Link corto copiado!"));
+    };
+
+    window.copiar = (txt) => { navigator.clipboard.writeText(txt).then(() => alert("Copiado!")); };
+
     window.abrirModal = (tipo, orgId = '') => {
         const body = document.getElementById('modal-body');
         if (tipo === 'org') {
-            body.innerHTML = `
-                <h2 style="margin:0">Nuevo Organizador</h2>
-                <input id="in-org-id" class="input-std" placeholder="ID (ej: wini-padel)">
-                <input id="in-event-name" class="input-std" placeholder="Nombre Cancha (ej: Cancha Abierta Wini)">
-                <input id="in-persona" class="input-std" placeholder="Nombre Persona (ej: Wini)">
-                <button class="btn-master" onclick="crearOrg()">Crear Organizador</button>
-                <button class="btn-add-cancha" style="border:none" onclick="cerrarModal()">Cancelar</button>
-            `;
+            body.innerHTML = `<h2>Nuevo Cliente</h2>
+                <input id="in-org-id" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #ddd;" placeholder="ID (ej: wini-padel)">
+                <input id="in-event-name" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #ddd;" placeholder="Nombre Cancha (ej: Cancha Abierta Wini)">
+                <button style="width:100%; background:#007aff; color:white; padding:15px; border-radius:12px; border:none; font-weight:700;" onclick="crearOrg()">Crear</button>
+                <button style="width:100%; background:none; color:#8e8e93; margin-top:10px; border:none;" onclick="cerrarModal()">Cancelar</button>`;
         } else {
-            body.innerHTML = `
-                <h2 style="margin:0">Nueva Cancha para ${orgId}</h2>
-                <input id="in-new-event-name" class="input-std" placeholder="Nombre (ej: Martes Pro)">
+            body.innerHTML = `<h2>Nueva Cancha para ${orgId}</h2>
+                <input id="in-new-name" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #ddd;" placeholder="Nombre (ej: Martes Pro)">
                 <input id="in-target-org" type="hidden" value="${orgId}">
-                <button class="btn-master" onclick="agregarCancha()">Agregar Cancha</button>
-                <button class="btn-add-cancha" style="border:none" onclick="cerrarModal()">Cancelar</button>
-            `;
+                <button style="width:100%; background:#007aff; color:white; padding:15px; border-radius:12px; border:none; font-weight:700;" onclick="agregarCancha()">Agregar</button>
+                <button style="width:100%; background:none; color:#8e8e93; margin-top:10px; border:none;" onclick="cerrarModal()">Cancelar</button>`;
         }
         document.getElementById('modal-nuevo').classList.add('active');
     };
 
     window.cerrarModal = () => document.getElementById('modal-nuevo').classList.remove('active');
 
-    // 3. ACCIONES FIREBASE
     window.crearOrg = async () => {
         const id = document.getElementById('in-org-id').value.trim().toLowerCase().replace(/\s+/g, '-');
         const eventName = document.getElementById('in-event-name').value;
-        const persona = document.getElementById('in-persona').value;
-        if(!id || !eventName) return alert("Faltan datos");
-
         const eventId = `${id}-1`;
-        await set(ref(db, 'eventos/' + eventId), {
-            organiza: eventName, organizador: persona, lugar: "A confirmar", fecha: "2026-01-01",
-            hora: "20:00", horaFin: "22:00", valor: 0, alias: "mp", celuOrganizador: "11", categorias: "Todas", password: "1234"
-        });
+        await set(ref(db, 'eventos/' + eventId), { organiza: eventName, lugar: "Sede", fecha: "2026-04-20", hora: "20:00", horaFin: "22:00", valor: 0, password: "1234" });
         await set(ref(db, 'hubs/' + id), [eventId]);
         cerrarModal();
     };
 
     window.agregarCancha = async () => {
         const orgId = document.getElementById('in-target-org').value;
-        const name = document.getElementById('in-new-event-name').value;
-        const cleanName = name.toLowerCase().replace(/\s+/g, '-');
-        const newId = `${orgId}-${cleanName}`;
-
+        const name = document.getElementById('in-new-name').value;
+        const newId = `${orgId}-${name.toLowerCase().replace(/\s+/g, '-')}`;
         const snap = await get(ref(db, 'hubs/' + orgId));
         const ids = snap.val() || [];
         ids.push(newId);
-
-        await set(ref(db, 'eventos/' + newId), {
-            organiza: name, organizador: orgId, lugar: "A confirmar", fecha: "2026-01-01",
-            hora: "20:00", horaFin: "22:00", valor: 0, alias: "mp", celuOrganizador: "11", categorias: "Todas", password: "1234"
-        });
+        await set(ref(db, 'eventos/' + newId), { organiza: name, lugar: "Sede", fecha: "2026-04-20", hora: "20:00", horaFin: "22:00", valor: 0, password: "1234" });
         await set(ref(db, 'hubs/' + orgId), ids);
         cerrarModal();
     };
 
     window.eliminarCancha = async (orgId, eventId) => {
-        if(!confirm("¿Borrar esta cancha? Se perderán los inscriptos.")) return;
+        if(!confirm("¿Borrar?")) return;
         const snap = await get(ref(db, 'hubs/' + orgId));
         const ids = snap.val().filter(id => id !== eventId);
         await set(ref(db, 'hubs/' + orgId), ids);
         await remove(ref(db, 'eventos/' + eventId));
-    };
-
-    window.eliminarOrganizador = async (orgId) => {
-        if(!confirm("¿Borrar TODO el organizador y sus canchas?")) return;
-        await remove(ref(db, 'hubs/' + orgId));
-        alert("Hub eliminado. Las canchas individuales deben borrarse manualmente si se desea.");
-    };
-
-    window.copiar = (txt) => {
-        navigator.clipboard.writeText(txt).then(() => alert("Link copiado al portapapeles"));
     };
 </script>
 </body>

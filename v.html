@@ -14,6 +14,7 @@
         .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; text-transform: uppercase; }
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .info-item:last-child { margin-bottom: 0; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; background: #fff; }
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
@@ -35,7 +36,7 @@
 <div class="container">
     <div id="view-hub" class="hidden">
         <div class="header-brand">🎾 Canchas Abiertas</div>
-        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px; font-weight: 900;">Organizador</h1>
+        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px; font-weight: 900; text-transform: uppercase;">Organizador</h1>
         <div id="hub-list"></div>
     </div>
 
@@ -44,6 +45,7 @@
             <div class="header-brand">🎾 Inscripción Cancha Abierta</div>
             <span id="txt-event-name" class="event-title">...</span>
             <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
+            
             <div class="info-grid">
                 <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
                 <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
@@ -51,6 +53,7 @@
                 <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div>
                 <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
             </div>
+
             <div id="form-container">
                 <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
                 <input id="in-cel" class="input-std" placeholder="WhatsApp (Ej: 1123456789)">
@@ -77,9 +80,9 @@
 
     <div class="card hidden" id="view-admin">
         <h2 style="margin-top:0;">Configuración</h2>
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL EVENTO</label>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL EVENTO (TÍTULO)</label>
         <input id="ed-org-name" class="input-std">
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">ORGANIZADOR</label>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL ORGANIZADOR (PERSONA)</label>
         <input id="ed-organizador" class="input-std">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">LUGAR / SEDE</label>
         <input id="ed-lugar" class="input-std">
@@ -87,11 +90,11 @@
             <div style="flex:1"><label style="font-size:10px; font-weight:800;">INICIO</label><input id="ed-hor" class="input-std" type="time"></div>
             <div style="flex:1"><label style="font-size:10px; font-weight:800;">FIN</label><input id="ed-hor-fin" class="input-std" type="time"></div>
         </div>
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">VALOR POR PERSONA ($)</label>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">VALOR ($)</label>
         <input id="ed-valor" class="input-std" type="number">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">ALIAS MP</label>
         <input id="ed-alias" class="input-std">
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">WHATSAPP ORGANIZADOR</label>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">WHATSAPP COMPROBANTES</label>
         <input id="ed-celu" class="input-std">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">CATEGORÍAS</label>
         <input id="ed-cat" class="input-std">
@@ -107,7 +110,6 @@
     </div>
 
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
-
     <div class="banner-sell">
         <p style="font-size: 13px; font-weight: 700; margin-bottom: 16px; line-height: 1.4;">¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--primary);">Pasala a piloto automático.</span></p>
         <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta" class="btn-full btn-blue" style="font-size: 13px;">Mariano, ayudame con mi cancha abierta 🎾</a>
@@ -126,10 +128,7 @@
     let currentId = params.get('id') || 'cancha-egd';
     let ev = {};
 
-    function limpiarHora(h) {
-        if(!h) return '';
-        return h.replace(':00', '');
-    }
+    function limpiarHora(h) { return h ? h.replace(':00', '') : ''; }
 
     function formatearFecha(fechaStr) {
         if (!fechaStr) return '-';
@@ -149,11 +148,11 @@
             list.forEach(id => {
                 get(ref(db, 'eventos/' + id)).then(s => {
                     const d = s.val();
-                    if(d) {
+                    // VERIFICACIÓN DE SUSPENSIÓN
+                    if(d && !d.suspendido) {
                         const item = document.createElement('a');
                         item.className = 'hub-item';
                         item.href = `?id=${id}&org=${orgId}`;
-                        // CARTELERA CON CATEGORÍAS
                         item.innerHTML = `
                             <b>${d.organiza || 'Evento'}</b>
                             <div><span class="tag-cat">${d.categorias || 'Todas'}</span></div>
@@ -219,17 +218,11 @@
         }).then(() => alert("¡Guardado!"));
     };
 
-    window.copiarAlias = () => {
-        if(ev.alias) {
-            navigator.clipboard.writeText(ev.alias).then(() => alert("Alias copiado!"));
-        }
-    };
-
+    window.copiarAlias = () => { if(ev.alias) navigator.clipboard.writeText(ev.alias).then(() => alert("Alias copiado!")); };
     window.enviarWhatsapp = () => {
         const msg = encodeURIComponent(`Hola! Soy ${document.getElementById('in-nom').value}, te paso el comprobante para la cancha del ${formatearFecha(ev.fecha)}`);
         window.open(`https://wa.me/${ev.celuOrganizador}?text=${msg}`);
     };
-
     window.cambiar = (oid) => {
         const idx = ev.inscriptos.findIndex(x => x.id === oid);
         const estados = ["pendiente", "reservado", "pagado"];
@@ -247,7 +240,6 @@
         document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString('es-AR');
         document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0).toLocaleString('es-AR');
         document.getElementById('ex-alias').innerText = ev.alias || '-';
-        
         let html = "";
         (ev.inscriptos || []).forEach(p => {
             html += `<div class="admin-item"><span><b>${p.nombre}</b></span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${p.estado}</button></div>`;

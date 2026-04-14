@@ -12,15 +12,12 @@
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; }
         
-        /* ACORDEON STYLES */
         .accordion-item { background: white; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); overflow: hidden; border: 1.5px solid #f2f2f7; }
-        .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .accordion-header:hover { background: #fafafa; }
-        .accordion-content { padding: 0 20px 20px 20px; display: none; border-top: 1px solid #f2f2f7; background: #fff; }
+        .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-content { padding: 0 20px 20px 20px; display: none; border-top: 1px solid #f2f2f7; }
         .accordion-item.active .accordion-content { display: block; }
-        .accordion-item.active .accordion-header { background: #f8f9fb; }
 
-        .tag-status { font-size: 9px; padding: 3px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
+        .tag-status { font-size: 9px; padding: 3px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; margin-left: 8px; }
         .tag-suspended { background: var(--danger); color: white; }
         .tag-ok { background: var(--success); color: white; }
 
@@ -31,7 +28,7 @@
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 8px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; }
         
         .cancha-row { display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 10px; align-items: center; background: #f8f9fb; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
-        .cancha-row span { font-size: 11px; font-weight: 700; color: var(--sub); overflow: hidden; text-overflow: ellipsis; }
+        .cancha-row span { font-size: 11px; font-weight: 700; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .hidden { display: none !important; }
@@ -49,9 +46,7 @@
 
     <div id="view-panel" class="hidden">
         <div class="header"><h1>Centro de Mandos Pro</h1></div>
-        
         <div id="org-list"></div>
-
         <div style="margin-top:40px; text-align:center;">
             <button class="btn-manage" style="background:var(--text); color:white; padding:15px 30px;" onclick="nuevoOrgPrompt()">+ AGREGAR NUEVO ORGANIZADOR</button>
         </div>
@@ -61,26 +56,16 @@
         <div style="background:white; padding:25px; border-radius:24px; width:90%; max-width:450px;">
             <h2 id="modal-title" style="margin-top:0;">Configuración</h2>
             <input type="hidden" id="modal-org-id">
-            
             <div style="background: #fff2f2; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1.5px solid #ffdbdb; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <b style="color:var(--danger); font-size:14px;">SUSPENDER CLIENTE</b>
-                    <p style="margin:0; font-size:11px; color:#a35e5e;">Bloquea gestión e inscripciones.</p>
-                </div>
+                <div><b style="color:var(--danger); font-size:14px;">SUSPENDER CLIENTE</b><p style="margin:0; font-size:11px; color:#a35e5e;">Bloquea gestión e inscripciones.</p></div>
                 <input type="checkbox" id="mod-suspendido" style="transform: scale(1.5);">
             </div>
-
-            <label>Deuda Actual ($)</label>
-            <input id="mod-consumo" class="input-std" type="number">
-            
+            <label>Deuda Actual ($)</label><input id="mod-consumo" class="input-std" type="number">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div><label>Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
                 <div><label>Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
             </div>
-
-            <label>Vencimiento de Abono</label>
-            <input id="mod-ciclo" class="input-std" type="date">
-
+            <label>Vencimiento de Abono</label><input id="mod-ciclo" class="input-std" type="date">
             <div style="display: flex; gap: 10px; margin-top: 25px;">
                 <button class="btn-blue" onclick="guardarFinanzas()">Guardar</button>
                 <button class="btn-blue" style="background:#f2f2f7; color:var(--text);" onclick="cerrarModal()">Cancelar</button>
@@ -105,11 +90,14 @@
         }
     };
 
-    function cargarLista() {
+    async function cargarLista() {
         onValue(ref(db, 'hubs'), async (snap) => {
             const hubs = snap.val() || {};
-            const list = document.getElementById('org-list'); list.innerHTML = "";
+            const list = document.getElementById('org-list');
+            list.innerHTML = "";
+
             for (let id in hubs) {
+                // Obtenemos finanzas sin que bloquee el renderizado si falla
                 const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
                 const f = fSnap.val() || { consumoActual: 0, cuentaSuspendida: false };
                 
@@ -118,13 +106,13 @@
                 
                 let canchasHtml = "";
                 const cIds = hubs[id].canchas || [];
-                for(let cid of cIds) {
-                    const cSnap = await get(ref(db, 'eventos/' + cid));
-                    const urlC = cSnap.val()?.urlCorta || "";
+                
+                // Renderizamos las canchas de forma más simple para evitar bloqueos
+                for (let cid of cIds) {
                     canchasHtml += `
                         <div class="cancha-row">
                             <span>ID: ${cid}</span>
-                            <input class="input-std" style="padding:6px; font-size:11px;" placeholder="URL Corta (Bitly)" id="url-${cid}" value="${urlC}" onchange="guardarUrlCorta('${cid}', this.value)">
+                            <input class="input-std" style="padding:6px; font-size:11px;" placeholder="URL Corta" id="url-${cid}" onchange="guardarUrlCorta('${cid}', this.value)">
                             <a href="v.html?id=${cid}&org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--primary); text-decoration:none;">IR ➔</a>
                         </div>`;
                 }
@@ -134,7 +122,7 @@
                         <div>
                             <b style="text-transform:uppercase;">${hubs[id].nombre || id}</b>
                             ${f.cuentaSuspendida ? '<span class="tag-status tag-suspended">Suspendido</span>' : '<span class="tag-status tag-ok">Activo</span>'}
-                            <div style="font-size:11px; color:var(--sub); font-weight:700; margin-top:4px;">Deuda: $${f.consumoActual.toLocaleString()} | Vence: ${f.fechaFinCiclo || '-'}</div>
+                            <div style="font-size:11px; color:var(--sub); font-weight:700; margin-top:4px;">Deuda: $${(f.consumoActual || 0).toLocaleString()} | Vence: ${f.fechaFinCiclo || '-'}</div>
                         </div>
                         <div style="font-size:20px; color:var(--sub);">▾</div>
                     </div>
@@ -144,11 +132,19 @@
                             <a href="v.html?org=${id}" target="_blank" class="btn-manage" style="text-decoration:none; background:#f2f2f7; color:var(--text);">VER CARTELERA</a>
                             <a href="d.html?org=${id}" target="_blank" class="btn-manage" style="text-decoration:none; background:#f2f2f7; color:var(--text);">DASHBOARD</a>
                         </div>
-                        <label>Canchas vinculadas y URLs cortas:</label>
+                        <label>Canchas vinculadas:</label>
                         ${canchasHtml || '<p style="font-size:11px; color:#ccc;">Sin canchas vinculadas.</p>'}
                     </div>
                 `;
                 list.appendChild(item);
+                
+                // Cargamos las URLs cortas después para no trabar el render
+                cIds.forEach(async (cid) => {
+                    const cSnap = await get(ref(db, 'eventos/' + cid));
+                    const val = cSnap.val()?.urlCorta || "";
+                    const input = document.getElementById('url-' + cid);
+                    if(input) input.value = val;
+                });
             }
         });
     }
@@ -180,14 +176,13 @@
             cuentaSuspendida: document.getElementById('mod-suspendido').checked
         };
         await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
-        alert("Configuración Guardada"); cerrarModal();
+        alert("Guardado"); cerrarModal();
     };
 
     window.nuevoOrgPrompt = async () => {
-        const id = prompt("ID del Hub (ej: adictos-padel):"); if(!id) return;
-        const nom = prompt("Nombre Comercial (ej: Adictos Padel):"); if(!nom) return;
+        const id = prompt("ID del Hub:"); if(!id) return;
+        const nom = prompt("Nombre Comercial:"); if(!nom) return;
         await set(ref(db, 'hubs/' + id), { nombre: nom, canchas: [] });
-        alert("Creado.");
     };
 
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');

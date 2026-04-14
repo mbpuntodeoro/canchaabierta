@@ -3,68 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancha Abierta - Plataforma de Inscripción</title>
+    <title>Cancha Abierta - Plataforma</title>
     <style>
-        :root {
-            --primary: #007aff;
-            --bg: #f2f2f7;
-            --card: #ffffff;
-            --text: #1c1c1e;
-            --sub: #8e8e93;
-            --success: #34c759;
-            --warning: #ffcc00;
-            --danger: #ff3b30;
-        }
-
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 450px; margin: auto; }
-        
-        .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); position: relative; }
-        
-        /* Cartelera (Hub) */
-        .hub-title { font-size: 24px; font-weight: 900; text-align: center; margin-bottom: 20px; letter-spacing: -1px; }
-        .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; }
-        .hub-item:active { transform: scale(0.98); background: #f9f9fb; }
-        .hub-item .date { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
-        .hub-item .name { font-size: 18px; font-weight: 800; color: var(--text); }
-        .hub-item .meta { font-size: 12px; color: var(--sub); font-weight: 600; }
-
-        /* Estilos de siempre */
+        .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
         .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; }
-        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; }
-        
+        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; }
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
-        
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; }
-        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; }
+        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-dark { background: #1c1c1e; color: white; margin-top: 20px; font-size: 12px; }
-        
-        /* Banner de Venta (Caballo de Troya) */
-        .banner-sell { margin-top: 40px; padding: 20px; background: #fff; border-radius: 22px; text-align: center; border: 2px dashed var(--primary); }
-        .banner-sell p { font-size: 13px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
-
+        .btn-dark { background: #1c1c1e; color: white; font-size: 12px; }
+        .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
         .hidden { display: none !important; }
-        .footer-credits { text-align: center; margin-top: 40px; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; }
-
-        /* Admin Styles */
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
         .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
-        .pagado { background: var(--success); }
-        .reservado { background: var(--warning); color: #000; }
-        .pendiente { background: var(--danger); }
+        .pagado { background: var(--success); } .reservado { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div id="view-hub" class="hidden">
-        <div class="header-brand">🎾 CANCHAS ABIERTAS</div>
-        <h1 id="hub-org-name" class="hub-title">Cargando cartelera...</h1>
+        <div class="header-brand">🎾 TUS CANCHAS</div>
+        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px;">Cartelera</h1>
         <div id="hub-list"></div>
     </div>
 
@@ -73,110 +40,87 @@
             <div class="header-brand">🎾 INSCRIPCIÓN</div>
             <span id="txt-event-name" class="event-title">...</span>
             <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
-
             <div class="info-grid">
                 <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
                 <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
                 <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
                 <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div>
             </div>
-
             <div id="form-container">
                 <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
                 <input id="in-cel" class="input-std" placeholder="WhatsApp (Ej: 1123456789)">
                 <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
             </div>
-            <div id="msg-cerrado" class="hidden" style="text-align: center; color: var(--danger); font-weight: 800; padding: 20px;">🚫 INSCRIPCIONES CERRADAS</div>
         </div>
-        <button class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ GESTIONAR ESTA CANCHA</button>
+        <button class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ GESTIONAR CANCHA</button>
     </div>
 
     <div class="card hidden" id="view-success">
-        <div style="text-align: center; padding: 20px 0;">
+        <div style="text-align: center;">
             <div style="font-size: 50px;">✅</div>
-            <h2 style="font-weight: 800;">¡Anotado!</h2>
-            <p style="color: var(--sub); font-size: 14px;">Transferí para asegurar tu lugar:</p>
+            <h2>¡Anotado!</h2>
+            <p style="color: var(--sub);">Transferí para asegurar tu lugar:</p>
             <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin: 20px 0;">
                 <span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span>
-                <span id="ex-alias" style="color: var(--primary); font-weight: 700;">alias.mp</span><br><br>
-                <button class="btn-copy-alias" style="background:#e1f0ff; color:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:700;" onclick="copiarAlias()">📋 Copiar Alias</button>
+                <span id="ex-alias" style="color: var(--primary); font-weight: 700;">-</span><br><br>
+                <button onclick="copiarAlias()" style="background:#e1f0ff; color:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:700;">📋 Copiar Alias</button>
             </div>
             <button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-            <button class="btn-full" style="margin-top:10px; color:var(--sub);" onclick="location.reload()">Volver</button>
+            <button class="btn-full" style="color:var(--sub); border:none; background:none;" onclick="location.reload()">Volver</button>
         </div>
     </div>
 
     <div class="card hidden" id="view-admin">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin:0; font-size: 18px;">Configuración</h2>
-            <button onclick="location.reload()" style="background:#eee; border:none; padding:8px 12px; border-radius:10px; font-size:11px;">Cerrar</button>
-        </div>
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">CATEGORÍAS (Ej: C5/C6)</label>
-        <input id="ed-cat" class="input-std">
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL TURNO</label>
+        <h2 style="margin-top:0;">Configuración</h2>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL TURNO / ORGANIZA</label>
         <input id="ed-org-name" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">LUGAR / SEDE</label>
+        <input id="ed-lugar" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">VALOR POR PERSONA ($)</label>
+        <input id="ed-valor" class="input-std" type="number">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">ALIAS MERCADO PAGO</label>
+        <input id="ed-alias" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">WHATSAPP ORGANIZADOR (PARA COMPROBANTES)</label>
+        <input id="ed-celu" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">CATEGORÍAS</label>
+        <input id="ed-cat" class="input-std">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">FECHA</label>
         <input id="ed-fec" class="input-std" type="date">
-        <div style="display: flex; gap: 10px;">
-            <div style="flex: 1;"><label style="font-size:10px; font-weight:800;">INICIO</label><input id="ed-hor" class="input-std" type="time"></div>
-            <div style="flex: 1;"><label style="font-size:10px; font-weight:800;">FIN</label><input id="ed-hor-fin" class="input-std" type="time"></div>
-        </div>
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">CUPOS DISPONIBLES</label>
-        <input id="ed-cup" class="input-std" type="number">
         <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
-        <button id="btnLock" class="btn-full" style="margin-top: 10px;" onclick="toggleBloqueo()"></button>
-        
-        <div id="lista-admin" style="margin-top: 30px;"></div>
+        <button class="btn-full" onclick="location.reload()">Cerrar</button>
+        <div id="lista-admin" style="margin-top: 20px;"></div>
     </div>
-
-    <div class="banner-sell">
-        <p>¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--primary);">Pasala a piloto automático y recuperá tu tiempo.</span></p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta%20y%20quiero%20cotizar" class="btn-full btn-blue" style="font-size: 12px;">SISTEMATIZAR MI ORGANIZACIÓN 🚀</a>
-    </div>
-
-    <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const params = new URLSearchParams(window.location.search);
-    
-    // LOGICA MULTI-CANCHA
-    const orgId = params.get('org'); // Link Madre
-    const eventId = params.get('id') || (orgId ? null : 'demo'); // Link Directo
-    
-    let currentId = eventId;
+    const orgId = params.get('org');
+    let currentId = params.get('id') || 'cancha-egd';
     let ev = {};
 
-    if (orgId && !eventId) {
-        // MODO CARTELERA
+    if (orgId && !params.get('id')) {
         document.getElementById('view-hub').classList.remove('hidden');
-        document.getElementById('hub-org-name').innerText = orgId.toUpperCase();
         onValue(ref(db, 'hubs/' + orgId), (snap) => {
             const list = snap.val() || [];
-            let html = "";
+            document.getElementById('hub-list').innerHTML = "";
             list.forEach(id => {
                 get(ref(db, 'eventos/' + id)).then(s => {
                     const data = s.val();
                     const item = document.createElement('a');
                     item.className = 'hub-item';
                     item.href = `?id=${id}&org=${orgId}`;
-                    item.innerHTML = `
-                        <span class="date">${data.fecha || 'A confirmar'}</span>
-                        <span class="name">${data.organiza}</span>
-                        <span class="meta">${data.lugar} | ${data.hora} HS</span>
-                    `;
+                    item.innerHTML = `<b>${data.organiza}</b><span>${data.fecha} - ${data.hora}hs</span>`;
                     document.getElementById('hub-list').appendChild(item);
                 });
             });
         });
     } else {
-        // MODO EVENTO INDIVIDUAL
         document.getElementById('view-event').classList.remove('hidden');
         onValue(ref(db, 'eventos/' + currentId), (snap) => {
             ev = snap.val() || {};
@@ -184,7 +128,6 @@
         });
     }
 
-    // FUNCIONES DE SIEMPRE (Inscribirse, Guardar, etc.)
     window.inscribirse = () => {
         const n = document.getElementById('in-nom').value.trim();
         const c = document.getElementById('in-cel').value.trim();
@@ -199,27 +142,38 @@
 
     window.abrirAdmin = () => {
         const p = prompt("Clave:");
-        if (p === "1234") {
+        if (p === (ev.password || "1234")) {
             document.getElementById('view-event').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
-            document.getElementById('ed-cat').value = ev.categorias || "";
             document.getElementById('ed-org-name').value = ev.organiza || "";
+            document.getElementById('ed-lugar').value = ev.lugar || "";
+            document.getElementById('ed-valor').value = ev.valor || 0;
+            document.getElementById('ed-alias').value = ev.alias || "";
+            document.getElementById('ed-celu').value = ev.celuOrganizador || "";
+            document.getElementById('ed-cat').value = ev.categorias || "";
             document.getElementById('ed-fec').value = ev.fecha || "";
-            document.getElementById('ed-hor').value = ev.hora || "";
-            document.getElementById('ed-hor-fin').value = ev.horaFin || "";
-            document.getElementById('ed-cup').value = ev.cupo || 0;
-        }
+        } else { alert("Clave incorrecta"); }
     };
 
     window.guardar = () => {
         update(ref(db, 'eventos/'+currentId), {
-            categorias: document.getElementById('ed-cat').value,
             organiza: document.getElementById('ed-org-name').value,
-            fecha: document.getElementById('ed-fec').value,
-            hora: document.getElementById('ed-hor').value,
-            horaFin: document.getElementById('ed-hor-fin').value,
-            cupo: parseInt(document.getElementById('ed-cup').value) || 0
-        }).then(() => alert("Guardado"));
+            lugar: document.getElementById('ed-lugar').value,
+            valor: parseInt(document.getElementById('ed-valor').value),
+            alias: document.getElementById('ed-alias').value,
+            celuOrganizador: document.getElementById('ed-celu').value,
+            categorias: document.getElementById('ed-cat').value,
+            fecha: document.getElementById('ed-fec').value
+        }).then(() => alert("Datos actualizados!"));
+    };
+
+    window.copiarAlias = () => {
+        navigator.clipboard.writeText(ev.alias).then(() => alert("Alias copiado!"));
+    };
+
+    window.enviarWhatsapp = () => {
+        const msg = encodeURIComponent(`Hola! Soy ${document.getElementById('in-nom').value}, te paso el comprobante para la cancha del ${ev.fecha}`);
+        window.open(`https://wa.me/${ev.celuOrganizador}?text=${msg}`);
     };
 
     window.cambiar = (oid) => {
@@ -238,13 +192,12 @@
         document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0);
         document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0);
         document.getElementById('ex-alias').innerText = ev.alias || '-';
-
+        
         let html = "";
         (ev.inscriptos || []).forEach(p => {
-            const lbl = p.estado === 'reservado' ? 'PAGA EN CANCHA' : p.estado.toUpperCase();
             html += `<div class="admin-item">
-                <div class="player-info"><span class="player-name"><b>${p.nombre}</b></span></div>
-                <button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${lbl}</button>
+                <span><b>${p.nombre}</b></span>
+                <button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${p.estado}</button>
             </div>`;
         });
         document.getElementById('lista-admin').innerHTML = html;

@@ -9,11 +9,12 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; line-height: 1.4; }
         .container { max-width: 480px; margin: auto; }
+        
         .main-header { text-align: center; padding: 25px 0 15px 0; }
         .main-header h1 { font-size: 32px; font-weight: 900; margin: 5px 0; letter-spacing: -1.5px; color: #000; }
         .main-header span { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
-        
-        /* HUB Y CARTELERA */
+
+        /* HUB / CARTELERA */
         .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
         .hub-row { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); }
@@ -30,15 +31,16 @@
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
-        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; }
+        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; }
         
         /* DÍAS HORIZONTALES */
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin-top: 8px; }
         .day-check { display: none; }
-        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 12px 0; text-align: center; border-radius: 12px; font-size: 10px; font-weight: 800; cursor: pointer; }
+        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 12px 0; text-align: center; border-radius: 12px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        /* BOTONES */
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.2s; }
         .btn-blue { background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); }
         .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
         
@@ -52,14 +54,13 @@
         .pagado { background: var(--success); } .paga-en-la-cancha { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
         
         .footer-credits { text-align: center; margin: 30px 0; font-size: 10px; color: #c7c7cc; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
-        .banner-sell { background: white; border-radius: 30px; padding: 35px 25px; text-align: center; box-shadow: var(--shadow); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 <div class="container">
     <div id="view-suspended" class="hidden" style="padding: 40px 0;">
-        <div class="msg-lleno">🚫 CANCHA NO DISPONIBLE<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">CONTACTAR AL ORGANIZADOR</span></div>
+        <div class="msg-lleno">🚫 CANCHA NO DISPONIBLE<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">Por favor, contactá al organizador.</span></div>
         <button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR</button>
     </div>
     
@@ -145,11 +146,6 @@
     </div>
     
     <div class="footer-credits">Desarrollado por Mariano Blumenfeld</div>
-    <div id="banner-marketing" class="banner-sell">
-        <p style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">¿Tu Cancha Abierta es un caos?</p>
-        <p style="font-size: 13px; color: var(--sub); margin-bottom: 25px;">Pasala a piloto automático hoy mismo.</p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full" style="background:var(--cta); color:white;">Mariano, ayudame con mi cancha abierta 🎾</a>
-    </div>
 </div>
 
 <script type="module">
@@ -165,10 +161,16 @@
     function formatearHoraVisual(h) { return h || "00:00"; }
     function formatearFecha(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
     
-    // Escucha de facturación
+    // ESCUCHA DE FACTURACIÓN Y SUSPENSIÓN
     if (orgId) {
         onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), (snap) => {
-            cuenta = snap.val() || { consumoActual: 0, limiteCredito: 30000 };
+            cuenta = snap.val() || { consumoActual: 0, limiteCredito: 30000, cuentaSuspendida: false };
+            
+            if (cuenta.cuentaSuspendida === true) {
+                document.getElementById('view-hub').classList.add('hidden');
+                document.getElementById('view-event').classList.add('hidden');
+                document.getElementById('view-suspended').classList.remove('hidden');
+            }
         });
     }
 
@@ -201,18 +203,18 @@
             const ahora = new Date(); 
             const fechaFinExacta = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
 
-            // --- LÓGICA DE FACTURACIÓN Y RESET ---
+            // --- LÓGICA DE FACTURACIÓN AL TERMINAR ---
             if (fechaFinExacta && ahora > fechaFinExacta && !ev.facturado) {
                 const fPrueba = new Date((cuenta.fechaFinPrueba || "2000-01-01") + "T23:59:59");
                 
-                // 1. Registro de Ingresos Reales para el Organizador
+                // 1. Recaudación Real del Organizador
                 const confirmados = (ev.inscriptos || []).filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha');
                 const recaudado = confirmados.length * (ev.valor || 0);
                 await push(ref(db, 'facturacion/' + orgId + '/ingresos'), {
                     fecha: ev.fecha, monto: recaudado, jugadores: confirmados.length, evento: ev.organiza, ts: Date.now()
                 });
 
-                // 2. Cobro de Comisión (Si terminó la prueba)
+                // 2. Comisión del Sistema
                 if (ahora > fPrueba) {
                     let cargo = (cuenta.costoCancha || 7000);
                     if (!cuenta.abonoCobrado) {
@@ -238,9 +240,11 @@
                 document.getElementById('view-event').classList.add('hidden'); 
                 document.getElementById('view-suspended').classList.remove('hidden'); 
             } else { 
-                document.getElementById('view-suspended').classList.add('hidden'); 
-                document.getElementById('view-event').classList.remove('hidden'); 
-                render(); 
+                if (cuenta.cuentaSuspendida !== true) {
+                    document.getElementById('view-suspended').classList.add('hidden'); 
+                    document.getElementById('view-event').classList.remove('hidden'); 
+                    render(); 
+                }
             } 
         }); 
     }
@@ -248,8 +252,12 @@
     window.toggleRecurrencia = () => { const v=document.getElementById('ed-freq').value; const s=document.getElementById('recurrencia-semanal'); v==='WEEKLY'?s.classList.remove('hidden'):s.classList.add('hidden'); }
     
     window.abrirAdmin = () => {
+        if (cuenta.cuentaSuspendida === true) {
+            alert("Tu cuenta está suspendida. Contactá al administrador para regularizar.");
+            return;
+        }
         if (cuenta.consumoActual >= cuenta.limiteCredito) {
-            alert("⚠️ Límite de uso alcanzado. Regularizá tu saldo para seguir operando.");
+            alert("⚠️ Límite de uso alcanzado. Regularizá tu saldo para seguir gestionando.");
             return;
         }
         const p=prompt("Clave:");
@@ -336,11 +344,8 @@
 
     function render() { 
         document.getElementById('txt-event-name').innerText=(ev.organiza||"CARGANDO...").toUpperCase();
-        document.getElementById('txt-organizador').innerText=ev.organizador||"-";
-        document.getElementById('txt-cat').innerText=ev.categorias||"TODAS";
         document.getElementById('txt-fecha').innerText=formatearFecha(ev.fecha);
         document.getElementById('txt-hora').innerText=`DE ${formatearHoraVisual(ev.hora)} A ${formatearHoraVisual(ev.horaFin)} HS`;
-        document.getElementById('txt-lugar').innerText=ev.lugar||"-";
         document.getElementById('txt-valor').innerText="$"+(ev.valor||0).toLocaleString('es-AR');
         
         const tot=ev.cupo||0; let ins=ev.inscriptos||[];

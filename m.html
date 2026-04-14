@@ -12,23 +12,25 @@
         
         h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
 
-        /* TARJETA ORGANIZADOR (VISTA SIMPLE) */
+        /* TARJETA ORGANIZADOR */
         .org-card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.01); overflow: hidden; }
         .org-header-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .org-info-main b { font-size: 18px; text-transform: uppercase; letter-spacing: -0.5px; }
         .org-info-main span { display: block; font-size: 12px; color: var(--sub); font-weight: 600; }
 
-        /* SECCIÓN EXPANDIBLE (DETALLE) */
+        /* GRUPO DE BOTONES EN CABECERA */
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+
+        /* SECCIÓN EXPANDIBLE */
         .org-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f2f2f7; display: none; }
         .org-detail.active { display: block; animation: fadeIn 0.3s ease; }
 
-        /* CANCHAS DENTRO DEL DETALLE */
+        /* CANCHAS */
         .event-box { background: #f9f9fb; border-radius: 20px; padding: 16px; margin-bottom: 12px; border: 1px solid #eee; }
         .event-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .event-row b { font-size: 15px; }
         
         /* BOTONES */
-        .btn { padding: 10px 16px; border-radius: 12px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn { padding: 10px 16px; border-radius: 12px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; justify-content: center; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #eee; color: var(--text); }
         .btn-dark { background: var(--text); color: white; }
@@ -37,11 +39,7 @@
         .btn-active { background: var(--success); color: white; }
         .btn-delete { background: #ffebeb; color: var(--danger); }
 
-        /* INPUTS LINKS */
-        .link-tool { margin-top: 10px; padding-top: 10px; border-top: 1px dotted #ddd; }
         .input-short { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-size: 11px; margin-bottom: 8px; outline: none; }
-        
-        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 32px; width: 100%; max-width: 400px; }
@@ -54,9 +52,7 @@
 
 <div class="container">
     <h1>Centro de Mandos 🏟️</h1>
-
     <div id="org-list">Cargando tablero...</div>
-
     <button class="btn btn-dark" style="width:100%; padding:20px; border-radius:20px; margin-top:20px; font-size:15px;" onclick="abrirModal('org')">
         + Nuevo Organizador
     </button>
@@ -91,13 +87,15 @@
                         <b>${orgId}</b>
                         <span>${eventIds.length} Canchas Activas</span>
                     </div>
-                    <button class="btn btn-outline" id="btn-label-${orgId}">Administrar</button>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" style="padding: 10px;" onclick="event.stopPropagation(); copiar('${BASE_URL}?org=${orgId}')" title="Copiar Link Cartelera">📋</button>
+                        <button class="btn btn-outline" id="btn-label-${orgId}">Administrar</button>
+                    </div>
                 </div>
                 
                 <div class="org-detail" id="detail-${orgId}">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                        <button class="btn btn-gray" onclick="copiar('${BASE_URL}?org=${orgId}')">📋 Link Cartelera</button>
-                        <button class="btn btn-delete" onclick="eliminarOrganizador('${orgId}')">Eliminar Cliente</button>
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+                        <button class="btn btn-delete" onclick="eliminarOrganizador('${orgId}')" style="font-size:10px;">Eliminar Cliente</button>
                     </div>
                     <div id="items-${orgId}">Cargando canchas...</div>
                     <button class="btn btn-blue" style="width:100%; margin-top:10px;" onclick="abrirModal('cancha', '${orgId}')">+ Nueva Cancha</button>
@@ -119,7 +117,7 @@
                     eventBox.innerHTML = `
                         <div class="event-row">
                             <div style="line-height:1.1">
-                                <b>${d.organiza}</b>
+                                <b style="font-size:14px;">${d.organiza}</b>
                                 <span style="font-size:10px; color:var(--sub); display:block;">ID: ${id}</span>
                             </div>
                             <div style="display:flex; gap:5px;">
@@ -128,7 +126,7 @@
                                 <button class="btn btn-gray" style="padding:6px 10px; font-size:9px;" onclick="eliminarCancha('${orgId}', '${id}')">🗑️</button>
                             </div>
                         </div>
-                        <div class="link-tool">
+                        <div style="margin-top:10px; border-top:1px dotted #ddd; padding-top:10px;">
                             <input id="link-${id}" class="input-short" placeholder="Link corto (TinyURL/Bitly)..." value="${d.linkCorto || ''}">
                             <div style="display:flex; gap:5px;">
                                 <button class="btn btn-gray" style="flex:1; font-size:10px;" onclick="guardarLinkCorto('${id}')">💾 Guardar</button>
@@ -142,23 +140,18 @@
         });
     });
 
-    // Lógica de UI
     window.toggleOrg = (id) => {
         const detail = document.getElementById('detail-' + id);
         const btn = document.getElementById('btn-label-' + id);
         const isActive = detail.classList.contains('active');
-        
-        // Cerrar todos los demás para mantenerlo simple
         document.querySelectorAll('.org-detail').forEach(d => d.classList.remove('active'));
-        document.querySelectorAll('.org-info-main + .btn').forEach(b => b.innerText = "Administrar");
-
+        document.querySelectorAll('.header-actions .btn-outline[id^="btn-label"]').forEach(b => b.innerText = "Administrar");
         if (!isActive) {
             detail.classList.add('active');
             btn.innerText = "Cerrar";
         }
     };
 
-    // Funciones Firebase (Mantenidas y Protegidas)
     window.toggleSuspender = (id, estado) => update(ref(db, 'eventos/' + id), { suspendido: !estado });
     window.guardarLinkCorto = (id) => {
         const url = document.getElementById('link-' + id).value.trim();
@@ -166,24 +159,24 @@
     };
     window.copiarLinkCorto = (id) => {
         const url = document.getElementById('link-' + id).value;
-        if(url) navigator.clipboard.writeText(url).then(() => alert("Copiado!"));
+        if(url) navigator.clipboard.writeText(url).then(() => alert("Link copiado!"));
     };
-    window.copiar = (txt) => navigator.clipboard.writeText(txt).then(() => alert("Copiado!"));
+    window.copiar = (txt) => navigator.clipboard.writeText(txt).then(() => alert("Link de cartelera copiado!"));
 
     window.abrirModal = (tipo, orgId = '') => {
         const body = document.getElementById('modal-body');
         if (tipo === 'org') {
             body.innerHTML = `
-                <h2 style="margin-top:0; letter-spacing:-1px;">Nuevo Organizador</h2>
-                <input id="in-org-id" class="input-std" style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; margin-bottom:10px;" placeholder="ID (ej: wini-padel)">
-                <input id="in-event-name" class="input-std" style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; margin-bottom:10px;" placeholder="Nombre de la primera cancha">
+                <h2 style="margin-top:0;">Nuevo Organizador</h2>
+                <input id="in-org-id" class="input-short" style="padding:15px; font-size:14px;" placeholder="ID (ej: wini-padel)">
+                <input id="in-event-name" class="input-short" style="padding:15px; font-size:14px;" placeholder="Nombre de la primera cancha">
                 <button class="btn btn-blue" style="width:100%; padding:15px;" onclick="crearOrg()">Crear Cliente</button>
                 <button class="btn" style="width:100%; background:none; color:var(--sub); margin-top:10px;" onclick="cerrarModal()">Cancelar</button>
             `;
         } else {
             body.innerHTML = `
-                <h2 style="margin-top:0; letter-spacing:-1px;">Nueva Cancha para ${orgId}</h2>
-                <input id="in-new-name" class="input-std" style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; margin-bottom:10px;" placeholder="Nombre (ej: Martes Pro)">
+                <h2 style="margin-top:0;">Nueva Cancha para ${orgId}</h2>
+                <input id="in-new-name" class="input-short" style="padding:15px; font-size:14px;" placeholder="Nombre (ej: Martes Pro)">
                 <input id="in-target-org" type="hidden" value="${orgId}">
                 <button class="btn btn-blue" style="width:100%; padding:15px;" onclick="agregarCancha()">Agregar Cancha</button>
                 <button class="btn" style="width:100%; background:none; color:var(--sub); margin-top:10px;" onclick="cerrarModal()">Cancelar</button>

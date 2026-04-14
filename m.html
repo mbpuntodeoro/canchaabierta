@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub - Gestión Total</title>
+    <title>Master Hub - Gestión & Cobranza</title>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
@@ -18,6 +18,7 @@
         
         .btn-full { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn-blue { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; margin-top: 15px; }
         .btn-ghost { background: #f2f2f7; color: var(--text); font-size: 12px; margin-top:10px; }
         
         .org-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #f2f2f7; }
@@ -30,22 +31,22 @@
         .cancha-item span { font-size: 13px; font-weight: 700; color: var(--sub); }
         .cancha-item a { color: var(--primary); text-decoration: none; font-weight: 800; font-size: 12px; }
         
-        .add-cancha-box { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-add { background: var(--text); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        .btn-del { color: var(--danger); background: none; border: none; font-size: 16px; cursor: pointer; }
-
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
-        .tag-trial { background: var(--warning); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 8px; vertical-align: middle; }
+        .tag-status { font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 8px; vertical-align: middle; font-weight: 800; text-transform: uppercase; }
+        .tag-trial { background: var(--warning); color: #000; }
+        .tag-debt { background: var(--danger); color: #fff; }
+        .tag-ok { background: var(--success); color: #fff; }
         
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .hidden { display: none !important; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div id="view-login">
         <div class="card" style="margin-top: 80px; max-width: 400px; margin-left: auto; margin-right: auto;">
-            <div class="header"><h1>Master Admin</h1><span>Acceso Restringido</span></div>
+            <div class="header"><h1>Master Admin</h1><span>Finanzas & Control</span></div>
             <label>Clave Maestra</label>
             <input type="password" id="master-pass" class="input-std">
             <button class="btn-full btn-blue" onclick="login()">Entrar al Panel</button>
@@ -57,7 +58,7 @@
         
         <div class="card">
             <h2 style="font-size: 18px; margin-top: 0;">+ Nuevo Organizador</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="grid-2">
                 <div><label>ID Hub</label><input id="new-id" class="input-std" placeholder="ej: adictos"></div>
                 <div><label>Nombre Comercial</label><input id="new-name" class="input-std" placeholder="Ej: Adictos Padel"></div>
             </div>
@@ -69,20 +70,37 @@
 
     <div id="modal-finance" class="modal hidden">
         <div class="card" style="width: 90%; max-width: 450px;">
-            <h2 id="modal-title" style="margin-top:0;">Facturación</h2>
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="modal-title" style="margin:0;">Configuración</h2>
+                <span id="modal-status-tag" class="tag-status"></span>
+            </div>
             <input type="hidden" id="modal-org-id">
-            <label>Deuda Actual ($)</label><input id="mod-consumo" class="input-std" type="number">
-            <label>Límite de Crédito ($)</label><input id="mod-limite" class="input-std" type="number">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
-                <div><label>Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
+            
+            <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #eee;">
+                <label style="margin-top:0;">Deuda Actual</label>
+                <div style="display:flex; align-items: center; justify-content: space-between;">
+                    <h3 id="txt-deuda-modal" style="font-size: 32px; margin:0; font-weight: 900;">$0</h3>
+                    <button class="btn-manage" style="background: var(--success); color: white;" onclick="confirmarPago()">REGISTRAR PAGO</button>
+                </div>
             </div>
-            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-top: 15px;">
-                <label style="margin-top:0; color:#856404;">Días de Prueba</label>
-                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Días gratis desde hoy">
+
+            <div class="grid-2">
+                <div><label>Límite Crédito</label><input id="mod-limite" class="input-std" type="number"></div>
+                <div><label>Vence Abono</label><input id="mod-ciclo" class="input-std" type="date"></div>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar</button>
+
+            <div class="grid-2">
+                <div><label>Costo Abono</label><input id="mod-abono" class="input-std" type="number"></div>
+                <div><label>Costo Cancha</label><input id="mod-cancha" class="input-std" type="number"></div>
+            </div>
+
+            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid #ffeeba;">
+                <label style="margin-top:0; color:#856404;">Resetear Días de Prueba</label>
+                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Días desde hoy" style="border-color:#ffeeba;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar Cambios</button>
                 <button class="btn-full btn-ghost" onclick="cerrarModal()">Cerrar</button>
             </div>
         </div>
@@ -91,7 +109,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
@@ -102,123 +120,130 @@
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-panel').classList.remove('hidden');
             cargarLista();
-        } else { alert("Error"); }
+        } else { alert("Clave Incorrecta"); }
     };
 
     function cargarLista() {
         onValue(ref(db, 'hubs'), async (snap) => {
             const hubs = snap.val() || {};
             const list = document.getElementById('org-list'); list.innerHTML = "";
-            
             for (let id in hubs) {
                 const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
                 const f = fSnap.val() || { consumoActual: 0 };
-                const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > new Date();
+                const hoy = new Date();
+                const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
+                const isDebt = f.consumoActual >= f.limiteCredito;
 
                 const orgDiv = document.createElement('div');
                 orgDiv.className = "org-card";
                 
                 let canchasHtml = "";
-                const canchas = hubs[id].canchas || [];
-                canchas.forEach(cid => {
-                    canchasHtml += `
-                        <div class="cancha-item">
-                            <span>ID: ${cid}</span>
-                            <div style="display:flex; gap:10px;">
-                                <a href="v.html?id=${cid}&org=${id}" target="_blank">VER CANCHA ➔</a>
-                                <button class="btn-del" onclick="eliminarCancha('${id}', '${cid}')">✕</button>
-                            </div>
-                        </div>`;
+                (hubs[id].canchas || []).forEach(cid => {
+                    canchasHtml += `<div class="cancha-item"><span>ID: ${cid}</span><a href="v.html?id=${cid}&org=${id}" target="_blank">VER CANCHA ➔</a></div>`;
                 });
 
                 orgDiv.innerHTML = `
                     <div class="org-header">
                         <div class="org-name-box">
-                            <b>${hubs[id].nombre || id} ${isTrial ? '<span class="tag-trial">PRUEBA</span>' : ''}</b>
-                            <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} | ID: ${id}</span>
+                            <b>${hubs[id].nombre || id} 
+                                ${isTrial ? '<span class="tag-status tag-trial">Trial</span>' : isDebt ? '<span class="tag-status tag-debt">Bloqueado</span>' : '<span class="tag-status tag-ok">Ok</span>'}
+                            </b>
+                            <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} | Vence: ${f.fechaFinCiclo || '-'}</span>
                             <div style="margin-top:10px;">
-                                <a href="v.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--primary); text-decoration:none;">VER CARTELERA COMPLETA ➔</a>
-                                <br><a href="d.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--text); text-decoration:none;">VER DASHBOARD PRIVADO ➔</a>
+                                <a href="v.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--primary); text-decoration:none;">CARTELERA ➔</a>
+                                <a href="d.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--text); text-decoration:none; margin-left:15px;">DASHBOARD ➔</a>
                             </div>
                         </div>
-                        <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ Facturación</button>
+                        <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ GESTIONAR</button>
                     </div>
-                    <div class="canchas-list">
-                        <label style="margin:0 0 10px 0;">Canchas vinculadas:</label>
-                        ${canchasHtml || '<p style="font-size:12px; color:#aaa;">Sin canchas vinculadas</p>'}
-                        <div class="add-cancha-box">
-                            <input id="add-${id}" class="input-std" style="margin-bottom:0;" placeholder="Pegar ID de la cancha">
-                            <button class="btn-add" onclick="vincularCancha('${id}')">Vincular</button>
-                        </div>
-                    </div>
+                    <div class="canchas-list">${canchasHtml || '<p style="font-size:12px; color:#aaa;">Sin canchas</p>'}</div>
                 `;
                 list.appendChild(orgDiv);
             }
         });
     }
 
-    window.vincularCancha = async (orgId) => {
-        const cid = document.getElementById('add-' + orgId).value.trim();
-        if(!cid) return;
-        const s = await get(ref(db, 'hubs/' + orgId + '/canchas'));
-        let canchas = s.val() || [];
-        if(!canchas.includes(cid)) {
-            canchas.push(cid);
-            await set(ref(db, 'hubs/' + orgId + '/canchas'), canchas);
-            alert("Cancha Vinculada");
-        }
-    };
-
-    window.eliminarCancha = async (orgId, cid) => {
-        if(!confirm("¿Desvincular cancha?")) return;
-        const s = await get(ref(db, 'hubs/' + orgId + '/canchas'));
-        let canchas = s.val() || [];
-        const nuevas = canchas.filter(id => id !== cid);
-        await set(ref(db, 'hubs/' + orgId + '/canchas'), nuevas);
-    };
-
-    window.crearOrg = async () => {
-        const id = document.getElementById('new-id').value.trim().toLowerCase();
-        const nombre = document.getElementById('new-name').value.trim();
-        if(!id || !nombre) return alert("Faltan datos");
-        await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
-        alert("Creado. Ahora configurá la facturación.");
-    };
-
     window.abrirFinanzas = async (id) => {
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
         const f = s.val() || { consumoActual: 0, limiteCredito: 30000, costoAbono: 25000, costoCancha: 7000 };
+        const tag = document.getElementById('modal-status-tag');
+        const isDebt = f.consumoActual >= f.limiteCredito;
+        
+        tag.innerText = isDebt ? "Deuda Excedida" : "Cuenta al día";
+        tag.className = "tag-status " + (isDebt ? "tag-debt" : "tag-ok");
+        
         document.getElementById('modal-org-id').value = id;
-        document.getElementById('modal-title').innerText = "Finanzas: " + id;
-        document.getElementById('mod-consumo').value = f.consumoActual;
+        document.getElementById('modal-title').innerText = f.nombreOrg || id;
+        document.getElementById('txt-deuda-modal').innerText = "$" + (f.consumoActual || 0).toLocaleString();
         document.getElementById('mod-limite').value = f.limiteCredito;
+        document.getElementById('mod-ciclo').value = f.fechaFinCiclo || "";
         document.getElementById('mod-abono').value = f.costoAbono || 25000;
         document.getElementById('mod-cancha').value = f.costoCancha || 7000;
         document.getElementById('mod-prueba-dias').value = "";
         document.getElementById('modal-finance').classList.remove('hidden');
     };
 
+    window.confirmarPago = async () => {
+        const id = document.getElementById('modal-org-id').value;
+        const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
+        const f = s.val();
+        const montoPagado = f.consumoActual;
+
+        if (montoPagado <= 0) return alert("No hay deuda pendiente.");
+        if (!confirm(`¿Confirmás el cobro de $${montoPagado.toLocaleString()}? \nSe reseteará la deuda y se extenderá el abono 30 días.`)) return;
+
+        const hoy = new Date();
+        const fechaActualVencimiento = new Date(f.fechaFinCiclo + "T23:59:59");
+        // Si el abono ya venció, sumamos 30 días desde hoy. Si no, extendemos desde la fecha de vencimiento.
+        const baseFecha = hoy > fechaActualVencimiento ? hoy : fechaActualVencimiento;
+        const nuevaFechaVencimiento = new Date(baseFecha);
+        nuevaFechaVencimiento.setDate(nuevaFechaVencimiento.getDate() + 30);
+
+        const updates = {
+            consumoActual: 0,
+            fechaFinCiclo: nuevaFechaVencimiento.toISOString().split('T')[0],
+            estado: "activo"
+        };
+
+        try {
+            await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
+            await push(ref(db, 'facturacion/' + id + '/historial'), {
+                fecha: hoy.toISOString(),
+                monto: montoPagado,
+                tipo: "PAGO",
+                motivo: "Saldado de deuda y renovación de abono"
+            });
+            alert("¡Cobro registrado! Deuda saldada.");
+            cerrarModal();
+        } catch (e) { alert("Error: " + e.message); }
+    };
+
     window.guardarFinanzas = async () => {
         const id = document.getElementById('modal-org-id').value;
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
         let updates = {
-            consumoActual: parseInt(document.getElementById('mod-consumo').value),
             limiteCredito: parseInt(document.getElementById('mod-limite').value),
+            fechaFinCiclo: document.getElementById('mod-ciclo').value,
             costoAbono: parseInt(document.getElementById('mod-abono').value),
-            costoCancha: parseInt(document.getElementById('mod-cancha').value),
+            costoCancha: parseInt(document.getElementById('mod-cancha').value)
         };
         if(dias > 0) {
             const fP = new Date(); fP.setDate(fP.getDate() + dias);
             updates.fechaFinPrueba = fP.toISOString().split('T')[0];
             updates.abonoCobrado = false;
-            const fC = new Date(fP); fC.setDate(fC.getDate() + 30);
-            updates.fechaFinCiclo = fC.toISOString().split('T')[0];
         }
         await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
-        alert("Guardado"); cerrarModal();
+        alert("Configuración Guardada"); cerrarModal();
     };
 
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');
+    window.crearOrg = async () => {
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
+        const nombre = document.getElementById('new-name').value.trim();
+        if(!id || !nombre) return alert("Faltan datos");
+        await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
+        alert("Creado. Configurá la facturación ahora.");
+    };
 </script>
 </body>
 </html>

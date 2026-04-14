@@ -21,12 +21,10 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; line-height: 1.4; }
         .container { max-width: 480px; margin: auto; }
         
-        /* HEADER PRINCIPAL */
         .main-header { text-align: center; padding: 25px 0 15px 0; }
         .main-header span { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
         .main-header h1 { font-size: 32px; font-weight: 900; margin: 5px 0; letter-spacing: -1.5px; color: #000; }
 
-        /* HUB STYLE - AGENDA COMPACTA */
         .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
         
@@ -35,48 +33,45 @@
             display: flex; align-items: center; text-decoration: none; color: inherit; 
             box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(0,0,0,0.02);
         }
-        .hub-row:active { transform: scale(0.98); box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-        
         .hub-time { 
-            font-size: 11px; font-weight: 800; color: var(--primary); width: 120px; flex-shrink: 0; 
+            font-size: 11px; font-weight: 800; color: var(--primary); width: 125px; flex-shrink: 0; 
             border-right: 1.5px solid #f2f2f7; margin-right: 15px; line-height: 1.2; white-space: nowrap;
-            display: flex; flex-direction: column; justify-content: center;
+            display: flex; align-items: center; justify-content: center; height: 40px;
         }
         .hub-main { flex: 1; min-width: 0; }
-        .hub-title { font-size: 15px; font-weight: 800; color: #000; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: -0.3px; }
-        .hub-details { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .hub-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+        .hub-title { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: -0.3px; }
         .hub-tag { background: #007aff10; color: var(--primary); font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 8px; text-transform: uppercase; }
-        .hub-sub { font-size: 11px; color: var(--sub); display: flex; align-items: center; gap: 3px; }
-        .hub-arrow { color: #d1d1d6; font-size: 18px; font-weight: 300; padding-left: 10px; }
+        .hub-sub { font-size: 11px; color: var(--sub); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hub-arrow { color: #d1d1d6; font-size: 18px; padding-left: 10px; }
 
-        /* FORMULARIO Y CARDS */
         .card { background: var(--card); padding: 28px; border-radius: 28px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); margin-bottom: 20px; }
         .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; border: 1px solid #fff; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        .info-item span { font-weight: 600; color: #1d1d1f; }
+        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
 
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; margin-left: 6px; margin-top: 15px; }
-        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; transition: border-color 0.2s; background: #fff; }
-        .input-std:focus { border-color: var(--primary); }
+        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; }
         
-        .btn-full { 
-            width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; cursor: pointer; 
-            font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        /* CORRECCIÓN DÍAS HORIZONTALES */
+        .days-grid { display: flex; justify-content: space-between; gap: 4px; margin-top: 8px; }
+        .day-check { display: none; }
+        .day-label { 
+            flex: 1; background: #f2f2f7; color: #8e8e93; padding: 12px 0; text-align: center; 
+            border-radius: 12px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s;
         }
+        .day-check:checked + .day-label { background: var(--primary); color: white; }
+
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; }
         .btn-blue { background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); margin-top: 25px; }
-        .btn-blue:active { transform: scale(0.97); }
-        .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* STATUS MESSAGES */
-        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; line-height: 1.5; box-shadow: 0 10px 20px rgba(255, 59, 48, 0.2); }
+        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; line-height: 1.5; }
         .msg-lleno { background: #fff; color: var(--danger); padding: 30px; border-radius: 22px; font-size: 18px; font-weight: 900; text-align: center; border: 2px solid #f2f2f7; }
 
-        /* REPORTES ADMIN */
         .report-list { background: #f2f2f7; border-radius: 24px; padding: 8px; margin-bottom: 30px; }
-        .report-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: white; border-radius: 16px; margin: 4px; border: 1px solid rgba(0,0,0,0.02); }
-        .report-label { font-size: 13px; font-weight: 700; color: #48484a; display: flex; align-items: center; gap: 8px; }
-        .report-value { font-weight: 800; font-size: 17px; color: #000; }
+        .report-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: white; border-radius: 16px; margin: 4px; }
+        .report-value { font-weight: 800; font-size: 17px; }
 
         .admin-item { display: flex; align-items: center; padding: 12px 14px; background: #fff; border-radius: 16px; margin-bottom: 6px; border: 1px solid #efeff4; gap: 10px; }
         .estado-btn { flex: 1; height: 38px; border-radius: 12px; font-size: 10px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
@@ -85,7 +80,7 @@
 
         .footer-credits { text-align: center; margin: 30px 0; font-size: 10px; color: #c7c7cc; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
         .banner-sell { background: white; border-radius: 30px; padding: 35px 25px; text-align: center; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.01); }
-        .btn-cta { background: var(--cta); color: white; box-shadow: 0 10px 20px rgba(255, 149, 0, 0.2); }
+        .btn-cta { background: var(--cta); color: white; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -125,12 +120,12 @@
     <div class="card hidden" id="view-success">
         <div style="text-align: center;">
             <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-            <h2 style="font-size: 28px; font-weight: 900; margin-bottom:20px; letter-spacing: -1px;">¡Estás anotado!</h2>
+            <h2 style="font-size: 28px; font-weight: 900; margin-bottom:20px;">¡Estás anotado!</h2>
             <div class="msg-instrucciones">Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.</div>
             <div style="background: #f2f2f7; padding: 25px; border-radius: 24px; margin-bottom: 25px;">
                 <span id="ex-monto" style="font-size: 36px; font-weight: 900; display: block; color: #000;">$0</span>
                 <span id="ex-alias" style="color: var(--primary); font-weight: 800; font-size: 16px;">-</span><br><br>
-                <button onclick="copiarAlias()" style="background:#fff; color:var(--primary); border:1.5px solid #e5e5e7; padding:12px 20px; border-radius:14px; font-weight:800; font-size:13px;">📋 Copiar Alias</button>
+                <button onclick="copiarAlias()" style="background:#fff; color:var(--primary); border:1.5px solid #e5e5e7; padding:12px 20px; border-radius:14px; font-weight:800;">📋 Copiar Alias</button>
             </div>
             <button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
             <button class="btn-full" style="color:var(--sub); border:none; background:none; font-weight:700;" onclick="location.reload()">Volver al inicio</button>
@@ -138,13 +133,24 @@
     </div>
     
     <div class="card hidden" id="view-admin">
-        <h2 style="font-size:24px; font-weight:900; margin:0 0 20px 0; letter-spacing:-1px;">Configuración</h2>
+        <h2 style="font-size:24px; font-weight:900; margin-bottom:20px;">Configuración</h2>
         <label>Nombre Cancha</label><input id="ed-org-name" class="input-std">
         <label>Organizador</label><input id="ed-organizador" class="input-std">
         <label>Contraseña Gestión</label><input id="ed-pass" class="input-std" type="password">
         <label>Estado inscripciones</label><select id="ed-ins-status" class="input-std"><option value="abiertas">Abiertas</option><option value="cerradas">Cerradas manualmente</option></select>
         <label>Tipo Evento</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Fecha Única</option><option value="WEEKLY">Semanal (Recurrente)</option></select>
-        <div id="recurrencia-semanal" class="hidden"><label>Días</label><div class="days-grid"><input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label><input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label><input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label><input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label><input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label><input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label><input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label></div></div>
+        <div id="recurrencia-semanal" class="hidden">
+            <label>Días de la semana</label>
+            <div class="days-grid">
+                <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
+                <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
+                <input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label>
+                <input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label>
+                <input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label>
+                <input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label>
+                <input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label>
+            </div>
+        </div>
         <label>Lugar</label><input id="ed-lugar" class="input-std">
         <div style="display: flex; gap: 10px;"><div style="flex:1"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div><div style="flex:1"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div></div>
         <label>Precio ($)</label><input id="ed-valor" class="input-std" type="number">
@@ -163,12 +169,12 @@
             <div class="report-row"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen" style="color:var(--danger)">0</div></div>
             <div class="report-row" style="background: #007aff08;"><div class="report-label" style="color:var(--primary)">🎾 Disponibles</div><div class="report-value" id="rep-libres" style="color:var(--primary)">0</div></div>
         </div>
-        <h3 style="font-size:14px; font-weight:800; margin-bottom:15px; text-transform:uppercase; color:var(--sub);">Inscriptos</h3><div id="lista-admin"></div>
+        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; color:var(--sub);">Inscriptos</h3><div id="lista-admin"></div>
     </div>
     
     <div class="footer-credits">Desarrollado por Mariano Blumenfeld</div>
     <div id="banner-marketing" class="banner-sell">
-        <p style="font-size: 16px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px;">¿Tu Cancha Abierta es un caos?</p>
+        <p style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">¿Tu Cancha Abierta es un caos?</p>
         <p style="font-size: 13px; color: var(--sub); margin-bottom: 25px;">Pasala a piloto automático hoy mismo.</p>
         <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a>
     </div>
@@ -187,10 +193,14 @@
     function formatearFecha(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
     function obtenerProximaFecha(rrule) {
         const parts = rrule.split(';'); const freq = parts[0].split('=')[1]; if (freq !== 'WEEKLY') return null;
+        const byDay = parts[1].split('=')[1];
         const daysMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
-        const allowedDays = parts[1].split('=')[1].split(',').map(d => daysMap[d]);
+        const allowedDays = byDay.split(',').map(d => daysMap[d]);
         let next = new Date(); next.setHours(0,0,0,0);
-        for (let i = 1; i <= 7; i++) { next.setDate(next.getDate() + 1); if (allowedDays.includes(next.getDay())) { return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`; } }
+        for (let i = 1; i <= 7; i++) {
+            next.setDate(next.getDate() + 1);
+            if (allowedDays.includes(next.getDay())) { return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`; }
+        }
         return null;
     }
     
@@ -214,15 +224,15 @@
             eventsData.forEach(d => {
                 if (d.fecha !== lastDate) { hubList.innerHTML += `<div class="day-header">${formatearFecha(d.fecha)}</div>`; lastDate = d.fecha; }
                 const hR = `${formatearHoraVisual(d.hora)} A ${formatearHoraVisual(d.horaFin)} HS`;
-                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time"><span>INICIA</span>${hR}</div><div class="hub-main"><div class="hub-title-row"><span class="hub-title">${d.organiza}</span><span class="hub-tag">${d.categorias||'Todas'}</span></div><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div class="hub-arrow">➔</div></a>`;
+                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${hR}</div><div class="hub-main"><div class="hub-title-row"><span class="hub-title">${d.organiza}</span><span class="hub-tag">${d.categorias||'Todas'}</span></div><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div class="hub-arrow">➔</div></a>`;
             });
         }); 
     } else if (currentId) { 
         onValue(ref(db, 'eventos/' + currentId), (snap) => { 
             ev=snap.val()||{}; 
             const ahora = new Date(); 
-            const fechaEventoFinal = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
-            if (fechaEventoFinal && ahora > fechaEventoFinal && ev.rrule && !ev.rrule.includes('NONE')) {
+            const fechaFinExacta = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
+            if (fechaFinExacta && ahora > fechaFinExacta && ev.rrule && !ev.rrule.includes('NONE')) {
                 const prx = obtenerProximaFecha(ev.rrule);
                 if (prx) { update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], inscripcionesCerradas: false }); return; }
             }
@@ -231,7 +241,7 @@
         }); 
     }
     window.toggleRecurrencia = () => { const v=document.getElementById('ed-freq').value; const s=document.getElementById('recurrencia-semanal'); v==='WEEKLY'?s.classList.remove('hidden'):s.classList.add('hidden'); }
-    window.abrirAdmin = () => { const p=prompt("Clave:"); if (p===(ev.password||"1234")) { document.getElementById('view-event').classList.add('hidden'); document.getElementById('btn-gestionar-main')?.classList.add('hidden'); document.getElementById('view-suspended').classList.add('hidden'); document.getElementById('banner-marketing').classList.add('hidden'); document.getElementById('view-admin').classList.remove('hidden'); document.getElementById('ed-org-name').value=ev.organiza||""; document.getElementById('ed-organizador').value=ev.organizador||""; document.getElementById('ed-pass').value=ev.password||"1234"; document.getElementById('ed-lugar').value=ev.lugar||""; document.getElementById('ed-hor').value=ev.hora||""; document.getElementById('ed-hor-fin').value=ev.horaFin||""; document.getElementById('ed-valor').value=ev.valor||0; document.getElementById('ed-alias').value=ev.alias||""; document.getElementById('in-cel-adm').value=ev.celuOrganizador||""; document.getElementById('ed-cat').value=ev.categorias||""; document.getElementById('ed-fec').value=ev.fecha||""; document.getElementById('ed-cupo').value=ev.cupo||0; document.getElementById('ed-ins-status').value=ev.inscripcionesCerradas?'cerradas':'abiertas'; if(ev.rrule) { const pts=ev.rrule.split(';'); document.getElementById('ed-freq').value=pts[0].split('=')[1]; if(pts[1]) { pts[1].split('=')[1].split(',').forEach(d => { if(document.getElementById('check-'+d)) document.getElementById('check-'+d).checked=true; }); } toggleRecurrencia(); } } };
+    window.abrirAdmin = () => { const p=prompt("Clave:"); if (p===(ev.password||"1234")) { document.getElementById('view-event').classList.add('hidden'); document.getElementById('btn-gestionar-main')?.classList.add('hidden'); document.getElementById('view-suspended').classList.add('hidden'); document.getElementById('banner-marketing').classList.add('hidden'); document.getElementById('view-admin').classList.remove('hidden'); document.getElementById('ed-org-name').value=ev.organiza||""; document.getElementById('ed-organizador').value=ev.organizador||""; document.getElementById('ed-pass').value=ev.password||"1234"; document.getElementById('ed-lugar').value=ev.lugar||""; document.getElementById('ed-hor').value=ev.hora||""; document.getElementById('ed-hor-fin').value=ev.horaFin||""; document.getElementById('ed-valor').value=ev.valor||0; document.getElementById('ed-alias').value=ev.alias||""; document.getElementById('in-cel-adm').value=ev.celuOrganizador||""; document.getElementById('ed-cat').value=ev.categorias||""; document.getElementById('ed-fec').value=ev.fecha||""; document.getElementById('ed-cupo').value=ev.cupo||0; document.getElementById('ed-ins-status').value=ev.inscripcionesCerradas?'cerradas':'abiertas'; if(ev.rrule) { const pts=ev.rrule.split(';'); document.getElementById('ed-freq').value=pts[0].split('=')[1]; if(pts[1]) { const ds=pts[1].split('=')[1].split(','); ds.forEach(d => { if(document.getElementById('check-'+d)) document.getElementById('check-'+d).checked=true; }); } toggleRecurrencia(); } } };
     window.guardar = () => { const f=document.getElementById('ed-freq').value; let r=""; if(f!=='NONE') { const sd=[]; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); }); r=`RRULE:FREQ=${f};BYDAY=${sd.join(',')}`; } update(ref(db, 'eventos/'+currentId), { organiza: document.getElementById('ed-org-name').value, organizador: document.getElementById('ed-organizador').value, password: document.getElementById('ed-pass').value, lugar: document.getElementById('ed-lugar').value, hora: document.getElementById('ed-hor').value, horaFin: document.getElementById('ed-hor-fin').value, valor: parseInt(document.getElementById('ed-valor').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('in-cel-adm').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, cupo: parseInt(document.getElementById('ed-cupo').value), inscripcionesCerradas: document.getElementById('ed-ins-status').value==='cerradas', rrule: r }).then(() => alert("¡Guardado!")); };
     window.inscribirse = () => { const n=document.getElementById('in-nom').value.trim(), c=document.getElementById('in-cel').value.trim(); if(!n||!c) return alert("Faltan datos"); if(!ev.inscriptos) ev.inscriptos=[]; ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' }); set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => { document.getElementById('view-event').classList.add('hidden'); renderSuccess(); }); };
     function renderSuccess() { document.getElementById('view-success').classList.remove('hidden'); document.getElementById('ex-monto').innerText="$"+(ev.valor||0).toLocaleString('es-AR'); document.getElementById('ex-alias').innerText=ev.alias||"-"; }

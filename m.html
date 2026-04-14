@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub - Control de Facturación</title>
+    <title>Master Hub - Gestión Total</title>
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.4; }
-        .container { max-width: 750px; margin: auto; }
+        .container { max-width: 800px; margin: auto; }
         .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin:0; }
@@ -20,24 +20,32 @@
         .btn-blue { background: var(--primary); color: white; }
         .btn-ghost { background: #f2f2f7; color: var(--text); font-size: 12px; margin-top:10px; }
         
-        .org-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: white; border-radius: 20px; margin-bottom: 10px; border: 1px solid #f2f2f7; }
-        .org-info b { font-size: 15px; display: block; text-transform: uppercase; letter-spacing: -0.5px; }
-        .org-info span { font-size: 11px; color: var(--sub); font-weight: 600; }
+        .org-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #f2f2f7; }
+        .org-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1.5px solid #f8f9fb; padding-bottom: 15px; }
+        .org-name-box b { font-size: 20px; display: block; text-transform: uppercase; letter-spacing: -0.5px; }
+        .org-name-box span { font-size: 12px; color: var(--sub); font-weight: 600; }
         
+        .canchas-list { margin-top: 15px; background: #f8f9fb; border-radius: 18px; padding: 15px; }
+        .cancha-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 12px; margin-bottom: 8px; border: 1px solid #eee; }
+        .cancha-item span { font-size: 13px; font-weight: 700; color: var(--sub); }
+        .cancha-item a { color: var(--primary); text-decoration: none; font-weight: 800; font-size: 12px; }
+        
+        .add-cancha-box { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-add { background: var(--text); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .btn-del { color: var(--danger); background: none; border: none; font-size: 16px; cursor: pointer; }
+
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
+        .tag-trial { background: var(--warning); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 8px; vertical-align: middle; }
         
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .tag-trial { background: var(--warning); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 8px; vertical-align: middle; }
         .hidden { display: none !important; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div id="view-login">
         <div class="card" style="margin-top: 80px; max-width: 400px; margin-left: auto; margin-right: auto;">
-            <div class="header"><h1>Master Admin</h1><span>SGCA Facturación</span></div>
+            <div class="header"><h1>Master Admin</h1><span>Acceso Restringido</span></div>
             <label>Clave Maestra</label>
             <input type="password" id="master-pass" class="input-std">
             <button class="btn-full btn-blue" onclick="login()">Entrar al Panel</button>
@@ -45,47 +53,36 @@
     </div>
 
     <div id="view-panel" class="hidden">
-        <div class="header"><h1>Panel de Control</h1></div>
+        <div class="header"><h1>Centro de Mandos</h1></div>
         
         <div class="card">
             <h2 style="font-size: 18px; margin-top: 0;">+ Nuevo Organizador</h2>
-            <div class="grid-2">
-                <div><label>ID Hub (ej: adictos)</label><input id="new-id" class="input-std" placeholder="Solo letras y guiones"></div>
-                <div><label>Nombre Comercial</label><input id="new-name" class="input-std" placeholder="Ej: Adictos al Padel"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><label>ID Hub</label><input id="new-id" class="input-std" placeholder="ej: adictos"></div>
+                <div><label>Nombre Comercial</label><input id="new-name" class="input-std" placeholder="Ej: Adictos Padel"></div>
             </div>
-            <label>Días de Prueba Iniciales</label>
-            <input id="new-trial" class="input-std" type="number" value="7">
-            <button class="btn-full btn-blue" onclick="crearOrg()">Crear con Prueba Gratis</button>
+            <button class="btn-full btn-blue" onclick="crearOrg()">Crear Organizador</button>
         </div>
 
-        <h2 style="font-size: 12px; color: var(--sub); text-transform: uppercase; margin: 30px 0 12px 10px; letter-spacing: 1px;">Mis Clientes</h2>
         <div id="org-list"></div>
     </div>
 
     <div id="modal-finance" class="modal hidden">
         <div class="card" style="width: 90%; max-width: 450px;">
-            <h2 id="modal-title" style="margin-top:0; font-size:22px; letter-spacing:-1px;">Gestionar</h2>
+            <h2 id="modal-title" style="margin-top:0;">Facturación</h2>
             <input type="hidden" id="modal-org-id">
-            
-            <label>Deuda / Consumo Actual ($)</label>
-            <input id="mod-consumo" class="input-std" type="number">
-            
-            <label>Límite de Crédito ($)</label>
-            <input id="mod-limite" class="input-std" type="number">
-
-            <div class="grid-2">
-                <div><label>Abono Mensual ($)</label><input id="mod-abono" class="input-std" type="number"></div>
-                <div><label>Costo x Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
+            <label>Deuda Actual ($)</label><input id="mod-consumo" class="input-std" type="number">
+            <label>Límite de Crédito ($)</label><input id="mod-limite" class="input-std" type="number">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><label>Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
+                <div><label>Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
             </div>
-
-            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-top: 20px; border: 1px solid #ffeeba;">
-                <label style="margin-top:0; color: #856404;">Setear Días de Prueba</label>
-                <p style="font-size: 11px; margin: 5px 6px 10px 6px; color: #856404;">Poner la cantidad de días que quieres regalarle desde HOY.</p>
-                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Ej: 7" style="margin-bottom:0; border-color: #ffeeba;">
+            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-top: 15px;">
+                <label style="margin-top:0; color:#856404;">Días de Prueba</label>
+                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Días gratis desde hoy">
             </div>
-
-            <div style="display: flex; gap: 10px; margin-top: 25px;">
-                <button class="btn-full btn-blue" onclick="guardarFinanzas()">💾 Guardar Cambios</button>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar</button>
                 <button class="btn-full btn-ghost" onclick="cerrarModal()">Cerrar</button>
             </div>
         </div>
@@ -100,122 +97,125 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // LOGIN MASTER
     window.login = () => {
         if(document.getElementById('master-pass').value === "MB2026") {
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-panel').classList.remove('hidden');
             cargarLista();
-        } else { alert("Clave Incorrecta"); }
+        } else { alert("Error"); }
     };
 
-    // LISTADO DE CLIENTES
     function cargarLista() {
         onValue(ref(db, 'hubs'), async (snap) => {
             const hubs = snap.val() || {};
-            const list = document.getElementById('org-list');
-            list.innerHTML = "";
+            const list = document.getElementById('org-list'); list.innerHTML = "";
             
             for (let id in hubs) {
                 const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
-                const f = fSnap.val() || { consumoActual: 0, estado: "Pendiente" };
-                
-                const hoy = new Date();
-                const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
+                const f = fSnap.val() || { consumoActual: 0 };
+                const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > new Date();
 
-                const div = document.createElement('div');
-                div.className = "org-item";
-                div.innerHTML = `
-                    <div class="org-info">
-                        <b>${hubs[id].nombre || id} ${isTrial ? '<span class="tag-trial">MODO PRUEBA</span>' : ''}</b>
-                        <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} | ID: ${id}</span>
+                const orgDiv = document.createElement('div');
+                orgDiv.className = "org-card";
+                
+                let canchasHtml = "";
+                const canchas = hubs[id].canchas || [];
+                canchas.forEach(cid => {
+                    canchasHtml += `
+                        <div class="cancha-item">
+                            <span>ID: ${cid}</span>
+                            <div style="display:flex; gap:10px;">
+                                <a href="v.html?id=${cid}&org=${id}" target="_blank">VER CANCHA ➔</a>
+                                <button class="btn-del" onclick="eliminarCancha('${id}', '${cid}')">✕</button>
+                            </div>
+                        </div>`;
+                });
+
+                orgDiv.innerHTML = `
+                    <div class="org-header">
+                        <div class="org-name-box">
+                            <b>${hubs[id].nombre || id} ${isTrial ? '<span class="tag-trial">PRUEBA</span>' : ''}</b>
+                            <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} | ID: ${id}</span>
+                            <div style="margin-top:10px;">
+                                <a href="v.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--primary); text-decoration:none;">VER CARTELERA COMPLETA ➔</a>
+                                <br><a href="d.html?org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--text); text-decoration:none;">VER DASHBOARD PRIVADO ➔</a>
+                            </div>
+                        </div>
+                        <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ Facturación</button>
                     </div>
-                    <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ Facturación</button>
+                    <div class="canchas-list">
+                        <label style="margin:0 0 10px 0;">Canchas vinculadas:</label>
+                        ${canchasHtml || '<p style="font-size:12px; color:#aaa;">Sin canchas vinculadas</p>'}
+                        <div class="add-cancha-box">
+                            <input id="add-${id}" class="input-std" style="margin-bottom:0;" placeholder="Pegar ID de la cancha">
+                            <button class="btn-add" onclick="vincularCancha('${id}')">Vincular</button>
+                        </div>
+                    </div>
                 `;
-                list.appendChild(div);
+                list.appendChild(orgDiv);
             }
         });
     }
 
-    // CREAR ORGANIZADOR CON PRUEBA
+    window.vincularCancha = async (orgId) => {
+        const cid = document.getElementById('add-' + orgId).value.trim();
+        if(!cid) return;
+        const s = await get(ref(db, 'hubs/' + orgId + '/canchas'));
+        let canchas = s.val() || [];
+        if(!canchas.includes(cid)) {
+            canchas.push(cid);
+            await set(ref(db, 'hubs/' + orgId + '/canchas'), canchas);
+            alert("Cancha Vinculada");
+        }
+    };
+
+    window.eliminarCancha = async (orgId, cid) => {
+        if(!confirm("¿Desvincular cancha?")) return;
+        const s = await get(ref(db, 'hubs/' + orgId + '/canchas'));
+        let canchas = s.val() || [];
+        const nuevas = canchas.filter(id => id !== cid);
+        await set(ref(db, 'hubs/' + orgId + '/canchas'), nuevas);
+    };
+
     window.crearOrg = async () => {
         const id = document.getElementById('new-id').value.trim().toLowerCase();
         const nombre = document.getElementById('new-name').value.trim();
-        const trialDays = parseInt(document.getElementById('new-trial').value) || 0;
-        
         if(!id || !nombre) return alert("Faltan datos");
-
-        const hoy = new Date();
-        const fPrueba = new Date(); fPrueba.setDate(hoy.getDate() + trialDays);
-        const fFinCiclo = new Date(); fFinCiclo.setDate(fPrueba.getDate() + 30);
-
-        try {
-            // Crear Hub
-            await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
-            
-            // Crear Facturación (Si hay prueba, deuda inicial es 0)
-            await set(ref(db, 'facturacion/' + id + '/cuenta'), {
-                nombreOrg: nombre,
-                consumoActual: (trialDays > 0) ? 0 : 25000,
-                limiteCredito: 30000,
-                costoAbono: 25000,
-                costoCancha: 7000,
-                fechaFinPrueba: fPrueba.toISOString().split('T')[0],
-                fechaFinCiclo: fFinCiclo.toISOString().split('T')[0],
-                abonoCobrado: (trialDays > 0) ? false : true,
-                estado: "activo"
-            });
-            alert("¡Organizador creado con éxito!");
-            document.getElementById('new-id').value = "";
-            document.getElementById('new-name').value = "";
-        } catch (e) { alert("Error: " + e.message); }
+        await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
+        alert("Creado. Ahora configurá la facturación.");
     };
 
-    // MODAL DE GESTIÓN
     window.abrirFinanzas = async (id) => {
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
         const f = s.val() || { consumoActual: 0, limiteCredito: 30000, costoAbono: 25000, costoCancha: 7000 };
-        
         document.getElementById('modal-org-id').value = id;
-        document.getElementById('modal-title').innerText = f.nombreOrg || id;
+        document.getElementById('modal-title').innerText = "Finanzas: " + id;
         document.getElementById('mod-consumo').value = f.consumoActual;
         document.getElementById('mod-limite').value = f.limiteCredito;
-        document.getElementById('mod-abono').value = f.costoAbono;
-        document.getElementById('mod-cancha').value = f.costoCancha;
-        document.getElementById('mod-prueba-dias').value = ""; // Limpiamos para nueva entrada
-        
+        document.getElementById('mod-abono').value = f.costoAbono || 25000;
+        document.getElementById('mod-cancha').value = f.costoCancha || 7000;
+        document.getElementById('mod-prueba-dias').value = "";
         document.getElementById('modal-finance').classList.remove('hidden');
     };
 
-    // GUARDAR CAMBIOS (INCLUYE CÁLCULO DE PRUEBA DESDE HOY)
     window.guardarFinanzas = async () => {
         const id = document.getElementById('modal-org-id').value;
-        const diasPruebaInput = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
-        
+        const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
         let updates = {
             consumoActual: parseInt(document.getElementById('mod-consumo').value),
             limiteCredito: parseInt(document.getElementById('mod-limite').value),
             costoAbono: parseInt(document.getElementById('mod-abono').value),
             costoCancha: parseInt(document.getElementById('mod-cancha').value),
-            estado: "activo"
         };
-
-        // Si el admin puso días de prueba, calculamos la fecha de fin desde HOY
-        if (diasPruebaInput > 0) {
-            const fPrueba = new Date();
-            fPrueba.setDate(fPrueba.getDate() + diasPruebaInput);
-            updates.fechaFinPrueba = fPrueba.toISOString().split('T')[0];
-            updates.abonoCobrado = false; // Permitimos que el sistema vuelva a cobrar el abono al terminar la prueba
-            
-            // También reseteamos el ciclo para que empiece cuando termine la prueba
-            const fFinCiclo = new Date(fPrueba);
-            fFinCiclo.setDate(fFinCiclo.getDate() + 30);
-            updates.fechaFinCiclo = fFinCiclo.toISOString().split('T')[0];
+        if(dias > 0) {
+            const fP = new Date(); fP.setDate(fP.getDate() + dias);
+            updates.fechaFinPrueba = fP.toISOString().split('T')[0];
+            updates.abonoCobrado = false;
+            const fC = new Date(fP); fC.setDate(fC.getDate() + 30);
+            updates.fechaFinCiclo = fC.toISOString().split('T')[0];
         }
-
         await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
-        alert("Configuración Guardada");
-        cerrarModal();
+        alert("Guardado"); cerrarModal();
     };
 
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');

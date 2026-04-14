@@ -11,17 +11,18 @@
         .container { max-width: 480px; margin: auto; }
         
         .header { text-align: center; padding: 25px 0 15px 0; }
-        .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; margin: 5px 0; }
+        .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; margin: 5px 0; text-transform: uppercase; }
         .header span { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
 
         /* HUB / CARTELERA */
         .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; display: flex; align-items: center; gap: 8px; }
         .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
-        .hub-row { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: var(--shadow); }
-        .hub-time { font-size: 11px; font-weight: 800; color: var(--primary); width: 100px; border-right: 1.5px solid #f2f2f7; margin-right: 15px; text-align: center; }
-        .hub-title { font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        .hub-row { background: var(--card); padding: 18px; border-radius: 22px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); }
+        .hub-time { font-size: 11px; font-weight: 800; color: var(--primary); width: 115px; border-right: 1.5px solid #f2f2f7; margin-right: 15px; text-align: center; line-height: 1.3; flex-shrink: 0; }
+        .hub-main { flex: 1; min-width: 0; }
+        .hub-title { font-size: 14px; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* EVENTO */
+        /* EVENTO INDIVIDUAL */
         .card { background: var(--card); padding: 28px; border-radius: 28px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); margin-bottom: 20px; }
         .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -30,7 +31,7 @@
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
         .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; margin-bottom: 10px; }
         
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.2s; }
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn-ghost { background: #f2f2f7; color: var(--text); box-shadow: none; border: 1px solid #e5e5e7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         
         .msg-lleno { background: #fff; color: var(--danger); padding: 30px; border-radius: 22px; font-size: 18px; font-weight: 900; text-align: center; border: 2px solid #f2f2f7; }
@@ -42,7 +43,7 @@
 <body>
 <div class="container">
     <div id="view-suspended" class="hidden" style="padding: 40px 0;">
-        <div class="msg-lleno">🚫 INSCRIPCIONES SUSPENDIDAS<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">Por favor, contactá al organizador.</span></div>
+        <div class="msg-lleno">🚫 INSCRIPCIONES SUSPENDIDAS<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">Contactá al organizador para más información.</span></div>
     </div>
     
     <div id="view-hub" class="hidden">
@@ -56,6 +57,7 @@
             <div class="info-grid">
                 <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
                 <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
+                <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
                 <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 18px; font-weight: 800;">$0</span></div>
             </div>
             <div id="form-ins">
@@ -68,12 +70,12 @@
     </div>
 
     <div id="view-success" class="card hidden" style="text-align:center;">
-        <h2 style="font-size:28px; font-weight:900;">¡Estás anotado!</h2>
-        <p style="font-size:14px; color:var(--sub);">Transferí el valor del turno para asegurar tu lugar:</p>
+        <h2 style="font-size:28px; font-weight:900;">¡Anotado!</h2>
+        <p style="font-size:14px; color:var(--sub);">Transferí para asegurar tu lugar:</p>
         <div style="background:#f2f2f7; padding:20px; border-radius:20px; margin:20px 0;">
             <span id="ex-alias" style="font-weight:800; color:var(--primary); font-size:18px;"></span>
         </div>
-        <button class="btn-full" style="background:#34c759" onclick="enviarWa()">📲 Enviar comprobante por WhatsApp</button>
+        <button class="btn-full" style="background:#34c759" onclick="enviarWa()">📲 Enviar comprobante</button>
         <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; margin-top:20px; cursor:pointer;">VOLVER</button>
     </div>
 
@@ -95,16 +97,13 @@
     const orgId = params.get('org'), currentId = params.get('id');
     let ev = {}, cuenta = {};
 
-    function formatearFecha(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
+    function fFec(f) { if (!f) return '-'; const ds=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${ds[dt.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
 
-    // 1. ESCUCHA DE FACTURACIÓN Y SUSPENSIÓN
     if (orgId) {
-        // Configuramos el link del botón de administrador
-        const btnAdmin = document.getElementById('btn-admin-access');
         const linkAdmin = document.getElementById('link-admin');
-        if (btnAdmin && linkAdmin) {
+        if (linkAdmin) {
             linkAdmin.href = `d.html?org=${orgId}`;
-            btnAdmin.classList.remove('hidden');
+            document.getElementById('btn-admin-access').classList.remove('hidden');
         }
 
         onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), (snap) => {
@@ -112,13 +111,12 @@
             if (cuenta.cuentaSuspendida === true) {
                 document.getElementById('view-hub').classList.add('hidden');
                 document.getElementById('view-event').classList.add('hidden');
-                document.getElementById('btn-admin-access').classList.add('hidden'); // Ocultamos acceso si está suspendido
+                document.getElementById('btn-admin-access').classList.add('hidden');
                 document.getElementById('view-suspended').classList.remove('hidden');
             }
         });
     }
 
-    // 2. VISTA DE CARTELERA (HUB)
     if (orgId && !currentId) {
         document.getElementById('view-hub').classList.remove('hidden');
         onValue(ref(db, 'hubs/' + orgId), async (snap) => {
@@ -140,35 +138,38 @@
 
             eventsData.forEach(d => {
                 if (d.fecha !== lastDate) {
-                    list.innerHTML += `<div class="day-header">${formatearFecha(d.fecha)}</div>`;
+                    list.innerHTML += `<div class="day-header">${fFec(d.fecha)}</div>`;
                     lastDate = d.fecha;
                 }
+                // FORMATO DE HORA: XX:XX A XX:XX HS
+                const hFull = `${d.hora} A ${d.horaFin || '--:--'} HS`;
+                // NOMBRE + CATEGORÍA
+                const tFull = `${d.organiza} - ${d.categorias || 'Todas'}`;
+
                 list.innerHTML += `
                     <a href="?id=${d.id}&org=${orgId}" class="hub-row">
-                        <div class="hub-time">${d.hora} HS</div>
-                        <div class="hub-main"><b class="hub-title">${d.organiza}</b><br><small style="color:var(--sub)">📍 ${d.lugar}</small></div>
+                        <div class="hub-time">${hFull}</div>
+                        <div class="hub-main">
+                            <b class="hub-title">${tFull}</b>
+                            <small style="color:var(--sub)">📍 ${d.lugar}</small>
+                        </div>
                     </a>`;
             });
         });
     }
 
-    // 3. VISTA DE CANCHA Y MOTOR DE FACTURACIÓN
     if (currentId) {
         onValue(ref(db, 'eventos/' + currentId), async (snap) => {
             ev = snap.val() || {};
             const ahora = new Date();
             const fechaFin = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
 
-            // --- MOTOR INVISIBLE DE COBRO Y RESET ---
             if (fechaFin && ahora > fechaFin && !ev.facturado) {
                 const fPrueba = new Date((cuenta.fechaFinPrueba || "2000-01-01") + "T23:59:59");
-                
-                // Registro de ganancia del dueño
                 const confirmados = (ev.inscriptos || []).filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha');
                 const recaudado = confirmados.length * (ev.valor || 0);
                 await push(ref(db, 'facturacion/' + orgId + '/ingresos'), { fecha: ev.fecha, monto: recaudado, evento: ev.organiza, ts: Date.now() });
 
-                // Cobro de tu comisión
                 if (ahora > fPrueba) {
                     let cargo = (cuenta.costoCancha || 7000);
                     if (!cuenta.abonoCobrado) {
@@ -177,10 +178,8 @@
                     }
                     await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { consumoActual: (cuenta.consumoActual || 0) + cargo });
                 }
-
                 await update(ref(db, 'eventos/' + currentId), { facturado: true });
 
-                // Reset para la próxima semana
                 if (ev.rrule && ev.rrule.includes('WEEKLY')) {
                     const prx = obtenerProximaFecha(ev.rrule);
                     if (prx) {
@@ -190,18 +189,22 @@
                 }
             }
 
-            // RENDER JUGADOR
             if (cuenta.cuentaSuspendida !== true) {
                 document.getElementById('view-event').classList.remove('hidden');
-                document.getElementById('txt-event-name').innerText = ev.organiza;
-                document.getElementById('txt-fecha').innerText = formatearFecha(ev.fecha);
-                document.getElementById('txt-hora').innerText = `A LAS ${ev.hora} HS`;
+                document.getElementById('txt-event-name').innerText = `${ev.organiza} - ${ev.categorias || ''}`;
+                document.getElementById('txt-fecha').innerText = fFec(ev.fecha);
+                document.getElementById('txt-hora').innerText = `${ev.hora} A ${ev.horaFin || '--:--'} HS`;
+                document.getElementById('txt-lugar').innerText = ev.lugar || "-";
                 document.getElementById('txt-valor').innerText = `$${(ev.valor || 0).toLocaleString()}`;
                 
                 const ocupados = (ev.inscriptos || []).length;
-                if (ocupados >= (ev.cupo || 0) || ev.inscripcionesCerradas) {
+                if (ocupados >= (ev.cupo || 0) || ev.inscripcionesCerradas || ev.suspendido) {
                     document.getElementById('form-ins').classList.add('hidden');
                     document.getElementById('msg-cerrado').classList.remove('hidden');
+                    if(ev.suspendido) document.getElementById('msg-cerrado').innerText = "🚫 CANCHA SUSPENDIDA";
+                } else {
+                    document.getElementById('form-ins').classList.remove('hidden');
+                    document.getElementById('msg-cerrado').classList.add('hidden');
                 }
             }
         });
@@ -219,7 +222,7 @@
         });
     };
 
-    window.enviarWa = () => window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola,%20me%20anoté%20a%20${ev.organiza}.%20Acá%20tengo%20el%20comprobante.`);
+    window.enviarWa = () => window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola,%20me%20anoté%20a%20${ev.organiza}%20el%20día%20${ev.fecha}.%20Acá%20tengo%20el%20comprobante.`);
 
     function obtenerProximaFecha(rrule) {
         const parts = rrule.split(';'); const byDay = parts[1].split('=')[1];

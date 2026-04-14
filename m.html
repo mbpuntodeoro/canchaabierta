@@ -19,7 +19,7 @@
         .org-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: white; border-radius: 20px; margin-bottom: 10px; border: 1px solid #f2f2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .org-info b { font-size: 15px; display: block; text-transform: uppercase; letter-spacing: -0.5px; }
         .org-info span { font-size: 11px; color: var(--sub); font-weight: 600; }
-        .btn-manage { background: #eef6ff; color: var(--primary); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 800; border:none; cursor:pointer; }
+        .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 10px 15px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .hidden { display: none !important; }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .tag-trial { background: var(--warning); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 5px; vertical-align: middle; }
@@ -50,7 +50,7 @@
             <button class="btn-full btn-blue" onclick="crearOrg()">Crear con Periodo de Prueba</button>
         </div>
 
-        <h2 style="font-size: 12px; color: var(--sub); text-transform: uppercase; margin: 30px 0 10px 10px; letter-spacing: 1px;">Clientes y Estado de Cuenta</h2>
+        <h2 style="font-size: 12px; color: var(--sub); text-transform: uppercase; margin: 30px 0 10px 10px; letter-spacing: 1px;">Clientes Activos</h2>
         <div id="org-list"></div>
     </div>
 
@@ -66,15 +66,18 @@
             <input id="mod-limite" class="input-std" type="number">
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
+                <div><label>Abono Mensual ($)</label><input id="mod-abono" class="input-std" type="number"></div>
                 <div><label>Costo x Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
             </div>
 
-            <label>Fin de Prueba (YYYY-MM-DD)</label>
+            <label>Fecha Fin de Prueba</label>
             <input id="mod-prueba" class="input-std" type="date">
 
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar</button>
+            <label>Vencimiento de Abono (Próximo Cobro)</label>
+            <input id="mod-ciclo" class="input-std" type="date">
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-full btn-blue" onclick="guardarFinanzas()">💾 Guardar Cambios</button>
                 <button class="btn-full btn-ghost" onclick="cerrarModal()">Cancelar</button>
             </div>
         </div>
@@ -83,7 +86,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
@@ -97,54 +100,27 @@
         } else { alert("Clave Incorrecta"); }
     };
 
-    window.crearOrg = async () => {
-        const id = document.getElementById('new-id').value.trim().toLowerCase();
-        const nombre = document.getElementById('new-name').value.trim();
-        const diasPrueba = parseInt(document.getElementById('new-trial').value) || 0;
-        
-        if(!id || !nombre) return alert("Faltan datos");
-
-        const hoy = new Date();
-        const fFinPrueba = new Date(); fFinPrueba.setDate(hoy.getDate() + diasPrueba);
-        const fFinCiclo = new Date(); fFinCiclo.setDate(fFinPrueba.getDate() + 30);
-
-        try {
-            await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
-            
-            const consumoInicial = (diasPrueba > 0) ? 0 : 25000;
-
-            await set(ref(db, 'facturacion/' + id + '/cuenta'), {
-                nombreOrg: nombre,
-                consumoActual: consumoInicial,
-                limiteCredito: 30000,
-                costoAbono: 25000,
-                costoCancha: 7000,
-                fechaFinPrueba: fFinPrueba.toISOString().split('T')[0],
-                fechaInicioCiclo: (diasPrueba > 0) ? fFinPrueba.toISOString().split('T')[0] : hoy.toISOString().split('T')[0],
-                fechaFinCiclo: fFinCiclo.toISOString().split('T')[0],
-                estado: "activo"
-            });
-            alert("¡Cliente Creado!"); location.reload();
-        } catch (e) { alert(e.message); }
-    };
-
+    // FUNCIÓN PARA CARGAR LA LISTA ASEGURANDO QUE APAREZCA EL BOTÓN
     function cargarLista() {
         onValue(ref(db, 'hubs'), async (snap) => {
-            const data = snap.val() || {};
-            const list = document.getElementById('org-list'); list.innerHTML = "";
+            const hubs = snap.val() || {};
+            const list = document.getElementById('org-list');
+            list.innerHTML = "";
             
-            for(let id in data) {
+            for (let id in hubs) {
+                // Buscamos datos de facturación (puede no existir en clientes viejos)
                 const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
-                const f = fSnap.val() || {};
+                const f = fSnap.val() || { consumoActual: 0, limiteCredito: 30000, estado: "Sin configurar" };
+                
                 const hoy = new Date();
                 const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
-                
+
                 const div = document.createElement('div');
                 div.className = "org-item";
                 div.innerHTML = `
                     <div class="org-info">
-                        <b>${data[id].nombre || id} ${isTrial ? '<span class="tag-trial">PRUEBA</span>' : ''}</b>
-                        <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} / Límite: $${(f.limiteCredito || 0).toLocaleString()}</span>
+                        <b>${hubs[id].nombre || id} ${isTrial ? '<span class="tag-trial">PRUEBA</span>' : ''}</b>
+                        <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} | Estado: ${f.estado || 'Activo'}</span>
                     </div>
                     <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ Facturación</button>
                 `;
@@ -153,9 +129,37 @@
         });
     }
 
+    window.crearOrg = async () => {
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
+        const nombre = document.getElementById('new-name').value.trim();
+        const diasPrueba = parseInt(document.getElementById('new-trial').value) || 0;
+        
+        if(!id || !nombre) return alert("Faltan datos");
+
+        const hoy = new Date();
+        const fPrueba = new Date(); fPrueba.setDate(hoy.getDate() + diasPrueba);
+        const fCiclo = new Date(); fCiclo.setDate(fPrueba.getDate() + 30);
+
+        try {
+            await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
+            await set(ref(db, 'facturacion/' + id + '/cuenta'), {
+                nombreOrg: nombre,
+                consumoActual: (diasPrueba > 0) ? 0 : 25000,
+                limiteCredito: 30000,
+                costoAbono: 25000,
+                costoCancha: 7000,
+                fechaFinPrueba: fPrueba.toISOString().split('T')[0],
+                fechaFinCiclo: fCiclo.toISOString().split('T')[0],
+                estado: "activo"
+            });
+            alert("Cliente Creado");
+        } catch (e) { alert(e.message); }
+    };
+
     window.abrirFinanzas = async (id) => {
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
         const f = s.val() || { consumoActual: 0, limiteCredito: 30000, costoAbono: 25000, costoCancha: 7000 };
+        
         document.getElementById('modal-org-id').value = id;
         document.getElementById('modal-title').innerText = f.nombreOrg || id;
         document.getElementById('mod-consumo').value = f.consumoActual;
@@ -163,6 +167,8 @@
         document.getElementById('mod-abono').value = f.costoAbono;
         document.getElementById('mod-cancha').value = f.costoCancha;
         document.getElementById('mod-prueba').value = f.fechaFinPrueba || "";
+        document.getElementById('mod-ciclo').value = f.fechaFinCiclo || "";
+        
         document.getElementById('modal-finance').classList.remove('hidden');
     };
 
@@ -173,10 +179,13 @@
             limiteCredito: parseInt(document.getElementById('mod-limite').value),
             costoAbono: parseInt(document.getElementById('mod-abono').value),
             costoCancha: parseInt(document.getElementById('mod-cancha').value),
-            fechaFinPrueba: document.getElementById('mod-prueba').value
+            fechaFinPrueba: document.getElementById('mod-prueba').value,
+            fechaFinCiclo: document.getElementById('mod-ciclo').value,
+            estado: "activo"
         };
         await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
-        alert("¡Cuenta Actualizada!"); cerrarModal();
+        alert("Configuración Guardada");
+        cerrarModal();
     };
 
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');

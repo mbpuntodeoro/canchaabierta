@@ -3,246 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscripción Cancha Abierta</title>
+    <title>Master Dashboard - Centro de Mandos</title>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --cta: #FF9500; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 450px; margin: auto; }
-        .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
-        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; font-weight: 800; margin-bottom: 8px; }
-        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; text-transform: uppercase; }
-        .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
-        .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; background: #fff; }
-        .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; }
+        * { box-sizing: border-box; transition: 0.2s; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 600px; margin: auto; }
+        h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 30px; }
+        
+        .org-card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        .org-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .org-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f2f2f7; display: none; }
+        .org-detail.active { display: block; animation: fadeIn 0.3s ease; }
+
+        .event-box { background: #f9f9fb; border-radius: 20px; padding: 18px; margin-bottom: 12px; border: 1px solid #eee; }
+        .btn { padding: 10px 16px; border-radius: 12px; border: none; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; text-transform: uppercase; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-dark { background: #1c1c1e; color: white; font-size: 12px; }
-        .hidden { display: none !important; }
-        /* VISTA SUSPENDIDA */
-        #view-suspended { text-align: center; padding: 40px 20px; }
-        .msg-error { background: #ffebeb; color: var(--danger); padding: 30px; border-radius: 25px; font-weight: 800; line-height: 1.4; border: 1px solid #ffcfcf; }
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
-        .pagado { background: var(--success); } .reservado { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
-        .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-        .tag-cat { background: var(--primary); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; display: inline-block; margin: 4px 0; }
-        .banner-sell { margin-top: 40px; padding: 30px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
-        .btn-cta { background: var(--cta); color: white; }
+        .btn-dark { background: var(--text); color: white; }
+        .btn-gray { background: #eee; color: var(--text); }
+        .btn-suspend { background: var(--warning); color: #000; }
+        .btn-active { background: var(--success); color: white; }
+        
+        .input-std { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px; outline: none; font-size: 14px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 32px; width: 100%; max-width: 400px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div id="view-suspended" class="hidden">
-        <div class="msg-error">
-            <span style="font-size: 40px;">🚫</span><br><br>
-            NO HAY CANCHA ABIERTA DISPONIBLE<br>
-            <span style="font-size: 12px; font-weight: 400; color: #666;">CONTACTAR AL ORGANIZADOR</span>
-        </div>
-        <button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR</button>
-    </div>
+    <h1>Centro de Mandos 🏟️</h1>
+    <div id="org-list">Cargando tablero de clientes...</div>
+    <button class="btn btn-dark" style="width:100%; padding:20px; border-radius:20px; margin-top:20px; font-size:14px;" onclick="abrirModal('org')">+ Nuevo Organizador</button>
+</div>
 
-    <div id="view-hub" class="hidden">
-        <div class="header-brand">🎾 Canchas Abiertas</div>
-        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px; font-weight: 900;">...</h1>
-        <div id="hub-list"></div>
-    </div>
-
-    <div id="view-event" class="hidden">
-        <div class="card">
-            <div class="header-brand">🎾 Inscripción Cancha Abierta</div>
-            <span id="txt-event-name" class="event-title">...</span>
-            <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
-            <div class="info-grid">
-                <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
-                <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
-                <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
-                <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div>
-                <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
-            </div>
-            <div id="form-container">
-                <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
-                <input id="in-cel" class="input-std" placeholder="WhatsApp">
-                <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
-            </div>
-        </div>
-        <button class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ GESTIONAR ESTA CANCHA</button>
-    </div>
-
-    <div class="card hidden" id="view-success">
-        <div style="text-align: center;">
-            <div style="font-size: 50px;">✅</div>
-            <h2>¡Anotado!</h2>
-            <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin: 20px 0;">
-                <span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span>
-                <span id="ex-alias" style="color: var(--primary); font-weight: 700;">-</span><br><br>
-                <button onclick="copiarAlias()" style="background:#e1f0ff; color:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:700;">📋 Copiar Alias</button>
-            </div>
-            <button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
-            <button class="btn-full" style="color:var(--sub); border:none; background:none;" onclick="location.reload()">Volver</button>
-        </div>
-    </div>
-
-    <div class="card hidden" id="view-admin">
-        <h2 style="margin:0;">Configuración</h2>
-        <input id="ed-org-name" class="input-std" placeholder="Nombre Evento">
-        <input id="ed-organizador" class="input-std" placeholder="Organizador">
-        <input id="ed-lugar" class="input-std" placeholder="Lugar">
-        <div style="display: flex; gap: 10px;">
-            <input id="ed-hor" class="input-std" type="time">
-            <input id="ed-hor-fin" class="input-std" type="time">
-        </div>
-        <input id="ed-valor" class="input-std" type="number" placeholder="Precio">
-        <input id="ed-alias" class="input-std" placeholder="Alias">
-        <input id="ed-celu" class="input-std" placeholder="WhatsApp">
-        <input id="ed-cat" class="input-std" placeholder="Categorías">
-        <input id="ed-fec" class="input-std" type="date">
-        <input id="ed-cupo" class="input-std" type="number" placeholder="Cupos">
-        <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
-        <button class="btn-full" onclick="location.reload()" style="background:#eee; color:#666">Cerrar</button>
-        <div id="lista-admin" style="margin-top:20px;"></div>
-    </div>
-
-    <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
-    <div class="banner-sell">
-        <p style="font-size: 13px; font-weight: 700; margin-bottom: 16px;">¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--cta);">Pasala a piloto automático.</span></p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a>
-    </div>
+<div id="modal-nuevo" class="modal">
+    <div class="modal-content" id="modal-body"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const params = new URLSearchParams(window.location.search);
-    const orgId = params.get('org');
-    let currentId = params.get('id');
-    let ev = {};
 
-    function limpiarHora(h) { return h ? h.replace(':00', '') : ''; }
-    function formatearFecha(fechaStr) {
-        if (!fechaStr) return '-';
-        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const [y, m, d] = fechaStr.split('-');
-        const date = new Date(y, m - 1, d);
-        return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`;
-    }
-
-    if (orgId && !currentId) {
-        document.getElementById('view-hub').classList.remove('hidden');
-        onValue(ref(db, 'hubs/' + orgId), (snap) => {
-            const data = snap.val() || {};
-            document.getElementById('hub-org-name').innerText = (data.nombre || orgId).toUpperCase();
-            const list = data.canchas || [];
-            const hubList = document.getElementById('hub-list');
-            hubList.innerHTML = "";
-            list.forEach(id => {
-                get(ref(db, 'eventos/' + id)).then(s => {
-                    const d = s.val();
-                    if(d && !d.suspendido) {
-                        const item = document.createElement('a');
-                        item.className = 'hub-item';
-                        item.href = `?id=${id}&org=${orgId}`;
-                        item.style.textDecoration = "none";
-                        item.style.color = "inherit";
-                        item.style.display = "block";
-                        item.style.marginBottom = "10px";
-                        item.innerHTML = `<div class="card" style="margin-bottom:0"><b>${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Todas'}</span><br><span style="font-size:12px;color:#888">${formatearFecha(d.fecha)} de ${limpiarHora(d.hora)} a ${limpiarHora(d.horaFin)}hs</span></div>`;
-                        hubList.appendChild(item);
-                    }
+    onValue(ref(db, 'hubs'), (snap) => {
+        const hubs = snap.val() || {};
+        const container = document.getElementById('org-list');
+        container.innerHTML = "";
+        Object.keys(hubs).forEach(orgId => {
+            const orgData = hubs[orgId];
+            const eventIds = orgData.canchas || [];
+            const card = document.createElement('div');
+            card.className = 'org-card';
+            card.innerHTML = `
+                <div class="org-header" onclick="toggleOrg('${orgId}')">
+                    <div style="line-height:1.2">
+                        <b style="font-size:18px; text-transform:uppercase;">${orgData.nombre || orgId}</b><br>
+                        <span style="font-size:11px; color:var(--sub)">${eventIds.length} Canchas creadas</span>
+                    </div>
+                    <div style="display:flex;gap:5px;">
+                        <button class="btn btn-gray" onclick="event.stopPropagation(); copiar('${window.location.href.replace('m.html', 'v.html')}?org=${orgId}')">📋 Hub</button>
+                        <button class="btn btn-gray" style="font-size:18px">▾</button>
+                    </div>
+                </div>
+                <div class="org-detail" id="detail-${orgId}">
+                    <div id="items-${orgId}"></div>
+                    <button class="btn btn-blue" style="width:100%; margin-top:10px; padding:15px;" onclick="abrirModal('cancha', '${orgId}', '${orgData.nombre}')">+ Nueva Cancha</button>
+                    <button class="btn" style="color:var(--danger);width:100%;margin-top:15px;background:none;font-size:10px;" onclick="eliminarOrg('${orgId}')">ELIMINAR TODO EL CLIENTE</button>
+                </div>
+            `;
+            container.appendChild(card);
+            const listDiv = document.getElementById('items-' + orgId);
+            
+            eventIds.forEach(id => {
+                onValue(ref(db, 'eventos/' + id), (s) => {
+                    const d = s.val(); if(!d) return;
+                    let b = document.getElementById('box-' + id);
+                    if(!b) { b = document.createElement('div'); b.id = 'box-' + id; b.className = 'event-box'; listDiv.appendChild(b); }
+                    
+                    const esSusp = d.suspendido === true;
+                    b.innerHTML = `
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div style="line-height:1.2">
+                                <b style="font-size:14px;">${d.organiza}</b><br>
+                                <span style="font-size:9px;color:${esSusp?'var(--danger)':'var(--success)'}">${esSusp ? '● SUSPENDIDA' : '● ACTIVA'}</span>
+                            </div>
+                            <div style="display:flex;gap:5px;">
+                                <button class="btn ${esSusp ? 'btn-active' : 'btn-suspend'}" onclick="toggleS('${id}',${esSusp})">
+                                    ${esSusp ? 'Habilitar' : 'Suspender'}
+                                </button>
+                                <a href="v.html?id=${id}" class="btn btn-blue" target="_blank">⚙️</a>
+                                <button class="btn btn-gray" onclick="eliminarC('${orgId}','${id}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
                 });
             });
         });
-    } else if (currentId) {
-        onValue(ref(db, 'eventos/' + currentId), (snap) => {
-            ev = snap.val() || {};
-            if(ev.suspendido === true) {
-                document.getElementById('view-event').classList.add('hidden');
-                document.getElementById('view-suspended').classList.remove('hidden');
-            } else {
-                document.getElementById('view-suspended').classList.add('hidden');
-                document.getElementById('view-event').classList.remove('hidden');
-                render();
-            }
-        });
-    }
+    });
 
-    window.inscribirse = () => {
-        const n = document.getElementById('in-nom').value.trim();
-        const c = document.getElementById('in-cel').value.trim();
-        if(!n || !c) return alert("Faltan datos");
-        if(!ev.inscriptos) ev.inscriptos = [];
-        ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
-        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => {
-            document.getElementById('view-event').classList.add('hidden');
-            document.getElementById('view-success').classList.remove('hidden');
-        });
-    };
-
-    window.abrirAdmin = () => {
-        const p = prompt("Clave:");
-        if (p === (ev.password || "1234")) {
-            document.getElementById('view-event').classList.add('hidden');
-            document.getElementById('view-suspended').classList.add('hidden');
-            document.getElementById('view-admin').classList.remove('hidden');
-            document.getElementById('ed-org-name').value = ev.organiza || "";
-            document.getElementById('ed-organizador').value = ev.organizador || "";
-            document.getElementById('ed-lugar').value = ev.lugar || "";
-            document.getElementById('ed-hor').value = ev.hora || "";
-            document.getElementById('ed-hor-fin').value = ev.horaFin || "";
-            document.getElementById('ed-valor').value = ev.valor || 0;
-            document.getElementById('ed-alias').value = ev.alias || "";
-            document.getElementById('ed-celu').value = ev.celuOrganizador || "";
-            document.getElementById('ed-cat').value = ev.categorias || "";
-            document.getElementById('ed-fec').value = ev.fecha || "";
-            document.getElementById('ed-cupo').value = ev.cupo || 0;
+    window.toggleOrg = (id) => { document.getElementById('detail-'+id).classList.toggle('active'); };
+    
+    window.abrirModal = (tipo, orgId = '', nombreReal = '') => {
+        const body = document.getElementById('modal-body');
+        if (tipo === 'org') {
+            body.innerHTML = `<h2>Nuevo Organizador</h2><label style="font-size:10px;font-weight:800;color:var(--sub)">NOMBRE COMERCIAL</label><input id="in-name" class="input-std" placeholder="Ej: Sergio Padel"><button class="btn btn-blue" style="width:100%;padding:15px" onclick="crearOrg()">Crear Cliente</button><button class="btn" style="width:100%;margin-top:10px" onclick="cerrarModal()">Cancelar</button>`;
+        } else {
+            body.innerHTML = `<h2>Nueva Cancha: ${nombreReal}</h2><label style="font-size:10px;font-weight:800;color:var(--sub)">NOMBRE DEL TURNO</label><input id="in-cancha" class="input-std" placeholder="Ej: Cancha Abierta Sábados"><button class="btn btn-blue" style="width:100%;padding:15px" onclick="agregarC('${orgId}','${nombreReal}')">Agregar Cancha</button><button class="btn" style="width:100%;margin-top:10px" onclick="cerrarModal()">Cancelar</button>`;
         }
+        document.getElementById('modal-nuevo').classList.add('active');
     };
 
-    window.guardar = () => {
-        update(ref(db, 'eventos/'+currentId), {
-            organiza: document.getElementById('ed-org-name').value,
-            organizador: document.getElementById('ed-organizador').value,
-            lugar: document.getElementById('ed-lugar').value,
-            hora: document.getElementById('ed-hor').value,
-            horaFin: document.getElementById('ed-hor-fin').value,
-            valor: parseInt(document.getElementById('ed-valor').value),
-            alias: document.getElementById('ed-alias').value,
-            celuOrganizador: document.getElementById('ed-celu').value,
-            categorias: document.getElementById('ed-cat').value,
-            fecha: document.getElementById('ed-fec').value,
-            cupo: parseInt(document.getElementById('ed-cupo').value)
-        }).then(() => alert("¡Guardado!"));
+    window.cerrarModal = () => document.getElementById('modal-nuevo').classList.remove('active');
+
+    window.crearOrg = async () => {
+        const n = document.getElementById('in-name').value.trim(); if(!n) return;
+        const id = n.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        await set(ref(db, 'hubs/'+id), { nombre: n, canchas: [] }); cerrarModal();
     };
 
-    window.copiarAlias = () => { navigator.clipboard.writeText(ev.alias).then(() => alert("Copiado")); };
-    window.enviarWhatsapp = () => { window.open(`https://wa.me/${ev.celuOrganizador}?text=Comprobante`); };
-    window.cambiar = (oid) => {
-        const idx = ev.inscriptos.findIndex(x => x.id === oid);
-        const estados = ["pendiente", "reservado", "pagado"];
-        ev.inscriptos[idx].estado = estados[(estados.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
-        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos);
-    };
-
-    function render() {
-        document.getElementById('txt-event-name').innerText = (ev.organiza || "CARGANDO...").toUpperCase();
-        document.getElementById('txt-organizador').innerText = ev.organizador || "-";
-        document.getElementById('txt-cat').innerText = ev.categorias || "TODAS";
-        document.getElementById('txt-fecha').innerText = formatearFecha(ev.fecha);
-        document.getElementById('txt-hora').innerText = `DE ${limpiarHora(ev.hora)} A ${limpiarHora(ev.horaFin)} HS`;
-        document.getElementById('txt-lugar').innerText = ev.lugar || "-";
-        document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString('es-AR');
-        document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0).toLocaleString('es-AR');
-        document.getElementById('ex-alias').innerText = ev.alias || "-";
-        let h = "";
-        (ev.inscriptos || []).forEach(p => {
-            h += `<div class="admin-item"><span>${p.nombre}</span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${p.estado}</button></div>`;
+    window.agregarC = async (orgId, nReal) => {
+        const cN = document.getElementById('in-cancha').value.trim(); if(!cN) return;
+        const id = `${orgId}-${cN.toLowerCase().replace(/\s+/g, '-')}-${Date.now().toString().slice(-4)}`;
+        const snap = await get(ref(db, 'hubs/'+orgId));
+        let ids = snap.val().canchas || []; ids.push(id);
+        await set(ref(db, 'eventos/'+id), { 
+            organiza: cN, 
+            organizador: nReal, 
+            fecha: "2026-04-20", 
+            hora: "20:00", 
+            horaFin: "22:00", 
+            valor: 0, 
+            alias: "AliasMP",
+            celuOrganizador: "11",
+            categorias: "Todas",
+            password: "1234", 
+            suspendido: false 
         });
-        document.getElementById('lista-admin').innerHTML = h || "Sin inscriptos";
-    }
+        await update(ref(db, 'hubs/'+orgId), { canchas: ids }); cerrarModal();
+    };
+
+    window.toggleS = (id, sActual) => update(ref(db, 'eventos/'+id), { suspendido: !sActual });
+    window.copiar = (t) => { navigator.clipboard.writeText(t).then(() => alert("Link copiado")); };
+    
+    window.eliminarC = async (orgId, evId) => {
+        if(!confirm("¿Borrar cancha? Se perderán inscriptos.")) return;
+        const snap = await get(ref(db, 'hubs/'+orgId));
+        let ids = snap.val().canchas.filter(i => i !== evId);
+        await update(ref(db, 'hubs/'+orgId), { canchas: ids });
+        await remove(ref(db, 'eventos/'+evId));
+    };
+
+    window.eliminarOrg = (id) => { if(confirm("¿Borrar TODO el cliente y sus canchas?")) remove(ref(db, 'hubs/'+id)); };
 </script>
 </body>
 </html>

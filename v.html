@@ -34,7 +34,7 @@
         .btn-dark { background: #1c1c1e; color: white; font-size: 12px; margin-top: 0; }
         .hidden { display: none !important; }
         
-        .msg-instrucciones { background: #d32f2f; color: white; padding: 20px; border-radius: 18px; font-size: 13px; line-height: 1.5; font-weight: 600; text-align: center; margin-bottom: 25px; }
+        .msg-instrucciones { background: #d32f2f; color: white; padding: 20px; border-radius: 18px; font-size: 13px; line-height: 1.5; font-weight: 600; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2); }
         .msg-lleno { background: #f2f2f7; color: var(--danger); padding: 30px; border-radius: 18px; font-size: 18px; font-weight: 900; text-align: center; margin: 20px 0; border: 2px dashed var(--danger); }
         
         .report-list { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #eee; }
@@ -48,13 +48,13 @@
         .day-label { background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
         .estado-btn { flex: 1; height: 34px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .paga-en-la-cancha { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
         .btn-del { background: #eee; border: none; padding: 8px; border-radius: 10px; cursor: pointer; }
         
         .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .banner-sell { margin-top: 30px; padding: 25px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
+        .banner-sell { margin-top: 40px; padding: 30px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
         .btn-cta { background: var(--cta); color: white; margin-top: 15px; }
     </style>
 </head>
@@ -99,12 +99,18 @@
 
     function formatearHoraVisual(h) { if(!h) return "00:00"; return h; }
     function formatearFecha(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
+    
     function obtenerProximaFecha(rrule) {
         const parts = rrule.split(';'); const freq = parts[0].split('=')[1]; if (freq !== 'WEEKLY') return null;
         const daysMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
         const allowedDays = parts[1].split('=')[1].split(',').map(d => daysMap[d]);
         let next = new Date(); next.setHours(0,0,0,0);
-        for (let i = 1; i <= 7; i++) { next.setDate(next.getDate() + 1); if (allowedDays.includes(next.getDay())) { return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`; } }
+        for (let i = 1; i <= 7; i++) {
+            next.setDate(next.getDate() + 1);
+            if (allowedDays.includes(next.getDay())) {
+                return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
+            }
+        }
         return null;
     }
     
@@ -128,14 +134,29 @@
             eventsData.forEach(d => {
                 if (d.fecha !== lastDate) { hubList.innerHTML += `<div class="day-header">${formatearFecha(d.fecha)}</div>`; lastDate = d.fecha; }
                 const hR = `${formatearHoraVisual(d.hora)} A ${formatearHoraVisual(d.horaFin)} HS`;
-                // NUEVA ESTRUCTURA: TÍTULO Y TAG JUNTOS, LUGAR ABAJO
                 hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${hR}</div><div class="hub-main"><div class="hub-title-row"><span class="hub-title">${d.organiza}</span><span class="hub-tag">${d.categorias||'Todas'}</span></div><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div style="font-size:16px; color:#ddd;">➔</div></a>`;
             });
         }); 
     } else if (currentId) { 
         onValue(ref(db, 'eventos/' + currentId), (snap) => { 
-            ev=snap.val()||{}; const hoy = new Date(); hoy.setHours(0,0,0,0); const fechaEv = ev.fecha ? new Date(ev.fecha + "T00:00:00") : null;
-            if (fechaEv && fechaEv < hoy && ev.rrule && !ev.rrule.includes('NONE')) { const prx = obtenerProximaFecha(ev.rrule); if (prx) { update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], inscripcionesCerradas: false }); return; } }
+            ev=snap.val()||{}; 
+            const ahora = new Date(); 
+            // NUEVO: CREAMOS LA FECHA DE FIN EXACTA PARA EL TRIGGER
+            const fechaEventoFinal = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
+
+            // TRIGGER DE RESET: Si la fecha de fin ya pasó Y es recurrente
+            if (fechaEventoFinal && ahora > fechaEventoFinal && ev.rrule && !ev.rrule.includes('NONE')) {
+                const prx = obtenerProximaFecha(ev.rrule);
+                if (prx) {
+                    update(ref(db, 'eventos/'+currentId), {
+                        fecha: prx,
+                        inscriptos: [],
+                        inscripcionesCerradas: false
+                    });
+                    return; 
+                }
+            }
+
             if(ev.suspendido===true) { document.getElementById('view-event').classList.add('hidden'); document.getElementById('view-suspended').classList.remove('hidden'); } 
             else { document.getElementById('view-suspended').classList.add('hidden'); document.getElementById('view-event').classList.remove('hidden'); render(); } 
         }); 

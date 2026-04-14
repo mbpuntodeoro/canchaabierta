@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub Pro v5 - SGCA</title>
+    <title>Master Hub Pro v6 - SGCA</title>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
@@ -29,8 +29,9 @@
         .btn-blue { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 8px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; }
         
-        .cancha-row { display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 10px; align-items: center; background: #f8f9fb; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
-        .cancha-row span { font-size: 11px; font-weight: 700; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cancha-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fb; padding: 12px 15px; border-radius: 12px; margin-bottom: 6px; border: 1px solid #efeff4; }
+        .cancha-row span { font-size: 11px; font-weight: 700; color: var(--sub); }
+        .cancha-row a { font-size: 11px; font-weight: 800; color: var(--primary); text-decoration: none; }
         
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .hidden { display: none !important; }
@@ -131,13 +132,12 @@
                     canchasHtml += `
                         <div class="cancha-row">
                             <span>ID: ${cid}</span>
-                            <input class="input-std" style="padding:6px; font-size:11px;" placeholder="URL Corta" id="url-${cid}" onchange="guardarUrlCorta('${cid}', this.value)">
-                            <a href="v.html?id=${cid}&org=${id}" target="_blank" style="font-size:11px; font-weight:800; color:var(--primary); text-decoration:none;">IR ➔</a>
+                            <a href="v.html?id=${cid}&org=${id}" target="_blank">VER CANCHA ➔</a>
                         </div>`;
                 }
 
                 item.innerHTML = `
-                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div>
                             <b style="text-transform:uppercase;">${hubs[id].nombre || id}</b>
                             ${f.cuentaSuspendida ? '<span class="tag-status tag-suspended">Suspendido</span>' : isTrial ? '<span class="tag-status tag-trial">En Prueba</span>' : '<span class="tag-status tag-ok">Activo</span>'}
@@ -148,24 +148,34 @@
                     <div class="accordion-content">
                         <div style="display:flex; gap:10px; margin:15px 0;">
                             <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ GESTIÓN FINANCIERA</button>
-                            <a href="v.html?org=${id}" target="_blank" class="btn-manage" style="text-decoration:none; background:#f2f2f7; color:var(--text);">VER CARTELERA</a>
+                            <a href="v.html?org=${id}" target="_blank" class="btn-manage" style="text-decoration:none; background:#f2f2f7; color:var(--text);">CARTELERA</a>
                             <a href="d.html?org=${id}" target="_blank" class="btn-manage" style="text-decoration:none; background:#f2f2f7; color:var(--text);">DASHBOARD</a>
                         </div>
-                        <label>Canchas vinculadas y URLs cortas:</label>
-                        ${canchasHtml || '<p style="font-size:11px; color:#ccc;">Sin canchas vinculadas.</p>'}
+                        
+                        <div style="background:#f2f2f7; padding:15px; border-radius:15px; margin-bottom:15px;">
+                            <label style="margin-top:0;">URL Acortada de la Cartelera</label>
+                            <input class="input-std" placeholder="Ej: bit.ly/mi-club" value="${hubs[id].urlCorta || ''}" onchange="guardarUrlHub('${id}', this.value)">
+                        </div>
+
+                        <label>Canchas vinculadas:</label>
+                        ${canchasHtml || '<p style="font-size:11px; color:#ccc; margin:10px 0;">Sin canchas vinculadas.</p>'}
                     </div>
                 `;
                 list.appendChild(item);
-                
-                cIds.forEach(async (cid) => {
-                    const cSnap = await get(ref(db, 'eventos/' + cid));
-                    const val = cSnap.val()?.urlCorta || "";
-                    const input = document.getElementById('url-' + cid);
-                    if(input) input.value = val;
-                });
             }
         });
     }
+
+    window.toggleAccordion = (el) => {
+        const item = el.parentElement;
+        const isActive = item.classList.contains('active');
+        document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+        if (!isActive) item.classList.add('active');
+    };
+
+    window.guardarUrlHub = (hubId, val) => {
+        update(ref(db, 'hubs/' + hubId), { urlCorta: val }).then(() => alert("URL de Cartelera guardada"));
+    };
 
     window.calcularFechasAutomaticas = () => {
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
@@ -198,17 +208,11 @@
         const f = s.val();
         if (f.consumoActual <= 0) return alert("No hay deuda pendiente.");
         if (!confirm("¿Confirmás el pago? Se reseteará la deuda y se sumarán 30 días al plan.")) return;
-        
         const hoy = new Date();
         const venceActual = f.fechaFinCiclo ? new Date(f.fechaFinCiclo + "T23:59:59") : hoy;
         const nuevaFecha = hoy > venceActual ? hoy : venceActual;
         nuevaFecha.setDate(nuevaFecha.getDate() + 30);
-
-        await update(ref(db, 'facturacion/' + id + '/cuenta'), {
-            consumoActual: 0,
-            fechaFinCiclo: nuevaFecha.toISOString().split('T')[0],
-            estado: "activo"
-        });
+        await update(ref(db, 'facturacion/' + id + '/cuenta'), { consumoActual: 0, fechaFinCiclo: nuevaFecha.toISOString().split('T')[0], estado: "activo" });
         await push(ref(db, 'facturacion/' + id + '/historial'), { fecha: hoy.toISOString(), monto: f.consumoActual, tipo: "PAGO" });
         alert("Pago registrado y plan renovado."); cerrarModal();
     };
@@ -233,7 +237,6 @@
         alert("Configuración Guardada"); cerrarModal();
     };
 
-    window.guardarUrlCorta = (cid, val) => { update(ref(db, 'eventos/' + cid), { urlCorta: val }); };
     window.nuevoOrgPrompt = async () => {
         const id = prompt("ID del Hub:"); if(!id) return;
         const nom = prompt("Nombre Comercial:"); if(!nom) return;

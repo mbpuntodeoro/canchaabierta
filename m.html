@@ -3,40 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub - Gestión & Cobranza</title>
+    <title>Master Hub v3 - SGCA</title>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.4; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: auto; }
         .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin:0; }
-        
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; margin-left: 6px; margin-top:15px; }
         .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; }
-        
         .btn-full { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; margin-top: 15px; }
         .btn-ghost { background: #f2f2f7; color: var(--text); font-size: 12px; margin-top:10px; }
-        
         .org-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid #f2f2f7; }
         .org-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1.5px solid #f8f9fb; padding-bottom: 15px; }
         .org-name-box b { font-size: 20px; display: block; text-transform: uppercase; letter-spacing: -0.5px; }
         .org-name-box span { font-size: 12px; color: var(--sub); font-weight: 600; }
-        
-        .canchas-list { margin-top: 15px; background: #f8f9fb; border-radius: 18px; padding: 15px; }
-        .cancha-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 12px; margin-bottom: 8px; border: 1px solid #eee; }
-        .cancha-item span { font-size: 13px; font-weight: 700; color: var(--sub); }
-        .cancha-item a { color: var(--primary); text-decoration: none; font-weight: 800; font-size: 12px; }
-        
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
         .tag-status { font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 8px; vertical-align: middle; font-weight: 800; text-transform: uppercase; }
         .tag-trial { background: var(--warning); color: #000; }
         .tag-debt { background: var(--danger); color: #fff; }
         .tag-ok { background: var(--success); color: #fff; }
-        
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .hidden { display: none !important; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -55,7 +44,6 @@
 
     <div id="view-panel" class="hidden">
         <div class="header"><h1>Centro de Mandos</h1></div>
-        
         <div class="card">
             <h2 style="font-size: 18px; margin-top: 0;">+ Nuevo Organizador</h2>
             <div class="grid-2">
@@ -64,7 +52,6 @@
             </div>
             <button class="btn-full btn-blue" onclick="crearOrg()">Crear Organizador</button>
         </div>
-
         <div id="org-list"></div>
     </div>
 
@@ -84,9 +71,14 @@
                 </div>
             </div>
 
+            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #ffeeba;">
+                <label style="margin-top:0; color:#856404;">Setear Días de Prueba</label>
+                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Ej: 7" oninput="calcularFechasAutomaticas()">
+            </div>
+
             <div class="grid-2">
+                <div><label>Vence Abono (Ciclo)</label><input id="mod-ciclo" class="input-std" type="date"></div>
                 <div><label>Límite Crédito</label><input id="mod-limite" class="input-std" type="number"></div>
-                <div><label>Vence Abono</label><input id="mod-ciclo" class="input-std" type="date"></div>
             </div>
 
             <div class="grid-2">
@@ -94,13 +86,8 @@
                 <div><label>Costo Cancha</label><input id="mod-cancha" class="input-std" type="number"></div>
             </div>
 
-            <div style="background: #fff9e6; padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid #ffeeba;">
-                <label style="margin-top:0; color:#856404;">Resetear Días de Prueba</label>
-                <input id="mod-prueba-dias" class="input-std" type="number" placeholder="Días desde hoy" style="border-color:#ffeeba;">
-            </div>
-
             <div style="display: flex; gap: 10px; margin-top: 25px;">
-                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar Cambios</button>
+                <button class="btn-full btn-blue" onclick="guardarFinanzas()">💾 Guardar Cambios</button>
                 <button class="btn-full btn-ghost" onclick="cerrarModal()">Cerrar</button>
             </div>
         </div>
@@ -132,16 +119,10 @@
                 const f = fSnap.val() || { consumoActual: 0 };
                 const hoy = new Date();
                 const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
-                const isDebt = f.consumoActual >= f.limiteCredito;
+                const isDebt = f.consumoActual >= (f.limiteCredito || 30000);
 
                 const orgDiv = document.createElement('div');
                 orgDiv.className = "org-card";
-                
-                let canchasHtml = "";
-                (hubs[id].canchas || []).forEach(cid => {
-                    canchasHtml += `<div class="cancha-item"><span>ID: ${cid}</span><a href="v.html?id=${cid}&org=${id}" target="_blank">VER CANCHA ➔</a></div>`;
-                });
-
                 orgDiv.innerHTML = `
                     <div class="org-header">
                         <div class="org-name-box">
@@ -156,26 +137,29 @@
                         </div>
                         <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ GESTIONAR</button>
                     </div>
-                    <div class="canchas-list">${canchasHtml || '<p style="font-size:12px; color:#aaa;">Sin canchas</p>'}</div>
                 `;
                 list.appendChild(orgDiv);
             }
         });
     }
 
+    window.calcularFechasAutomaticas = () => {
+        const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
+        if (dias > 0) {
+            const hoy = new Date();
+            const fPrueba = new Date(); fPrueba.setDate(hoy.getDate() + dias);
+            const fCiclo = new Date(fPrueba); fCiclo.setDate(fCiclo.getDate() + 30);
+            document.getElementById('mod-ciclo').value = fCiclo.toISOString().split('T')[0];
+        }
+    };
+
     window.abrirFinanzas = async (id) => {
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
         const f = s.val() || { consumoActual: 0, limiteCredito: 30000, costoAbono: 25000, costoCancha: 7000 };
-        const tag = document.getElementById('modal-status-tag');
-        const isDebt = f.consumoActual >= f.limiteCredito;
-        
-        tag.innerText = isDebt ? "Deuda Excedida" : "Cuenta al día";
-        tag.className = "tag-status " + (isDebt ? "tag-debt" : "tag-ok");
-        
         document.getElementById('modal-org-id').value = id;
         document.getElementById('modal-title').innerText = f.nombreOrg || id;
         document.getElementById('txt-deuda-modal').innerText = "$" + (f.consumoActual || 0).toLocaleString();
-        document.getElementById('mod-limite').value = f.limiteCredito;
+        document.getElementById('mod-limite').value = f.limiteCredito || 30000;
         document.getElementById('mod-ciclo').value = f.fechaFinCiclo || "";
         document.getElementById('mod-abono').value = f.costoAbono || 25000;
         document.getElementById('mod-cancha').value = f.costoCancha || 7000;
@@ -187,63 +171,48 @@
         const id = document.getElementById('modal-org-id').value;
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
         const f = s.val();
-        const montoPagado = f.consumoActual;
-
-        if (montoPagado <= 0) return alert("No hay deuda pendiente.");
-        if (!confirm(`¿Confirmás el cobro de $${montoPagado.toLocaleString()}? \nSe reseteará la deuda y se extenderá el abono 30 días.`)) return;
+        if (f.consumoActual <= 0) return alert("No hay deuda.");
+        if (!confirm("¿Confirmás el pago? Se reseteará la deuda y se sumarán 30 días al ciclo actual.")) return;
 
         const hoy = new Date();
-        const fechaActualVencimiento = new Date(f.fechaFinCiclo + "T23:59:59");
-        // Si el abono ya venció, sumamos 30 días desde hoy. Si no, extendemos desde la fecha de vencimiento.
-        const baseFecha = hoy > fechaActualVencimiento ? hoy : fechaActualVencimiento;
-        const nuevaFechaVencimiento = new Date(baseFecha);
-        nuevaFechaVencimiento.setDate(nuevaFechaVencimiento.getDate() + 30);
+        const venceActual = f.fechaFinCiclo ? new Date(f.fechaFinCiclo + "T23:59:59") : hoy;
+        const nuevaFecha = hoy > venceActual ? hoy : venceActual;
+        nuevaFecha.setDate(nuevaFecha.getDate() + 30);
 
-        const updates = {
+        await update(ref(db, 'facturacion/' + id + '/cuenta'), {
             consumoActual: 0,
-            fechaFinCiclo: nuevaFechaVencimiento.toISOString().split('T')[0],
+            fechaFinCiclo: nuevaFecha.toISOString().split('T')[0],
             estado: "activo"
-        };
-
-        try {
-            await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
-            await push(ref(db, 'facturacion/' + id + '/historial'), {
-                fecha: hoy.toISOString(),
-                monto: montoPagado,
-                tipo: "PAGO",
-                motivo: "Saldado de deuda y renovación de abono"
-            });
-            alert("¡Cobro registrado! Deuda saldada.");
-            cerrarModal();
-        } catch (e) { alert("Error: " + e.message); }
+        });
+        await push(ref(db, 'facturacion/' + id + '/historial'), { fecha: hoy.toISOString(), monto: f.consumoActual, tipo: "PAGO" });
+        alert("Pago registrado."); cerrarModal();
     };
 
     window.guardarFinanzas = async () => {
         const id = document.getElementById('modal-org-id').value;
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
+        
         let updates = {
             limiteCredito: parseInt(document.getElementById('mod-limite').value),
             fechaFinCiclo: document.getElementById('mod-ciclo').value,
             costoAbono: parseInt(document.getElementById('mod-abono').value),
             costoCancha: parseInt(document.getElementById('mod-cancha').value)
         };
-        if(dias > 0) {
+
+        if (dias > 0) {
             const fP = new Date(); fP.setDate(fP.getDate() + dias);
             updates.fechaFinPrueba = fP.toISOString().split('T')[0];
             updates.abonoCobrado = false;
+            // Si el abono no estaba seteado o queremos forzar el ciclo basado en la prueba:
+            const fC = new Date(fP); fC.setDate(fC.getDate() + 30);
+            updates.fechaFinCiclo = fC.toISOString().split('T')[0];
         }
+
         await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
         alert("Configuración Guardada"); cerrarModal();
     };
 
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');
-    window.crearOrg = async () => {
-        const id = document.getElementById('new-id').value.trim().toLowerCase();
-        const nombre = document.getElementById('new-name').value.trim();
-        if(!id || !nombre) return alert("Faltan datos");
-        await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
-        alert("Creado. Configurá la facturación ahora.");
-    };
 </script>
 </body>
 </html>

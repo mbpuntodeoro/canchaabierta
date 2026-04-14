@@ -35,7 +35,7 @@
         .day-label { background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f2f2f7; }
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
         .estado-btn { width: 130px; height: 34px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
         .pagado { background: var(--success); } 
         .paga-en-la-cancha { background: var(--warning); color: #000; } 
@@ -53,7 +53,7 @@
 <div class="container">
     <div id="view-suspended" class="hidden" style="padding: 40px 0;">
         <div class="msg-error">🚫 NO HAY CANCHA DISPONIBLE<br><span style="font-size: 12px; font-weight: 400; color: #666;">CONTACTAR AL ORGANIZADOR</span></div>
-        <button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR</button>
+        <button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR ESTA CANCHA</button>
     </div>
 
     <div id="view-hub" class="hidden">
@@ -88,8 +88,11 @@
     <div class="card hidden" id="view-success">
         <div style="text-align: center;">
             <div style="font-size: 50px;">✅</div>
-            <h2>¡Anotado!</h2>
-            <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin: 20px 0;">
+            <h2 style="margin-bottom:10px;">¡Anotado!</h2>
+            <p style="color: var(--sub); font-size: 13px; line-height: 1.4; margin-bottom: 20px;">
+                Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.
+            </p>
+            <div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin-bottom: 20px;">
                 <span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span>
                 <span id="ex-alias" style="color: var(--primary); font-weight: 700;">-</span><br><br>
                 <button onclick="copiarAlias()" style="background:#e1f0ff; color:var(--primary); border:none; padding:10px 20px; border-radius:12px; font-weight:700;">📋 Copiar Alias</button>
@@ -152,7 +155,7 @@
             <div class="report-row" style="color:var(--success)"><div class="report-label">✅ Pagados</div><div class="report-value" id="rep-pagados">0</div></div>
             <div class="report-row" style="color:var(--warning); filter: brightness(0.8);"><div class="report-label">🤝 Paga en la cancha</div><div class="report-value" id="rep-can">0</div></div>
             <div class="report-row" style="color:var(--danger)"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen">0</div></div>
-            <div class="report-row" style="background: #f9f9fb; margin-top: 5px; border-radius: 10px;"><div class="report-label">🎾 Libres</div><div class="report-value" id="rep-libres">0</div></div>
+            <div class="report-row" style="background: #f9f9fb; margin-top: 5px; border-radius: 10px;"><div class="report-label">🎾 Libres (Confirmados)</div><div class="report-value" id="rep-libres">0</div></div>
         </div>
 
         <h3 style="font-size:14px; margin-bottom:15px;">Listado de Inscriptos</h3>
@@ -232,9 +235,11 @@
     window.abrirAdmin = () => {
         const p = prompt("Clave:");
         if (p === (ev.password || "1234")) {
+            // OCULTAMOS TODO LO DEMÁS PARA LIMPIAR LA VISTA
             document.getElementById('view-event').classList.add('hidden');
             document.getElementById('view-suspended').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
+            
             document.getElementById('ed-org-name').value = ev.organiza || "";
             document.getElementById('ed-organizador').value = (ev.organizador === "undefined" || !ev.organizador) ? "" : ev.organizador;
             document.getElementById('ed-lugar').value = ev.lugar || "";
@@ -310,7 +315,6 @@
     window.cambiar = (oid) => {
         const idx = ev.inscriptos.findIndex(x => x.id === oid);
         const estados = ["pendiente", "paga-en-la-cancha", "pagado"];
-        // Cambiamos el estado y forzamos un nuevo timestamp para que sea el último del grupo
         ev.inscriptos[idx].estado = estados[(estados.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
         ev.inscriptos[idx].id = Date.now(); 
         set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos);
@@ -327,12 +331,10 @@
         
         const totalCupos = ev.cupo || 0;
         let inscriptosArr = ev.inscriptos || [];
-        
-        // CONTEOS
         const pagados = inscriptosArr.filter(p => p.estado === 'pagado').length;
         const pagaCancha = inscriptosArr.filter(p => p.estado === 'paga-en-la-cancha').length;
         const pendientes = inscriptosArr.filter(p => p.estado === 'pendiente').length;
-        const libres = totalCupos - (pagados + pagaCancha + pendientes);
+        const libres = totalCupos - (pagados + pagaCancha);
 
         document.getElementById('rep-total').innerText = totalCupos;
         document.getElementById('rep-pagados').innerText = pagados;
@@ -340,13 +342,12 @@
         document.getElementById('rep-pen').innerText = pendientes;
         document.getElementById('rep-libres').innerText = libres < 0 ? 0 : libres;
 
-        // ORDENAMIENTO DE LISTA
         const prioridades = { 'pagado': 1, 'paga-en-la-cancha': 2, 'pendiente': 3 };
         inscriptosArr.sort((a, b) => {
             if (prioridades[a.estado] !== prioridades[b.estado]) {
                 return prioridades[a.estado] - prioridades[b.estado];
             }
-            return a.id - b.id; // Segundo criterio: orden de llegada/cambio
+            return a.id - b.id;
         });
 
         let h = "";

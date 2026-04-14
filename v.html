@@ -5,82 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plataforma Cancha Abierta Pro</title>
     <style>
-        :root { 
-            --primary: #007aff; 
-            --bg: #f8f9fb; 
-            --card: #ffffff; 
-            --text: #1d1d1f; 
-            --sub: #86868b; 
-            --success: #34c759; 
-            --warning: #ffcc00; 
-            --danger: #ff3b30; 
-            --cta: #FF9500; 
-            --shadow: 0 10px 30px rgba(0,0,0,0.06);
-        }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --cta: #FF9500; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; line-height: 1.4; }
         .container { max-width: 480px; margin: auto; }
-        
         .main-header { text-align: center; padding: 25px 0 15px 0; }
-        .main-header span { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
         .main-header h1 { font-size: 32px; font-weight: 900; margin: 5px 0; letter-spacing: -1.5px; color: #000; }
-
+        .main-header span { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
+        
+        /* HUB Y CARTELERA */
         .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
-        
-        .hub-row { 
-            background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 8px; 
-            display: flex; align-items: center; text-decoration: none; color: inherit; 
-            box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(0,0,0,0.02);
-        }
-        .hub-time { 
-            font-size: 11px; font-weight: 800; color: var(--primary); width: 125px; flex-shrink: 0; 
-            border-right: 1.5px solid #f2f2f7; margin-right: 15px; line-height: 1.2; white-space: nowrap;
-            display: flex; align-items: center; justify-content: center; height: 40px;
-        }
+        .hub-row { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); }
+        .hub-time { font-size: 11px; font-weight: 800; color: var(--primary); width: 125px; flex-shrink: 0; border-right: 1.5px solid #f2f2f7; margin-right: 15px; line-height: 1.2; display: flex; align-items: center; justify-content: center; height: 40px; text-align: center; }
         .hub-main { flex: 1; min-width: 0; }
         .hub-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
-        .hub-title { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: -0.3px; }
+        .hub-title { font-size: 14px; font-weight: 800; color: #000; text-transform: uppercase; }
         .hub-tag { background: #007aff10; color: var(--primary); font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 8px; text-transform: uppercase; }
-        .hub-sub { font-size: 11px; color: var(--sub); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .hub-arrow { color: #d1d1d6; font-size: 18px; padding-left: 10px; }
+        .hub-sub { font-size: 11px; color: var(--sub); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* CARDS Y FORMULARIOS */
         .card { background: var(--card); padding: 28px; border-radius: 28px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); margin-bottom: 20px; }
-        .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; border: 1px solid #fff; }
+        .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
-
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; margin-left: 6px; margin-top: 15px; }
-        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
+        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; }
         
-        /* CORRECCIÓN DÍAS HORIZONTALES */
+        /* DÍAS HORIZONTALES */
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin-top: 8px; }
         .day-check { display: none; }
-        .day-label { 
-            flex: 1; background: #f2f2f7; color: #8e8e93; padding: 12px 0; text-align: center; 
-            border-radius: 12px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s;
-        }
+        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 12px 0; text-align: center; border-radius: 12px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; }
-        .btn-blue { background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); margin-top: 25px; }
-        .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .btn-blue { background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); }
+        .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
         
-        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; line-height: 1.5; }
+        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; }
         .msg-lleno { background: #fff; color: var(--danger); padding: 30px; border-radius: 22px; font-size: 18px; font-weight: 900; text-align: center; border: 2px solid #f2f2f7; }
 
         .report-list { background: #f2f2f7; border-radius: 24px; padding: 8px; margin-bottom: 30px; }
         .report-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: white; border-radius: 16px; margin: 4px; }
-        .report-value { font-weight: 800; font-size: 17px; }
-
         .admin-item { display: flex; align-items: center; padding: 12px 14px; background: #fff; border-radius: 16px; margin-bottom: 6px; border: 1px solid #efeff4; gap: 10px; }
         .estado-btn { flex: 1; height: 38px; border-radius: 12px; font-size: 10px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .paga-en-la-cancha { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
-        .btn-del { background: #f2f2f7; border: none; padding: 10px; border-radius: 12px; cursor: pointer; }
-
-        .footer-credits { text-align: center; margin: 30px 0; font-size: 10px; color: #c7c7cc; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-        .banner-sell { background: white; border-radius: 30px; padding: 35px 25px; text-align: center; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.01); }
-        .btn-cta { background: var(--cta); color: white; }
+        
+        .footer-credits { text-align: center; margin: 30px 0; font-size: 10px; color: #c7c7cc; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+        .banner-sell { background: white; border-radius: 30px; padding: 35px 25px; text-align: center; box-shadow: var(--shadow); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -176,34 +148,30 @@
     <div id="banner-marketing" class="banner-sell">
         <p style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">¿Tu Cancha Abierta es un caos?</p>
         <p style="font-size: 13px; color: var(--sub); margin-bottom: 25px;">Pasala a piloto automático hoy mismo.</p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full" style="background:var(--cta); color:white;">Mariano, ayudame con mi cancha abierta 🎾</a>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, get, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const params = new URLSearchParams(window.location.search);
-    const orgId = params.get('org'), currentId = params.get('id'); let ev = {};
+    const orgId = params.get('org'), currentId = params.get('id'); 
+    let ev = {}, cuenta = {};
 
-    function formatearHoraVisual(h) { if(!h) return "00:00"; return h; }
+    function formatearHoraVisual(h) { return h || "00:00"; }
     function formatearFecha(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
-    function obtenerProximaFecha(rrule) {
-        const parts = rrule.split(';'); const freq = parts[0].split('=')[1]; if (freq !== 'WEEKLY') return null;
-        const byDay = parts[1].split('=')[1];
-        const daysMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
-        const allowedDays = byDay.split(',').map(d => daysMap[d]);
-        let next = new Date(); next.setHours(0,0,0,0);
-        for (let i = 1; i <= 7; i++) {
-            next.setDate(next.getDate() + 1);
-            if (allowedDays.includes(next.getDay())) { return `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`; }
-        }
-        return null;
-    }
     
+    // Escucha de facturación
+    if (orgId) {
+        onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), (snap) => {
+            cuenta = snap.val() || { consumoActual: 0, limiteCredito: 30000 };
+        });
+    }
+
     if (orgId && !currentId) { 
         document.getElementById('view-hub').classList.remove('hidden'); 
         onValue(ref(db, 'hubs/' + orgId), async (snap) => { 
@@ -228,34 +196,188 @@
             });
         }); 
     } else if (currentId) { 
-        onValue(ref(db, 'eventos/' + currentId), (snap) => { 
+        onValue(ref(db, 'eventos/' + currentId), async (snap) => { 
             ev=snap.val()||{}; 
             const ahora = new Date(); 
             const fechaFinExacta = ev.fecha && ev.horaFin ? new Date(ev.fecha + "T" + ev.horaFin + ":00") : null;
-            if (fechaFinExacta && ahora > fechaFinExacta && ev.rrule && !ev.rrule.includes('NONE')) {
-                const prx = obtenerProximaFecha(ev.rrule);
-                if (prx) { update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], inscripcionesCerradas: false }); return; }
+
+            // --- LÓGICA DE FACTURACIÓN Y RESET ---
+            if (fechaFinExacta && ahora > fechaFinExacta && !ev.facturado) {
+                const fPrueba = new Date((cuenta.fechaFinPrueba || "2000-01-01") + "T23:59:59");
+                
+                // 1. Registro de Ingresos Reales para el Organizador
+                const confirmados = (ev.inscriptos || []).filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha');
+                const recaudado = confirmados.length * (ev.valor || 0);
+                await push(ref(db, 'facturacion/' + orgId + '/ingresos'), {
+                    fecha: ev.fecha, monto: recaudado, jugadores: confirmados.length, evento: ev.organiza, ts: Date.now()
+                });
+
+                // 2. Cobro de Comisión (Si terminó la prueba)
+                if (ahora > fPrueba) {
+                    let cargo = (cuenta.costoCancha || 7000);
+                    if (!cuenta.abonoCobrado) {
+                        cargo += (cuenta.costoAbono || 25000);
+                        await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { abonoCobrado: true });
+                    }
+                    const nuevoConsumo = (cuenta.consumoActual || 0) + cargo;
+                    await update(ref(db, 'facturacion/' + orgId + '/cuenta'), { consumoActual: nuevoConsumo });
+                }
+
+                await update(ref(db, 'eventos/' + currentId), { facturado: true });
+
+                if (ev.rrule && !ev.rrule.includes('NONE')) {
+                    const prx = obtenerProximaFecha(ev.rrule);
+                    if (prx) {
+                        update(ref(db, 'eventos/'+currentId), { fecha: prx, inscriptos: [], facturado: false, inscripcionesCerradas: false });
+                        return;
+                    }
+                }
             }
-            if(ev.suspendido===true) { document.getElementById('view-event').classList.add('hidden'); document.getElementById('view-suspended').classList.remove('hidden'); } 
-            else { document.getElementById('view-suspended').classList.add('hidden'); document.getElementById('view-event').classList.remove('hidden'); render(); } 
+
+            if(ev.suspendido===true) { 
+                document.getElementById('view-event').classList.add('hidden'); 
+                document.getElementById('view-suspended').classList.remove('hidden'); 
+            } else { 
+                document.getElementById('view-suspended').classList.add('hidden'); 
+                document.getElementById('view-event').classList.remove('hidden'); 
+                render(); 
+            } 
         }); 
     }
+
     window.toggleRecurrencia = () => { const v=document.getElementById('ed-freq').value; const s=document.getElementById('recurrencia-semanal'); v==='WEEKLY'?s.classList.remove('hidden'):s.classList.add('hidden'); }
-    window.abrirAdmin = () => { const p=prompt("Clave:"); if (p===(ev.password||"1234")) { document.getElementById('view-event').classList.add('hidden'); document.getElementById('btn-gestionar-main')?.classList.add('hidden'); document.getElementById('view-suspended').classList.add('hidden'); document.getElementById('banner-marketing').classList.add('hidden'); document.getElementById('view-admin').classList.remove('hidden'); document.getElementById('ed-org-name').value=ev.organiza||""; document.getElementById('ed-organizador').value=ev.organizador||""; document.getElementById('ed-pass').value=ev.password||"1234"; document.getElementById('ed-lugar').value=ev.lugar||""; document.getElementById('ed-hor').value=ev.hora||""; document.getElementById('ed-hor-fin').value=ev.horaFin||""; document.getElementById('ed-valor').value=ev.valor||0; document.getElementById('ed-alias').value=ev.alias||""; document.getElementById('in-cel-adm').value=ev.celuOrganizador||""; document.getElementById('ed-cat').value=ev.categorias||""; document.getElementById('ed-fec').value=ev.fecha||""; document.getElementById('ed-cupo').value=ev.cupo||0; document.getElementById('ed-ins-status').value=ev.inscripcionesCerradas?'cerradas':'abiertas'; if(ev.rrule) { const pts=ev.rrule.split(';'); document.getElementById('ed-freq').value=pts[0].split('=')[1]; if(pts[1]) { const ds=pts[1].split('=')[1].split(','); ds.forEach(d => { if(document.getElementById('check-'+d)) document.getElementById('check-'+d).checked=true; }); } toggleRecurrencia(); } } };
-    window.guardar = () => { const f=document.getElementById('ed-freq').value; let r=""; if(f!=='NONE') { const sd=[]; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); }); r=`RRULE:FREQ=${f};BYDAY=${sd.join(',')}`; } update(ref(db, 'eventos/'+currentId), { organiza: document.getElementById('ed-org-name').value, organizador: document.getElementById('ed-organizador').value, password: document.getElementById('ed-pass').value, lugar: document.getElementById('ed-lugar').value, hora: document.getElementById('ed-hor').value, horaFin: document.getElementById('ed-hor-fin').value, valor: parseInt(document.getElementById('ed-valor').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('in-cel-adm').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, cupo: parseInt(document.getElementById('ed-cupo').value), inscripcionesCerradas: document.getElementById('ed-ins-status').value==='cerradas', rrule: r }).then(() => alert("¡Guardado!")); };
-    window.inscribirse = () => { const n=document.getElementById('in-nom').value.trim(), c=document.getElementById('in-cel').value.trim(); if(!n||!c) return alert("Faltan datos"); if(!ev.inscriptos) ev.inscriptos=[]; ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' }); set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => { document.getElementById('view-event').classList.add('hidden'); renderSuccess(); }); };
-    function renderSuccess() { document.getElementById('view-success').classList.remove('hidden'); document.getElementById('ex-monto').innerText="$"+(ev.valor||0).toLocaleString('es-AR'); document.getElementById('ex-alias').innerText=ev.alias||"-"; }
+    
+    window.abrirAdmin = () => {
+        if (cuenta.consumoActual >= cuenta.limiteCredito) {
+            alert("⚠️ Límite de uso alcanzado. Regularizá tu saldo para seguir operando.");
+            return;
+        }
+        const p=prompt("Clave:");
+        if (p===(ev.password||"1234")) {
+            document.getElementById('view-event').classList.add('hidden');
+            document.getElementById('btn-gestionar-main')?.classList.add('hidden');
+            document.getElementById('view-admin').classList.remove('hidden');
+            document.getElementById('ed-org-name').value=ev.organiza||"";
+            document.getElementById('ed-organizador').value=ev.organizador||"";
+            document.getElementById('ed-pass').value=ev.password||"1234";
+            document.getElementById('ed-lugar').value=ev.lugar||"";
+            document.getElementById('ed-hor').value=ev.hora||"";
+            document.getElementById('ed-hor-fin').value=ev.horaFin||"";
+            document.getElementById('ed-valor').value=ev.valor||0;
+            document.getElementById('ed-alias').value=ev.alias||"";
+            document.getElementById('in-cel-adm').value=ev.celuOrganizador||"";
+            document.getElementById('ed-cat').value=ev.categorias||"";
+            document.getElementById('ed-fec').value=ev.fecha||"";
+            document.getElementById('ed-cupo').value=ev.cupo||0;
+            document.getElementById('ed-ins-status').value=ev.inscripcionesCerradas?'cerradas':'abiertas';
+            if(ev.rrule) {
+                const pts=ev.rrule.split(';');
+                document.getElementById('ed-freq').value=pts[0].split('=')[1];
+                if(pts[1]) {
+                    const ds=pts[1].split('=')[1].split(',');
+                    ds.forEach(d => { if(document.getElementById('check-'+d)) document.getElementById('check-'+d).checked=true; });
+                }
+                toggleRecurrencia();
+            }
+        }
+    };
+
+    window.guardar = () => {
+        const f=document.getElementById('ed-freq').value; let r="";
+        if(f!=='NONE') {
+            const sd=[]; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); });
+            r=`RRULE:FREQ=${f};BYDAY=${sd.join(',')}`;
+        }
+        update(ref(db, 'eventos/'+currentId), {
+            organiza: document.getElementById('ed-org-name').value,
+            organizador: document.getElementById('ed-organizador').value,
+            password: document.getElementById('ed-pass').value,
+            lugar: document.getElementById('ed-lugar').value,
+            hora: document.getElementById('ed-hor').value,
+            horaFin: document.getElementById('ed-hor-fin').value,
+            valor: parseInt(document.getElementById('ed-valor').value),
+            alias: document.getElementById('ed-alias').value,
+            celuOrganizador: document.getElementById('in-cel-adm').value,
+            categorias: document.getElementById('ed-cat').value,
+            fecha: document.getElementById('ed-fec').value,
+            cupo: parseInt(document.getElementById('ed-cupo').value),
+            inscripcionesCerradas: document.getElementById('ed-ins-status').value==='cerradas',
+            rrule: r
+        }).then(() => alert("¡Guardado!"));
+    };
+
+    window.inscribirse = () => {
+        const n=document.getElementById('in-nom').value.trim(), c=document.getElementById('in-cel').value.trim();
+        if(!n||!c) return alert("Faltan datos");
+        if(!ev.inscriptos) ev.inscriptos=[];
+        ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
+        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => {
+            document.getElementById('view-event').classList.add('hidden');
+            renderSuccess();
+        });
+    };
+
+    function renderSuccess() {
+        document.getElementById('view-success').classList.remove('hidden');
+        document.getElementById('ex-monto').innerText="$"+(ev.valor||0).toLocaleString('es-AR');
+        document.getElementById('ex-alias').innerText=ev.alias||"-";
+    }
+
     window.copiarAlias = () => { navigator.clipboard.writeText(ev.alias).then(() => alert("Copiado")); };
     window.enviarWhatsapp = () => { window.open(`https://wa.me/${ev.celuOrganizador}?text=Comprobante`); };
-    window.cambiar = (oid) => { const idx=ev.inscriptos.findIndex(x=>x.id===oid); const est=["pendiente", "paga-en-la-cancha", "pagado"]; ev.inscriptos[idx].estado=est[(est.indexOf(ev.inscriptos[idx].estado)+1)%3]; ev.inscriptos[idx].id=Date.now(); set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos); };
+    window.cambiar = (oid) => {
+        const idx=ev.inscriptos.findIndex(x=>x.id===oid);
+        const est=["pendiente", "paga-en-la-cancha", "pagado"];
+        ev.inscriptos[idx].estado=est[(est.indexOf(ev.inscriptos[idx].estado)+1)%3];
+        ev.inscriptos[idx].id=Date.now();
+        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos);
+    };
     window.borrarP = (oid) => { if(confirm("¿Borrar?")) { const n = ev.inscriptos.filter(x => x.id !== oid); set(ref(db, 'eventos/'+currentId+'/inscriptos'), n); } };
+
     function render() { 
-        document.getElementById('txt-event-name').innerText=(ev.organiza||"CARGANDO...").toUpperCase(); document.getElementById('txt-organizador').innerText=ev.organizador||"-"; document.getElementById('txt-cat').innerText=ev.categorias||"TODAS"; document.getElementById('txt-fecha').innerText=formatearFecha(ev.fecha); document.getElementById('txt-hora').innerText=`DE ${formatearHoraVisual(ev.hora)} A ${formatearHoraVisual(ev.horaFin)} HS`; document.getElementById('txt-lugar').innerText=ev.lugar||"-"; document.getElementById('txt-valor').innerText="$"+(ev.valor||0).toLocaleString('es-AR');
-        const tot=ev.cupo||0; let ins=ev.inscriptos||[]; const pag=ins.filter(p=>p.estado==='pagado').length, can=ins.filter(p=>p.estado==='paga-en-la-cancha').length, lib=tot-(pag+can);
-        document.getElementById('rep-total').innerText=tot; document.getElementById('rep-pagados').innerText=pag; document.getElementById('rep-can').innerText=can; document.getElementById('rep-pen').innerText=ins.filter(p=>p.estado==='pendiente').length; document.getElementById('rep-libres').innerText=lib<0?0:lib;
-        if (lib <= 0 || ev.inscripcionesCerradas) { document.getElementById('form-container').classList.add('hidden'); document.getElementById('msg-cerrado').classList.remove('hidden'); } else { document.getElementById('form-container').classList.remove('hidden'); document.getElementById('msg-cerrado').classList.add('hidden'); }
-        const prio={'pagado':1,'paga-en-la-cancha':2,'pendiente':3}; ins.sort((a,b)=>{if(prio[a.estado]!==prio[b.estado])return prio[a.estado]-prio[b.estado]; return a.id-b.id;});
-        let h=""; ins.forEach(p=>{ const lbl=p.estado==='paga-en-la-cancha'?'Paga en cancha':p.estado; h+=`<div class="admin-item"><span style="flex:1"><b>${p.nombre}</b></span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${lbl}</button><button class="btn-del" onclick="borrarP(${p.id})">🗑️</button></div>`; }); document.getElementById('lista-admin').innerHTML=h||"Sin inscriptos";
+        document.getElementById('txt-event-name').innerText=(ev.organiza||"CARGANDO...").toUpperCase();
+        document.getElementById('txt-organizador').innerText=ev.organizador||"-";
+        document.getElementById('txt-cat').innerText=ev.categorias||"TODAS";
+        document.getElementById('txt-fecha').innerText=formatearFecha(ev.fecha);
+        document.getElementById('txt-hora').innerText=`DE ${formatearHoraVisual(ev.hora)} A ${formatearHoraVisual(ev.horaFin)} HS`;
+        document.getElementById('txt-lugar').innerText=ev.lugar||"-";
+        document.getElementById('txt-valor').innerText="$"+(ev.valor||0).toLocaleString('es-AR');
+        
+        const tot=ev.cupo||0; let ins=ev.inscriptos||[];
+        const pag=ins.filter(p=>p.estado==='pagado').length, can=ins.filter(p=>p.estado==='paga-en-la-cancha').length, lib=tot-(pag+can);
+        
+        document.getElementById('rep-total').innerText=tot;
+        document.getElementById('rep-pagados').innerText=pag;
+        document.getElementById('rep-can').innerText=can;
+        document.getElementById('rep-pen').innerText=ins.filter(p=>p.estado==='pendiente').length;
+        document.getElementById('rep-libres').innerText=lib<0?0:lib;
+        
+        if (lib <= 0 || ev.inscripcionesCerradas) {
+            document.getElementById('form-container').classList.add('hidden');
+            document.getElementById('msg-cerrado').classList.remove('hidden');
+        } else {
+            document.getElementById('form-container').classList.remove('hidden');
+            document.getElementById('msg-cerrado').classList.add('hidden');
+        }
+        
+        let h=""; ins.forEach(p=>{
+            const lbl=p.estado==='paga-en-la-cancha'?'Paga en cancha':p.estado;
+            h+=`<div class="admin-item"><span style="flex:1"><b>${p.nombre}</b></span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${lbl}</button><button style="background:none; border:none; cursor:pointer;" onclick="borrarP(${p.id})">🗑️</button></div>`;
+        });
+        document.getElementById('lista-admin').innerHTML=h||"Sin inscriptos";
+    }
+
+    function obtenerProximaFecha(rrule) {
+        const parts = rrule.split(';'); const freq = parts[0].split('=')[1]; if (freq !== 'WEEKLY') return null;
+        const byDay = parts[1].split('=')[1];
+        const daysMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
+        const allowedDays = byDay.split(',').map(d => daysMap[d]);
+        let next = new Date(); next.setHours(0,0,0,0);
+        for (let i = 1; i <= 7; i++) {
+            next.setDate(next.getDate() + 1);
+            if (allowedDays.includes(next.getDay())) { return next.toISOString().split('T')[0]; }
+        }
+        return null;
     }
 </script>
 </body>

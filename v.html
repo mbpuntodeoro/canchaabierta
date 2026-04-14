@@ -3,42 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancha Abierta - Plataforma Pro</title>
+    <title>Inscripción Cancha Abierta - Plataforma Pro</title>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
         * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 450px; margin: auto; }
         .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
-        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; }
+        
+        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; font-weight: 800; margin-bottom: 8px; }
         .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; }
+        
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
+        
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; background: #fff; }
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-dark { background: #1c1c1e; color: white; font-size: 12px; }
-        .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+        
         .hidden { display: none !important; }
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
         .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .reservado { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
-        .banner-sell { margin-top: 40px; padding: 20px; background: #fff; border-radius: 22px; text-align: center; border: 2px dashed var(--primary); }
+        
+        /* ESTILOS DE LEYENDA Y BANNER */
+        .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+        .banner-sell { margin-top: 20px; padding: 24px; background: #fff; border-radius: 22px; text-align: center; border: 2px dashed var(--primary); }
+        .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="view-hub" class="hidden">
-        <div class="header-brand">🎾 CANCHAS ABIERTAS</div>
+        <div class="header-brand">🎾 Canchas Abiertas</div>
         <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px; font-weight: 900;">Organizador</h1>
         <div id="hub-list"></div>
     </div>
 
     <div id="view-event" class="hidden">
         <div class="card">
-            <div class="header-brand">🎾 INSCRIPCIÓN</div>
+            <div class="header-brand">🎾 Inscripción Cancha Abierta</div>
             <span id="txt-event-name" class="event-title">...</span>
             <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
             <div class="info-grid">
@@ -102,9 +109,17 @@
         <div id="lista-admin"></div>
     </div>
 
+    <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
+
     <div class="banner-sell">
-        <p style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--primary);">Pasala a piloto automático.</span></p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta" class="btn-full btn-blue" style="font-size: 12px;">SISTEMATIZAR MI ORGANIZACIÓN 🚀</a>
+        <p style="font-size: 13px; font-weight: 700; margin-bottom: 16px; line-height: 1.4;">
+            ¿Tu Cancha Abierta es un caos de mensajes?<br>
+            <span style="color: var(--primary);">Pasala a piloto automático.</span>
+        </p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta%20y%20necesito%20ayuda%20con%20la%20mía" 
+           class="btn-full btn-blue" style="font-size: 13px;">
+           Mariano, ayudame con mi cancha abierta 🎾
+        </a>
     </div>
 </div>
 
@@ -120,7 +135,15 @@
     let currentId = params.get('id') || 'cancha-egd';
     let ev = {};
 
-    // INICIO: Lógica de vistas
+    function formatearFecha(fechaStr) {
+        if (!fechaStr) return '-';
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const [year, month, day] = fechaStr.split('-');
+        const date = new Date(year, month - 1, day);
+        const nombreDia = dias[date.getDay()];
+        return `${nombreDia} ${parseInt(day)}/${parseInt(month)}`;
+    }
+
     if (orgId && !params.get('id')) {
         document.getElementById('view-hub').classList.remove('hidden');
         document.getElementById('hub-org-name').innerText = orgId.toUpperCase();
@@ -135,7 +158,7 @@
                         const item = document.createElement('a');
                         item.className = 'hub-item';
                         item.href = `?id=${id}&org=${orgId}`;
-                        item.innerHTML = `<b>${d.organiza || 'Evento'}</b><span style="font-size:12px; color:#8e8e93;">${d.fecha || ''} - ${d.hora || ''}hs</span>`;
+                        item.innerHTML = `<b>${d.organiza || 'Evento'}</b><span style="font-size:12px; color:#8e8e93;">${formatearFecha(d.fecha)} - ${d.hora || ''}hs</span>`;
                         hubList.appendChild(item);
                     }
                 });
@@ -149,7 +172,6 @@
         });
     }
 
-    // Funciones de acción
     window.inscribirse = () => {
         const n = document.getElementById('in-nom').value.trim();
         const c = document.getElementById('in-cel').value.trim();
@@ -202,7 +224,7 @@
     };
 
     window.enviarWhatsapp = () => {
-        const msg = encodeURIComponent(`Hola! Soy ${document.getElementById('in-nom').value}, te paso el comprobante para la cancha del ${ev.fecha}`);
+        const msg = encodeURIComponent(`Hola! Soy ${document.getElementById('in-nom').value}, te paso el comprobante para la cancha del ${formatearFecha(ev.fecha)}`);
         window.open(`https://wa.me/${ev.celuOrganizador}?text=${msg}`);
     };
 
@@ -216,7 +238,7 @@
     function render() {
         document.getElementById('txt-event-name').innerText = (ev.organiza || "CARGANDO...").toUpperCase();
         document.getElementById('txt-cat').innerText = ev.categorias || "TODAS LAS CATEGORÍAS";
-        document.getElementById('txt-fecha').innerText = ev.fecha || '-';
+        document.getElementById('txt-fecha').innerText = formatearFecha(ev.fecha);
         document.getElementById('txt-hora').innerText = `DE ${ev.hora || '--'} A ${ev.horaFin || '--'} HS`;
         document.getElementById('txt-lugar').innerText = ev.lugar || '-';
         document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0);

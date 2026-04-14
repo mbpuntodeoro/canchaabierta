@@ -3,84 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscripción Cancha Abierta</title>
+    <title>Plataforma Cancha Abierta Pro</title>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --cta: #FF9500; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 450px; margin: auto; }
-        .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
-        .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
+        :root { 
+            --primary: #007aff; 
+            --bg: #f8f9fb; 
+            --card: #ffffff; 
+            --text: #1d1d1f; 
+            --sub: #86868b; 
+            --success: #34c759; 
+            --warning: #ffcc00; 
+            --danger: #ff3b30; 
+            --cta: #FF9500; 
+            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; line-height: 1.4; }
+        .container { max-width: 480px; margin: auto; }
         
-        /* HUB REDISEÑADO - EVITA SALTO DE HS */
-        .day-header { font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 6px 8px; letter-spacing: 0.5px; }
-        .hub-row { background: white; padding: 12px 14px; border-radius: 14px; margin-bottom: 5px; display: flex; align-items: center; text-decoration: none; color: inherit; border: 1px solid rgba(0,0,0,0.05); }
-        .hub-time { font-size: 11px; font-weight: 800; color: var(--primary); width: 125px; flex-shrink: 0; border-right: 1.5px solid #f2f2f7; margin-right: 12px; line-height: 1; white-space: nowrap; }
-        .hub-main { flex: 1; min-width: 0; padding-right: 5px; }
-        .hub-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin-bottom: 2px; }
-        .hub-title { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--text); }
-        .hub-tag { background: #eef6ff; color: var(--primary); font-size: 8.5px; font-weight: 800; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; white-space: nowrap; }
-        .hub-sub { font-size: 10.5px; color: var(--sub); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* HEADER PRINCIPAL */
+        .main-header { text-align: center; padding: 25px 0 15px 0; }
+        .main-header span { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; }
+        .main-header h1 { font-size: 32px; font-weight: 900; margin: 5px 0; letter-spacing: -1.5px; color: #000; }
 
-        .event-title { font-size: 24px; font-weight: 900; text-align: center; display: block; letter-spacing: -1px; margin-bottom: 5px; text-transform: uppercase; }
-        .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
-        .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; }
-        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
+        /* HUB STYLE - AGENDA COMPACTA */
+        .day-header { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .day-header::after { content: ""; height: 1px; background: #e5e5e7; flex: 1; }
         
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 4px; margin-left: 4px; margin-top: 12px; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; outline: none; background: #fff; }
-        .btn-full { width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
-        .btn-blue { background: var(--primary); color: white; margin-top: 20px; }
-        .btn-dark { background: #1c1c1e; color: white; font-size: 12px; margin-top: 0; }
-        .hidden { display: none !important; }
+        .hub-row { 
+            background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 8px; 
+            display: flex; align-items: center; text-decoration: none; color: inherit; 
+            box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(0,0,0,0.02);
+        }
+        .hub-row:active { transform: scale(0.98); box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
         
-        .msg-instrucciones { background: #d32f2f; color: white; padding: 20px; border-radius: 18px; font-size: 13px; line-height: 1.5; font-weight: 600; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2); }
-        .msg-lleno { background: #f2f2f7; color: var(--danger); padding: 30px; border-radius: 18px; font-size: 18px; font-weight: 900; text-align: center; margin: 20px 0; border: 2px dashed var(--danger); }
-        
-        .report-list { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #eee; }
-        .report-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f2f2f7; }
-        .report-row:last-child { border-bottom: none; }
-        .report-label { font-size: 13px; font-weight: 600; }
-        .report-value { font-weight: 800; font-size: 16px; }
+        .hub-time { 
+            font-size: 11px; font-weight: 800; color: var(--primary); width: 120px; flex-shrink: 0; 
+            border-right: 1.5px solid #f2f2f7; margin-right: 15px; line-height: 1.2; white-space: nowrap;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .hub-main { flex: 1; min-width: 0; }
+        .hub-title { font-size: 15px; font-weight: 800; color: #000; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: -0.3px; }
+        .hub-details { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .hub-tag { background: #007aff10; color: var(--primary); font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 8px; text-transform: uppercase; }
+        .hub-sub { font-size: 11px; color: var(--sub); display: flex; align-items: center; gap: 3px; }
+        .hub-arrow { color: #d1d1d6; font-size: 18px; font-weight: 300; padding-left: 10px; }
 
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
-        .estado-btn { flex: 1; height: 34px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
+        /* FORMULARIO Y CARDS */
+        .card { background: var(--card); padding: 28px; border-radius: 28px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .info-grid { background: #f2f2f760; padding: 20px; border-radius: 22px; margin-bottom: 25px; border: 1px solid #fff; }
+        .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .info-item span { font-weight: 600; color: #1d1d1f; }
+
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; margin-left: 6px; margin-top: 15px; }
+        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; transition: border-color 0.2s; background: #fff; }
+        .input-std:focus { border-color: var(--primary); }
+        
+        .btn-full { 
+            width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; cursor: pointer; 
+            font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .btn-blue { background: var(--primary); color: white; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25); margin-top: 25px; }
+        .btn-blue:active { transform: scale(0.97); }
+        .btn-dark { background: #1d1d1f; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        
+        /* STATUS MESSAGES */
+        .msg-instrucciones { background: var(--danger); color: white; padding: 20px; border-radius: 20px; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 25px; line-height: 1.5; box-shadow: 0 10px 20px rgba(255, 59, 48, 0.2); }
+        .msg-lleno { background: #fff; color: var(--danger); padding: 30px; border-radius: 22px; font-size: 18px; font-weight: 900; text-align: center; border: 2px solid #f2f2f7; }
+
+        /* REPORTES ADMIN */
+        .report-list { background: #f2f2f7; border-radius: 24px; padding: 8px; margin-bottom: 30px; }
+        .report-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: white; border-radius: 16px; margin: 4px; border: 1px solid rgba(0,0,0,0.02); }
+        .report-label { font-size: 13px; font-weight: 700; color: #48484a; display: flex; align-items: center; gap: 8px; }
+        .report-value { font-weight: 800; font-size: 17px; color: #000; }
+
+        .admin-item { display: flex; align-items: center; padding: 12px 14px; background: #fff; border-radius: 16px; margin-bottom: 6px; border: 1px solid #efeff4; gap: 10px; }
+        .estado-btn { flex: 1; height: 38px; border-radius: 12px; font-size: 10px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .paga-en-la-cancha { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
-        .btn-del { background: #eee; border: none; padding: 8px; border-radius: 10px; cursor: pointer; }
-        
-        .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .banner-sell { margin-top: 30px; padding: 25px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
-        .btn-cta { background: var(--cta); color: white; margin-top: 15px; }
+        .btn-del { background: #f2f2f7; border: none; padding: 10px; border-radius: 12px; cursor: pointer; }
+
+        .footer-credits { text-align: center; margin: 30px 0; font-size: 10px; color: #c7c7cc; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+        .banner-sell { background: white; border-radius: 30px; padding: 35px 25px; text-align: center; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.01); }
+        .btn-cta { background: var(--cta); color: white; box-shadow: 0 10px 20px rgba(255, 149, 0, 0.2); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div id="view-suspended" class="hidden" style="padding: 40px 0;"><div style="background: #ffebeb; color: var(--danger); padding: 30px; border-radius: 25px; text-align: center; font-weight: 800;">🚫 NO HAY CANCHA DISPONIBLE<br><span style="font-size: 12px; font-weight: 400; color: #666;">CONTACTAR AL ORGANIZADOR</span></div><button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR</button></div>
+    <div id="view-suspended" class="hidden" style="padding: 40px 0;">
+        <div class="msg-lleno">🚫 CANCHA NO DISPONIBLE<br><span style="font-size: 13px; font-weight: 400; color: var(--sub); margin-top: 8px; display: block;">CONTACTAR AL ORGANIZADOR</span></div>
+        <button class="btn-full btn-dark" style="margin-top:20px" onclick="abrirAdmin()">⚙️ GESTIONAR</button>
+    </div>
     
     <div id="view-hub" class="hidden">
-        <div class="header-brand">🎾 Cartelera de Canchas</div>
-        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: -1.5px;">...</h1>
+        <header class="main-header"><span>🎾 Cartelera Pro</span><h1 id="hub-org-name">...</h1></header>
         <div id="hub-list"></div>
     </div>
 
     <div id="view-event" class="hidden">
         <div class="card">
-            <div class="header-brand">🎾 Inscripción Cancha Abierta</div>
-            <span id="txt-event-name" class="event-title">...</span>
-            <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
-            <div class="info-grid"><div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div><div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div><div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div><div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div><div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div></div>
-            <div id="form-container"><label>Nombre y Apellido</label><input id="in-nom" class="input-std" placeholder="Ej: Juan Pérez"><label>WhatsApp</label><input id="in-cel" class="input-std" placeholder="Ej: 1123456789"><button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button></div>
+            <header class="main-header" style="padding-top:0"><span>🎾 Inscripción</span><h1 id="txt-event-name">...</h1></header>
+            <div style="text-align: center; margin-bottom: 25px;"><span id="txt-cat" class="hub-tag" style="font-size:11px; padding:6px 12px;">...</span></div>
+            <div class="info-grid">
+                <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
+                <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
+                <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
+                <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-size: 18px;">$0</span></div>
+                <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
+            </div>
+            <div id="form-container">
+                <label>Nombre y Apellido</label><input id="in-nom" class="input-std" placeholder="Ej: Juan Pérez">
+                <label>WhatsApp</label><input id="in-cel" class="input-std" placeholder="Ej: 1123456789">
+                <button class="btn-full btn-blue" onclick="inscribirse()">Anotarme ahora</button>
+            </div>
             <div id="msg-cerrado" class="msg-lleno hidden">NO HAY LUGARES DISPONIBLES</div>
         </div>
         <button id="btn-gestionar-main" class="btn-full btn-dark" onclick="abrirAdmin()">⚙️ GESTIONAR ESTA CANCHA</button>
     </div>
 
-    <div class="card hidden" id="view-success"><div style="text-align: center;"><div style="font-size: 50px; margin-bottom: 10px;">✅</div><h2 style="margin-bottom:20px;">¡Anotado!</h2><div class="msg-instrucciones">Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.</div><div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin-bottom: 20px;"><span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span><span id="ex-alias" style="color: var(--primary); font-weight: 700; word-break: break-all;">-</span><br><br><button onclick="copiarAlias()" style="background:#e1f0ff; color:var(--primary); border:none; padding:10px 20px; border-radius:12px; font-weight:700;">📋 Copiar Alias</button></div><button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button><button class="btn-full" style="color:var(--sub); border:none; background:none;" onclick="location.reload()">Volver</button></div></div>
+    <div class="card hidden" id="view-success">
+        <div style="text-align: center;">
+            <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+            <h2 style="font-size: 28px; font-weight: 900; margin-bottom:20px; letter-spacing: -1px;">¡Estás anotado!</h2>
+            <div class="msg-instrucciones">Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.</div>
+            <div style="background: #f2f2f7; padding: 25px; border-radius: 24px; margin-bottom: 25px;">
+                <span id="ex-monto" style="font-size: 36px; font-weight: 900; display: block; color: #000;">$0</span>
+                <span id="ex-alias" style="color: var(--primary); font-weight: 800; font-size: 16px;">-</span><br><br>
+                <button onclick="copiarAlias()" style="background:#fff; color:var(--primary); border:1.5px solid #e5e5e7; padding:12px 20px; border-radius:14px; font-weight:800; font-size:13px;">📋 Copiar Alias</button>
+            </div>
+            <button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button>
+            <button class="btn-full" style="color:var(--sub); border:none; background:none; font-weight:700;" onclick="location.reload()">Volver al inicio</button>
+        </div>
+    </div>
     
-    <div class="card hidden" id="view-admin"><h2 style="margin:0; margin-bottom:20px;">Configuración</h2><label>Nombre Cancha</label><input id="ed-org-name" class="input-std"><label>Organizador</label><input id="ed-organizador" class="input-std"><label>Contraseña Gestión</label><input id="ed-pass" class="input-std" type="password"><label>Estado inscripciones</label><select id="ed-ins-status" class="input-std"><option value="abiertas">Abiertas</option><option value="cerradas">Cerradas manualmente</option></select><label>Tipo Evento</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Fecha Única</option><option value="WEEKLY">Semanal (Recurrente)</option></select><div id="recurrencia-semanal" class="hidden"><label>Días</label><div class="days-grid"><input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label><input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label><input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label><input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label><input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label><input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label><input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label></div></div><label>Lugar</label><input id="ed-lugar" class="input-std"><div style="display: flex; gap: 10px;"><div style="flex:1"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div><div style="flex:1"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div></div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"><label>Alias MP</label><input id="ed-alias" class="input-std"><label>WhatsApp</label><input id="in-cel-adm" class="input-std"><label>Categorías</label><input id="ed-cat" class="input-std"><label>Fecha</label><input id="ed-fec" class="input-std" type="date"><label>Cupos Totales</label><input id="ed-cupo" class="input-std" type="number"><button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button><button class="btn-full" onclick="location.reload()" style="background:#eee; color:#666">Cerrar</button><hr style="border:0; border-top:1px solid #eee; margin:25px 0;"><div class="report-list"><div class="report-row"><div class="report-label">🏆 Cupos Totales</div><div class="report-value" id="rep-total">0</div></div><div class="report-row" style="color:var(--success)"><div class="report-label">✅ Pagados</div><div class="report-value" id="rep-pagados">0</div></div><div class="report-row" style="color:var(--warning); filter: brightness(0.8);"><div class="report-label">🤝 Paga en cancha</div><div class="report-value" id="rep-can">0</div></div><div class="report-row" style="color:var(--danger)"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen">0</div></div><div class="report-row" style="background: #f9f9fb; margin-top: 5px; border-radius: 10px;"><div class="report-label">🎾 Cupos disponibles</div><div class="report-value" id="rep-libres">0</div></div></div><h3 style="font-size:14px; margin-bottom:15px;">Listado de Inscriptos</h3><div id="lista-admin"></div></div>
+    <div class="card hidden" id="view-admin">
+        <h2 style="font-size:24px; font-weight:900; margin:0 0 20px 0; letter-spacing:-1px;">Configuración</h2>
+        <label>Nombre Cancha</label><input id="ed-org-name" class="input-std">
+        <label>Organizador</label><input id="ed-organizador" class="input-std">
+        <label>Contraseña Gestión</label><input id="ed-pass" class="input-std" type="password">
+        <label>Estado inscripciones</label><select id="ed-ins-status" class="input-std"><option value="abiertas">Abiertas</option><option value="cerradas">Cerradas manualmente</option></select>
+        <label>Tipo Evento</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Fecha Única</option><option value="WEEKLY">Semanal (Recurrente)</option></select>
+        <div id="recurrencia-semanal" class="hidden"><label>Días</label><div class="days-grid"><input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label><input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label><input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label><input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label><input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label><input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label><input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label></div></div>
+        <label>Lugar</label><input id="ed-lugar" class="input-std">
+        <div style="display: flex; gap: 10px;"><div style="flex:1"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div><div style="flex:1"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div></div>
+        <label>Precio ($)</label><input id="ed-valor" class="input-std" type="number">
+        <label>Alias MP</label><input id="ed-alias" class="input-std">
+        <label>WhatsApp</label><input id="in-cel-adm" class="input-std">
+        <label>Categorías</label><input id="ed-cat" class="input-std">
+        <label>Fecha</label><input id="ed-fec" class="input-std" type="date">
+        <label>Cupos Totales</label><input id="ed-cupo" class="input-std" type="number">
+        <button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button>
+        <button class="btn-full" onclick="location.reload()" style="background:#f2f2f7; color:#1d1d1f; margin-top:10px;">Cerrar</button>
+        <hr style="border:0; border-top:1.5px solid #f2f2f7; margin:30px 0;">
+        <div class="report-list">
+            <div class="report-row"><div class="report-label">🏆 Cupos Totales</div><div class="report-value" id="rep-total">0</div></div>
+            <div class="report-row"><div class="report-label">✅ Pagados</div><div class="report-value" id="rep-pagados" style="color:var(--success)">0</div></div>
+            <div class="report-row"><div class="report-label">🤝 Paga en cancha</div><div class="report-value" id="rep-can" style="color:var(--cta)">0</div></div>
+            <div class="report-row"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen" style="color:var(--danger)">0</div></div>
+            <div class="report-row" style="background: #007aff08;"><div class="report-label" style="color:var(--primary)">🎾 Disponibles</div><div class="report-value" id="rep-libres" style="color:var(--primary)">0</div></div>
+        </div>
+        <h3 style="font-size:14px; font-weight:800; margin-bottom:15px; text-transform:uppercase; color:var(--sub);">Inscriptos</h3><div id="lista-admin"></div>
+    </div>
     
-    <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
-    <div id="banner-marketing" class="banner-sell"><p style="font-size: 13px; font-weight: 700; margin-bottom: 0px;">¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--cta);">Pasala a piloto automático.</span></p><a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a></div>
+    <div class="footer-credits">Desarrollado por Mariano Blumenfeld</div>
+    <div id="banner-marketing" class="banner-sell">
+        <p style="font-size: 16px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px;">¿Tu Cancha Abierta es un caos?</p>
+        <p style="font-size: 13px; color: var(--sub); margin-bottom: 25px;">Pasala a piloto automático hoy mismo.</p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a>
+    </div>
 </div>
 
 <script type="module">
@@ -123,7 +214,7 @@
             eventsData.forEach(d => {
                 if (d.fecha !== lastDate) { hubList.innerHTML += `<div class="day-header">${formatearFecha(d.fecha)}</div>`; lastDate = d.fecha; }
                 const hR = `${formatearHoraVisual(d.hora)} A ${formatearHoraVisual(d.horaFin)} HS`;
-                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${hR}</div><div class="hub-main"><div class="hub-title-row"><span class="hub-title">${d.organiza}</span><span class="hub-tag">${d.categorias||'Todas'}</span></div><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div style="font-size:16px; color:#ddd;">➔</div></a>`;
+                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time"><span>INICIA</span>${hR}</div><div class="hub-main"><div class="hub-title-row"><span class="hub-title">${d.organiza}</span><span class="hub-tag">${d.categorias||'Todas'}</span></div><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div class="hub-arrow">➔</div></a>`;
             });
         }); 
     } else if (currentId) { 

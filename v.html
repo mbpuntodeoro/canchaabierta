@@ -7,19 +7,20 @@
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --cta: #FF9500; }
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 450px; margin: auto; }
         .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
         .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
         
-        /* HUB COMPACTO AGUDA */
-        .day-header { font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 8px 5px; letter-spacing: 0.5px; }
-        .hub-row { background: white; padding: 14px 16px; border-radius: 16px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
-        .hub-time { font-size: 14px; font-weight: 800; color: var(--primary); min-width: 50px; }
-        .hub-main { flex: 1; margin-left: 10px; }
-        .hub-title { font-size: 14px; font-weight: 700; display: block; line-height: 1.2; text-transform: uppercase; }
-        .hub-sub { font-size: 11px; color: var(--sub); display: block; margin-top: 2px; }
-        .hub-tag { background: #eef6ff; color: var(--primary); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; margin-left: 5px; }
+        /* HUB REDISEÑADO COMPACTO */
+        .day-header { font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 6px 8px; letter-spacing: 0.5px; }
+        .hub-row { background: white; padding: 12px 14px; border-radius: 16px; margin-bottom: 5px; display: flex; align-items: center; text-decoration: none; color: inherit; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
+        .hub-time { font-size: 13px; font-weight: 800; color: var(--primary); min-width: 95px; border-right: 1.5px solid #f2f2f7; margin-right: 12px; line-height: 1; }
+        .hub-main { flex: 1; min-width: 0; }
+        .hub-title { font-size: 14px; font-weight: 800; display: block; line-height: 1.1; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hub-details { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .hub-sub { font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .hub-tag { background: #eef6ff; color: var(--primary); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; }
 
         .event-title { font-size: 24px; font-weight: 900; text-align: center; display: block; letter-spacing: -1px; margin-bottom: 5px; text-transform: uppercase; }
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
@@ -35,25 +36,21 @@
         
         .msg-instrucciones { background: #d32f2f; color: white; padding: 20px; border-radius: 18px; font-size: 13px; line-height: 1.5; font-weight: 600; text-align: center; margin-bottom: 25px; }
         .msg-lleno { background: #f2f2f7; color: var(--danger); padding: 30px; border-radius: 18px; font-size: 18px; font-weight: 900; text-align: center; margin: 20px 0; border: 2px dashed var(--danger); }
-
         .report-list { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #eee; }
         .report-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f2f2f7; }
         .report-row:last-child { border-bottom: none; }
         .report-label { font-size: 13px; font-weight: 600; }
         .report-value { font-weight: 800; font-size: 16px; }
-
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 5px; }
         .day-check { display: none; }
         .day-label { background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
-
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f2f2f7; gap: 10px; }
         .estado-btn { flex: 1; height: 34px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .paga-en-la-cancha { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
         .btn-del { background: #eee; border: none; padding: 8px; border-radius: 10px; cursor: pointer; }
-        
         .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .banner-sell { margin-top: 40px; padding: 30px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
+        .banner-sell { margin-top: 30px; padding: 25px 16px; border-top: 1.5px dashed #ccc; text-align: center; }
         .btn-cta { background: var(--cta); color: white; margin-top: 15px; }
     </style>
 </head>
@@ -63,7 +60,7 @@
     
     <div id="view-hub" class="hidden">
         <div class="header-brand">🎾 Cartelera de Canchas</div>
-        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 25px; font-weight: 900; text-transform: uppercase; letter-spacing: -1px;">...</h1>
+        <h1 id="hub-org-name" style="text-align: center; margin-bottom: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: -1.5px;">...</h1>
         <div id="hub-list"></div>
     </div>
 
@@ -80,10 +77,13 @@
     </div>
 
     <div class="card hidden" id="view-success"><div style="text-align: center;"><div style="font-size: 50px; margin-bottom: 10px;">✅</div><h2 style="margin-bottom:20px;">¡Anotado!</h2><div class="msg-instrucciones">Para asegurar tu lugar, hacé la transferencia y enviame el comprobante o contactame para coordinar otro medio de pago.</div><div style="background: #f8f9fb; padding: 20px; border-radius: 20px; margin-bottom: 20px;"><span id="ex-monto" style="font-size: 32px; font-weight: 900; display: block;">$0</span><span id="ex-alias" style="color: var(--primary); font-weight: 700; word-break: break-all;">-</span><br><br><button onclick="copiarAlias()" style="background:#e1f0ff; color:var(--primary); border:none; padding:10px 20px; border-radius:12px; font-weight:700;">📋 Copiar Alias</button></div><button class="btn-full btn-blue" style="background:#34c759" onclick="enviarWhatsapp()">📲 Enviar comprobante</button><button class="btn-full" style="color:var(--sub); border:none; background:none;" onclick="location.reload()">Volver</button></div></div>
+    
     <div class="card hidden" id="view-admin"><h2 style="margin:0; margin-bottom:20px;">Configuración</h2><label>Nombre Cancha</label><input id="ed-org-name" class="input-std"><label>Organizador</label><input id="ed-organizador" class="input-std"><label>Contraseña Gestión</label><input id="ed-pass" class="input-std" type="password"><label>Estado inscripciones</label><select id="ed-ins-status" class="input-std"><option value="abiertas">Abiertas</option><option value="cerradas">Cerradas manualmente</option></select><label>Tipo Evento</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Fecha Única</option><option value="WEEKLY">Semanal (Recurrente)</option></select><div id="recurrencia-semanal" class="hidden"><label>Días</label><div class="days-grid"><input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label><input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label><input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label><input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label><input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label><input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label><input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label></div></div><label>Lugar</label><input id="ed-lugar" class="input-std"><div style="display: flex; gap: 10px;"><div style="flex:1"><label>Hora Inicio</label><input id="ed-hor" class="input-std" type="time"></div><div style="flex:1"><label>Hora Fin</label><input id="ed-hor-fin" class="input-std" type="time"></div></div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"><label>Alias MP</label><input id="ed-alias" class="input-std"><label>WhatsApp</label><input id="in-cel-adm" class="input-std"><label>Categorías</label><input id="ed-cat" class="input-std"><label>Fecha</label><input id="ed-fec" class="input-std" type="date"><label>Cupos Totales</label><input id="ed-cupo" class="input-std" type="number"><button class="btn-full btn-blue" onclick="guardar()">💾 Guardar Cambios</button><button class="btn-full" onclick="location.reload()" style="background:#eee; color:#666">Cerrar</button><hr style="border:0; border-top:1px solid #eee; margin:25px 0;"><div class="report-list"><div class="report-row"><div class="report-label">🏆 Cupos Totales</div><div class="report-value" id="rep-total">0</div></div><div class="report-row" style="color:var(--success)"><div class="report-label">✅ Pagados</div><div class="report-value" id="rep-pagados">0</div></div><div class="report-row" style="color:var(--warning); filter: brightness(0.8);"><div class="report-label">🤝 Paga en cancha</div><div class="report-value" id="rep-can">0</div></div><div class="report-row" style="color:var(--danger)"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen">0</div></div><div class="report-row" style="background: #f9f9fb; margin-top: 5px; border-radius: 10px;"><div class="report-label">🎾 Cupos disponibles</div><div class="report-value" id="rep-libres">0</div></div></div><h3 style="font-size:14px; margin-bottom:15px;">Listado de Inscriptos</h3><div id="lista-admin"></div></div>
+    
     <div class="footer-credits">DESARROLLADO POR MARIANO BLUMENFELD</div>
     <div id="banner-marketing" class="banner-sell"><p style="font-size: 13px; font-weight: 700; margin-bottom: 0px;">¿Tu Cancha Abierta es un caos de mensajes?<br><span style="color: var(--cta);">Pasala a piloto automático.</span></p><a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-full btn-cta">Mariano, ayudame con mi cancha abierta 🎾</a></div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -122,7 +122,9 @@
             let lastDate = "";
             eventsData.forEach(d => {
                 if (d.fecha !== lastDate) { hubList.innerHTML += `<div class="day-header">${formatearFecha(d.fecha)}</div>`; lastDate = d.fecha; }
-                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${limpiarHora(d.hora)} HS</div><div class="hub-main"><span class="hub-title">${d.organiza} <span class="hub-tag">${d.categorias||'Todas'}</span></span><span class="hub-sub">📍 ${d.lugar||'-'}</span></div><div>➔</div></a>`;
+                // MODIFICADO: MUESTRA RANGO DE HORAS Y LUGAR COMPACTO
+                const horaRange = `${limpiarHora(d.hora)} A ${limpiarHora(d.horaFin)} HS`;
+                hubList.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${horaRange}</div><div class="hub-main"><span class="hub-title">${d.organiza}</span><div class="hub-details"><span class="hub-tag">${d.categorias||'Todas'}</span><span class="hub-sub">📍 ${d.lugar||'-'}</span></div></div><div style="font-size:18px; color:#ccc;">➔</div></a>`;
             });
         }); 
     } else if (currentId) { 

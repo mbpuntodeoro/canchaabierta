@@ -23,20 +23,23 @@
         .btn-dark { background: #1c1c1e; color: white; font-size: 12px; margin-top: 0; }
         .hidden { display: none !important; }
         
-        /* ESTILOS REPORTE ADMIN */
-        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
-        .report-item { background: #f9f9fb; padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #eee; }
-        .report-item span { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; }
-        .report-item b { font-size: 20px; display: block; margin-top: 2px; }
+        /* REPORTE MINIMALISTA VERTICAL */
+        .report-list { background: #fff; border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #eee; }
+        .report-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f2f2f7; }
+        .report-row:last-child { border-bottom: none; }
+        .report-label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .report-value { font-weight: 800; font-size: 16px; }
 
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 5px; }
         .day-check { display: none; }
         .day-label { background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
-        .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
-        .pagado { background: var(--success); } .reservado { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
+        .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f2f2f7; }
+        .estado-btn { width: 130px; height: 34px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
+        .pagado { background: var(--success); } 
+        .paga-en-la-cancha { background: var(--warning); color: #000; } 
+        .pendiente { background: var(--danger); }
         
         .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .tag-cat { background: var(--primary); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; display: inline-block; margin: 4px 0; }
@@ -134,7 +137,7 @@
         <input id="in-cel-adm" class="input-std">
         <label>Categorías</label>
         <input id="ed-cat" class="input-std">
-        <label>Fecha Próximo Turno</label>
+        <label>Fecha del Evento</label>
         <input id="ed-fec" class="input-std" type="date">
         <label>Cupos Totales</label>
         <input id="ed-cupo" class="input-std" type="number">
@@ -144,11 +147,12 @@
         
         <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
         
-        <div class="report-grid">
-            <div class="report-item"><span>Cupos</span><b id="rep-total">0</b></div>
-            <div class="report-item"><span>Anotados</span><b id="rep-anotados">0</b></div>
-            <div class="report-item" style="background:#e8f5e9"><span style="color:#2e7d32">Pagados</span><b id="rep-pagados" style="color:#2e7d32">0</b></div>
-            <div class="report-item" style="background:#fff3e0"><span style="color:#ef6c00">Libres</span><b id="rep-libres" style="color:#ef6c00">0</b></div>
+        <div class="report-list">
+            <div class="report-row"><div class="report-label">🏆 Cupos Totales</div><div class="report-value" id="rep-total">0</div></div>
+            <div class="report-row" style="color:var(--success)"><div class="report-label">✅ Pagados</div><div class="report-value" id="rep-pagados">0</div></div>
+            <div class="report-row" style="color:var(--warning); filter: brightness(0.8);"><div class="report-label">🤝 Paga en la cancha</div><div class="report-value" id="rep-can">0</div></div>
+            <div class="report-row" style="color:var(--danger)"><div class="report-label">⌛ Pendientes</div><div class="report-value" id="rep-pen">0</div></div>
+            <div class="report-row" style="background: #f9f9fb; margin-top: 5px; border-radius: 10px;"><div class="report-label">🎾 Libres</div><div class="report-value" id="rep-libres">0</div></div>
         </div>
 
         <h3 style="font-size:14px; margin-bottom:15px;">Listado de Inscriptos</h3>
@@ -204,8 +208,8 @@
                         item.className = "hub-item";
                         item.href = `?id=${id}&org=${orgId}`;
                         item.style.textDecoration = "none";
-                        const labelRec = d.rrule ? '<span style="color:var(--cta); font-size:9px; font-weight:800;">RECURRENTE</span><br>' : '';
-                        item.innerHTML = `<div class="card" style="margin-bottom:12px">${labelRec}<b>${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Todas'}</span><br><span style="font-size:12px;color:#888">${formatearFecha(d.fecha)} de ${limpiarHora(d.hora)} a ${limpiarHora(d.horaFin)}hs</span></div>`;
+                        item.style.color = "inherit";
+                        item.innerHTML = `<div class="card" style="margin-bottom:12px"><b>${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Todas'}</span><br><span style="font-size:12px;color:#888">${formatearFecha(d.fecha)} de ${limpiarHora(d.hora)} a ${limpiarHora(d.horaFin)}hs</span></div>`;
                         hubList.appendChild(item);
                     }
                 });
@@ -301,12 +305,14 @@
     }
 
     window.copiarAlias = () => { navigator.clipboard.writeText(ev.alias).then(() => alert("Copiado")); };
-    window.enviarWhatsapp = () => { window.open(`https://wa.me/${ev.celuOrganizador}?text=Comprobante`); };
+    window.enviarWhatsapp = () => { window.open(`https://wa.me/${ev.celuOrganizador}?text=Hola,%20te%20envío%20el%20comprobante.`); };
     
     window.cambiar = (oid) => {
         const idx = ev.inscriptos.findIndex(x => x.id === oid);
-        const estados = ["pendiente", "reservado", "pagado"];
+        const estados = ["pendiente", "paga-en-la-cancha", "pagado"];
+        // Cambiamos el estado y forzamos un nuevo timestamp para que sea el último del grupo
         ev.inscriptos[idx].estado = estados[(estados.indexOf(ev.inscriptos[idx].estado) + 1) % 3];
+        ev.inscriptos[idx].id = Date.now(); 
         set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos);
     };
 
@@ -319,21 +325,34 @@
         document.getElementById('txt-lugar').innerText = ev.lugar || "-";
         document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString('es-AR');
         
-        // LÓGICA DE REPORTE
         const totalCupos = ev.cupo || 0;
-        const inscriptosArr = ev.inscriptos || [];
-        const anotados = inscriptosArr.length;
+        let inscriptosArr = ev.inscriptos || [];
+        
+        // CONTEOS
         const pagados = inscriptosArr.filter(p => p.estado === 'pagado').length;
-        const libres = totalCupos - anotados;
+        const pagaCancha = inscriptosArr.filter(p => p.estado === 'paga-en-la-cancha').length;
+        const pendientes = inscriptosArr.filter(p => p.estado === 'pendiente').length;
+        const libres = totalCupos - (pagados + pagaCancha + pendientes);
 
         document.getElementById('rep-total').innerText = totalCupos;
-        document.getElementById('rep-anotados').innerText = anotados;
         document.getElementById('rep-pagados').innerText = pagados;
+        document.getElementById('rep-can').innerText = pagaCancha;
+        document.getElementById('rep-pen').innerText = pendientes;
         document.getElementById('rep-libres').innerText = libres < 0 ? 0 : libres;
+
+        // ORDENAMIENTO DE LISTA
+        const prioridades = { 'pagado': 1, 'paga-en-la-cancha': 2, 'pendiente': 3 };
+        inscriptosArr.sort((a, b) => {
+            if (prioridades[a.estado] !== prioridades[b.estado]) {
+                return prioridades[a.estado] - prioridades[b.estado];
+            }
+            return a.id - b.id; // Segundo criterio: orden de llegada/cambio
+        });
 
         let h = "";
         inscriptosArr.forEach(p => {
-            h += `<div class="admin-item"><span><b>${p.nombre}</b></span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${p.estado}</button></div>`;
+            const labelEstado = p.estado === 'paga-en-la-cancha' ? 'Paga en la cancha' : p.estado;
+            h += `<div class="admin-item"><span><b>${p.nombre}</b></span><button class="estado-btn ${p.estado}" onclick="cambiar(${p.id})">${labelEstado}</button></div>`;
         });
         document.getElementById('lista-admin').innerHTML = h || "Sin inscriptos";
     }

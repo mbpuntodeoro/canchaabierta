@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financiero - SGCA</title>
+    <style>
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: var(--card); padding: 25px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
+        
+        /* HERO: INGRESOS */
+        .hero { background: linear-gradient(135deg, #1d1d1f, #3a3a3c); color: white; }
+        .hero span { font-size: 11px; font-weight: 800; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .hero h2 { font-size: 36px; font-weight: 900; margin: 10px 0; letter-spacing: -1.5px; }
+        
+        /* TARJETA DE PLAN */
+        .plan-status { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .active-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .trial-dot { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        .expired-dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+        
+        /* BARRAS Y METRICAS */
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
+        .progress-bg { background: #f2f2f7; height: 10px; border-radius: 10px; overflow: hidden; }
+        .progress-fill { background: var(--primary); height: 100%; transition: 0.5s; }
+
+        .btn-pay { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; background: var(--primary); color: white; margin-top: 15px; }
+        .footer-info { font-size: 11px; color: var(--sub); text-align: center; margin-top: 20px; font-weight: 600; }
+        .hidden { display: none !important; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="auth-view">
+        <div class="card" style="margin-top: 50px; text-align: center;">
+            <h1 style="font-size: 24px; font-weight: 900; letter-spacing: -1px;">Área Privada</h1>
+            <p style="font-size: 13px; color: var(--sub);">Ingresá la clave de gestión de tu cancha para ver tus finanzas.</p>
+            <input type="password" id="pass-dash" style="width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #eee; margin: 15px 0;" placeholder="Contraseña">
+            <button class="btn-pay" onclick="validarAcceso()">Acceder al Dashboard</button>
+        </div>
+    </div>
+
+    <div id="dash-view" class="hidden">
+        <header style="margin-bottom: 25px; padding-left: 10px;">
+            <span style="font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase;" id="txt-org-name">Cargando...</span>
+            <h1 style="margin: 5px 0; font-size: 28px; font-weight: 900; letter-spacing: -1px;">Tu Negocio</h1>
+        </header>
+
+        <div class="card hero">
+            <span>Generado este mes (Estimado)</span>
+            <h2 id="total-ingresos">$0</h2>
+            <p style="font-size: 12px; opacity: 0.8; margin: 0;">Calculado sobre turnos finalizados</p>
+        </div>
+
+        <div class="card">
+            <label>Estado del Plan</label>
+            <div class="plan-status">
+                <div id="plan-dot" class="dot"></div>
+                <b id="plan-txt" style="font-size: 18px; letter-spacing: -0.5px;">Cargando...</b>
+            </div>
+            <p id="plan-sub" style="font-size: 13px; color: var(--sub); margin: 0 0 15px 0; font-weight: 600;"></p>
+            <button class="btn-pay" id="btn-renovar" onclick="window.open('https://wa.me/5491166463800?text=Hola%20Mariano,%20quiero%20renovar%20mi%20plan')">Renovar / Activar Plan</button>
+        </div>
+
+        <div class="card">
+            <label>Inversión en el Sistema</label>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 15px;">
+                <h2 id="costo-total" style="margin:0; font-size: 32px; font-weight: 900;">$0</h2>
+                <span id="txt-ratio" style="color: var(--primary); font-weight: 800; font-size: 14px;">0% de tus ingresos</span>
+            </div>
+            <p style="font-size: 12px; color: var(--sub); font-weight: 600;">"Este mes, el sistema se pagó con las señas de menos de 1 jugador por turno."</p>
+        </div>
+
+        <div class="card">
+            <label>Límite de Uso</label>
+            <div class="metric-row">
+                <span id="txt-consumo">Consumo: $0</span>
+                <span id="txt-limite">Límite: $0</span>
+            </div>
+            <div class="progress-bg"><div id="progress-bar" class="progress-fill"></div></div>
+            <p style="font-size: 11px; color: var(--sub); margin-top: 10px; font-weight: 600;">Cuando llegás al límite, se pausa la creación de nuevas canchas.</p>
+        </div>
+
+        <div class="footer-info">El abono dura 30 días y no depende del mes calendario.</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    
+    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const params = new URLSearchParams(window.location.search);
+    const orgId = params.get('org');
+
+    window.validarAcceso = async () => {
+        const pass = document.getElementById('pass-dash').value;
+        // Buscamos la primera cancha de este org para validar la clave
+        const hubSnap = await get(ref(db, 'hubs/' + orgId));
+        const canchas = hubSnap.val()?.canchas || [];
+        if(canchas.length > 0) {
+            const evSnap = await get(ref(db, 'eventos/' + canchas[0]));
+            if(evSnap.val()?.password === pass) {
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('dash-view').classList.remove('hidden');
+                renderDash();
+            } else { alert("Clave de gestión incorrecta"); }
+        }
+    };
+
+    function renderDash() {
+        onValue(ref(db, 'facturacion/' + orgId + '/cuenta'), async (snap) => {
+            const f = snap.val() || {};
+            document.getElementById('txt-org-name').innerText = f.nombreOrg || orgId;
+            
+            // Lógica de Ingresos (Simulada para esta versión, después leerá reportes reales)
+            const ingresosEstimados = (f.consumoActual - 25000) / 7000 * 28 * 25000; // Ejemplo matemático
+            document.getElementById('total-ingresos').innerText = `$${(ingresosEstimados || 0).toLocaleString('es-AR')}`;
+            
+            // Lógica de Plan
+            const hoy = new Date();
+            const fPrueba = new Date(f.fechaFinPrueba + "T23:59:59");
+            const fCiclo = new Date(f.fechaFinCiclo + "T23:59:59");
+            const dot = document.getElementById('plan-dot');
+            const txt = document.getElementById('plan-txt');
+            const sub = document.getElementById('plan-sub');
+
+            if (hoy < fPrueba) {
+                dot.className = "dot trial-dot";
+                txt.innerText = "En Periodo de Prueba";
+                const dias = Math.ceil((fPrueba - hoy) / (1000*60*60*24));
+                sub.innerText = `Te quedan ${dias} días de prueba gratis.`;
+            } else if (hoy <= fCiclo) {
+                dot.className = "dot active-dot";
+                txt.innerText = `Activo hasta el ${f.fechaFinCiclo.split('-').reverse().join('/')}`;
+                const dias = Math.ceil((fCiclo - hoy) / (1000*60*60*24));
+                sub.innerText = `Te quedan ${dias} días de plan.`;
+            } else {
+                dot.className = "dot expired-dot";
+                txt.innerText = `Plan Vencido el ${f.fechaFinCiclo.split('-').reverse().join('/')}`;
+                sub.innerText = "Tu plan expiró. Activalo para seguir creando turnos.";
+            }
+
+            // Inversión y Ratio
+            document.getElementById('costo-total').innerText = `$${(f.consumoActual || 0).toLocaleString()}`;
+            const ratio = ingresosEstimados > 0 ? (f.consumoActual / ingresosEstimados * 100).toFixed(1) : 0;
+            document.getElementById('txt-ratio').innerText = `${ratio}% de tus ingresos`;
+
+            // Crédito
+            document.getElementById('txt-consumo').innerText = `Consumo: $${(f.consumoActual || 0).toLocaleString()}`;
+            document.getElementById('txt-limite').innerText = `Límite: $${(f.limiteCredito || 0).toLocaleString()}`;
+            const perc = (f.consumoActual / f.limiteCredito * 100);
+            document.getElementById('progress-bar').style.width = `${perc}%`;
+        });
+    }
+</script>
+</body>
+</html>

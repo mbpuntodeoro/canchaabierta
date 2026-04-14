@@ -10,25 +10,20 @@
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; -webkit-font-smoothing: antialiased; }
         .container { max-width: 450px; margin: auto; }
         .card { background: var(--card); padding: 24px; border-radius: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
-        
         .header-brand { font-size: 10px; letter-spacing: 2.2px; color: var(--sub); text-align: center; font-weight: 800; margin-bottom: 8px; }
-        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; }
-        
+        .event-title { font-size: 26px; font-weight: 900; color: var(--text); text-align: center; display: block; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; text-transform: uppercase; }
         .info-grid { background: #f9f9fb; padding: 20px; border-radius: 20px; margin-bottom: 24px; border: 1px solid #eee; }
         .info-item { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .info-item:last-child { margin-bottom: 0; }
         .info-item b { color: var(--sub); font-size: 10px; text-transform: uppercase; font-weight: 700; }
-        
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e5e5ea; font-size: 16px; margin-bottom: 16px; outline: none; background: #fff; }
         .btn-full { width: 100%; padding: 14px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; display: block; text-align: center; text-decoration: none; margin-bottom: 10px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-dark { background: #1c1c1e; color: white; font-size: 12px; }
-        
         .hidden { display: none !important; }
         .admin-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f2f2f7; }
         .estado-btn { width: 115px; height: 32px; border-radius: 20px; font-size: 9px; color: white; font-weight: 800; border: none; text-transform: uppercase; cursor: pointer; }
         .pagado { background: var(--success); } .reservado { background: var(--warning); color: #000; } .pendiente { background: var(--danger); }
-        
-        /* ESTILOS DE LEYENDA Y BANNER */
         .footer-credits { text-align: center; margin: 20px 0; font-size: 9px; color: var(--sub); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .banner-sell { margin-top: 20px; padding: 24px; background: #fff; border-radius: 22px; text-align: center; border: 2px dashed var(--primary); }
         .hub-item { background: #fff; border: 1px solid #e5e5ea; padding: 20px; border-radius: 18px; margin-bottom: 12px; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
@@ -48,12 +43,15 @@
             <div class="header-brand">🎾 Inscripción Cancha Abierta</div>
             <span id="txt-event-name" class="event-title">...</span>
             <div style="text-align: center; margin-bottom: 20px;"><span id="txt-cat" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">...</span></div>
+            
             <div class="info-grid">
                 <div class="info-item"><b>📅 Fecha</b> <span id="txt-fecha">-</span></div>
                 <div class="info-item"><b>🕒 Horario</b> <span id="txt-hora">-</span></div>
                 <div class="info-item"><b>📍 Lugar</b> <span id="txt-lugar">-</span></div>
                 <div class="info-item"><b>💰 Valor</b> <span id="txt-valor" style="color: var(--primary); font-weight: 800;">$0</span></div>
+                <div class="info-item"><b>👤 Organiza</b> <span id="txt-organizador">-</span></div>
             </div>
+
             <div id="form-container">
                 <input id="in-nom" class="input-std" placeholder="Nombre y Apellido">
                 <input id="in-cel" class="input-std" placeholder="WhatsApp (Ej: 1123456789)">
@@ -80,10 +78,15 @@
 
     <div class="card hidden" id="view-admin">
         <h2 style="margin-top:0;">Configuración</h2>
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL EVENTO</label>
-        <input id="ed-org-name" class="input-std">
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL EVENTO (TÍTULO)</label>
+        <input id="ed-org-name" class="input-std" placeholder="Ej: Cancha Abierta Newport">
+        
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">NOMBRE DEL ORGANIZADOR (PERSONA)</label>
+        <input id="ed-organizador" class="input-std" placeholder="Ej: Ezequiel Díaz">
+
         <label style="font-size:10px; font-weight:800; color:var(--sub);">LUGAR / SEDE</label>
         <input id="ed-lugar" class="input-std">
+        
         <div style="display: flex; gap: 10px;">
             <div style="flex:1"><label style="font-size:10px; font-weight:800;">INICIO</label><input id="ed-hor" class="input-std" type="time"></div>
             <div style="flex:1"><label style="font-size:10px; font-weight:800;">FIN</label><input id="ed-hor-fin" class="input-std" type="time"></div>
@@ -92,7 +95,7 @@
         <input id="ed-valor" class="input-std" type="number">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">ALIAS MP</label>
         <input id="ed-alias" class="input-std">
-        <label style="font-size:10px; font-weight:800; color:var(--sub);">WHATSAPP ORGANIZADOR</label>
+        <label style="font-size:10px; font-weight:800; color:var(--sub);">WHATSAPP PARA COMPROBANTES</label>
         <input id="ed-celu" class="input-std">
         <label style="font-size:10px; font-weight:800; color:var(--sub);">CATEGORÍAS</label>
         <input id="ed-cat" class="input-std">
@@ -116,9 +119,8 @@
             ¿Tu Cancha Abierta es un caos de mensajes?<br>
             <span style="color: var(--primary);">Pasala a piloto automático.</span>
         </p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta%20y%20necesito%20ayuda%20con%20la%20mía" 
-           class="btn-full btn-blue" style="font-size: 13px;">
-           Mariano, ayudame con mi cancha abierta 🎾
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20vi%20el%20sistema%20de%20Cancha%20Abierta" class="btn-full btn-blue" style="font-size: 13px;">
+            Mariano, ayudame con mi cancha abierta 🎾
         </a>
     </div>
 </div>
@@ -190,6 +192,7 @@
             document.getElementById('view-event').classList.add('hidden');
             document.getElementById('view-admin').classList.remove('hidden');
             document.getElementById('ed-org-name').value = ev.organiza || "";
+            document.getElementById('ed-organizador').value = ev.organizador || "";
             document.getElementById('ed-lugar').value = ev.lugar || "";
             document.getElementById('ed-hor').value = ev.hora || "";
             document.getElementById('ed-hor-fin').value = ev.horaFin || "";
@@ -205,6 +208,7 @@
     window.guardar = () => {
         update(ref(db, 'eventos/'+currentId), {
             organiza: document.getElementById('ed-org-name').value,
+            organizador: document.getElementById('ed-organizador').value,
             lugar: document.getElementById('ed-lugar').value,
             hora: document.getElementById('ed-hor').value,
             horaFin: document.getElementById('ed-hor-fin').value,
@@ -237,12 +241,17 @@
 
     function render() {
         document.getElementById('txt-event-name').innerText = (ev.organiza || "CARGANDO...").toUpperCase();
+        document.getElementById('txt-organizador').innerText = ev.organizador || "A confirmar";
         document.getElementById('txt-cat').innerText = ev.categorias || "TODAS LAS CATEGORÍAS";
         document.getElementById('txt-fecha').innerText = formatearFecha(ev.fecha);
         document.getElementById('txt-hora').innerText = `DE ${ev.hora || '--'} A ${ev.horaFin || '--'} HS`;
         document.getElementById('txt-lugar').innerText = ev.lugar || '-';
-        document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0);
-        document.getElementById('ex-monto').innerText = "$" + (ev.valor || 0);
+        
+        // FORMATO DE MILES PARA EL VALOR
+        const valorFormateado = (ev.valor || 0).toLocaleString('es-AR');
+        document.getElementById('txt-valor').innerText = "$" + valorFormateado;
+        document.getElementById('ex-monto').innerText = "$" + valorFormateado;
+        
         document.getElementById('ex-alias').innerText = ev.alias || '-';
         
         let html = "";

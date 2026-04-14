@@ -3,148 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Dashboard - Centro de Mandos</title>
+    <title>Master Hub v2 - SGCA</title>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --sub: #8e8e93; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; }
-        * { box-sizing: border-box; transition: 0.2s; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; -webkit-font-smoothing: antialiased; }
-        .container { max-width: 600px; margin: auto; }
-        h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 30px; }
-        .org-card { background: var(--card); border-radius: 28px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
-        .org-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .org-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid #f2f2f7; display: none; }
-        .org-detail.active { display: block; animation: fadeIn 0.3s ease; }
-        .event-box { background: #f9f9fb; border-radius: 20px; padding: 18px; margin-bottom: 12px; border: 1px solid #eee; }
-        .btn { padding: 10px 16px; border-radius: 12px; border: none; font-size: 11px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; text-transform: uppercase; justify-content: center; }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 700px; margin: auto; }
+        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.02); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin:0; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-bottom: 6px; margin-left: 6px; margin-top:15px; }
+        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 16px; outline: none; background: #fff; }
+        .btn-full { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; display: block; text-align: center; text-decoration: none; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-dark { background: var(--text); color: white; }
-        .btn-gray { background: #eee; color: var(--text); }
-        .btn-suspend { background: var(--warning); color: #000; }
-        .btn-active { background: var(--success); color: white; }
-        .link-tool { margin-top: 15px; border-top: 1px dotted #ddd; padding-top: 12px; }
-        .input-short { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 8px; outline: none; font-size: 11px; background: #fff; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 32px; width: 100%; max-width: 400px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-ghost { background: #f2f2f7; color: var(--text); font-size: 12px; margin-top:10px; }
+        .org-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: white; border-radius: 20px; margin-bottom: 10px; border: 1px solid #f2f2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .org-info b { font-size: 15px; display: block; text-transform: uppercase; letter-spacing: -0.5px; }
+        .org-info span { font-size: 11px; color: var(--sub); font-weight: 600; }
+        .btn-manage { background: #eef6ff; color: var(--primary); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 800; border:none; cursor:pointer; }
+        .hidden { display: none !important; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .tag-trial { background: var(--warning); color: #000; font-size: 9px; padding: 2px 6px; border-radius: 5px; margin-left: 5px; vertical-align: middle; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Centro de Mandos 🏟️</h1>
-    <div id="org-list">Cargando tablero...</div>
-    <button class="btn btn-dark" style="width:100%; padding:20px; border-radius:20px; margin-top:20px; font-size:14px;" onclick="abrirModal('org')">+ Nuevo Organizador</button>
+    <div id="view-login">
+        <div class="card" style="margin-top: 50px;">
+            <div class="header"><h1>Master Admin</h1><span>Facturación & Control</span></div>
+            <label>Clave Maestra</label>
+            <input type="password" id="master-pass" class="input-std">
+            <button class="btn-full btn-blue" onclick="login()">Entrar al Panel</button>
+        </div>
+    </div>
+
+    <div id="view-panel" class="hidden">
+        <div class="header"><h1>Panel de Control</h1></div>
+        
+        <div class="card">
+            <h2 style="font-size: 18px; margin: 0 0 15px 0;">+ Nuevo Organizador</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><label>ID del Hub</label><input id="new-id" class="input-std" placeholder="ej: adictos"></div>
+                <div><label>Nombre Comercial</label><input id="new-name" class="input-std" placeholder="Ej: Adictos Padel"></div>
+            </div>
+            <label>Días de Prueba Gratuitos</label>
+            <input id="new-trial" class="input-std" type="number" value="7">
+            <button class="btn-full btn-blue" onclick="crearOrg()">Crear con Periodo de Prueba</button>
+        </div>
+
+        <h2 style="font-size: 12px; color: var(--sub); text-transform: uppercase; margin: 30px 0 10px 10px; letter-spacing: 1px;">Clientes y Estado de Cuenta</h2>
+        <div id="org-list"></div>
+    </div>
+
+    <div id="modal-finance" class="modal hidden">
+        <div class="card" style="width: 90%; max-width: 400px;">
+            <h2 id="modal-title" style="margin-top:0; font-size:20px;">Gestionar Cuenta</h2>
+            <input type="hidden" id="modal-org-id">
+            
+            <label>Deuda Actual ($)</label>
+            <input id="mod-consumo" class="input-std" type="number">
+            
+            <label>Límite de Crédito ($)</label>
+            <input id="mod-limite" class="input-std" type="number">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><label>Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
+                <div><label>Costo x Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
+            </div>
+
+            <label>Fin de Prueba (YYYY-MM-DD)</label>
+            <input id="mod-prueba" class="input-std" type="date">
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-full btn-blue" onclick="guardarFinanzas()">Guardar</button>
+                <button class="btn-full btn-ghost" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
 </div>
-<div id="modal-nuevo" class="modal"><div class="modal-content" id="modal-body"></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    onValue(ref(db, 'hubs'), (snap) => {
-        const hubs = snap.val() || {};
-        const container = document.getElementById('org-list');
-        container.innerHTML = "";
-        Object.keys(hubs).forEach(orgId => {
-            const orgData = hubs[orgId];
-            const eventIds = orgData.canchas || [];
-            const card = document.createElement('div');
-            card.className = 'org-card';
-            card.innerHTML = `
-                <div class="org-header" onclick="toggleOrg('${orgId}')">
-                    <div style="line-height:1.2">
-                        <b style="font-size:18px; text-transform:uppercase;">${orgData.nombre || orgId}</b><br>
-                        <span style="font-size:11px; color:var(--sub)">${eventIds.length} Canchas creadas</span>
-                    </div>
-                    <div style="display:flex;gap:5px;">
-                        <button class="btn btn-gray" style="padding:10px" onclick="event.stopPropagation(); copiar('${window.location.origin}${window.location.pathname.replace('m.html','v.html')}?org=${orgId}')">📋 Hub</button>
-                        <button class="btn btn-gray" style="font-size:18px">▾</button>
-                    </div>
-                </div>
-                <div class="org-detail" id="detail-${orgId}">
-                    <div class="event-box" style="background:#fffdec; border:1px solid #ffeeba;">
-                        <label style="font-size:9px; font-weight:800; color:#856404; display:block; margin-bottom:5px;">LINK CORTO DEL HUB (CARTELERA)</label>
-                        <input id="short-hub-${orgId}" class="input-short" placeholder="Pega el TinyURL del Hub..." value="${orgData.linkCortoHub || ''}">
-                        <div style="display:flex; gap:5px;">
-                            <button class="btn btn-gray" style="flex:1; font-size:9px;" onclick="guardarLinkHub('${orgId}')">💾 Guardar Hub Link</button>
-                            <button class="btn btn-gray" style="flex:1; font-size:9px;" onclick="copiar(document.getElementById('short-hub-${orgId}').value)">📋 Copiar</button>
-                        </div>
-                    </div>
-                    
-                    <div id="items-${orgId}"></div>
-                    <button class="btn btn-blue" style="width:100%; margin-top:10px; padding:15px;" onclick="abrirModal('cancha', '${orgId}', '${orgData.nombre}')">+ Nueva Cancha</button>
-                    <button class="btn" style="color:var(--danger);width:100%;margin-top:15px;background:none;font-size:10px;" onclick="eliminarOrg('${orgId}')">ELIMINAR TODO EL CLIENTE</button>
-                </div>
-            `;
-            container.appendChild(card);
-            const listDiv = document.getElementById('items-' + orgId);
-            eventIds.forEach(id => {
-                onValue(ref(db, 'eventos/' + id), (s) => {
-                    const d = s.val(); if(!d) return;
-                    let b = document.getElementById('box-' + id);
-                    if(!b) { b = document.createElement('div'); b.id = 'box-' + id; b.className = 'event-box'; listDiv.appendChild(b); }
-                    const esSusp = d.suspendido === true;
-                    b.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:center;">
-                            <div style="line-height:1.2"><b>${d.organiza}</b><br><span style="font-size:9px;color:${esSusp?'var(--danger)':'var(--success)'}">${esSusp ? '● SUSPENDIDA' : '● ACTIVA'}</span></div>
-                            <div style="display:flex;gap:5px;">
-                                <button class="btn ${esSusp ? 'btn-active' : 'btn-suspend'}" style="padding:8px 10px" onclick="toggleS('${id}',${esSusp})">${esSusp ? 'Habilitar' : 'Suspender'}</button>
-                                <a href="v.html?id=${id}" class="btn btn-blue" style="padding:8px" target="_blank">⚙️</a>
-                                <button class="btn btn-gray" style="padding:8px" onclick="eliminarC('${orgId}','${id}')">🗑️</button>
-                            </div>
-                        </div>
-                        <div class="link-tool">
-                            <input id="short-${id}" class="input-short" placeholder="TinyURL de esta cancha..." value="${d.linkCorto || ''}">
-                            <div style="display:flex; gap:5px;">
-                                <button class="btn btn-gray" style="flex:1; font-size:9px; padding:6px;" onclick="guardarLinkCancha('${id}')">💾 Guardar</button>
-                                <button class="btn btn-gray" style="flex:1; font-size:9px; padding:6px;" onclick="copiar(document.getElementById('short-${id}').value)">📋 Copiar</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-        });
-    });
+    window.login = () => {
+        if(document.getElementById('master-pass').value === "MB2026") {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-panel').classList.remove('hidden');
+            cargarLista();
+        } else { alert("Clave Incorrecta"); }
+    };
 
-    window.toggleOrg = (id) => { document.getElementById('detail-'+id).classList.toggle('active'); };
-    window.guardarLinkHub = (orgId) => {
-        const url = document.getElementById('short-hub-' + orgId).value.trim();
-        update(ref(db, 'hubs/' + orgId), { linkCortoHub: url }).then(() => alert("Link del Hub guardado"));
-    };
-    window.guardarLinkCancha = (id) => {
-        const url = document.getElementById('short-' + id).value.trim();
-        update(ref(db, 'eventos/' + id), { linkCorto: url }).then(() => alert("Link de la cancha guardado"));
-    };
-    window.copiar = (t) => { if(!t) return alert("Vacío"); navigator.clipboard.writeText(t).then(() => alert("Copiado")); };
-    window.abrirModal = (tipo, orgId = '', nombreReal = '') => {
-        const body = document.getElementById('modal-body');
-        if (tipo === 'org') {
-            body.innerHTML = `<h2>Nuevo Organizador</h2><label style="font-size:10px;font-weight:800;color:var(--sub)">NOMBRE COMERCIAL</label><input id="in-name" class="input-std" placeholder="Ej: Sergio Padel"><button class="btn btn-blue" style="width:100%;padding:15px" onclick="crearOrg()">Crear Cliente</button><button class="btn" style="width:100%;margin-top:10px" onclick="cerrarModal()">Cancelar</button>`;
-        } else {
-            body.innerHTML = `<h2>Nueva Cancha: ${nombreReal}</h2><label style="font-size:10px;font-weight:800;color:var(--sub)">NOMBRE DEL TURNO</label><input id="in-cancha" class="input-std" placeholder="Ej: Martes Pro"><button class="btn btn-blue" style="width:100%;padding:15px" onclick="agregarC('${orgId}','${nombreReal}')">Agregar Cancha</button><button class="btn" style="width:100%;margin-top:10px" onclick="cerrarModal()">Cancelar</button>`;
-        }
-        document.getElementById('modal-nuevo').classList.add('active');
-    };
-    window.cerrarModal = () => document.getElementById('modal-nuevo').classList.remove('active');
     window.crearOrg = async () => {
-        const n = document.getElementById('in-name').value.trim(); if(!n) return;
-        const id = n.toLowerCase().replace(/\s+/g, '-').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        await set(ref(db, 'hubs/'+id), { nombre: n, canchas: [], linkCortoHub: "" }); cerrarModal();
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
+        const nombre = document.getElementById('new-name').value.trim();
+        const diasPrueba = parseInt(document.getElementById('new-trial').value) || 0;
+        
+        if(!id || !nombre) return alert("Faltan datos");
+
+        const hoy = new Date();
+        const fFinPrueba = new Date(); fFinPrueba.setDate(hoy.getDate() + diasPrueba);
+        const fFinCiclo = new Date(); fFinCiclo.setDate(fFinPrueba.getDate() + 30);
+
+        try {
+            await set(ref(db, 'hubs/' + id), { nombre: nombre, canchas: [] });
+            
+            const consumoInicial = (diasPrueba > 0) ? 0 : 25000;
+
+            await set(ref(db, 'facturacion/' + id + '/cuenta'), {
+                nombreOrg: nombre,
+                consumoActual: consumoInicial,
+                limiteCredito: 30000,
+                costoAbono: 25000,
+                costoCancha: 7000,
+                fechaFinPrueba: fFinPrueba.toISOString().split('T')[0],
+                fechaInicioCiclo: (diasPrueba > 0) ? fFinPrueba.toISOString().split('T')[0] : hoy.toISOString().split('T')[0],
+                fechaFinCiclo: fFinCiclo.toISOString().split('T')[0],
+                estado: "activo"
+            });
+            alert("¡Cliente Creado!"); location.reload();
+        } catch (e) { alert(e.message); }
     };
-    window.agregarC = async (orgId, nReal) => {
-        const cN = document.getElementById('in-cancha').value.trim(); if(!cN) return;
-        const id = `${orgId}-${cN.toLowerCase().replace(/\s+/g, '-')}-${Date.now().toString().slice(-4)}`;
-        const snap = await get(ref(db, 'hubs/'+orgId));
-        let ids = snap.val().canchas || []; ids.push(id);
-        await set(ref(db, 'eventos/'+id), { organiza: cN, organizador: nReal, fecha: "2026-04-20", hora: "20:00", horaFin: "22:00", valor: 0, alias: "AliasMP", celuOrganizador: "11", categorias: "Todas", password: "1234", suspendido: false, linkCorto: "" });
-        await update(ref(db, 'hubs/'+orgId), { canchas: ids }); cerrarModal();
+
+    function cargarLista() {
+        onValue(ref(db, 'hubs'), async (snap) => {
+            const data = snap.val() || {};
+            const list = document.getElementById('org-list'); list.innerHTML = "";
+            
+            for(let id in data) {
+                const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
+                const f = fSnap.val() || {};
+                const hoy = new Date();
+                const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
+                
+                const div = document.createElement('div');
+                div.className = "org-item";
+                div.innerHTML = `
+                    <div class="org-info">
+                        <b>${data[id].nombre || id} ${isTrial ? '<span class="tag-trial">PRUEBA</span>' : ''}</b>
+                        <span>Deuda: $${(f.consumoActual || 0).toLocaleString()} / Límite: $${(f.limiteCredito || 0).toLocaleString()}</span>
+                    </div>
+                    <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ Facturación</button>
+                `;
+                list.appendChild(div);
+            }
+        });
+    }
+
+    window.abrirFinanzas = async (id) => {
+        const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
+        const f = s.val() || { consumoActual: 0, limiteCredito: 30000, costoAbono: 25000, costoCancha: 7000 };
+        document.getElementById('modal-org-id').value = id;
+        document.getElementById('modal-title').innerText = f.nombreOrg || id;
+        document.getElementById('mod-consumo').value = f.consumoActual;
+        document.getElementById('mod-limite').value = f.limiteCredito;
+        document.getElementById('mod-abono').value = f.costoAbono;
+        document.getElementById('mod-cancha').value = f.costoCancha;
+        document.getElementById('mod-prueba').value = f.fechaFinPrueba || "";
+        document.getElementById('modal-finance').classList.remove('hidden');
     };
-    window.toggleS = (id, sActual) => update(ref(db, 'eventos/'+id), { suspendido: !sActual });
-    window.eliminarC = async (orgId, evId) => { if(confirm("¿Borrar cancha?")) { const snap = await get(ref(db, 'hubs/'+orgId)); let ids = snap.val().canchas.filter(i => i !== evId); await update(ref(db, 'hubs/'+orgId), { canchas: ids }); await remove(ref(db, 'eventos/'+evId)); } };
-    window.eliminarOrg = (id) => { if(confirm("¿Borrar todo el cliente?")) remove(ref(db, 'hubs/'+id)); };
+
+    window.guardarFinanzas = async () => {
+        const id = document.getElementById('modal-org-id').value;
+        const updates = {
+            consumoActual: parseInt(document.getElementById('mod-consumo').value),
+            limiteCredito: parseInt(document.getElementById('mod-limite').value),
+            costoAbono: parseInt(document.getElementById('mod-abono').value),
+            costoCancha: parseInt(document.getElementById('mod-cancha').value),
+            fechaFinPrueba: document.getElementById('mod-prueba').value
+        };
+        await update(ref(db, 'facturacion/' + id + '/cuenta'), updates);
+        alert("¡Cuenta Actualizada!"); cerrarModal();
+    };
+
+    window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');
 </script>
 </body>
 </html>

@@ -28,17 +28,18 @@
     <div class="card" id="form-container">
         <div id="loading">Cargando evento...</div>
         <div id="content" class="hidden">
-            <h1 id="txt-title" style="margin:10px 0 15px; font-size:26px; font-weight:900;">CANCHA ABIERTA</h1>
-            <span class="badge" id="txt-badge">Categoría</span>
+            <h1 id="txt-title" style="margin:10px 0 15px; font-size:26px; font-weight:900; letter-spacing:-1px">CANCHA ABIERTA</h1>
+            <span class="badge" id="txt-badge">GENERAL</span>
             <div class="info-box">
                 <div class="info-item"><span>📅 FECHA</span><b id="txt-fecha">--</b></div>
                 <div class="info-item"><span>🕒 HORARIO</span><b id="txt-hora">--</b></div>
+                <div class="info-item"><span>📍 LUGAR</span><b id="txt-lugar">--</b></div>
                 <div class="info-item"><span>👤 ORGANIZA</span><b id="txt-owner">--</b></div>
                 <div class="info-item"><span>💰 VALOR</span><b id="txt-valor" style="color:var(--primary)">$0</b></div>
             </div>
             <input type="text" id="p-name" class="input-std" placeholder="Tu Nombre y Apellido">
-            <input type="tel" id="p-phone" class="input-std" placeholder="WhatsApp (Sin 0 ni 15)">
-            <button class="btn-pay" onclick="registrar()">Anotarme ahora</button>
+            <input type="tel" id="p-phone" class="input-std" placeholder="Tu WhatsApp">
+            <button class="btn-pay" onclick="registrar()">ANOTARME AHORA</button>
         </div>
     </div>
     <div class="footer-brand"><p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div>
@@ -50,11 +51,19 @@
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
     const params = new URLSearchParams(window.location.search); const eid = params.get('id');
     let ev = null;
-    const fmtFecha = (f) => { if(!f) return '--'; const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; const [y, m, d] = f.split('-'); const dO = new Date(y, m - 1, d); return `${ds[dO.getDay()]} ${d}-${m}-${y}`; };
-    if(eid){ get(ref(db, `eventos/${eid}`)).then(snap => { if(snap.exists()){ ev = snap.val(); document.getElementById('loading').style.display='none'; document.getElementById('content').classList.remove('hidden'); document.getElementById('txt-title').innerText = "CANCHA ABIERTA - " + ev.organiza.toUpperCase(); document.getElementById('txt-badge').innerText = ev.categorias || "GENERAL"; document.getElementById('txt-fecha').innerText = fmtFecha(ev.fecha); document.getElementById('txt-hora').innerText = `DE ${ev.hora} A ${ev.horaFin || '--'} HS`; document.getElementById('txt-lugar').innerText = ev.lugar; document.getElementById('txt-owner').innerText = ev.nombreOrganizador || "Administración"; document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString(); } }); }
+
+    const fmtFecha = (f) => {
+        if(!f) return '--';
+        const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const [y, m, d] = f.split('-'); const dO = new Date(y, m - 1, d);
+        return `${ds[dO.getDay()]} ${d}-${m}-${y}`;
+    };
+
+    if(eid){ get(ref(db, `eventos/${eid}`)).then(snap => { if(snap.exists()){ ev = snap.val(); document.getElementById('loading').style.display='none'; document.getElementById('content').classList.remove('hidden'); document.getElementById('txt-title').innerText = "CANCHA ABIERTA - " + (ev.organiza || "").toUpperCase(); document.getElementById('txt-badge').innerText = ev.categorias || "GENERAL"; document.getElementById('txt-fecha').innerText = fmtFecha(ev.fecha); document.getElementById('txt-hora').innerText = `DE ${ev.hora} A ${ev.horaFin || '--'} HS`; document.getElementById('txt-lugar').innerText = ev.lugar || "Club"; document.getElementById('txt-owner').innerText = ev.nombreOrganizador || "Admin"; document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString(); } }); }
+
     window.registrar = async () => {
-        const n = document.getElementById('p-name').value; const t = document.getElementById('p-phone').value;
-        if(!n || !t) return alert("Completá tus datos");
+        const n = document.getElementById('p-name').value.trim(); const t = document.getElementById('p-phone').value.trim();
+        if(!n || !t) return alert("Por favor, completá tus datos.");
         const s = await get(ref(db, `eventos/${eid}/inscriptos`)); let ins = s.val() || [];
         ins.push({ nombre: n, telefono: t, estado: "pendiente", fecha: new Date().toISOString() });
         await update(ref(db, `eventos/${eid}`), { inscriptos: ins });

@@ -10,56 +10,38 @@
         * { box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
-        
-        /* MURO DE SUSPENSIÓN */
         #suspension-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
-        
         .card { background: var(--card); padding: 22px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; }
         .hero h2 { font-size: 38px; margin: 8px 0; font-weight: 900; letter-spacing: -1.5px; }
-        
-        .plan-status { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot-active { background: var(--success); box-shadow: 0 0 10px var(--success); }
-        .dot-trial { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
-
-        .cancha-card { background: white; border-radius: 24px; border: 1px solid #eee; margin-bottom: 12px; padding: 20px; }
+        .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #eee; margin-bottom: 12px; padding: 20px; }
         .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 3px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
-        
-        .btn-dash { border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; transition: 0.2s; }
-        .btn-config { background: #f2f2f7; color: var(--text); } 
-        .btn-players { background: #eef6ff; color: var(--primary); margin-top: 5px; }
+        .btn-dash { border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
+        .btn-config { background: #f2f2f7; color: var(--text); } .btn-players { background: #eef6ff; color: var(--primary); margin-top: 5px; }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; }
-
-        /* RECURRENCIA */
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin-top: 8px; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
-
-        /* STATS MODAL */
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
         .report-item { background: #f8f9fb; padding: 12px; border-radius: 14px; text-align: center; border: 1px solid #eee; }
-        .report-item span { font-size: 9px; font-weight: 800; color: var(--sub); display: block; text-transform: uppercase; }
+        .report-item span { font-size: 9px; font-weight: 800; color: var(--sub); display: block; }
         .report-item b { font-size: 16px; font-weight: 900; }
-
         .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #efeff4; }
         .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; cursor: pointer; }
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
-
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
-        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; margin-bottom: 10px; font-family: inherit; }
+        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; margin-bottom: 10px; }
+        .footer-brand { margin-top: 50px; text-align: center; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 30px; }
+        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
         .hidden { display: none !important; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
-        
-        .footer-brand { margin-top: 50px; text-align: center; border-top: 1px solid #ddd; padding-top: 30px; }
-        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
     </style>
 </head>
 <body>
     <div id="suspension-overlay">
-        <h1 style="font-size:80px">🚫</h1><h2>ACCESO RESTRINGIDO</h2>
+        <h1 style="font-size:80px">🚫</h1><h2>CUENTA SUSPENDIDA</h2>
         <h2 id="muro-deuda" style="color:var(--danger); font-size:32px">$0</h2>
         <button class="btn-full" onclick="window.open('https://wa.me/5491166463800')">HABLAR CON SOPORTE</button>
     </div>
@@ -67,17 +49,12 @@
     <div class="container" id="main-content">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
             <h1 id="org-display-name" style="margin:0; font-weight:900; letter-spacing:-1px">Cargando...</h1>
-            <button onclick="signOut(auth).then(()=>location.reload())" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
 
-        <button class="btn-full" onclick="copiarLink()" style="margin-bottom:20px; background:#eef6ff; color:var(--primary); box-shadow:none;">🔗 COMPARTIR CARTELERA PÚBLICA</button>
+        <button class="btn-full" onclick="copiarLink()" style="margin-bottom:20px; background:#eef6ff; color:var(--primary); box-shadow:none;">🔗 COMPARTIR CARTELERA</button>
 
         <div class="card hero"><span>Recaudación Mes</span><h2 id="txt-ingresos">$0</h2></div>
-
-        <div class="card">
-            <label>Estado del Plan</label>
-            <div class="plan-status"><div id="plan-dot" class="dot"></div><b id="plan-txt">...</b></div>
-        </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:25px">
             <h3 style="font-size:12px; color:var(--sub); text-transform:uppercase">Mis Canchas Abiertas</h3>
@@ -86,29 +63,26 @@
         <div id="canchas-list"></div>
 
         <div class="footer-brand">
-            <p style="font-size:10px; font-weight:800; color:var(--sub); letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
+            <p style="font-size:10px; font-weight:800; color:var(--sub)">DESARROLLADO POR MARIANO BLUMENFELD</p>
             <a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a>
         </div>
     </div>
 
     <div id="modal-config" class="modal hidden">
         <div class="modal-content">
-            <h2 style="margin-top:0; letter-spacing:-1px">Configurar Cancha</h2>
-            <label>Título (ej: Mixta 6ta)</label><input id="ed-organiza" class="input-std">
-            <label>Responsable</label><input id="ed-owner" class="input-std">
+            <h2 style="margin-top:0">Configurar Cancha</h2>
+            <label>Evento</label><input id="ed-organiza" class="input-std">
+            <label>Persona Responsable</label><input id="ed-owner" class="input-std">
             <label>Lugar / Sede</label><input id="ed-lugar" class="input-std">
-            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Fecha</label><input id="ed-fecha" class="input-std" type="date"></div>
                 <div><label>Categoría</label><input id="ed-cat" class="input-std"></div>
             </div>
-            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-                <div><label>Hora Fin (Para Cobro)</label><input id="ed-hora-fin" class="input-std" type="time"></div>
+                <div><label>Hora Fin</label><input id="ed-hora-fin" class="input-std" type="time"></div>
             </div>
-
-            <label>Repetir Semanalmente</label>
+            <label>Recurrencia Semanal</label>
             <div class="days-grid">
                 <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
                 <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
@@ -118,25 +92,22 @@
                 <input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label>
                 <input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label>
             </div>
-
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px">
                 <div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"></div>
                 <div><label>Cupo Total</label><input id="ed-cupo" class="input-std" type="number"></div>
             </div>
-
             <label>Alias Mercado Pago</label><input id="ed-alias" class="input-std">
-            <label>WhatsApp (ej: 54911...)</label><input id="ed-celu" class="input-std">
-            
+            <label>WhatsApp</label><input id="ed-celu" class="input-std">
             <button class="btn-full" onclick="guardarConfig()" style="margin-top:15px">GUARDAR CAMBIOS</button>
-            <button class="btn-full" onclick="cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
+            <button class="btn-full" onclick="cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
         </div>
     </div>
 
     <div id="modal-jugadores" class="modal hidden">
         <div class="modal-content">
-            <h2 style="margin-top:0">Lista de Jugadores</h2>
+            <h2>Gestión de Jugadores</h2>
             <div class="report-grid">
-                <div class="report-item"><span>Cupo</span><b id="st-total">0</b></div>
+                <div class="report-item"><span>Total</span><b id="st-total">0</b></div>
                 <div class="report-item"><span>Confirmados</span><b id="st-pag" style="color:var(--success)">0</b></div>
                 <div class="report-item"><span>Pendientes</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="report-item"><span>Libres</span><b id="st-lib" style="color:var(--primary)">0</b></div>
@@ -149,31 +120,24 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, get, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
-    const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
     const orgId = new URLSearchParams(window.location.search).get('org');
     let cId = null, cEv = null;
 
-    onAuthStateChanged(auth, user => {
-        if(user && orgId) {
-            onValue(ref(db, `facturacion/${orgId}/cuenta`), snap => {
-                const c = snap.val() || {};
-                if(c.cuentaSuspendida) {
-                    document.getElementById('suspension-overlay').style.display = 'flex';
-                    document.getElementById('main-content').style.display = 'none';
-                    document.getElementById('muro-deuda').innerText = `$${(c.consumoActual || 0).toLocaleString()}`;
-                } else {
-                    document.getElementById('org-display-name').innerText = c.nombreOrg || orgId;
-                    const hoy = new Date(); const fP = new Date((c.fechaFinPrueba || "2000-01-01") + "T23:59:59");
-                    const isTrial = hoy < fP;
-                    document.getElementById('plan-dot').className = "dot " + (isTrial ? "dot-trial" : "dot-active");
-                    document.getElementById('plan-txt').innerText = isTrial ? "Prueba Gratis" : "Plan Activo";
-                    renderCanchas();
-                }
-            });
-        }
-    });
+    if(orgId) {
+        onValue(ref(db, `facturacion/${orgId}/cuenta`), snap => {
+            const c = snap.val() || {};
+            if(c.cuentaSuspendida) {
+                document.getElementById('suspension-overlay').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
+                document.getElementById('muro-deuda').innerText = `$${(c.consumoActual || 0).toLocaleString()}`;
+            } else {
+                document.getElementById('org-display-name').innerText = c.nombreOrg || orgId;
+                renderCanchas();
+            }
+        });
+    }
 
     function renderCanchas() {
         onValue(ref(db, 'hubs/'+orgId), async snap => {
@@ -181,22 +145,11 @@
             for(let id of (h.canchas || [])) {
                 const s = await get(ref(db, 'eventos/'+id));
                 if(s.exists()){
-                    const d = s.val(); 
-                    const confirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
+                    const d = s.val(); const confirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
                     const card = document.createElement('div'); card.className = "cancha-card";
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center">
-                            <b>🎾 ${d.organiza}</b>
-                            <span class="tag-cat">${d.categorias || 'Gral'}</span>
-                        </div>
-                        <div style="font-size:11px; color:var(--sub); margin-top:8px">
-                            📅 ${d.fecha} • 🕒 ${d.hora} HS • 👥 ${confirmados}/${d.cupo}<br>
-                            📍 ${d.lugar || 'Sede'}
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                            <button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button>
-                            <button class="btn-dash btn-players" onclick="abrirJugadores('${id}')">👥 Jugadores</button>
-                        </div>`;
+                    card.innerHTML = `<b>🎾 ${d.organiza}</b><div style="font-size:11px;color:#888;margin-top:5px">${d.fecha} • ${d.hora} HS • ${confirmados}/${d.cupo}</div>
+                    <button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button>
+                    <button class="btn-dash btn-players" onclick="abrirJugadores('${id}')">👥 Jugadores</button>`;
                     list.appendChild(card);
                 }
             }
@@ -206,17 +159,14 @@
     window.abrirJugadores = async id => {
         cId = id; const s = await get(ref(db, 'eventos/'+id)); cEv = s.val();
         const ins = cEv.inscriptos || [];
-        const confirmados = ins.filter(p => p.estado !== 'pendiente').length;
-        const pendientes = ins.filter(p => p.estado === 'pendiente').length;
-        
+        const pag = ins.filter(p => p.estado !== 'pendiente').length;
         document.getElementById('st-total').innerText = cEv.cupo;
-        document.getElementById('st-pag').innerText = confirmados;
-        document.getElementById('st-pen').innerText = pendientes;
-        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - confirmados);
-        
+        document.getElementById('st-pag').innerText = pag;
+        document.getElementById('st-pen').innerText = ins.filter(p => p.estado === 'pendiente').length;
+        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - pag);
         const list = document.getElementById('players-list'); list.innerHTML = "";
         ins.forEach((p, idx) => {
-            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700; font-size:13px">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado === 'paga-en-la-cancha' ? 'PAGA EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:800">✕</button></div>`;
+            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado === 'paga-en-la-cancha' ? 'PAGA EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${idx})" style="background:none; border:none; color:var(--danger)">✕</button></div>`;
         });
         document.getElementById('modal-jugadores').classList.remove('hidden');
     };
@@ -227,20 +177,15 @@
         update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId));
     };
 
-    window.borrarP = (i) => { if(confirm("¿Borrar jugador?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
+    window.borrarP = (i) => { if(confirm("¿Borrar?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
 
     window.abrirConfig = async id => {
         cId = id; const s = await get(ref(db, 'eventos/'+id)); const d = s.val();
-        document.getElementById('ed-organiza').value = d.organiza || "";
-        document.getElementById('ed-owner').value = d.nombreOrganizador || "";
-        document.getElementById('ed-lugar').value = d.lugar || "";
-        document.getElementById('ed-fecha').value = d.fecha || "";
-        document.getElementById('ed-hora').value = d.hora || "";
-        document.getElementById('ed-hora-fin').value = d.horaFin || "";
-        document.getElementById('ed-cat').value = d.categorias || "";
-        document.getElementById('ed-valor').value = d.valor || 0;
-        document.getElementById('ed-cupo').value = d.cupo || 0;
-        document.getElementById('ed-alias').value = d.alias || "";
+        document.getElementById('ed-organiza').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || "";
+        document.getElementById('ed-lugar').value = d.lugar || ""; document.getElementById('ed-fecha').value = d.fecha || "";
+        document.getElementById('ed-hora').value = d.hora || ""; document.getElementById('ed-hora-fin').value = d.horaFin || "";
+        document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-valor').value = d.valor || 0;
+        document.getElementById('ed-cupo').value = d.cupo || 0; document.getElementById('ed-alias').value = d.alias || "";
         document.getElementById('ed-celu').value = d.celuOrganizador || "";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false);
         document.getElementById('modal-config').classList.remove('hidden');
@@ -248,33 +193,18 @@
 
     window.guardarConfig = async () => {
         const sd = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); });
-        const rrule = sd.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${sd.join(',')}` : "RRULE:FREQ=NONE";
-        await update(ref(db, 'eventos/'+cId), { 
-            organiza: document.getElementById('ed-organiza').value,
-            nombreOrganizador: document.getElementById('ed-owner').value,
-            lugar: document.getElementById('ed-lugar').value,
-            fecha: document.getElementById('ed-fecha').value,
-            hora: document.getElementById('ed-hora').value,
-            horaFin: document.getElementById('ed-hora-fin').value,
-            categorias: document.getElementById('ed-cat').value,
-            valor: parseInt(document.getElementById('ed-valor').value),
-            cupo: parseInt(document.getElementById('ed-cupo').value),
-            alias: document.getElementById('ed-alias').value,
-            celuOrganizador: document.getElementById('ed-celu').value,
-            rrule: rrule
-        });
-        alert("Guardado correctamente"); cerrarModals();
+        await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-organiza').value, nombreOrganizador: document.getElementById('ed-owner').value, lugar: document.getElementById('ed-lugar').value, fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value, categorias: document.getElementById('ed-cat').value, valor: parseInt(document.getElementById('ed-valor').value), cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('ed-celu').value, rrule: sd.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${sd.join(',')}` : "RRULE:FREQ=NONE" });
+        alert("¡Guardado!"); cerrarModals();
     };
 
     window.nuevoCancha = async () => {
         const idN = orgId + "-" + Date.now();
         const hSnap = await get(ref(db, 'hubs/'+orgId)); let canchas = hSnap.val()?.canchas || [];
-        await set(ref(db, 'eventos/'+idN), { organiza: "Nueva Cancha", lugar: "Sede", fecha: new Date().toISOString().split('T')[0], hora: "19:00", horaFin: "20:30", valor: 20000, cupo: 20, inscriptos: [], rrule: "RRULE:FREQ=NONE" });
+        await set(ref(db, 'eventos/'+idN), { organiza: "Nueva Cancha", lugar: "Sede", fecha: new Date().toISOString().split('T')[0], hora: "19:00", horaFin: "20:30", valor: 15000, cupo: 20, inscriptos: [], rrule: "RRULE:FREQ=NONE" });
         canchas.push(idN); await update(ref(db, 'hubs/'+orgId), { canchas });
     };
-
     window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-jugadores').classList.add('hidden'); };
-    window.copiarLink = () => navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('d.html', 'v.html') + '?org=' + orgId).then(() => alert("Link de cartelera copiado"));
+    window.copiarLink = () => navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('d.html', 'v.html') + '?org=' + orgId).then(() => alert("Copiado"));
 </script>
 </body>
 </html>

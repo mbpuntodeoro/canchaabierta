@@ -100,7 +100,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, set, push, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    // IMPORTANTE: Agregamos runTransaction acá arriba
+    import { getDatabase, ref, onValue, get, set, push, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
@@ -109,10 +110,9 @@
     const orgId = params.get('org'), currentId = params.get('id');
     let ev = {}, cuenta = {};
 
-    function fFec(f) { if (!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
-    // Arreglo función fecha rápida
-    const getF = (f) => { if(!f) return '-'; const dias=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const date=new Date(y,m-1,d); return `${dias[date.getDay()]} ${parseInt(d)}/${parseInt(m)}`; }
+    const getF = (f) => { if(!f) return '-'; const ds=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB']; const [y,m,d]=f.split('-'); const dt=new Date(y,m-1,d); return `${ds[dt.getDay()]} ${parseInt(d)}/${parseInt(m)}`; };
 
+    // 1. CARGA INICIAL Y VALIDACIÓN DE CUENTA
     if (orgId) {
         document.getElementById('link-admin').href = `d.html?org=${orgId}`;
         document.getElementById('btn-admin-access').classList.remove('hidden');
@@ -127,6 +127,7 @@
         });
     }
 
+    // 2. VISTA CARTELERA
     if (orgId && !currentId) {
         document.getElementById('view-hub').classList.remove('hidden');
         onValue(ref(db, 'hubs/' + orgId), async snap => {
@@ -142,11 +143,12 @@
             evs.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             evs.forEach(d => {
                 if (d.fecha !== lastDate) { list.innerHTML += `<div class="day-header">${getF(d.fecha)}</div>`; lastDate = d.fecha; }
-                list.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${d.hora} A ${d.horaFin || '--'} HS</div><div class="hub-main"><b class="hub-title">${d.organiza} - ${d.categorias || ''}</b><small style="color:var(--sub)">📍 ${d.lugar}</small></div></a>`;
+                list.innerHTML += `<a href="?id=${d.id}&org=${orgId}" class="hub-row"><div class="hub-time">${d.hora} A ${d.horaFin || '--:--'} HS</div><div class="hub-main"><b class="hub-title">${d.organiza} - ${d.categorias || ''}</b><small style="color:var(--sub)">📍 ${d.lugar}</small></div></a>`;
             });
         });
     }
 
+    // 3. VISTA EVENTO Y MOTOR CLIENT-SIDE (Temporal hasta que migremos al Backend)
     if (currentId) {
         onValue(ref(db, 'eventos/' + currentId), async snap => {
             ev = snap.val() || {};
@@ -174,26 +176,75 @@
                 document.getElementById('view-event').classList.remove('hidden');
                 document.getElementById('txt-event-name').innerText = `${ev.organiza} - ${ev.categorias || ''}`;
                 document.getElementById('txt-fecha').innerText = getF(ev.fecha);
-                document.getElementById('txt-hora').innerText = `${ev.hora} A ${ev.horaFin || '--'} HS`;
+                document.getElementById('txt-hora').innerText = `${ev.hora} A ${ev.horaFin || '--:--'} HS`;
                 document.getElementById('txt-lugar').innerText = ev.lugar || "-";
                 document.getElementById('txt-valor').innerText = `$${(ev.valor || 0).toLocaleString()}`;
+                
                 if ((ev.inscriptos || []).length >= (ev.cupo || 0) || ev.inscripcionesCerradas || ev.suspendido) {
                     document.getElementById('form-ins').classList.add('hidden');
                     document.getElementById('msg-cerrado').classList.remove('hidden');
                     if(ev.suspendido) document.getElementById('msg-cerrado').innerText = "🚫 CANCHA SUSPENDIDA";
+                } else {
+                    document.getElementById('form-ins').classList.remove('hidden');
+                    document.getElementById('msg-cerrado').classList.add('hidden');
                 }
             }
         });
     }
 
+    // 🛡️ 4. NUEVO SISTEMA DE INSCRIPCIÓN: TRANSACCIÓN ANTI-OVERBOOKING + XSS
     window.inscribirse = () => {
-        const n = document.getElementById('in-nom').value.trim(), c = document.getElementById('in-cel').value.trim();
-        if (!n || !c) return alert("Completá tus datos");
-        if (!ev.inscriptos) ev.inscriptos = [];
-        ev.inscriptos.push({ id: Date.now(), nombre: n, celular: c, estado: 'pendiente' });
-        set(ref(db, 'eventos/'+currentId+'/inscriptos'), ev.inscriptos).then(() => {
-            document.getElementById('view-event').classList.add('hidden');
-            renderSuccess();
+        const n = document.getElementById('in-nom').value.trim();
+        const c = document.getElementById('in-cel').value.trim();
+        
+        if (!n || !c) return alert("Por favor, completá tus datos.");
+
+        // Sanitización básica para evitar inyección de código (XSS)
+        const sanitize = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const nombreLimpio = sanitize(n);
+        const celuLimpio = sanitize(c);
+
+        // Deshabilitar botón para evitar doble clic
+        const btn = document.querySelector('#form-ins .btn-full');
+        btn.innerText = "Anotando...";
+        btn.disabled = true;
+
+        const eventoRef = ref(db, 'eventos/' + currentId);
+
+        // Bloqueo de base de datos en tiempo real
+        runTransaction(eventoRef, (eventoActual) => {
+            if (eventoActual) {
+                if (!eventoActual.inscriptos) {
+                    eventoActual.inscriptos = [];
+                }
+                
+                // VERIFICACIÓN DURA EN LA DB: Si justo se llenó, abortamos.
+                if (eventoActual.inscriptos.length >= eventoActual.cupo || eventoActual.inscripcionesCerradas || eventoActual.suspendido) {
+                    return; // Retornar undefined aborta la transacción
+                }
+
+                // Si hay lugar, lo metemos
+                eventoActual.inscriptos.push({
+                    id: Date.now(),
+                    nombre: nombreLimpio,
+                    celular: celuLimpio,
+                    estado: 'pendiente'
+                });
+            }
+            return eventoActual;
+        }).then(({ committed, snapshot }) => {
+            if (!committed) {
+                alert("¡Uh! Alguien te ganó de mano en el último segundo o la cancha cerró. Ya no quedan cupos.");
+                location.reload();
+            } else {
+                // Éxito real
+                document.getElementById('view-event').classList.add('hidden');
+                renderSuccess();
+            }
+        }).catch((error) => {
+            alert("Hubo un error de conexión. Revisá tu internet e intentá de nuevo.");
+            btn.innerText = "Anotarme ahora";
+            btn.disabled = false;
         });
     };
 

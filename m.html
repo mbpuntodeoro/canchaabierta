@@ -7,90 +7,110 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        #view-login { display: flex; height: 100vh; align-items: center; justify-content: center; background: #000; }
+        .login-card { background: white; padding: 40px; border-radius: 32px; width: 360px; text-align: center; }
+        header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
         .card-new { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; border: 2px solid var(--primary); }
-        .hub-item { background: white; padding: 20px; border-radius: 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; cursor: pointer; }
-        .accordion-content { background: #fff; padding: 20px; display: none; border-radius: 0 0 20px 20px; margin-top: -10px; margin-bottom: 10px; border: 1px solid #eee; border-top: none; }
+        .accordion-item { background: white; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid #eee; }
+        .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-content { padding: 20px; display: none; border-top: 1px solid #f2f2f7; background: #fafafa; }
         .accordion-item.active .accordion-content { display: block; }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; margin-bottom: 10px; }
-        .btn-blue { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
-        .btn-manage { background: #f2f2f7; color: var(--text); border: none; padding: 10px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; }
-        .footer-brand { margin-top: 50px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; }
-        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
+        .btn-blue { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
+        .btn-manage { background: #eee; color: var(--text); border: none; padding: 10px 18px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+        .tag-status { font-size: 9px; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; width: 95%; max-width: 450px; padding: 30px; border-radius: 32px; }
+        .footer-brand { margin-top: 50px; text-align: center; padding: 30px 20px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
         .hidden { display: none !important; }
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
     </style>
 </head>
 <body>
+<div id="view-login">
+    <div class="login-card">
+        <h1 style="font-weight:900; letter-spacing:-1px">Master Hub</h1>
+        <input type="email" id="log-email" class="input-std" placeholder="Email Admin">
+        <input type="password" id="log-pass" class="input-std" placeholder="Contraseña">
+        <button class="btn-blue" onclick="handleLogin()">INGRESAR</button>
+    </div>
+</div>
+<div id="view-panel" class="hidden">
+    <header><h2>PadelApp Master</h2><button onclick="handleLogout()" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer">SALIR</button></header>
     <div class="container">
-        <h1 style="font-weight:900">PadelApp Master Hub</h1>
-        
         <div class="card-new">
-            <h3>🚀 Nuevo Organizador</h3>
-            <input id="new-id" class="input-std" placeholder="ID Club (ej: adictos-padel)">
-            <input id="new-name" class="input-std" placeholder="Nombre Fantasía">
-            <button class="btn-blue" onclick="crearHub()">CREAR ORGANIZADOR</button>
+            <h3 style="margin-top:0">🚀 Alta de Organizador</h3>
+            <input id="new-id" class="input-std" placeholder="ID Club (ej: club-padel-sur)">
+            <input id="new-name" class="input-std" placeholder="Nombre de Fantasía">
+            <button class="btn-blue" onclick="crearHub()">DAR DE ALTA</button>
         </div>
-
-        <div id="hubs-list">Cargando...</div>
-
-        <div class="footer-brand">
-            <p style="font-size:10px; font-weight:800; color:var(--sub)">DESARROLLADO POR MARIANO BLUMENFELD</p>
-            <a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a>
-        </div>
+        <div id="org-list"></div>
+        <div class="footer-brand"><p>DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div>
     </div>
+</div>
 
-    <div id="modal-finance" class="modal hidden">
-        <div class="modal-content">
-            <h2>Finanzas del Club</h2>
-            <input type="hidden" id="modal-org-id">
-            <label>Deuda ($)</label><input id="mod-deuda" class="input-std" type="number">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>Vence Plan</label><input id="mod-ciclo" class="input-std" type="date"></div>
-                <div><label>Días de Trial</label><input id="mod-trial" class="input-std" type="number" placeholder="Ej: 7"></div>
-            </div>
-            <div style="background:#fff2f2; padding:15px; border-radius:15px; margin:15px 0; display:flex; justify-content:space-between; align-items:center;">
-                <b style="color:var(--danger); font-size:12px">SUSPENDER</b>
-                <input type="checkbox" id="mod-suspendido" style="transform:scale(1.5)">
-            </div>
-            <button class="btn-blue" onclick="guardarFinanzas()">GUARDAR CAMBIOS</button>
-            <button class="btn-blue" onclick="archivarHub()" style="background:#000; margin-top:10px">ARCHIVAR ORGANIZADOR</button>
-            <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
+<div id="modal-finance" class="modal hidden">
+    <div class="modal-content">
+        <h2>Finanzas del Club</h2>
+        <input type="hidden" id="modal-org-id">
+        <label>Deuda Actual ($)</label><input id="mod-deuda" class="input-std" type="number">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+            <div><label>Vence Plan</label><input id="mod-ciclo" class="input-std" type="date"></div>
+            <div><label>Días Prueba</label><input id="mod-trial" class="input-std" type="number" placeholder="Ej: 7"></div>
         </div>
+        <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
+            <b style="color:var(--danger); font-size:12px">SUSPENDER CUENTA</b>
+            <input type="checkbox" id="mod-suspendido" style="transform:scale(1.5)">
+        </div>
+        <button class="btn-blue" onclick="guardarFinanzas()">GUARDAR CAMBIOS</button>
+        <button class="btn-blue" onclick="archivarHub()" style="background:#000; margin-top:10px">ARCHIVAR (ELIMINAR)</button>
+        <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
     </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
-    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    onValue(ref(db, 'hubs'), async snap => {
-        const hubs = snap.val() || {}; const list = document.getElementById('hubs-list'); list.innerHTML = "";
-        for(let id in hubs) {
-            try {
-                const fSnap = await get(ref(db, `facturacion/${id}/cuenta`)); const f = fSnap.val() || {};
-                const item = document.createElement('div'); item.className = "accordion-item";
-                item.innerHTML = `<div class="hub-item" onclick="this.parentElement.classList.toggle('active')"><b>${hubs[id].nombre || id}</b><span>▾</span></div>
-                <div class="accordion-content"><div style="display:flex; gap:10px">
-                <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ FINANZAS</button>
-                <a href="d.html?org=${id}" target="_blank" class="btn-manage">DASHBOARD</a>
-                </div></div>`;
-                list.appendChild(item);
-            } catch(e) {}
-        }
-    });
+    const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app);
+
+    window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert(e.message));
+    window.handleLogout = () => signOut(auth).then(() => location.reload());
+    onAuthStateChanged(auth, user => { if(user){ document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-panel').classList.remove('hidden'); initDash(); } });
+
+    function initDash() {
+        onValue(ref(db, 'hubs'), async snap => {
+            const hubs = snap.val() || {}; const list = document.getElementById('org-list'); list.innerHTML = "";
+            for(let id in hubs) {
+                try {
+                    const fSnap = await get(ref(db, `facturacion/${id}/cuenta`)); const f = fSnap.val() || {};
+                    const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > new Date();
+                    const item = document.createElement('div'); item.className = "accordion-item";
+                    item.innerHTML = `<div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <div><b>${hubs[id].nombre || id}</b><span class="tag-status" style="background:${isTrial?'#fff9e6':'#eafaf1'};color:${isTrial?'#ff9500':'#34c759'}">${isTrial?'Prueba':'Activo'}</span></div>
+                        <div>▾</div></div><div class="accordion-content">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                            <button class="btn-manage" onclick="abrirFinanzas('${id}')">⚙️ FINANZAS</button>
+                            <a href="d.html?org=${id}" target="_blank" class="btn-manage">DASHBOARD</a>
+                        </div></div>`;
+                    list.appendChild(item);
+                } catch(e) {}
+            }
+        });
+    }
 
     window.crearHub = async () => {
         const id = document.getElementById('new-id').value.trim();
         const nom = document.getElementById('new-name').value.trim();
-        if(!id || !nom) return alert("Completá los campos");
+        if(!id || !nom) return alert("Faltan datos");
         await set(ref(db, 'hubs/'+id), { nombre: nom, canchas: [] });
         await set(ref(db, `facturacion/${id}/cuenta`), { consumoActual: 0, nombreOrg: nom });
-        alert("Creado!"); location.reload();
+        alert("¡Creado!"); location.reload();
     };
 
     window.abrirFinanzas = async id => {
@@ -104,22 +124,19 @@
 
     window.guardarFinanzas = async () => {
         const id = document.getElementById('modal-org-id').value;
-        const diasTrial = parseInt(document.getElementById('mod-trial').value);
+        const trial = parseInt(document.getElementById('mod-trial').value);
         let upd = { consumoActual: parseInt(document.getElementById('mod-deuda').value), fechaFinCiclo: document.getElementById('mod-ciclo').value, cuentaSuspendida: document.getElementById('mod-suspendido').checked };
-        if(diasTrial > 0) {
-            let fp = new Date(); fp.setDate(fp.getDate() + diasTrial);
-            upd.fechaFinPrueba = fp.toISOString().split('T')[0];
-        }
+        if(trial > 0) { let d = new Date(); d.setDate(d.getDate() + trial); upd.fechaFinPrueba = d.toISOString().split('T')[0]; }
         await update(ref(db, `facturacion/${id}/cuenta`), upd); alert("Guardado"); cerrarModal();
     };
 
     window.archivarHub = async () => {
         const id = document.getElementById('modal-org-id').value;
-        if(confirm("¿Archivar este organizador?")){
+        if(confirm("¿Eliminar este club del panel? (Se guardará en archivo)")){
             const data = (await get(ref(db, 'hubs/'+id))).val();
             await set(ref(db, 'archivo_hubs/'+id), data);
             await set(ref(db, 'hubs/'+id), null);
-            alert("Archivado"); location.reload();
+            alert("Eliminado"); location.reload();
         }
     };
     window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');

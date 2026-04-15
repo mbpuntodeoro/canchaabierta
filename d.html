@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Organizador - PadelApp</title>
+    <title>Panel Organizador - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
@@ -14,7 +14,7 @@
         .card { background: var(--card); padding: 22px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; position: relative; }
         .hero h2 { font-size: 38px; margin: 8px 0; font-weight: 900; letter-spacing: -1.5px; }
-        .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #eee; margin-bottom: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; padding: 20px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 3px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; }
         .btn-dash { border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
         .btn-config { background: #f2f2f7; color: var(--text); } .btn-players { background: #eef6ff; color: var(--primary); margin-top: 5px; }
@@ -25,8 +25,8 @@
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .report-item { background: #f8f9fb; padding: 12px; border-radius: 14px; text-align: center; border: 1px solid #eee; }
         .report-item span { font-size: 9px; font-weight: 800; color: var(--sub); display: block; }
-        .report-item b { font-size: 16px; font-weight: 900; }
-        .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; }
+        .report-item b { font-size: 15px; font-weight: 900; }
+        .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #eee; }
         .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; cursor: pointer; }
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
@@ -34,8 +34,9 @@
         .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; margin-bottom: 10px; font-family: inherit; }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; }
         .hidden { display: none !important; }
-        .footer-brand { margin-top: 50px; text-align: center; border-top: 1px solid #ddd; padding-top: 30px; }
+        .footer-brand { margin-top: 50px; text-align: center; border-top: 1px solid #eee; padding-top: 30px; }
         .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
     </style>
 </head>
 <body>
@@ -48,25 +49,17 @@
     <div class="container" id="main-content">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
             <h1 id="org-display-name" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
-            <button onclick="signOut(auth).then(()=>location.reload())" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
+            <button onclick="signOut(auth).then(()=>location.reload())" style="background:none; border:none; color:var(--sub); font-weight:800">SALIR</button>
         </header>
-
-        <button class="btn-full" onclick="copiarLink()" style="margin-bottom:20px; background:#eef6ff; color:var(--primary); box-shadow:none;">🔗 COMPARTIR CARTELERA</button>
-        <div class="card hero"><span>Recaudación Mes</span><h2 id="txt-ingresos">$0</h2></div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:25px">
-            <h3 style="font-size:12px; color:var(--sub); text-transform:uppercase">Mis Canchas Abiertas</h3>
-            <button onclick="nuevoCancha()" style="background:#000; color:#fff; border:none; padding:8px 15px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer">+ NUEVA</button>
-        </div>
+        <button class="btn-full" onclick="copiarLink()" style="margin-bottom:20px; background:#eef6ff; color:var(--primary); box-shadow:none;">🔗 COMPARTIR MI CARTELERA</button>
         <div id="canchas-list"></div>
-
         <div class="footer-brand"><p style="font-size:10px; font-weight:800; color:var(--sub); letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div>
     </div>
 
     <div id="modal-config" class="modal hidden">
         <div class="modal-content">
             <h2 style="margin-top:0">Configurar Cancha</h2>
-            <label>Evento</label><input id="ed-organiza" class="input-std">
+            <label>Título Evento</label><input id="ed-organiza" class="input-std">
             <label>Responsable</label><input id="ed-owner" class="input-std">
             <label>Lugar / Sede</label><input id="ed-lugar" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
@@ -75,7 +68,7 @@
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-                <div><label>Hora Fin (CRÍTICO)</label><input id="ed-hora-fin" class="input-std" type="time"></div>
+                <div><label>Hora Fin</label><input id="ed-hora-fin" class="input-std" type="time"></div>
             </div>
             <label>Repetir Semanalmente</label>
             <div class="days-grid">
@@ -91,7 +84,7 @@
                 <div><label>Precio ($)</label><input id="ed-valor" class="input-std" type="number"></div>
                 <div><label>Cupo</label><input id="ed-cupo" class="input-std" type="number"></div>
             </div>
-            <label>Alias Mercado Pago</label><input id="ed-alias" class="input-std">
+            <label>Alias MP</label><input id="ed-alias" class="input-std">
             <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
             <button class="btn-full" onclick="guardarConfig()" style="margin-top:15px">GUARDAR CAMBIOS</button>
             <button class="btn-full" onclick="cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
@@ -102,7 +95,7 @@
         <div class="modal-content">
             <h2 id="players-title" style="margin-top:0">Jugadores</h2>
             <div class="report-grid">
-                <div class="report-item"><span>Cupo Total</span><b id="st-total">0</b></div>
+                <div class="report-item"><span>Total Cupo</span><b id="st-total">0</b></div>
                 <div class="report-item"><span>Confirmados</span><b id="st-pag" style="color:var(--success)">0</b></div>
                 <div class="report-item"><span>Pendientes</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="report-item"><span>Libres</span><b id="st-lib" style="color:var(--primary)">0</b></div>
@@ -145,19 +138,15 @@
                 const s = await get(ref(db, 'eventos/'+id));
                 if(s.exists()) canchasData.push({ id, ...s.val() });
             }
-            // ORDEN CRONOLÓGICO
+            // ORDEN CRONOLÓGICO: Más cercanas arriba
             canchasData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             canchasData.forEach(d => {
                 const confirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
                 const card = document.createElement('div'); card.className = "cancha-card";
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <b>🎾 ${d.organiza}</b>
-                        <span class="tag-cat">${confirmados}/${d.cupo}</span>
-                    </div>
-                    <div style="font-size:11px;color:var(--sub);margin-top:5px">📅 ${d.fecha} • 🕒 ${d.hora} HS • 📍 ${d.lugar || 'Sede'}</div>
-                    <button class="btn-dash btn-config" onclick="abrirConfig('${d.id}')">⚙️ Config</button>
-                    <button class="btn-dash btn-players" onclick="abrirJugadores('${d.id}')">👥 Jugadores</button>`;
+                card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center"><b>🎾 ${d.organiza}</b><span class="tag-cat">${confirmados}/${d.cupo}</span></div>
+                <div style="font-size:11px;color:#888;margin-top:5px">📅 ${d.fecha} • 🕒 ${d.hora} HS</div>
+                <button class="btn-dash btn-config" onclick="abrirConfig('${d.id}')">⚙️ Config</button>
+                <button class="btn-dash btn-players" onclick="abrirJugadores('${d.id}')">👥 Jugadores</button>`;
                 list.appendChild(card);
             });
         });
@@ -166,15 +155,17 @@
     window.abrirJugadores = async id => {
         cId = id; const s = await get(ref(db, 'eventos/'+id)); cEv = s.val();
         const ins = cEv.inscriptos || [];
-        const pag = ins.filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha').length;
-        const pen = ins.filter(p => p.estado === 'pendiente').length;
+        const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
+        ins.sort((a,b) => pesos[a.estado] - pesos[b.estado]);
+        const ocupados = ins.filter(p => p.estado !== 'pendiente').length;
         document.getElementById('st-total').innerText = cEv.cupo;
-        document.getElementById('st-pag').innerText = pag;
-        document.getElementById('st-pen').innerText = pen;
-        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - pag);
+        document.getElementById('st-pag').innerText = ocupados;
+        document.getElementById('st-pen').innerText = ins.length - ocupados;
+        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - ocupados);
         const list = document.getElementById('players-list'); list.innerHTML = "";
-        ins.forEach((p, idx) => {
-            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado === 'paga-en-la-cancha' ? 'PAGA EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer">✕</button></div>`;
+        ins.forEach(p => {
+            const oIdx = cEv.inscriptos.indexOf(p);
+            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700; font-size:13px">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${oIdx})">${p.estado === 'paga-en-la-cancha' ? 'PAGA EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:800">✕</button></div>`;
         });
         document.getElementById('modal-jugadores').classList.remove('hidden');
     };
@@ -185,7 +176,7 @@
         update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId));
     };
 
-    window.borrarP = (i) => { if(confirm("¿Borrar?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
+    window.borrarP = (i) => { if(confirm("¿Borrar jugador?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
 
     window.abrirConfig = async id => {
         cId = id; const s = await get(ref(db, 'eventos/'+id)); const d = s.val();
@@ -208,19 +199,14 @@
         const sd = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); });
         const rrule = sd.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${sd.join(',')}` : "RRULE:FREQ=NONE";
         await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-organiza').value, nombreOrganizador: document.getElementById('ed-owner').value, lugar: document.getElementById('ed-lugar').value, fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value, categorias: document.getElementById('ed-cat').value, valor: parseInt(document.getElementById('ed-valor').value), cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('ed-celu').value, rrule: rrule });
-        alert("¡Guardado!"); cerrarModals();
-    };
-
-    window.nuevoCancha = async () => {
-        const idN = orgId + "-" + Date.now();
-        const hSnap = await get(ref(db, 'hubs/'+orgId)); let canchas = hSnap.val()?.canchas || [];
-        const nEv = { organiza: "Nueva Cancha", fecha: new Date().toISOString().split('T')[0], hora: "19:00", horaFin: "20:30", valor: 15000, cupo: 20, inscriptos: [], rrule: "RRULE:FREQ=NONE" };
-        await set(ref(db, 'eventos/'+idN), nEv); canchas.push(idN);
-        await update(ref(db, 'hubs/'+orgId), { canchas: canchas }); alert("Cancha creada!");
+        alert("¡Guardado correctamente!"); cerrarModals();
     };
 
     window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-jugadores').classList.add('hidden'); };
-    window.copiarLink = () => navigator.clipboard.writeText(window.location.origin + "/v.html?org=" + orgId).then(() => alert("Copiado"));
+    window.copiarLink = () => {
+        const url = window.location.origin + window.location.pathname.replace('d.html', 'v.html') + '?org=' + orgId;
+        navigator.clipboard.writeText(url).then(() => alert("Link copiado"));
+    };
 </script>
 </body>
 </html>

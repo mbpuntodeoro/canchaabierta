@@ -18,7 +18,7 @@
     </style>
 </head>
 <body>
-    <header><h1 id="hub-name" style="margin:0; font-weight:900; letter-spacing:-1px">...</h1></header>
+    <header><h1 id="hub-name" style="margin:0; font-weight:800">...</h1></header>
     <div class="container"><div id="lista-eventos"></div><div class="footer-brand"><p style="font-size:10px; font-weight:800; color:var(--sub)">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div></div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -37,13 +37,18 @@
         onValue(ref(db, `hubs/${orgId}`), async snap => {
             const h = snap.val() || {}; document.getElementById('hub-name').innerText = h.nombre || "...";
             const list = document.getElementById('lista-eventos'); list.innerHTML = "";
+            let canchas = [];
             for(let cid of (h.canchas || [])){
                 const eSnap = await get(ref(db, `eventos/${cid}`));
-                if(eSnap.exists()){
-                    const d = eSnap.val(); if(d.suspendido) continue;
-                    list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'Gral'}</span></div><div style="font-size:13px;color:var(--sub);font-weight:600;margin-top:10px">📅 ${fmtFecha(d.fecha)} • 🕒 ${d.hora} A ${d.horaFin || '--'} HS<br>📍 ${d.lugar || 'Club'}</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`;
-                }
+                if(eSnap.exists()) canchas.push({ id: cid, ...eSnap.val() });
             }
+            canchas.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+            canchas.forEach(d => {
+                if(d.suspendido) return;
+                list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'Gral'}</span></div>
+                <div style="font-size:13px;color:var(--sub);font-weight:600;margin-top:10px">📅 ${fmtFecha(d.fecha)} • 🕒 ${d.hora} HS<br>📍 ${d.lugar || 'Club'}</div>
+                <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a></div>`;
+            });
         });
     }
 </script>

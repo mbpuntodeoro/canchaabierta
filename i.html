@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción - PadelApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        
+        .container { max-width: 450px; width: 100%; }
+        .back-link { text-decoration: none; color: var(--sub); font-size: 13px; font-weight: 700; display: block; margin-bottom: 20px; }
+        
+        .card { background: var(--card); padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 4px 10px; border-radius: 8px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: inline-block; }
+        
+        h2 { margin: 10px 0; font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; }
+        .info-row { font-size: 15px; color: var(--sub); font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid #f2f2f7; padding-bottom: 15px; }
+        
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 20px 0 8px 5px; }
+        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 2px solid #f2f2f7; font-size: 16px; outline: none; transition: 0.3s; box-sizing: border-box; }
+        .input-std:focus { border-color: var(--primary); }
+
+        .btn-pay { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 20px; font-size: 16px; font-weight: 900; cursor: pointer; margin-top: 30px; letter-spacing: 0.5px; }
+        .btn-pay:disabled { background: #ccc; }
+
+        .footer-msg { font-size: 11px; color: var(--sub); text-align: center; margin-top: 20px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="javascript:history.back()" class="back-link">← VOLVER A LA CARTELERA</a>
+
+    <div class="card" id="form-container">
+        <div id="loading">Cargando detalles del turno...</div>
+        
+        <div id="content" class="hidden">
+            <span class="tag-cat" id="txt-cat">Categoría</span>
+            <h2 id="txt-organiza">Nombre del Turno</h2>
+            <div class="info-row">
+                <span id="txt-fecha">Fecha</span> • <span id="txt-hora">Hora</span><br>
+                📍 <span id="txt-lugar">Lugar</span>
+            </div>
+
+            <div style="background: #eef6ff; padding: 15px; border-radius: 15px; margin-bottom: 10px;">
+                <p style="margin:0; font-size:12px; font-weight:700; color:var(--primary);">VALOR DE LA INSCRIPCIÓN</p>
+                <h3 style="margin:5px 0 0 0; font-size:24px; font-weight:900;" id="txt-precio">$0</h3>
+            </div>
+
+            <label>Nombre y Apellido del Jugador</label>
+            <input type="text" id="player-name" class="input-std" placeholder="Ej: Juan Pérez">
+
+            <label>WhatsApp (Sin 0 ni 15)</label>
+            <input type="tel" id="player-phone" class="input-std" placeholder="1166463800">
+
+            <button class="btn-pay" id="btn-submit" onclick="registrarJugador()">CONFIRMAR MI LUGAR</button>
+            
+            <p class="footer-msg">Al confirmar, tu lugar queda reservado. El pago se coordina directamente con el organizador.</p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
+        authDomain: "padelapp-e72af.firebaseapp.com",
+        databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
+        projectId: "padelapp-e72af",
+        storageBucket: "padelapp-e72af.firebasestorage.app",
+        messagingSenderId: "806914592971",
+        appId: "1:806914592971:web:84720063fc36a882b40b4e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('id');
+    const orgId = params.get('org');
+
+    let eventoActual = null;
+
+    if (eventId && orgId) {
+        // Cargar datos del evento
+        get(ref(db, `eventos/${eventId}`)).then(snap => {
+            if (snap.exists()) {
+                eventoActual = snap.val();
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                
+                document.getElementById('txt-cat').innerText = eventoActual.categorias || "General";
+                document.getElementById('txt-organiza').innerText = eventoActual.organiza;
+                document.getElementById('txt-fecha').innerText = eventoActual.fecha.split('-').reverse().join('/');
+                document.getElementById('txt-hora').innerText = eventoActual.hora + " HS";
+                document.getElementById('txt-lugar').innerText = eventoActual.lugar;
+                document.getElementById('txt-precio').innerText = "$" + (eventoActual.valor || 0).toLocaleString();
+            } else {
+                document.getElementById('loading').innerText = "El turno ya no está disponible.";
+            }
+        });
+    }
+
+    window.registrarJugador = async () => {
+        const nombre = document.getElementById('player-name').value.trim();
+        const telefono = document.getElementById('player-phone').value.trim();
+        const btn = document.getElementById('btn-submit');
+
+        if (!nombre || !telefono) return alert("Por favor, completá tus datos.");
+
+        btn.disabled = true;
+        btn.innerText = "PROCESANDO...";
+
+        try {
+            // Obtener lista actual de inscriptos
+            const snap = await get(ref(db, `eventos/${eventId}/inscriptos`));
+            let inscriptos = snap.val() || [];
+
+            // Verificar si hay lugar (doble check)
+            if (inscriptos.length >= (eventoActual.cupo || 20)) {
+                alert("Lo sentimos, se acaban de agotar los cupos.");
+                return location.reload();
+            }
+
+            // Agregar nuevo jugador
+            inscriptos.push({
+                nombre: nombre,
+                telefono: telefono,
+                estado: "pendiente",
+                fechaRegistro: new Date().toISOString()
+            });
+
+            // Guardar en Firebase
+            await update(ref(db, `eventos/${eventId}`), { inscriptos: inscriptos });
+
+            // Pantalla de éxito
+            document.getElementById('form-container').innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:60px; margin-bottom:20px;">✅</div>
+                    <h2 style="font-size:24px;">¡Inscripción Exitosa!</h2>
+                    <p style="color:var(--sub); line-height:1.5;">Hola <b>${nombre}</b>, tu lugar en <b>${eventoActual.organiza}</b> ya está reservado.</p>
+                    <button class="btn-pay" onclick="window.location.href='v.html?org=${orgId}'">VOLVER A LA CARTELERA</button>
+                </div>
+            `;
+
+        } catch (error) {
+            alert("Error al anotar: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "CONFIRMAR MI LUGAR";
+        }
+    };
+</script>
+
+<style>
+    .hidden { display: none !important; }
+</style>
+</body>
+</html>

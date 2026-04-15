@@ -6,67 +6,81 @@
     <title>Inscripción - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { max-width: 450px; width: 100%; }
         .card { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; }
-        .badge { background: var(--primary); color: white; padding: 5px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .info-box { background: #f8f9fb; border-radius: 20px; padding: 20px; text-align: left; margin: 20px 0; border: 1px solid #eee; }
-        .info-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-        .info-item span { color: var(--sub); font-weight: 700; text-transform: uppercase; font-size: 10px; }
-        .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; font-size: 16px; outline: none; margin-bottom: 12px; text-align: center; }
-        .btn-pay { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 20px; font-size: 16px; font-weight: 900; cursor: pointer; }
-        .payment-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 25px; margin-top: 20px; }
-        .btn-wa { background: #25D366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; border-radius: 18px; font-weight: 800; margin-top: 10px; }
+        .badge { background: var(--primary); color: white; padding: 6px 18px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .info-box { background: #f8f9fb; border-radius: 20px; padding: 20px; text-align: left; margin: 25px 0; border: 1px solid #eee; }
+        .info-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .info-item span { color: var(--sub); font-weight: 800; font-size: 10px; text-transform: uppercase; }
+        .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; font-size: 16px; outline: none; margin-bottom: 15px; text-align: center; }
+        .btn-pay { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-size: 17px; font-weight: 900; cursor: pointer; }
+        .payment-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 25px; margin-top: 25px; }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px; border-radius: 18px; font-weight: 800; margin-top: 15px; }
+        .footer-brand { margin-top: 40px; text-align: center; }
+        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card" id="form-container">
-        <div id="loading">Cargando...</div>
+        <div id="loading">Cargando evento...</div>
         <div id="content" class="hidden">
-            <p style="font-size:11px;font-weight:800;color:var(--sub)">🎾 Inscripción Cancha Abierta</p>
-            <h1 id="txt-title" style="margin:10px 0;font-size:28px;font-weight:900">CANCHA ABIERTA</h1>
-            <span class="badge" id="txt-badge">TODAS LAS CATEGORÍAS</span>
+            <p style="font-size:10px; font-weight:800; color:var(--sub)">🎾 Inscripción Cancha Abierta</p>
+            <h1 id="txt-title" style="margin:10px 0 15px; font-size:26px; font-weight:900; line-height:1.1">CANCHA ABIERTA</h1>
+            <span class="badge" id="txt-badge">Categoría</span>
             <div class="info-box">
                 <div class="info-item"><span>📅 FECHA</span><b id="txt-fecha">--</b></div>
                 <div class="info-item"><span>🕒 HORARIO</span><b id="txt-hora">--</b></div>
                 <div class="info-item"><span>📍 LUGAR</span><b id="txt-lugar">--</b></div>
+                <div class="info-item"><span>👤 ORGANIZA</span><b id="txt-owner">--</b></div>
                 <div class="info-item"><span>💰 VALOR</span><b id="txt-valor" style="color:var(--primary)">$0</b></div>
             </div>
-            <input type="text" id="p-name" class="input-std" placeholder="Nombre y Apellido">
+            <input type="text" id="p-name" class="input-std" placeholder="Tu Nombre y Apellido">
             <input type="tel" id="p-phone" class="input-std" placeholder="WhatsApp (Ej: 1123456789)">
             <button class="btn-pay" onclick="registrar()">Anotarme ahora</button>
         </div>
     </div>
+    <div class="footer-brand"><p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-    const params = new URLSearchParams(window.location.search); const eid = params.get('id'); const oid = params.get('org');
+    const params = new URLSearchParams(window.location.search); const eid = params.get('id');
     let ev = null;
+
     if(eid){
         get(ref(db, `eventos/${eid}`)).then(snap => {
             if(snap.exists()){
                 ev = snap.val(); document.getElementById('loading').classList.add('hidden'); document.getElementById('content').classList.remove('hidden');
                 document.getElementById('txt-title').innerText = "CANCHA ABIERTA - " + ev.organiza.toUpperCase();
-                document.getElementById('txt-badge').innerText = ev.categorias || "TODAS LAS CATEGORÍAS";
-                document.getElementById('txt-fecha').innerText = ev.fecha; document.getElementById('txt-hora').innerText = ev.hora + " HS";
-                document.getElementById('txt-lugar').innerText = ev.lugar; document.getElementById('txt-valor').innerText = "$" + ev.valor.toLocaleString();
+                document.getElementById('txt-badge').innerText = ev.categorias || "GENERAL";
+                document.getElementById('txt-fecha').innerText = ev.fecha;
+                document.getElementById('txt-hora').innerText = `DE ${ev.hora} A ${ev.horaFin || '--'} HS`;
+                document.getElementById('txt-lugar').innerText = ev.lugar;
+                document.getElementById('txt-owner').innerText = ev.nombreOrganizador || "Administración";
+                document.getElementById('txt-valor').innerText = "$" + (ev.valor || 0).toLocaleString();
             }
         });
     }
+
     window.registrar = async () => {
         const nombre = document.getElementById('p-name').value; const tel = document.getElementById('p-phone').value;
         if(!nombre || !tel) return alert("Completá tus datos");
         const s = await get(ref(db, `eventos/${eid}/inscriptos`)); let ins = s.val() || [];
         ins.push({ nombre, telefono: tel, estado: "pendiente" });
         await update(ref(db, `eventos/${eid}`), { inscriptos: ins });
-        const msg = encodeURIComponent(`Hola! Me anoté para ${ev.organiza}. Mi nombre es ${nombre}. Acá el comprobante.`);
-        document.getElementById('form-container').innerHTML = `<div style="text-align:center"><h2 style="font-size:30px">✅ ¡Éxito!</h2><p>Hola <b>${nombre}</b>, reservamos tu lugar.</p><div class="payment-box"><b style="color:var(--danger);font-size:12px">⚠️ PASO FINAL: PAGAR SEÑA</b><h2 style="margin:10px 0">${ev.alias || 'COORDINAR'}</h2><button onclick="navigator.clipboard.writeText('${ev.alias}')" style="background:white;border:1px solid #ddd;padding:8px;border-radius:10px;font-size:11px;font-weight:800">📋 COPIAR ALIAS</button></div><a href="https://wa.me/${ev.celuOrganizador || '5491166463800'}?text=${msg}" class="btn-wa">💬 ENVIAR COMPROBANTE</a></div>`;
+        const msg = encodeURIComponent(`Hola! Me anoté para ${ev.organiza}. Mi nombre es ${nombre}. Acá te mando el comprobante de la seña.`);
+        document.getElementById('form-container').innerHTML = `
+            <div style="text-align:center"><h2 style="font-size:32px; font-weight:900">✅ ¡Inscripción Exitosa!</h2><p>Hola <b>${nombre}</b>, reservamos tu lugar.</p>
+            <div class="payment-box"><b style="color:var(--danger);font-size:11px;letter-spacing:1px">⚠️ PASO FINAL: PAGAR SEÑA</b><h2 style="margin:10px 0; font-size:28px">${ev.alias || 'COORDINAR CON ADMIN'}</h2><button onclick="navigator.clipboard.writeText('${ev.alias}')" style="background:white;border:1px solid #ddd;padding:10px 20px;border-radius:12px;font-size:12px;font-weight:800;cursor:pointer">📋 COPIAR ALIAS</button></div>
+            <a href="https://wa.me/${ev.celuOrganizador || '5491166463800'}?text=${msg}" class="btn-wa">💬 ENVIAR COMPROBANTE</a></div>`;
     };
 </script>
+<style>.hidden{display:none!important}</style>
 </body>
 </html>

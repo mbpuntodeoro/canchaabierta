@@ -3,179 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera de Canchas - PadelApp</title>
+    <title>Canchas Abiertas - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #007aff; 
-            --bg: #f2f2f7; 
-            --card: #ffffff; 
-            --text: #1d1d1f; 
-            --sub: #86868b; 
-            --shadow: 0 8px 20px rgba(0,0,0,0.05); 
-        }
-        * { box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 50px; }
-        
-        header { background: #fff; padding: 25px 20px; text-align: center; border-bottom: 1px solid #e5e5e7; margin-bottom: 20px; }
-        header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -1px; }
-        
-        .container { max-width: 500px; margin: auto; padding: 0 15px; }
-
-        .event-card { 
-            background: var(--card); 
-            border-radius: 24px; 
-            padding: 22px; 
-            margin-bottom: 15px; 
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-
-        .event-header { 
-            display: flex; 
-            flex-wrap: wrap; 
-            align-items: center; 
-            gap: 8px; 
-            margin-bottom: 12px;
-        }
-
-        .event-title { 
-            font-size: 19px; 
-            font-weight: 800; 
-            letter-spacing: -0.5px;
-            margin: 0;
-            line-height: 1.2;
-            text-transform: uppercase;
-        }
-
-        .tag-cat {
-            font-size: 10px;
-            color: var(--sub);
-            background: rgba(134, 134, 139, 0.12);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .event-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 22px;
-            padding-top: 10px;
-        }
-
-        .detail-item { font-size: 13px; color: var(--sub); font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .detail-item b { color: var(--text); font-weight: 800; }
-
-        .btn-join { 
-            background: var(--primary); 
-            color: white; 
-            text-decoration: none; 
-            display: block; 
-            text-align: center; 
-            padding: 18px; 
-            border-radius: 18px; 
-            font-weight: 900; 
-            font-size: 16px;
-            transition: 0.2s;
-            letter-spacing: 1px;
-        }
-        .btn-join:active { transform: scale(0.96); opacity: 0.9; }
-
-        .status-closed { background: #e5e5ea; color: #a1a1a6; cursor: not-allowed; }
-
-        .empty-msg { text-align: center; padding: 50px 20px; color: var(--sub); font-weight: 600; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        header { background: #fff; padding: 25px; text-align: center; border-bottom: 1px solid #e5e5e7; }
+        .container { max-width: 500px; margin: auto; padding: 20px 15px; }
+        .event-card { background: white; border-radius: 24px; padding: 22px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 4px 10px; border-radius: 8px; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
+        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; }
+        .footer-brand { margin-top: 30px; text-align: center; padding: 20px; }
+        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
     </style>
 </head>
 <body>
-
-<header>
-    <h1 id="hub-name">PadelApp Cartelera</h1>
-</header>
-
-<div class="container">
-    <div id="lista-eventos">
+    <header><h1 id="hub-name" style="margin:0;font-weight:800">Cargando...</h1></header>
+    <div class="container">
+        <div id="lista-eventos"></div>
+        <div class="footer-brand">
+            <p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:2px">DESARROLLADO POR MARIANO BLUMENFELD</p>
+            <a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a>
         </div>
-</div>
-
+    </div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
-        authDomain: "padelapp-e72af.firebaseapp.com",
-        databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
-        projectId: "padelapp-e72af",
-        storageBucket: "padelapp-e72af.firebasestorage.app",
-        messagingSenderId: "806914592971",
-        appId: "1:806914592971:web:84720063fc36a882b40b4e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const params = new URLSearchParams(window.location.search);
-    const orgId = params.get('org');
-
-    const fFec = (f) => { 
-        if(!f) return '-'; 
-        const ds=['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO']; 
-        const [y,m,d]=f.split('-'); 
-        const dt=new Date(y,m-1,d); 
-        return `${ds[dt.getDay()]} ${parseInt(d)}/${parseInt(m)}`; 
-    };
-
-    if (orgId) {
-        onValue(ref(db, `hubs/${orgId}`), async (snap) => {
-            const hub = snap.val();
-            if (hub) {
-                document.getElementById('hub-name').innerText = hub.nombre;
-                const listContainer = document.getElementById('lista-eventos');
-                listContainer.innerHTML = "";
-                
-                if (!hub.canchas || hub.canchas.length === 0) {
-                    listContainer.innerHTML = '<p class="empty-msg">No hay turnos disponibles.</p>';
-                    return;
-                }
-
-                for (let cid of hub.canchas) {
-                    const evSnap = await get(ref(db, `eventos/${cid}`));
-                    if (evSnap.exists()) {
-                        const d = evSnap.val();
-                        if (d.suspendido) continue;
-
-                        const card = document.createElement('div');
-                        card.className = "event-card";
-                        
-                        const slotsLibres = Math.max(0, d.cupo - (d.inscriptos ? d.inscriptos.length : 0));
-                        const isClosed = d.inscripcionesCerradas || slotsLibres <= 0;
-
-                        // Eliminamos la línea de Cupos Libres aquí
-                        card.innerHTML = `
-                            <div class="event-header">
-                                <h3 class="event-title">🎾 ${d.organiza}</h3>
-                                <span class="tag-cat">${d.categorias || 'General'}</span>
-                            </div>
-                            
-                            <div class="event-details">
-                                <div class="detail-item">📅 <b>${fFec(d.fecha)}</b></div>
-                                <div class="detail-item">⏰ <b>${d.hora} HS</b></div>
-                                <div class="detail-item">📍 <b>${d.lugar}</b></div>
-                                <div class="detail-item">💳 <b>$${(d.valor || 0).toLocaleString()}</b></div>
-                            </div>
-
-                            <a href="${isClosed ? '#' : `i.html?id=${cid}&org=${orgId}`}" 
-                               class="btn-join ${isClosed ? 'status-closed' : ''}">
-                               ${isClosed ? 'INSCRIPCIONES CERRADAS' : 'ANOTARME'}
-                            </a>
-                        `;
-                        listContainer.appendChild(card);
-                    }
+    const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    const orgId = new URLSearchParams(window.location.search).get('org');
+    if(orgId){
+        onValue(ref(db, `hubs/${orgId}`), async snap => {
+            const h = snap.val(); if(!h) return;
+            document.getElementById('hub-name').innerText = h.nombre;
+            const list = document.getElementById('lista-eventos'); list.innerHTML = "";
+            for(let cid of (h.canchas || [])){
+                const eSnap = await get(ref(db, `eventos/${cid}`));
+                if(eSnap.exists()){
+                    const d = eSnap.val(); if(d.suspendido) continue;
+                    list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="margin-top:10px;font-size:13px;color:var(--sub);font-weight:600">📅 ${d.fecha} • ⏰ ${d.hora} HS • 📍 ${d.lugar}</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`;
                 }
             }
         });

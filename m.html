@@ -105,27 +105,31 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get, update, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    // IMPORTANTE: Incorporamos el módulo de Autenticación
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
     const firebaseConfig = {
-  apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
-  authDomain: "padelapp-e72af.firebaseapp.com",
-  projectId: "padelapp-e72af",
-  storageBucket: "padelapp-e72af.firebasestorage.app",
-  messagingSenderId: "806914592971",
-  appId: "1:806914592971:web:84720063fc36a882b40b4e"
-};
+      apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
+      authDomain: "padelapp-e72af.firebaseapp.com",
+      databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
+      projectId: "padelapp-e72af",
+      storageBucket: "padelapp-e72af.firebasestorage.app",
+      messagingSenderId: "806914592971",
+      appId: "1:806914592971:web:84720063fc36a882b40b4e"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    let appLoaded = false;
 
-    // Mantenemos la sesión activa si recargás la página
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-panel').classList.remove('hidden');
-            cargarLista();
+            if (!appLoaded) {
+                cargarLista();
+                appLoaded = true;
+            }
         }
     });
 
@@ -135,17 +139,10 @@
         const btn = document.getElementById('btn-login');
 
         if (!email || !pass) return alert("Completá ambos campos");
-
         btn.innerText = "Autenticando...";
         btn.disabled = true;
 
         signInWithEmailAndPassword(auth, email, pass)
-            .then((userCredential) => {
-                // Logueo exitoso
-                document.getElementById('view-login').classList.add('hidden');
-                document.getElementById('view-panel').classList.remove('hidden');
-                cargarLista();
-            })
             .catch((error) => {
                 alert("Error de acceso. Verificá tu correo y contraseña.");
                 btn.innerText = "Ingresar al Sistema";
@@ -162,7 +159,8 @@
     function cargarLista() {
         onValue(ref(db, 'hubs'), async (snap) => {
             const hubs = snap.val() || {};
-            const list = document.getElementById('org-list'); list.innerHTML = "";
+            const fragment = document.createDocumentFragment();
+            
             for (let id in hubs) {
                 const fSnap = await get(ref(db, 'facturacion/' + id + '/cuenta'));
                 const f = fSnap.val() || { consumoActual: 0, cuentaSuspendida: false };
@@ -199,6 +197,11 @@
                         </div>
                         
                         <div style="background:#f2f2f7; padding:15px; border-radius:15px; margin-bottom:15px;">
+                            <label style="margin-top:0;">Email de Acceso del Organizador</label>
+                            <input class="input-std" type="email" placeholder="Ej: admin@club.com" value="${hubs[id].email || ''}" onchange="guardarEmailHub('${id}', this.value)">
+                        </div>
+
+                        <div style="background:#f2f2f7; padding:15px; border-radius:15px; margin-bottom:15px;">
                             <label style="margin-top:0;">URL Acortada de la Cartelera</label>
                             <input class="input-std" placeholder="Ej: bit.ly/mi-club" value="${hubs[id].urlCorta || ''}" onchange="guardarUrlHub('${id}', this.value)">
                         </div>
@@ -207,8 +210,12 @@
                         ${canchasHtml || '<p style="font-size:11px; color:#ccc; margin:10px 0;">Sin canchas vinculadas.</p>'}
                     </div>
                 `;
-                list.appendChild(item);
+                fragment.appendChild(item);
             }
+            
+            const list = document.getElementById('org-list');
+            list.innerHTML = "";
+            list.appendChild(fragment);
         });
     }
 
@@ -219,9 +226,8 @@
         if (!isActive) item.classList.add('active');
     };
 
-    window.guardarUrlHub = (hubId, val) => {
-        update(ref(db, 'hubs/' + hubId), { urlCorta: val }).then(() => alert("URL de Cartelera guardada"));
-    };
+    window.guardarEmailHub = (hubId, val) => update(ref(db, 'hubs/' + hubId), { email: val.trim() }).then(() => alert("Email de acceso guardado"));
+    window.guardarUrlHub = (hubId, val) => update(ref(db, 'hubs/' + hubId), { urlCorta: val.trim() }).then(() => alert("URL de Cartelera guardada"));
 
     window.calcularFechasAutomaticas = () => {
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;

@@ -108,7 +108,14 @@
     // IMPORTANTE: Incorporamos el módulo de Autenticación
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
-    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
+    const firebaseConfig = {
+  apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
+  authDomain: "padelapp-e72af.firebaseapp.com",
+  projectId: "padelapp-e72af",
+  storageBucket: "padelapp-e72af.firebasestorage.app",
+  messagingSenderId: "806914592971",
+  appId: "1:806914592971:web:84720063fc36a882b40b4e"
+};
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);

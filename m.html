@@ -3,102 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub | PadelApp Admin</title>
+    <title>Master Hub Ultra - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007bff; --dark: #121212; --bg: #f8f9fa; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
+        :root { --primary: #007bff; --bg: #f2f2f7; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --danger: #ff3b30; --warning: #ffcc00; --shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        * { box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        /* Login Overlay */
-        #login-screen { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 1000; color: white; flex-direction: column; }
-        .login-box { background: #1e1e1e; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; }
-        
-        /* Dashboard Layout */
-        header { background: var(--dark); color: white; padding: 20px; text-align: center; }
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: none; }
-        
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .stat-card p { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin: 5px 0 0; }
-        
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        
-        input { padding: 12px; border: 2px solid #eee; border-radius: 10px; font-size: 1rem; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; }
-        
-        .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem; }
-        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-main:disabled { background: #ccc; }
+        /* LOGIN */
+        #view-login { display: flex; height: 100vh; align-items: center; justify-content: center; background: #000; }
+        .login-card { background: white; padding: 40px; border-radius: 28px; width: 350px; text-align: center; box-shadow: var(--shadow); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: #666; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .badge { background: #e3f2fd; color: #0d47a1; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+        /* DASHBOARD */
+        header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        
+        /* METRICAS */
+        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 24px; text-align: center; box-shadow: var(--shadow); }
+        .stat-card h4 { margin: 0; font-size: 12px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card p { font-size: 32px; font-weight: 800; margin: 10px 0 0; color: var(--primary); }
+
+        /* CREACION */
+        .card-new { background: white; padding: 30px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 40px; border: 2px solid var(--primary); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+
+        /* LISTA ACCORDION */
+        .accordion-item { background: white; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); overflow: hidden; }
+        .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-content { padding: 0 20px 20px 20px; display: none; border-top: 1px solid #f2f2f7; }
+        .accordion-item.active .accordion-content { display: block; }
+
+        /* TAGS */
+        .tag-status { font-size: 10px; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 10px; }
+        .tag-suspended { background: var(--danger); color: white; }
+        .tag-ok { background: var(--success); color: white; }
+        .tag-trial { background: var(--warning); color: black; }
+
+        /* UI ELEMENTS */
+        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; transition: 0.3s; }
+        .input-std:focus { border-color: var(--primary); }
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
+        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; font-size: 14px; }
+        .btn-manage { background: #f2f2f7; color: var(--text); border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; }
+        .cancha-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fb; padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; }
+
+        /* MODAL */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; width: 95%; max-width: 480px; padding: 30px; border-radius: 32px; max-height: 90vh; overflow-y: auto; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2>🔒 Admin Access</h2>
-        <p>Inicie sesión para gestionar el Master Hub</p>
-        <input type="email" id="admin-email" placeholder="Email" style="width: 90%; margin-bottom: 10px; background: #222; border: 1px solid #444; color: white;">
-        <input type="password" id="admin-pass" placeholder="Contraseña" style="width: 90%; margin-bottom: 20px; background: #222; border: 1px solid #444; color: white;">
-        <button class="btn-main" onclick="handleLogin()">ENTRAR</button>
+<div id="view-login">
+    <div class="login-card">
+        <h1>Master Hub</h1>
+        <input type="email" id="log-email" class="input-std" placeholder="Email Admin" style="margin-bottom:10px;">
+        <input type="password" id="log-pass" class="input-std" placeholder="Contraseña" style="margin-bottom:20px;">
+        <button class="btn-blue" onclick="handleLogin()">INGRESAR AL SISTEMA</button>
     </div>
 </div>
 
-<header>
-    <h1>PadelApp <span style="font-weight: 300;">Master Hub</span></h1>
-</header>
+<div id="view-panel" class="hidden">
+    <header>
+        <h2 style="margin:0; font-weight:800; letter-spacing:-1px;">PadelApp <span style="font-weight:300">Master</span></h2>
+        <button class="btn-manage" onclick="handleLogout()" style="background:#333; color:white;">Cerrar Sesión</button>
+    </header>
 
-<div class="container">
-    <div class="grid-stats">
-        <div class="stat-card"><h4>Hubs Activos</h4><p id="total-hubs">0</p></div>
-        <div class="stat-card"><h4>Comisiones Pendientes</h4><p id="total-comisiones">$0</p></div>
-    </div>
-
-    <div class="card">
-        <h2>🚀 Alta de Nuevo Organizador</h2>
-        <div class="form-group">
-            <input id="new-org-id" placeholder="ID (ej: club-norte)">
-            <input id="new-org-nombre" placeholder="Nombre Comercial">
+    <div class="container">
+        <div class="grid-stats">
+            <div class="stat-card"><h4>Hubs Activos</h4><p id="total-hubs">0</p></div>
+            <div class="stat-card"><h4>Por Cobrar (Total)</h4><p id="total-fees">$0</p></div>
         </div>
-        <div class="form-group">
-            <input id="new-org-email" placeholder="Email del Cliente">
-            <input id="new-org-pass" type="password" placeholder="Contraseña (mín. 6 chars)">
-        </div>
-        <button id="btn-crear" class="btn-main" onclick="altaPro()">CREAR CUENTA Y ACTIVAR ROBOT</button>
-    </div>
 
-    <div class="card">
-        <h2>📋 Gestión de Clubes</h2>
-        <table id="tabla-hubs">
-            <thead>
-                <tr><th>Club / ID</th><th>Email</th><th>Deuda</th><th>Abono</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="card-new">
+            <h3 style="margin-top:0">🚀 Alta de Nuevo Organizador</h3>
+            <div class="grid-2">
+                <input id="new-id" class="input-std" placeholder="ID (ej: club-sur)">
+                <input id="new-name" class="input-std" placeholder="Nombre Fantasía">
+            </div>
+            <div class="grid-2">
+                <input id="new-email" class="input-std" placeholder="Email del Cliente">
+                <input id="new-pass" type="password" class="input-std" placeholder="Contraseña (mín 6)">
+            </div>
+            <button id="btn-crear" class="btn-blue" onclick="altaAutomatizada()">CREAR CUENTA Y ACTIVAR ROBOT</button>
+        </div>
+
+        <div id="org-list"></div>
+    </div>
+</div>
+
+<div id="modal-finance" class="modal hidden">
+    <div class="modal-content">
+        <h2 id="modal-title" style="margin:0 0 20px 0;">Configuración</h2>
+        <input type="hidden" id="modal-org-id">
+        
+        <div style="background: #fff2f2; padding: 15px; border-radius: 18px; margin-bottom: 20px; border: 1.5px solid #ffdbdb; display: flex; justify-content: space-between; align-items: center;">
+            <div><b style="color:var(--danger);">SUSPENDER CLIENTE</b><p style="margin:0; font-size:11px; color:#a35e5e;">Bloquea gestión e inscripciones.</p></div>
+            <input type="checkbox" id="mod-suspendido" style="transform: scale(1.6);">
+        </div>
+
+        <div style="background: #f4f4f7; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center;">
+            <label style="margin-top:0;">Deuda Acumulada</label>
+            <h3 id="txt-deuda-modal" style="font-size: 36px; margin:10px 0; font-weight: 900;">$0</h3>
+            <button class="btn-blue" style="background: var(--success);" onclick="confirmarPago()">✅ MARCAR COMO PAGADO Y RENOVAR</button>
+        </div>
+
+        <div class="grid-2">
+            <div><label>Vencimiento Ciclo</label><input id="mod-ciclo" class="input-std" type="date"></div>
+            <div><label>Límite Crédito ($)</label><input id="mod-limite" class="input-std" type="number"></div>
+        </div>
+
+        <div class="grid-2">
+            <div><label>Costo Abono ($)</label><input id="mod-abono" class="input-std" type="number"></div>
+            <div><label>Costo Cancha ($)</label><input id="mod-cancha" class="input-std" type="number"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button class="btn-blue" onclick="guardarFinanzas()">💾 Guardar Cambios</button>
+            <button class="btn-blue" style="background:#eee; color:var(--text);" onclick="cerrarModal()">Cerrar</button>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, update, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // --- CONFIGURACIÓN DE FIREBASE (PEGÁ TUS DATOS ACÁ) ---
-   const firebaseConfig = {
-  apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
-  authDomain: "padelapp-e72af.firebaseapp.com",
-  databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
-  projectId: "padelapp-e72af",
-  storageBucket: "padelapp-e72af.firebasestorage.app",
-  messagingSenderId: "806914592971",
-  appId: "1:806914592971:web:84720063fc36a882b40b4e"
-};
+    // --- CONFIGURACIÓN (REEMPLAZÁ CON TUS DATOS) ---
+    const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "padelapp-e72af.firebaseapp.com",
+        databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
+        projectId: "padelapp-e72af",
+        storageBucket: "padelapp-e72af.appspot.com",
+        messagingSenderId: "TU_SENDER_ID",
+        appId: "TU_APP_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -106,82 +150,147 @@
     const functions = getFunctions(app);
     const crearOrganizador = httpsCallable(functions, 'crearOrganizador');
 
-    // MANEJO DE LOGIN
-    window.handleLogin = async () => {
-        const email = document.getElementById('admin-email').value;
-        const pass = document.getElementById('admin-pass').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-        } catch (error) {
-            alert("Error: " + error.message);
-        }
+    // --- AUTH ---
+    window.handleLogin = () => {
+        const e = document.getElementById('log-email').value;
+        const p = document.getElementById('log-pass').value;
+        signInWithEmailAndPassword(auth, e, p).catch(err => alert("Acceso denegado: " + err.message));
     };
 
-    // CONTROL DE SESIÓN
+    window.handleLogout = () => signOut(auth).then(() => location.reload());
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.querySelector('.container').style.display = 'block';
-            cargarDatos();
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-panel').classList.remove('hidden');
+            initDashboard();
         }
     });
 
-    // LLAMADA AL ROBOT (CLOUD FUNCTION)
-    window.altaPro = async () => {
-        const data = {
-            hubId: document.getElementById('new-org-id').value.trim(),
-            nombreOrg: document.getElementById('new-org-nombre').value.trim(),
-            email: document.getElementById('new-org-email').value.trim(),
-            password: document.getElementById('new-org-pass').value.trim()
-        };
+    // --- DASHBOARD LOGIC ---
+    function initDashboard() {
+        onValue(ref(db, 'hubs'), async (snap) => {
+            const hubs = snap.val() || {};
+            const list = document.getElementById('org-list');
+            list.innerHTML = "";
+            let totalFees = 0;
 
-        if(!data.hubId || !data.email || data.password.length < 6) {
-            return alert("Por favor, complete todos los campos (Pass mín. 6 caracteres)");
-        }
-
-        const btn = document.getElementById('btn-crear');
-        btn.innerText = "⏳ Creando en Google Cloud...";
-        btn.disabled = true;
-
-        try {
-            const res = await crearOrganizador(data);
-            alert("¡Éxito! Organizador creado y vinculado.");
-            location.reload();
-        } catch (error) {
-            console.error(error);
-            alert("Error del Servidor: " + error.message);
-            btn.innerText = "CREAR CUENTA Y ACTIVAR ROBOT";
-            btn.disabled = false;
-        }
-    };
-
-    // CARGA DE TABLA Y STATS
-    function cargarDatos() {
-        onValue(ref(db, 'hubs'), (snapshot) => {
-            const hubs = snapshot.val();
-            if(!hubs) return;
             document.getElementById('total-hubs').innerText = Object.keys(hubs).length;
-            const tbody = document.querySelector('#tabla-hubs tbody');
-            tbody.innerHTML = "";
 
-            Object.keys(hubs).forEach(id => {
+            for (let id in hubs) {
                 const h = hubs[id];
-                onValue(ref(db, `facturacion/${id}/cuenta`), (snap) => {
-                    const fac = snap.val() || { consumoActual: 0, costoAbono: 0 };
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${h.nombre}</strong><br><small>${id}</small></td>
-                        <td>${h.email}</td>
-                        <td style="color:red; font-weight:bold">$${fac.consumoActual.toLocaleString()}</td>
-                        <td><span class="badge">$${fac.costoAbono.toLocaleString()}</span></td>
-                    `;
-                    tbody.appendChild(tr);
+                const fSnap = await get(ref(db, `facturacion/${id}/cuenta`));
+                const f = fSnap.val() || { consumoActual: 0 };
+                totalFees += (f.consumoActual || 0);
+
+                const item = document.createElement('div');
+                item.className = "accordion-item";
+                
+                let canchasHtml = "";
+                (h.canchas || []).forEach(cid => {
+                    canchasHtml += `
+                        <div class="cancha-row">
+                            <span style="font-size:12px; font-weight:700;">Court ID: ${cid}</span>
+                            <a href="v.html?id=${cid}&org=${id}" target="_blank" class="btn-manage">VER CANCHA ➔</a>
+                        </div>`;
                 });
-            });
+
+                item.innerHTML = `
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <div>
+                            <b style="text-transform:uppercase; font-size:16px;">${h.nombre || id}</b>
+                            ${f.cuentaSuspendida ? '<span class="tag-status tag-suspended">Suspendido</span>' : '<span class="tag-status tag-ok">Activo</span>'}
+                            <div style="font-size:12px; color:var(--sub); margin-top:5px;">
+                                Deuda: <b>$${(f.consumoActual || 0).toLocaleString()}</b> | Vence: ${f.fechaFinCiclo || '-'}
+                            </div>
+                        </div>
+                        <div style="color:var(--sub)">▾</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div style="display:flex; gap:10px; margin:15px 0;">
+                            <button class="btn-manage" style="background:var(--primary); color:white;" onclick="abrirFinanzas('${id}')">⚙️ GESTIÓN FINANCIERA</button>
+                            <a href="v.html?org=${id}" target="_blank" class="btn-manage">CARTELERA</a>
+                            <a href="d.html?org=${id}" target="_blank" class="btn-manage">DASHBOARD</a>
+                        </div>
+                        <label>URL Corta de Cartelera</label>
+                        <input class="input-std" value="${h.urlCorta || ''}" onchange="guardarUrl('${id}', this.value)" placeholder="bit.ly/tu-club">
+                        <label>Canchas del Hub:</label>
+                        ${canchasHtml || '<p style="font-size:12px; color:#ccc;">No hay canchas vinculadas.</p>'}
+                    </div>
+                `;
+                list.appendChild(item);
+            }
+            document.getElementById('total-fees').innerText = "$" + totalFees.toLocaleString();
         });
     }
+
+    // --- ACCIONES ---
+    window.altaAutomatizada = async () => {
+        const data = {
+            hubId: document.getElementById('new-id').value.trim(),
+            nombreOrg: document.getElementById('new-name').value.trim(),
+            email: document.getElementById('new-email').value.trim(),
+            password: document.getElementById('new-pass').value.trim()
+        };
+        if(!data.hubId || data.password.length < 6) return alert("Datos incompletos.");
+        
+        const btn = document.getElementById('btn-crear');
+        btn.innerText = "⏳ Creando en Google Cloud..."; btn.disabled = true;
+
+        try {
+            await crearOrganizador(data);
+            alert("¡Éxito! Hub creado y activo.");
+            location.reload();
+        } catch (e) { alert("Error: " + e.message); btn.disabled = false; btn.innerText = "CREAR CUENTA Y ACTIVAR ROBOT"; }
+    };
+
+    window.abrirFinanzas = async (id) => {
+        const s = await get(ref(db, `facturacion/${id}/cuenta`));
+        const f = s.val() || { consumoActual: 0, costoAbono: 25000, costoCancha: 7000, limiteCredito: 30000 };
+        document.getElementById('modal-org-id').value = id;
+        document.getElementById('modal-title').innerText = "Finanzas: " + id;
+        document.getElementById('txt-deuda-modal').innerText = "$" + (f.consumoActual || 0).toLocaleString();
+        document.getElementById('mod-limite').value = f.limiteCredito;
+        document.getElementById('mod-abono').value = f.costoAbono;
+        document.getElementById('mod-cancha').value = f.costoCancha;
+        document.getElementById('mod-ciclo').value = f.fechaFinCiclo || "";
+        document.getElementById('mod-suspendido').checked = f.cuentaSuspendida || false;
+        document.getElementById('modal-finance').classList.remove('hidden');
+    };
+
+    window.guardarFinanzas = async () => {
+        const id = document.getElementById('modal-org-id').value;
+        const upds = {
+            costoAbono: parseInt(document.getElementById('mod-abono').value),
+            costoCancha: parseInt(document.getElementById('mod-cancha').value),
+            fechaFinCiclo: document.getElementById('mod-ciclo').value,
+            limiteCredito: parseInt(document.getElementById('mod-limite').value),
+            cuentaSuspendida: document.getElementById('mod-suspendido').checked
+        };
+        await update(ref(db, `facturacion/${id}/cuenta`), upds);
+        alert("Guardado."); cerrarModal();
+    };
+
+    window.confirmarPago = async () => {
+        const id = document.getElementById('modal-org-id').value;
+        if(!confirm("¿Resetear deuda y renovar 30 días?")) return;
+        const fSnap = await get(ref(db, `facturacion/${id}/cuenta`));
+        const f = fSnap.val();
+        let hoy = new Date();
+        let nuevaFecha = new Date(f.fechaFinCiclo || hoy);
+        if(nuevaFecha < hoy) nuevaFecha = hoy;
+        nuevaFecha.setDate(nuevaFecha.getDate() + 30);
+        
+        await update(ref(db, `facturacion/${id}/cuenta`), { 
+            consumoActual: 0, 
+            fechaFinCiclo: nuevaFecha.toISOString().split('T')[0] 
+        });
+        await push(ref(db, `facturacion/${id}/historial`), { fecha: hoy.toISOString(), monto: f.consumoActual, tipo: "PAGO" });
+        alert("Pago procesado."); cerrarModal();
+    };
+
+    window.guardarUrl = (id, val) => update(ref(db, `hubs/${id}`), { urlCorta: val });
+    window.cerrarModal = () => document.getElementById('modal-finance').classList.add('hidden');
 </script>
 </body>
 </html>

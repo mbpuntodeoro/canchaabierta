@@ -12,10 +12,10 @@
         .container { max-width: 550px; margin: auto; }
         #suspension-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
         .card { background: var(--card); padding: 22px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
-        .hero { background: #1d1d1f; color: white; padding: 25px; position: relative; border-radius: 28px; }
+        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; overflow: hidden; position: relative; }
         .hero h2 { font-size: 38px; margin: 8px 0; font-weight: 900; letter-spacing: -1.5px; }
-        .plan-header { display: flex; align-items: center; gap: 10px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .plan-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
         .active-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
         .trial-dot { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
         .expired-dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
@@ -30,13 +30,13 @@
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
-        .footer-brand { margin-top: 50px; text-align: center; padding: 30px 20px; border-top: 1px solid rgba(0,0,0,0.05); }
-        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
         .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; font-size: 15px; outline: none; margin-bottom: 5px; }
         .hidden { display: none !important; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 4px 5px; }
+        .footer-brand { margin-top: 50px; text-align: center; padding: 30px 20px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
     </style>
 </head>
 <body>
@@ -45,22 +45,12 @@
         <div style="background:#1c1c1e;padding:20px;border-radius:24px;margin:25px 0"><p style="font-size:11px;color:#aaa">SALDO PENDIENTE:</p><h2 id="muro-deuda" style="color:var(--danger);font-size:32px">$0</h2></div>
         <button class="btn-full" onclick="window.open('https://wa.me/5491166463800')">HABLAR CON SOPORTE</button>
     </div>
-
     <div class="container" id="main-content">
-        <header style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <h1 id="org-display-name" style="margin:0; font-size:24px; font-weight:900; letter-spacing:-1px;">Cargando...</h1>
-            <button onclick="cerrarSesion()" style="background:none;border:none;font-weight:800;color:var(--sub);cursor:pointer">SALIR</button>
-        </header>
+        <header style="margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;"><h1 id="org-display-name" style="margin:0; font-size:24px; font-weight:900; letter-spacing:-1px;">Cargando...</h1><button onclick="signOut(auth)" style="background:none;border:none;font-weight:800;color:var(--sub);cursor:pointer">SALIR</button></header>
         <button class="btn-full" onclick="copiarLink()" style="margin-bottom:20px; background:#eef6ff; color:var(--primary); box-shadow:none;">🔗 COMPARTIR CARTELERA</button>
         <div class="card hero"><span>Recaudación Mes</span><h2 id="txt-ingresos">$0</h2></div>
-        <div class="card">
-            <label>Estado del Plan</label>
-            <div class="plan-header"><div id="plan-dot" class="dot"></div><div id="plan-txt-status" style="font-weight:900">...</div></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:25px">
-            <h3 style="font-size:12px; color:var(--sub); text-transform:uppercase">Mis Canchas</h3>
-            <button onclick="nuevoCancha()" style="background:var(--text); color:white; border:none; padding:8px 15px; border-radius:12px; font-size:10px; font-weight:800; cursor:pointer">+ NUEVA CANCHA</button>
-        </div>
+        <div class="card"><label>Estado del Plan</label><div class="plan-header"><div id="plan-dot" class="dot"></div><div id="plan-txt-status" style="font-weight:900; font-size:18px;">...</div></div><p id="plan-msg-main" style="font-size:12px; color:var(--sub); margin-top:8px; font-weight:600;"></p></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:25px"><h3 style="font-size:12px; color:var(--sub); text-transform:uppercase">Mis Canchas</h3><button onclick="nuevoCancha()" style="background:var(--text); color:white; border:none; padding:8px 15px; border-radius:12px; font-size:10px; font-weight:800; cursor:pointer">+ NUEVA CANCHA</button></div>
         <div id="canchas-list"></div>
         <div class="card" style="margin-top:20px"><label>Consumo Sistema</label><h2 id="txt-costo" style="font-size:32px; font-weight:900">$0</h2></div>
         <div class="footer-brand"><p>DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div>
@@ -68,9 +58,9 @@
 
     <div id="modal-config" class="modal hidden">
         <div class="modal-content">
-            <h2 style="letter-spacing:-1px; margin-bottom:20px">Configurar Cancha</h2>
-            <label>Nombre del Evento</label><input id="ed-organiza" class="input-std">
-            <label>Persona Responsable / Organizador</label><input id="ed-owner" class="input-std">
+            <h2 style="letter-spacing:-1.5px; margin-bottom:20px">Configurar Cancha</h2>
+            <label>Título del Evento</label><input id="ed-organiza" class="input-std">
+            <label>Responsable</label><input id="ed-owner" class="input-std">
             <label>Ubicación</label><input id="ed-lugar" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Fecha</label><input id="ed-fecha" class="input-std" type="date"></div>
@@ -78,7 +68,7 @@
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-                <div><label>Hora Fin (CRÍTICO PARA COBRO)</label><input id="ed-hora-fin" class="input-std" type="time"></div>
+                <div><label>Hora Fin</label><input id="ed-hora-fin" class="input-std" type="time"></div>
             </div>
             <label>Tipo</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Única vez</option><option value="WEEKLY">Semanal</option></select>
             <div id="box-recurrencia" class="hidden"><div class="days-grid">
@@ -95,8 +85,7 @@
                 <div><label>Cupos</label><input id="ed-cupo" class="input-std" type="number"></div>
             </div>
             <label>Alias MP</label><input id="ed-alias" class="input-std">
-            <label>WhatsApp Organizador (549...)</label><input id="ed-celu" class="input-std">
-            <label>Estado</label><select id="ed-status" class="input-std"><option value="activo">🟢 Activa</option><option value="cerrado">🔒 Cerrada</option><option value="suspendido">🚫 Suspendida</option></select>
+            <label>WhatsApp (549...)</label><input id="ed-celu" class="input-std">
             <button class="btn-full" onclick="guardarConfig()" style="margin-top:20px">💾 Guardar Cambios</button>
             <button class="btn-full" onclick="cerrarModals()" style="background:#f2f2f7; color:var(--text); margin-top:10px">Cancelar</button>
         </div>
@@ -108,7 +97,7 @@
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app);
-    const params = new URLSearchParams(window.location.search); const orgId = params.get('org');
+    const orgId = new URLSearchParams(window.location.search).get('org');
     let cId = null, urlShare = "";
 
     onAuthStateChanged(auth, user => {
@@ -129,13 +118,12 @@
 
     function renderDashboard(c) {
         document.getElementById('txt-costo').innerText = '$' + (c.consumoActual || 0).toLocaleString();
-        get(ref(db, `facturacion/${orgId}/ingresos`)).then(snap => {
-            let total = 0; snap.forEach(i => total += (i.val().monto || 0));
-            document.getElementById('txt-ingresos').innerText = '$' + total.toLocaleString();
-        });
         const hoy = new Date(); const fC = new Date((c.fechaFinCiclo || "2000-01-01") + "T23:59:59");
-        const dot = document.getElementById('plan-dot'), st = document.getElementById('plan-txt-status');
-        if (hoy <= fC) { dot.className="dot active-dot"; st.innerText="Plan Activo"; } else { dot.className="dot expired-dot"; st.innerText="Plan Vencido"; }
+        const fP = new Date((c.fechaFinPrueba || "2000-01-01") + "T23:59:59");
+        const dot = document.getElementById('plan-dot'), st = document.getElementById('plan-txt-status'), msg = document.getElementById('plan-msg-main');
+        if (c.fechaFinPrueba && hoy < fP) { dot.className="dot trial-dot"; st.innerText="Prueba Gratis"; msg.innerText=`Vence en ${Math.ceil((fP-hoy)/(1000*60*60*24))} días.`; }
+        else if (hoy <= fC) { dot.className="dot active-dot"; st.innerText="Plan Activo"; msg.innerText=`Al día hasta el ${c.fechaFinCiclo.split('-').reverse().join('/')}.`; }
+        else { dot.className="dot expired-dot"; st.innerText="Plan Vencido"; msg.innerText="Regularizá el pago."; }
         renderCanchas();
     }
 
@@ -146,9 +134,8 @@
             for(let id of (h.canchas || [])) {
                 const s = await get(ref(db, 'eventos/'+id));
                 if(s.exists()){
-                    const d = s.val(); const ico = d.suspendido ? '🚫' : '🎾';
-                    const card = document.createElement('div'); card.className = "cancha-card";
-                    card.innerHTML = `<div style="display:flex;align-items:center"><b>${ico} ${d.organiza}</b><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:11px;color:var(--sub);margin-top:5px">${d.fecha} • ${d.hora} HS • ${(d.inscriptos||[]).length}/${d.cupo}</div><div class="btn-box"><button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button></div>`;
+                    const d = s.val(); const card = document.createElement('div'); card.className = "cancha-card";
+                    card.innerHTML = `<div style="display:flex;align-items:center"><b>🎾 ${d.organiza}</b><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:11px;color:var(--sub);margin-top:5px">${d.fecha} • ${d.hora} HS • ${(d.inscriptos||[]).length}/${d.cupo}</div><div class="btn-box"><button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button></div>`;
                     list.appendChild(card);
                 }
             }
@@ -184,7 +171,7 @@
             const sd = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); });
             rrule = `RRULE:FREQ=WEEKLY;BYDAY=${sd.join(',')}`;
         }
-        await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-organiza').value, nombreOrganizador: document.getElementById('ed-owner').value, lugar: document.getElementById('ed-lugar').value, fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value, categorias: document.getElementById('ed-cat').value, valor: parseInt(document.getElementById('ed-valor').value), cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('ed-celu').value, suspendido: document.getElementById('ed-status').value === 'suspendido', rrule: rrule });
+        await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-organiza').value, nombreOrganizador: document.getElementById('ed-owner').value, lugar: document.getElementById('ed-lugar').value, fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value, categorias: document.getElementById('ed-cat').value, valor: parseInt(document.getElementById('ed-valor').value), cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value, celuOrganizador: document.getElementById('ed-celu').value, rrule: rrule });
         alert("¡Guardado!"); cerrarModals();
     };
 
@@ -196,10 +183,8 @@
         await update(ref(db, 'hubs/'+orgId), { canchas: canchas });
         alert("¡Cancha creada!");
     };
-
-    window.cerrarSesion = () => signOut(auth).then(() => location.reload());
     window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); };
-    window.copiarLink = () => navigator.clipboard.writeText(urlShare).then(() => alert("Copiado"));
+    window.copiarLink = () => navigator.clipboard.writeText(urlShare).then(() => alert("Link copiado"));
 </script>
 </body>
 </html>

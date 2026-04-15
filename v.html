@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canchas - PadelApp</title>
+    <title>Cartelera - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
@@ -18,15 +18,15 @@
     </style>
 </head>
 <body>
-    <header><h1 id="hub-name" style="margin:0; font-weight:800; letter-spacing:-1px">Cargando...</h1></header>
-    <div class="container"><div id="lista-eventos"></div><div class="footer-brand"><p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div></div>
+    <header><h1 id="hub-name" style="margin:0; font-weight:800">...</h1></header>
+    <div class="container"><div id="lista-eventos"></div><div class="footer-brand"><p style="font-size:10px; font-weight:800; color:var(--sub)">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div></div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
     const orgId = new URLSearchParams(window.location.search).get('org');
-    if(orgId){ onValue(ref(db, `hubs/${orgId}`), async snap => { const h = snap.val(); if(!h) return; document.getElementById('hub-name').innerText = h.nombre; const list = document.getElementById('lista-eventos'); list.innerHTML = ""; for(let cid of (h.canchas || [])){ const eSnap = await get(ref(db, `eventos/${cid}`)); if(eSnap.exists()){ const d = eSnap.val(); if(d.suspendido) continue; list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:13px;color:var(--sub);font-weight:600;margin-top:10px">📅 ${d.fecha} • 🕒 DE ${d.hora} A ${d.horaFin || '--'} HS</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`; } } }); }
+    if(orgId){ onValue(ref(db, `hubs/${orgId}`), async snap => { const h = snap.val() || {}; document.getElementById('hub-name').innerText = h.nombre || "..."; const list = document.getElementById('lista-eventos'); list.innerHTML = ""; for(let cid of (h.canchas || [])){ const eSnap = await get(ref(db, `eventos/${cid}`)); if(eSnap.exists()){ const d = eSnap.val(); if(d.suspendido) continue; list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'Gral'}</span></div><div style="font-size:13px;color:var(--sub);font-weight:600;margin-top:10px">📅 ${d.fecha} • 🕒 ${d.hora} A ${d.horaFin || '--'}</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`; } } }); }
 </script>
 </body>
 </html>

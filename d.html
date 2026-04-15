@@ -6,7 +6,7 @@
     <title>Panel Organizador - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
@@ -22,17 +22,17 @@
         .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 10px; padding: 20px; }
         .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 3px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
         .btn-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-dash { border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-dash { border: none; padding: 12px; border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; }
         .btn-config { background: #f2f2f7; color: var(--text); }
         .btn-players { background: #eef6ff; color: var(--primary); }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; text-transform: uppercase; }
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; background: #f8f9fb; padding: 12px; border-radius: 18px; }
         .report-item { background: white; padding: 10px; border-radius: 12px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .report-item span { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; }
-        .report-item b { font-size: 14px; font-weight: 900; }
+        .report-item span { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; }
+        .report-item b { font-size: 13px; font-weight: 900; }
         .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #efeff4; }
         .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; cursor: pointer; }
-        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: #FF9500; }
+        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .footer-brand { margin-top: 50px; text-align: center; padding: 30px 20px; border-top: 1px solid rgba(0,0,0,0.05); }
         .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
@@ -82,7 +82,7 @@
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-                <div><label>Hora Fin</label><input id="ed-hora-fin" class="input-std" type="time"></div>
+                <div><label>Hora Fin (CRÍTICO)</label><input id="ed-hora-fin" class="input-std" type="time"></div>
             </div>
             <label>Tipo</label><select id="ed-freq" class="input-std" onchange="toggleRecurrencia()"><option value="NONE">Única vez</option><option value="WEEKLY">Semanal</option></select>
             <div id="box-recurrencia" class="hidden"><div class="days-grid">
@@ -100,6 +100,7 @@
             </div>
             <label>Alias MP</label><input id="ed-alias" class="input-std">
             <label>WhatsApp (549...)</label><input id="ed-celu" class="input-std">
+            <label>Estado</label><select id="ed-status" class="input-std"><option value="activo">Activa</option><option value="suspendido">Suspendida</option></select>
             <button class="btn-full" onclick="guardarConfig()" style="margin-top:20px">💾 Guardar Cambios</button>
             <button class="btn-full" onclick="cerrarModals()" style="background:#f2f2f7; color:var(--text); margin-top:10px">Cancelar</button>
         </div>
@@ -109,7 +110,7 @@
         <div class="modal-content">
             <h2 id="players-title" style="margin:0 0 15px 0; letter-spacing:-1px;">Jugadores</h2>
             <div class="report-grid">
-                <div class="report-item"><span>Total</span><b id="st-total">0</b></div>
+                <div class="report-item"><span>Total Cupo</span><b id="st-total">0</b></div>
                 <div class="report-item"><span>Confirmados</span><b id="st-pag" style="color:var(--success)">0</b></div>
                 <div class="report-item"><span>Pendientes</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="report-item"><span>Libres</span><b id="st-lib" style="color:var(--primary)">0</b></div>
@@ -167,8 +168,9 @@
                 const s = await get(ref(db, 'eventos/'+id));
                 if(s.exists()){
                     const d = s.val(); const ico = d.suspendido ? '🚫' : '🎾';
+                    const confirmados = (d.inscriptos || []).filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha').length;
                     const card = document.createElement('div'); card.className = "cancha-card";
-                    card.innerHTML = `<div style="display:flex;align-items:center"><b>${ico} ${d.organiza}</b><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:11px;color:var(--sub);margin-top:5px">${d.fecha} • ${d.hora} HS • ${(d.inscriptos||[]).length}/${d.cupo}</div><div class="btn-box"><button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button><button class="btn-dash btn-players" onclick="abrirJugadores('${id}')">👥 Jugadores</button></div>`;
+                    card.innerHTML = `<div style="display:flex;align-items:center"><b>🎾 ${d.organiza}</b><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:11px;color:var(--sub);margin-top:5px">${d.fecha} • ${d.hora} HS • ${confirmados}/${d.cupo}</div><div class="btn-box"><button class="btn-dash btn-config" onclick="abrirConfig('${id}')">⚙️ Config</button><button class="btn-dash btn-players" onclick="abrirJugadores('${id}')">👥 Jugadores</button></div>`;
                     list.appendChild(card);
                 }
             }
@@ -181,13 +183,16 @@
         const pag = ins.filter(p => p.estado === 'pagado').length;
         const can = ins.filter(p => p.estado === 'paga-en-la-cancha').length;
         const pen = ins.filter(p => p.estado === 'pendiente').length;
+        
+        const confirmados = pag + can;
         document.getElementById('st-total').innerText = cEv.cupo || 0;
-        document.getElementById('st-pag').innerText = pag + can;
+        document.getElementById('st-pag').innerText = confirmados;
         document.getElementById('st-pen').innerText = pen;
-        document.getElementById('st-lib').innerText = Math.max(0, (cEv.cupo || 0) - (pag + can + pen));
+        document.getElementById('st-lib').innerText = Math.max(0, (cEv.cupo || 0) - confirmados);
+        
         const list = document.getElementById('players-list'); list.innerHTML = "";
         ins.forEach((p, idx) => {
-            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700; font-size:13px">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado === 'paga-en-la-cancha' ? 'CANCHA' : p.estado}</button><button onclick="borrarP(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer">✕</button></div>`;
+            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700; font-size:13px">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado === 'paga-en-la-cancha' ? 'PAGA EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer">✕</button></div>`;
         });
         document.getElementById('modal-jugadores').classList.remove('hidden');
     };
@@ -199,7 +204,6 @@
     };
 
     window.borrarP = (i) => { if(confirm("¿Borrar?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
-
     window.toggleRecurrencia = () => { document.getElementById('box-recurrencia').className = document.getElementById('ed-freq').value === 'WEEKLY' ? '' : 'hidden'; };
     
     window.abrirConfig = async id => {

@@ -10,11 +10,9 @@
         * { box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
-        /* LOGIN */
         #view-login { display: flex; height: 100vh; align-items: center; justify-content: center; background: #000; }
         .login-card { background: white; padding: 40px; border-radius: 28px; width: 350px; text-align: center; box-shadow: var(--shadow); }
 
-        /* DASHBOARD */
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
         
@@ -40,8 +38,8 @@
         .input-std:focus { border-color: var(--primary); }
         label { display: block; font-size: 11px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; font-size: 14px; }
-        .btn-manage { background: #f2f2f7; color: var(--text); border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; }
-        .cancha-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fb; padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; }
+        .btn-manage { background: #f2f2f7; color: var(--text); border: none; padding: 10px 18px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; }
+        .cancha-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fb; padding: 10px 15px; border-radius: 12px; margin-bottom: 8px; }
 
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; width: 95%; max-width: 480px; padding: 30px; border-radius: 32px; max-height: 90vh; overflow-y: auto; }
@@ -52,7 +50,7 @@
 
 <div id="view-login">
     <div class="login-card">
-        <h1>Master Hub</h1>
+        <h1 style="letter-spacing:-2px">Master Hub</h1>
         <input type="email" id="log-email" class="input-std" placeholder="Email Admin" style="margin-bottom:10px;">
         <input type="password" id="log-pass" class="input-std" placeholder="Contraseña" style="margin-bottom:20px;">
         <button class="btn-blue" onclick="handleLogin()">INGRESAR AL SISTEMA</button>
@@ -72,9 +70,9 @@
         </div>
 
         <div class="card-new">
-            <h3 style="margin-top:0">🚀 Alta de Nuevo Organizador</h3>
+            <h3 style="margin-top:0">🚀 Registrar Nuevo Organizador</h3>
             <div class="grid-2">
-                <input id="new-id" class="input-std" placeholder="ID (ej: club-sur)">
+                <input id="new-id" class="input-std" placeholder="ID (ej: club-norte)">
                 <input id="new-name" class="input-std" placeholder="Nombre Fantasía">
             </div>
             <div class="grid-2">
@@ -132,7 +130,7 @@
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
 
-    const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
   authDomain: "padelapp-e72af.firebaseapp.com",
   databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
@@ -179,8 +177,6 @@
                 const fSnap = await get(ref(db, `facturacion/${id}/cuenta`));
                 const f = fSnap.val() || { consumoActual: 0 };
                 totalFees += (f.consumoActual || 0);
-
-                // Lógica de etiqueta de Trial
                 const isTrial = f.fechaFinPrueba && new Date(f.fechaFinPrueba + "T23:59:59") > hoy;
 
                 const item = document.createElement('div');
@@ -188,34 +184,29 @@
                 
                 let canchasHtml = "";
                 (h.canchas || []).forEach(cid => {
-                    canchasHtml += `
-                        <div class="cancha-row">
-                            <span style="font-size:12px; font-weight:700;">Court ID: ${cid}</span>
-                            <a href="v.html?id=${cid}&org=${id}" target="_blank" class="btn-manage">VER CANCHA ➔</a>
-                        </div>`;
+                    canchasHtml += `<div class="cancha-row"><span>ID: ${cid}</span><a href="v.html?id=${cid}&org=${id}" target="_blank" class="btn-manage">VER CANCHA ➔</a></div>`;
                 });
 
                 item.innerHTML = `
                     <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
                         <div>
-                            <b style="text-transform:uppercase; font-size:16px;">${h.nombre || id}</b>
+                            <b style="text-transform:uppercase;">${h.nombre || id}</b>
                             ${f.cuentaSuspendida ? '<span class="tag-status tag-suspended">Suspendido</span>' : isTrial ? '<span class="tag-status tag-trial">En Prueba</span>' : '<span class="tag-status tag-ok">Activo</span>'}
-                            <div style="font-size:12px; color:var(--sub); margin-top:5px;">
-                                Deuda: <b>$${(f.consumoActual || 0).toLocaleString()}</b> | Vence: ${f.fechaFinCiclo || '-'}
-                            </div>
+                            <div style="font-size:11px; color:var(--sub); margin-top:4px;">Deuda: $${(f.consumoActual || 0).toLocaleString()} | Vence: ${f.fechaFinCiclo || '-'}</div>
                         </div>
                         <div style="color:var(--sub)">▾</div>
                     </div>
                     <div class="accordion-content">
-                        <div style="display:flex; gap:10px; margin:15px 0;">
-                            <button class="btn-manage" style="background:var(--primary); color:white;" onclick="abrirFinanzas('${id}')">⚙️ GESTIÓN FINANCIERA</button>
+                        <div style="display:flex; gap:8px; margin:15px 0;">
+                            <button class="btn-manage" style="background:var(--primary); color:white;" onclick="abrirFinanzas('${id}')">⚙️ FINANZAS</button>
                             <a href="v.html?org=${id}" target="_blank" class="btn-manage">CARTELERA</a>
                             <a href="d.html?org=${id}" target="_blank" class="btn-manage">DASHBOARD</a>
+                            <button class="btn-manage" style="background:#fff2f2; color:var(--danger); margin-left:auto;" onclick="eliminarHub('${id}')">🗑️ ELIMINAR</button>
                         </div>
-                        <label>URL Corta de Cartelera</label>
-                        <input class="input-std" value="${h.urlCorta || ''}" onchange="guardarUrl('${id}', this.value)" placeholder="bit.ly/tu-club">
-                        <label>Canchas del Hub:</label>
-                        ${canchasHtml || '<p style="font-size:12px; color:#ccc;">No hay canchas vinculadas.</p>'}
+                        <label>URL Cartelera</label>
+                        <input class="input-std" value="${h.urlCorta || ''}" onchange="guardarUrl('${id}', this.value)">
+                        <label>Canchas vinculadas:</label>
+                        ${canchasHtml || '<p style="font-size:11px; color:#ccc;">Sin canchas.</p>'}
                     </div>
                 `;
                 list.appendChild(item);
@@ -224,13 +215,23 @@
         });
     }
 
+    window.eliminarHub = async (id) => {
+        if(!confirm("⚠️ ¿Eliminar este club?\n\nSe archivará su historial pero ya no aparecerá en la lista activa.")) return;
+        const snap = await get(ref(db, `hubs/${id}`));
+        if (snap.val()) {
+            await set(ref(db, `archivo_hubs/${id}`), { ...snap.val(), fechaBaja: new Date().toISOString() });
+            await set(ref(db, `hubs/${id}`), null);
+            alert("Club archivado.");
+        }
+    };
+
     window.calcularFechasAutomaticas = () => {
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
         if (dias > 0) {
             const hoy = new Date();
-            const fPrueba = new Date(); fPrueba.setDate(hoy.getDate() + dias);
-            const fCiclo = new Date(fPrueba); fCiclo.setDate(fCiclo.getDate() + 30);
-            document.getElementById('mod-ciclo').value = fCiclo.toISOString().split('T')[0];
+            const fP = new Date(); fP.setDate(hoy.getDate() + dias);
+            const fC = new Date(fP); fC.setDate(fC.getDate() + 30);
+            document.getElementById('mod-ciclo').value = fC.toISOString().split('T')[0];
         }
     };
 
@@ -245,14 +246,12 @@
         document.getElementById('mod-cancha').value = f.costoCancha;
         document.getElementById('mod-ciclo').value = f.fechaFinCiclo || "";
         document.getElementById('mod-suspendido').checked = f.cuentaSuspendida || false;
-        document.getElementById('mod-prueba-dias').value = ""; // Limpiar trial
         document.getElementById('modal-finance').classList.remove('hidden');
     };
 
     window.guardarFinanzas = async () => {
         const id = document.getElementById('modal-org-id').value;
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
-        
         let upds = {
             costoAbono: parseInt(document.getElementById('mod-abono').value),
             costoCancha: parseInt(document.getElementById('mod-cancha').value),
@@ -260,15 +259,13 @@
             limiteCredito: parseInt(document.getElementById('mod-limite').value),
             cuentaSuspendida: document.getElementById('mod-suspendido').checked
         };
-
         if (dias > 0) {
             const fP = new Date(); fP.setDate(fP.getDate() + dias);
             upds.fechaFinPrueba = fP.toISOString().split('T')[0];
             upds.abonoCobrado = false;
         }
-
         await update(ref(db, `facturacion/${id}/cuenta`), upds);
-        alert("Configuración Guardada."); cerrarModal();
+        alert("Guardado."); cerrarModal();
     };
 
     window.altaAutomatizada = async () => {
@@ -278,28 +275,28 @@
             email: document.getElementById('new-email').value.trim(),
             password: document.getElementById('new-pass').value.trim()
         };
-        if(!data.hubId || data.password.length < 6) return alert("Datos incompletos.");
+        if(!data.hubId || data.password.length < 6) return alert("Datos inválidos.");
         const btn = document.getElementById('btn-crear');
-        btn.innerText = "⏳ Creando en Google Cloud..."; btn.disabled = true;
+        btn.innerText = "⏳ Creando..."; btn.disabled = true;
         try {
             await crearOrganizador(data);
-            alert("¡Éxito! Hub creado y activo.");
+            alert("¡Éxito! Hub activado.");
             location.reload();
-        } catch (e) { alert("Error: " + e.message); btn.disabled = false; btn.innerText = "CREAR CUENTA Y ACTIVAR ROBOT"; }
+        } catch (e) { alert("Error: " + e.message); btn.disabled = false; btn.innerText = "CREAR CUENTA"; }
     };
 
     window.confirmarPago = async () => {
         const id = document.getElementById('modal-org-id').value;
-        if(!confirm("¿Resetear deuda y renovar 30 días?")) return;
+        if(!confirm("¿Resetear deuda y renovar ciclo?")) return;
         const fSnap = await get(ref(db, `facturacion/${id}/cuenta`));
         const f = fSnap.val();
         let hoy = new Date();
-        let nuevaFecha = new Date(f.fechaFinCiclo || hoy);
-        if(nuevaFecha < hoy) nuevaFecha = hoy;
-        nuevaFecha.setDate(nuevaFecha.getDate() + 30);
-        await update(ref(db, `facturacion/${id}/cuenta`), { consumoActual: 0, fechaFinCiclo: nuevaFecha.toISOString().split('T')[0] });
+        let nueva = new Date(f.fechaFinCiclo || hoy);
+        if(nueva < hoy) nueva = hoy;
+        nueva.setDate(nueva.getDate() + 30);
+        await update(ref(db, `facturacion/${id}/cuenta`), { consumoActual: 0, fechaFinCiclo: nueva.toISOString().split('T')[0] });
         await push(ref(db, `facturacion/${id}/historial`), { fecha: hoy.toISOString(), monto: f.consumoActual, tipo: "PAGO" });
-        alert("Pago procesado."); cerrarModal();
+        alert("Pago registrado."); cerrarModal();
     };
 
     window.guardarUrl = (id, val) => update(ref(db, `hubs/${id}`), { urlCorta: val });

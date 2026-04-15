@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Hub Pro v6 - SGCA</title>
+    <title>Master Hub Pro - SGCA</title>
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 10px 30px rgba(0,0,0,0.06); --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ffcc00; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.4; }
         .container { max-width: 850px; margin: auto; }
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; }
         
-        /* ACORDEON */
         .accordion-item { background: white; border-radius: 20px; margin-bottom: 12px; box-shadow: var(--shadow); overflow: hidden; border: 1.5px solid #f2f2f7; }
         .accordion-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .accordion-content { padding: 0 20px 20px 20px; display: none; border-top: 1px solid #f2f2f7; background: #fff; }
@@ -24,7 +23,7 @@
         .tag-trial { background: var(--warning); color: black; }
 
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 15px 0 6px 6px; }
-        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #e5e5e7; font-size: 14px; outline: none; background: #fff; }
+        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #e5e5e7; font-size: 14px; outline: none; background: #fff; margin-bottom: 10px; }
         
         .btn-blue { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-manage { background: #eef6ff; color: var(--primary); border: none; padding: 8px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; }
@@ -33,7 +32,8 @@
         .cancha-row span { font-size: 11px; font-weight: 700; color: var(--sub); }
         .cancha-row a { font-size: 11px; font-weight: 800; color: var(--primary); text-decoration: none; }
         
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 450px; padding: 25px; border-radius: 24px; max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
@@ -42,14 +42,19 @@
 <div class="container">
     <div id="view-login">
         <div style="background:white; padding:30px; border-radius:24px; max-width:400px; margin:100px auto; text-align:center; box-shadow:var(--shadow);">
-            <h1>Master Admin</h1>
-            <input type="password" id="master-pass" class="input-std" placeholder="Clave Maestra" style="text-align:center; margin-bottom:15px;">
-            <button class="btn-blue" onclick="login()">Entrar</button>
+            <h1 style="margin-top: 0;">Master Admin</h1>
+            <p style="font-size: 12px; color: var(--sub); margin-bottom: 20px;">Acceso seguro cifrado end-to-end</p>
+            <input type="email" id="master-email" class="input-std" placeholder="Correo electrónico" style="text-align:center;">
+            <input type="password" id="master-pass" class="input-std" placeholder="Contraseña" style="text-align:center; margin-bottom:20px;">
+            <button id="btn-login" class="btn-blue" onclick="login()">Ingresar al Sistema</button>
         </div>
     </div>
 
     <div id="view-panel" class="hidden">
-        <div class="header"><h1>Centro de Mandos Pro</h1></div>
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -1px;">Centro de Mandos Pro</h1>
+            <button onclick="cerrarSesion()" style="background: none; border: none; font-size: 11px; font-weight: 800; color: var(--sub); cursor: pointer;">CERRAR SESIÓN</button>
+        </header>
         <div id="org-list"></div>
         <div style="margin-top:40px; text-align:center;">
             <button class="btn-manage" style="background:var(--text); color:white; padding:15px 30px;" onclick="nuevoOrgPrompt()">+ AGREGAR NUEVO ORGANIZADOR</button>
@@ -57,11 +62,11 @@
     </div>
 
     <div id="modal-finance" class="modal hidden">
-        <div style="background:white; padding:25px; border-radius:24px; width:95%; max-width:450px; max-height: 90vh; overflow-y: auto;">
-            <h2 id="modal-title" style="margin:0; font-size: 22px;">Configuración</h2>
+        <div class="modal-content">
+            <h2 id="modal-title" style="margin:0 0 20px 0; font-size: 22px;">Configuración</h2>
             <input type="hidden" id="modal-org-id">
             
-            <div style="background: #fff2f2; padding: 15px; border-radius: 15px; margin: 20px 0; border: 1.5px solid #ffdbdb; display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: #fff2f2; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1.5px solid #ffdbdb; display: flex; justify-content: space-between; align-items: center;">
                 <div><b style="color:var(--danger); font-size:14px;">SUSPENDER CLIENTE</b><p style="margin:0; font-size:11px; color:#a35e5e;">Bloquea gestión e inscripciones.</p></div>
                 <input type="checkbox" id="mod-suspendido" style="transform: scale(1.5);">
             </div>
@@ -100,17 +105,51 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get, update, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    // IMPORTANTE: Incorporamos el módulo de Autenticación
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
     const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    window.login = () => {
-        if(document.getElementById('master-pass').value === "MB2026") {
+    // Mantenemos la sesión activa si recargás la página
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
             document.getElementById('view-login').classList.add('hidden');
             document.getElementById('view-panel').classList.remove('hidden');
             cargarLista();
         }
+    });
+
+    window.login = () => {
+        const email = document.getElementById('master-email').value.trim();
+        const pass = document.getElementById('master-pass').value;
+        const btn = document.getElementById('btn-login');
+
+        if (!email || !pass) return alert("Completá ambos campos");
+
+        btn.innerText = "Autenticando...";
+        btn.disabled = true;
+
+        signInWithEmailAndPassword(auth, email, pass)
+            .then((userCredential) => {
+                // Logueo exitoso
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('view-panel').classList.remove('hidden');
+                cargarLista();
+            })
+            .catch((error) => {
+                alert("Error de acceso. Verificá tu correo y contraseña.");
+                btn.innerText = "Ingresar al Sistema";
+                btn.disabled = false;
+            });
+    };
+
+    window.cerrarSesion = () => {
+        signOut(auth).then(() => {
+            location.reload();
+        });
     };
 
     function cargarLista() {
@@ -189,7 +228,7 @@
 
     window.abrirFinanzas = async (id) => {
         const s = await get(ref(db, 'facturacion/' + id + '/cuenta'));
-        const f = s.val() || { consumoActual: 0, costoAbono: 25000, costoCancha: 7000, cuentaSuspendida: false };
+        const f = s.val() || { consumoActual: 0, costoAbono: 25000, costoCancha: 7000, cuentaSuspendida: false, limiteCredito: 30000 };
         document.getElementById('modal-org-id').value = id;
         document.getElementById('modal-title').innerText = "Finanzas: " + id;
         document.getElementById('txt-deuda-modal').innerText = "$" + (f.consumoActual || 0).toLocaleString();
@@ -221,7 +260,6 @@
         const id = document.getElementById('modal-org-id').value;
         const dias = parseInt(document.getElementById('mod-prueba-dias').value) || 0;
         let updates = {
-            consumoActual: parseInt(document.getElementById('mod-consumo').value),
             costoAbono: parseInt(document.getElementById('mod-abono').value),
             costoCancha: parseInt(document.getElementById('mod-cancha').value),
             fechaFinCiclo: document.getElementById('mod-ciclo').value,
@@ -238,7 +276,7 @@
     };
 
     window.nuevoOrgPrompt = async () => {
-        const id = prompt("ID del Hub:"); if(!id) return;
+        const id = prompt("ID del Hub (minúsculas, sin espacios):"); if(!id) return;
         const nom = prompt("Nombre Comercial:"); if(!nom) return;
         await set(ref(db, 'hubs/' + id), { nombre: nom, canchas: [] });
     };

@@ -3,29 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canchas Abiertas - PadelApp</title>
+    <title>Cartelera - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 8px 20px rgba(0,0,0,0.05); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
         header { background: #fff; padding: 25px; text-align: center; border-bottom: 1px solid #e5e5e7; }
         .container { max-width: 500px; margin: auto; padding: 20px 15px; }
-        .event-card { background: white; border-radius: 24px; padding: 22px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .event-card { background: white; border-radius: 24px; padding: 22px; margin-bottom: 15px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--sub); background: rgba(134, 134, 139, 0.12); padding: 4px 10px; border-radius: 8px; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
-        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; }
-        .footer-brand { margin-top: 30px; text-align: center; padding: 20px; }
+        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; letter-spacing: 1px; }
+        .footer-brand { margin-top: 30px; text-align: center; }
         .btn-footer-wa { background: #FF9500; color: white; text-decoration: none; padding: 12px 25px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
     </style>
 </head>
 <body>
-    <header><h1 id="hub-name" style="margin:0;font-weight:800">Cargando...</h1></header>
-    <div class="container">
-        <div id="lista-eventos"></div>
-        <div class="footer-brand">
-            <p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:2px">DESARROLLADO POR MARIANO BLUMENFELD</p>
-            <a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a>
-        </div>
-    </div>
+    <header><h1 id="hub-name" style="margin:0; font-weight:800">Cargando...</h1></header>
+    <div class="container"><div id="lista-eventos"></div><div class="footer-brand"><p style="font-size:10px;font-weight:800;color:var(--sub);letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p><a href="https://wa.me/5491166463800" class="btn-footer-wa">🚀 ¡QUIERO ORGANIZAR MI CANCHA!</a></div></div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -41,7 +35,7 @@
                 const eSnap = await get(ref(db, `eventos/${cid}`));
                 if(eSnap.exists()){
                     const d = eSnap.val(); if(d.suspendido) continue;
-                    list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="margin-top:10px;font-size:13px;color:var(--sub);font-weight:600">📅 ${d.fecha} • ⏰ ${d.hora} HS • 📍 ${d.lugar}</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`;
+                    list.innerHTML += `<div class="event-card"><div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'General'}</span></div><div style="font-size:13px;color:var(--sub);font-weight:600;margin-top:10px">📅 ${d.fecha} • 🕒 DE ${d.hora} A ${d.horaFin || '--'} HS</div><a href="i.html?id=${cid}&org=${orgId}" class="btn-join">ANOTARME</a></div>`;
                 }
             }
         });

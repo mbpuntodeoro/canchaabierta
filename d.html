@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Pro - PadelApp</title>
+    <title>Panel Organizador - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
@@ -16,7 +16,6 @@
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 5px; }
         .fin-box b { font-size: 16px; font-weight: 900; }
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; }
-        .cancha-card.disabled { opacity: 0.5; filter: grayscale(1); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 8px; }
@@ -29,7 +28,7 @@
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; margin-bottom: 15px; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; }
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
@@ -40,7 +39,7 @@
     <div class="container">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
             <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
-            <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">ACTUALIZAR</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
         <div class="hero">
             <div class="fin-grid">
@@ -48,7 +47,7 @@
                 <div class="fin-box"><span>Crédito Disp</span><b id="txt-lim">$0</b></div>
             </div>
         </div>
-        <button class="btn-full" onclick="window.copiarLink()">🔗 COPIAR LINK CARTELERA</button>
+        <button class="btn-full" id="btn-share-link">🔗 COPIAR LINK CARTELERA</button>
         <div id="canchas-list">Cargando...</div>
     </div>
 
@@ -76,7 +75,7 @@
             <label>Estado</label><select id="ed-status" class="input-std"><option value="activa">✅ ACTIVA</option><option value="deshabilitada">🚫 DESHABILITADA</option></select>
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
             <label>Responsable</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp (54911...)</label><input id="ed-celu" class="input-std">
+            <label>WhatsApp Org (54911...)</label><input id="ed-celu" class="input-std">
             <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <label>📍 Lugar</label><input id="ed-lug" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
@@ -89,7 +88,7 @@
             </div>
             <label>💰 Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
             <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
-            <label>🔄 Recurrencia</label>
+            <label>🔄 Recurrencia Semanal</label>
             <div class="days-grid">
                 <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
                 <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
@@ -142,7 +141,7 @@
                 card.innerHTML = `<div style="display:flex; justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Gral'}</span></div>
                     <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
                     <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
-                    <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${isDis ? '• 🚫' : ''}</div>
+                    <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${isDis ? '| 🚫' : ''}</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px">
                         <button class="btn-dash btn-config" onclick="window.abrirConfig('${d.id}')">⚙️ CONFIG</button>
                         <button class="btn-dash btn-players" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
@@ -150,6 +149,11 @@
                 list.appendChild(card);
             });
         });
+
+        document.getElementById('btn-share-link').onclick = () => {
+            const url = window.location.origin + window.location.pathname.replace('d.html', 'v.html') + "?org=" + orgId;
+            navigator.clipboard.writeText(url).then(() => alert("¡Link de Cartelera copiado!"));
+        };
     }
 
     window.abrirJugadores = async (id) => {
@@ -167,10 +171,11 @@
 
         const list = document.getElementById('players-list'); list.innerHTML = ins.length ? "" : "Sin inscriptos";
         ins.forEach((p, idx) => {
+            const oIdx = d.inscriptos.indexOf(p);
             const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
             list.innerHTML += `<div class="player-row"><span class="player-name"><b>${p.nombre}</b></span>
-                <button class="btn-status ${p.estado}" onclick="window.togglePago(${idx})">${label}</button>
-                <button onclick="window.borrarP(${idx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer; font-size:18px">✕</button></div>`;
+                <button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${label}</button>
+                <button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer; font-size:18px; margin-left:10px">✕</button></div>`;
         });
         document.getElementById('modal-players').classList.remove('hidden');
     };
@@ -214,7 +219,7 @@
         const id = document.getElementById('ed-cancha-id').value;
         const days = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) days.push(d); });
         const rrule = days.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${days.join(',')}` : "RRULE:FREQ=NONE";
-        const s = await get(ref(db, 'eventos/'+id)); const d = s.val() || {};
+        const s = await get(ref(db, 'eventos/'+id)); const d = s.val() || { inscriptos: [] };
 
         const upd = { 
             ...d,
@@ -234,13 +239,9 @@
         };
 
         await set(ref(db, 'eventos/' + id), upd);
-        alert("¡Guardado!"); location.reload();
+        alert("¡Guardado!"); window.cerrarModals();
     };
 
-    window.copiarLink = () => {
-        const url = window.location.origin + window.location.pathname.replace('d.html', 'v.html') + "?org=" + orgId;
-        navigator.clipboard.writeText(url).then(() => alert("Copiado"));
-    };
     window.cerrarModals = () => document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
 </script>
 </body>

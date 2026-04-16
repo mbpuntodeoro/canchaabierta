@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master - PadelApp</title>
+    <title>Master Hub - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; }
@@ -18,7 +18,7 @@
         .accordion-item.active .accordion-content { display: block; }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; font-family: inherit; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; }
-        .btn-manage { background: #eee; color: #333; border: none; padding: 10px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; }
+        .btn-manage { background: #eee; color: #333; border: none; padding: 10px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; display: inline-block; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 32px; max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
@@ -26,15 +26,15 @@
     </style>
 </head>
 <body>
-    <header><h2>Master PadelApp</h2><button onclick="location.reload()" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer">SALIR</button></header>
+    <header><h2>Master PadelApp</h2><button onclick="location.reload()" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer">REFRESCAR</button></header>
     <div class="container">
         <div class="card-new">
             <h3>🚀 Alta de Organizador</h3>
-            <input id="new-id" class="input-std" placeholder="ID (ej: club-padel)">
-            <input id="new-name" class="input-std" placeholder="Nombre Comercial">
-            <button class="btn-blue" onclick="crearHub()">DAR DE ALTA</button>
+            <input id="new-id" class="input-std" placeholder="ID (ej: club-sur)">
+            <input id="new-name" class="input-std" placeholder="Nombre Fantasía">
+            <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
         </div>
-        <div id="org-list">Cargando clubes...</div>
+        <div id="org-list">Cargando clubes activos...</div>
     </div>
 
     <div id="modal-edit" class="modal hidden">
@@ -46,19 +46,17 @@
                 <div><label>Contacto</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            <label>URL Acortada (ID)</label><input id="mod-url" class="input-std">
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Deuda Actual ($)</label><input id="mod-deu" class="input-std" type="number"></div>
                 <div><label>Límite Crédito ($)</label><input id="mod-lim" class="input-std" type="number"></div>
             </div>
-            <label>Vencimiento Plan</label><input id="mod-venc" class="input-std" type="date">
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
                 <b style="color:var(--danger); font-size:12px">SUSPENDER ACCESO</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.5)">
             </div>
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODO</button>
-            <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
+            <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
         </div>
     </div>
 
@@ -75,8 +73,8 @@
             const item = document.createElement('div'); item.className = "accordion-item";
             item.innerHTML = `<div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
                 <b>${f.nombreOrg || id}</b><span>▾</span></div><div class="accordion-content">
-                <button class="btn-manage" onclick="abrirPerfil('${id}')">⚙️ EDITAR PERFIL/FINANZAS</button>
-                <a href="d.html?org=${id}" target="_blank" class="btn-manage" style="margin-left:5px">DASHBOARD</a></div>`;
+                <button class="btn-manage" onclick="abrirPerfil('${id}')">⚙️ FINANZAS / PERFIL</button>
+                <a href="d.html?org=${id}" target="_blank" class="btn-manage">ABRIR PANEL</a></div>`;
             list.appendChild(item);
         }
     });
@@ -85,8 +83,8 @@
         const id = document.getElementById('new-id').value.trim(); const nom = document.getElementById('new-name').value.trim();
         if(!id || !nom) return alert("Faltan datos");
         await set(ref(db, 'hubs/'+id), { nombre: nom, canchas: [] });
-        await set(ref(db, `facturacion/${id}/cuenta`), { nombreOrg: nom, consumoActual: 0, limiteCredito: 50000, urlAcortada: id });
-        alert("Club creado!"); location.reload();
+        await set(ref(db, `facturacion/${id}/cuenta`), { nombreOrg: nom, consumoActual: 0, limiteCredito: 50000 });
+        alert("Club Creado"); location.reload();
     };
 
     window.abrirPerfil = async id => {
@@ -95,19 +93,17 @@
         document.getElementById('mod-nom').value = f.nombreOrg || "";
         document.getElementById('mod-con').value = f.nombreContacto || "";
         document.getElementById('mod-cel').value = f.celularContacto || "";
-        document.getElementById('mod-url').value = f.urlAcortada || id;
         document.getElementById('mod-deu').value = f.consumoActual || 0;
         document.getElementById('mod-lim').value = f.limiteCredito || 0;
-        document.getElementById('mod-venc').value = f.fechaFinCiclo || "";
         document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
         document.getElementById('modal-edit').classList.remove('hidden');
     };
 
     window.guardarPerfil = async () => {
         const id = document.getElementById('edit-id').value;
-        const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, urlAcortada: document.getElementById('mod-url').value, consumoActual: parseInt(document.getElementById('mod-deu').value), limiteCredito: parseInt(document.getElementById('mod-lim').value), fechaFinCiclo: document.getElementById('mod-venc').value, cuentaSuspendida: document.getElementById('mod-susp').checked };
+        const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, consumoActual: parseInt(document.getElementById('mod-deu').value), limiteCredito: parseInt(document.getElementById('mod-lim').value), cuentaSuspendida: document.getElementById('mod-susp').checked };
         await update(ref(db, `facturacion/${id}/cuenta`), upd);
-        alert("Guardado"); cerrarModal();
+        alert("Perfil Actualizado"); cerrarModal();
     };
     window.cerrarModal = () => document.getElementById('modal-edit').classList.add('hidden');
 </script>

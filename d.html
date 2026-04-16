@@ -46,7 +46,7 @@
 
         <button onclick="copiarLink()" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
 
-        <div id="canchas-list">Cargando canchas en tiempo real...</div>
+        <div id="canchas-list">Cargando canchas...</div>
 
         <button onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
 
@@ -61,12 +61,12 @@
             <h2 style="margin-top:0">👥 Jugadores</h2>
             <input type="hidden" id="pl-id">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>TOTAL</span><b id="st-total">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>CONF</span><b id="st-pag" style="color:var(--success)">0</b></div>
+                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>TOTAL CUPO</span><b id="st-total">0</b></div>
+                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>CONFIRMADOS</span><b id="st-pag" style="color:var(--success)">0</b></div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>PEND</span><b id="st-pen" style="color:var(--danger)">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>LIBRE</span><b id="st-lib" style="color:var(--primary)">0</b></div>
+                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>PENDIENTES</span><b id="st-pen" style="color:var(--danger)">0</b></div>
+                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>LIBRES</span><b id="st-lib" style="color:var(--primary)">0</b></div>
             </div>
             <div id="players-list"></div>
             <button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:18px; background:#000; color:white; border:none; margin-top:10px; cursor:pointer">CERRAR</button>
@@ -77,6 +77,13 @@
         <div class="modal-content">
             <h2 id="modal-title">⚙️ Configuración</h2>
             <input type="hidden" id="ed-id">
+            
+            <label>Tipo de Evento</label>
+            <select id="ed-tipo" class="input-std">
+                <option value="unico">Evento Único</option>
+                <option value="recurrente">Recurrente Semanal</option>
+            </select>
+
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
             <label>Organizador (Nombre)</label><input id="ed-owner" class="input-std">
             <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
@@ -84,14 +91,14 @@
             <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Fecha</label><input id="ed-fec" type="date" class="input-std"></div>
-                <div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
+                <div><label>Cupo Total</label><input id="ed-cup" type="number" class="input-std"></div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
                 <div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div>
             </div>
-            <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
-            <label>Alias MP</label><input id="ed-ali" class="input-std">
+            <label>Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
+            <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
             
             <button onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button>
             <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button>
@@ -103,7 +110,7 @@
     const db = firebase.database();
     const orgId = new URLSearchParams(window.location.search).get('org');
     let isNew = false;
-    let courtListeners = {}; // Para no duplicar escuchas
+    let courtListeners = {};
 
     function fmtFecha(f) {
         if(!f) return '--';
@@ -114,8 +121,6 @@
 
     function init() {
         if(!orgId) return;
-        
-        // Datos Financieros
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             const f = s.val() || {};
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
@@ -123,36 +128,26 @@
             document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
         });
 
-        // Escucha del HUB (Lista de IDs de canchas)
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             const listContainer = document.getElementById('canchas-list');
-            
-            // Limpiar visualmente si no hay nada
             if(ids.length === 0) listContainer.innerHTML = "No tienes canchas creadas.";
-
-            // Por cada ID en el Hub, creamos un contenedor y le ponemos un "oído" (listener)
             ids.forEach(id => {
                 if(!document.getElementById('card-'+id)) {
-                    const div = document.createElement('div');
-                    div.id = 'card-'+id;
+                    const div = document.createElement('div'); div.id = 'card-'+id;
                     listContainer.appendChild(div);
                 }
-                
-                // Si no estamos escuchando esta cancha todavía, activamos el listener real-time
                 if(!courtListeners[id]) {
                     courtListeners[id] = true;
                     db.ref('eventos/'+id).on('value', evS => {
-                        const d = evS.val();
-                        if(!d) return;
+                        const d = evS.val(); if(!d) return;
                         const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-                        const cardDiv = document.getElementById('card-'+id);
-                        cardDiv.innerHTML = `
+                        document.getElementById('card-'+id).innerHTML = `
                             <div class="cancha-card">
                                 <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
                                 <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
                                 <div class="info-row">📍 ${d.lugar || 'Sede no definida'}</div>
-                                <div class="info-row">👥 ${conf} / ${d.cupo} Confirmados</div>
+                                <div class="info-row">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
                                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                                     <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${id}')">⚙️ CONFIG</button>
                                     <button class="btn-dash" style="background:#000; color:#fff" onclick="abrirJugadores('${id}')">👥 JUGADORES</button>
@@ -168,6 +163,7 @@
         isNew = true;
         document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('ed-id').value = "";
+        document.getElementById('ed-tipo').value = "unico";
         document.getElementById('ed-org').value = "";
         document.getElementById('ed-owner').value = "";
         document.getElementById('ed-celu').value = "";
@@ -186,7 +182,9 @@
         isNew = false;
         document.getElementById('modal-title').innerText = "⚙️ Configuración";
         db.ref('eventos/'+id).once('value', s => {
-            const d = s.val(); document.getElementById('ed-id').value = id;
+            const d = s.val(); 
+            document.getElementById('ed-id').value = id;
+            document.getElementById('ed-tipo').value = d.tipo || "unico";
             document.getElementById('ed-org').value = d.organiza || "";
             document.getElementById('ed-owner').value = d.nombreOrganizador || "";
             document.getElementById('ed-celu').value = d.celuOrganizador || "";
@@ -205,6 +203,7 @@
     function guardarConfig() {
         let id = document.getElementById('ed-id').value;
         const upd = {
+            tipo: document.getElementById('ed-tipo').value,
             organiza: document.getElementById('ed-org').value,
             nombreOrganizador: document.getElementById('ed-owner').value,
             celuOrganizador: document.getElementById('ed-celu').value,
@@ -218,13 +217,10 @@
             alias: document.getElementById('ed-ali').value
         };
         if(isNew) {
-            const newRef = db.ref('eventos').push();
-            id = newRef.key;
-            upd.inscriptos = [];
+            const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = [];
             db.ref('eventos/'+id).set(upd).then(() => {
                 db.ref('hubs/'+orgId+'/canchas').once('value', s => {
-                    let canchas = s.val() || [];
-                    canchas.push(id);
+                    let canchas = s.val() || []; canchas.push(id);
                     db.ref('hubs/'+orgId+'/canchas').set(canchas);
                 });
             });
@@ -237,13 +233,13 @@
     function abrirJugadores(id) {
         document.getElementById('pl-id').value = id;
         db.ref('eventos/'+id).on('value', s => {
-            const d = s.val(); const ins = d.inscriptos || [];
+            const d = s.val(); if(!d) return;
+            const ins = d.inscriptos || [];
             const conf = ins.filter(p => p.estado !== 'pendiente').length;
             document.getElementById('st-pag').innerText = conf;
             document.getElementById('st-total').innerText = d.cupo;
             document.getElementById('st-pen').innerText = ins.length - conf;
-            document.getElementById('st-lib').innerText = d.cupo - conf;
-            
+            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
             const list = document.getElementById('players-list'); list.innerHTML = "";
             ins.forEach((p, idx) => {
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();

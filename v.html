@@ -1,139 +1,66 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartelera - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 8px 25px rgba(0,0,0,0.05); }
-        * { box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        
-        header { background: #fff; padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e5e7; position: sticky; top: 0; z-index: 100; }
-        header h1 { margin: 0; font-weight: 900; letter-spacing: -1.5px; font-size: 28px; }
-
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; }
+        header { background: #fff; padding: 25px; text-align: center; border-bottom: 1px solid #e5e5e7; }
         .container { max-width: 500px; margin: auto; padding: 20px 15px; }
-        
-        .event-card { background: white; border-radius: 28px; padding: 25px; margin-bottom: 15px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); }
-        
+        .event-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 8px; }
-        
-        .info-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--sub); margin-top: 12px; font-weight: 600; }
-        
-        .btn-join { 
-            background: var(--primary); 
-            color: white; 
-            text-decoration: none; 
-            display: block; 
-            text-align: center; 
-            padding: 20px; 
-            border-radius: 20px; 
-            font-weight: 900; 
-            margin-top: 25px; 
-            font-size: 16px;
-        }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--sub); }
-        .footer-brand { margin-top: 30px; text-align: center; opacity: 0.4; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+        .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); margin-top: 10px; font-weight: 600; }
+        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; }
+        .footer-personal { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
+        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; box-shadow: 0 5px 15px rgba(255,149,0,0.3); }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1 id="hub-name">PadelApp</h1>
-    </header>
-
+    <header><h1 id="hub-name" style="margin:0; font-weight:900">...</h1></header>
     <div class="container">
-        <div id="lista-eventos">
-            <div class="empty-state">Buscando canchas disponibles...</div>
+        <div id="lista-eventos"></div>
+        <div class="footer-personal">
+            <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
+            <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
         </div>
-        
-        <div class="footer-brand">DESARROLLADO POR MARIANO BLUMENFELD</div>
     </div>
-
 <script>
-    // Configuración idéntica a los otros archivos
-    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
     const db = firebase.database();
-    
     const orgId = new URLSearchParams(window.location.search).get('org');
-
-    // Función de fecha para que se vea: "Sábado 18/4 de 15 a 18 hs"
-    function fmtFechaHumana(f, h1, h2) {
+    
+    function fmtFecha(f) {
         if(!f) return '--';
-        const ds = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const [y, m, d] = f.split('-'); 
-        const dO = new Date(y, m - 1, d);
-        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} - ${h1} a ${h2 || '--'} hs`;
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const d = new Date(f + 'T00:00:00');
+        return dias[d.getDay()] + ' ' + f.split('-').reverse().slice(0,2).join('/');
     }
 
-    function cargarCartelera() {
-        if(!orgId) {
-            document.getElementById('hub-name').innerText = "Club no encontrado";
-            return;
-        }
-
-        // 1. Escuchamos el nombre del Club
-        db.ref('facturacion/' + orgId + '/cuenta').on('value', s => {
-            const f = s.val() || {};
-            document.getElementById('hub-name').innerText = (f.nombreOrg || orgId).toUpperCase();
-        });
-
-        // 2. Escuchamos las canchas del Club
-        db.ref('hubs/' + orgId).on('value', async snap => {
-            const h = snap.val() || {};
-            const container = document.getElementById('lista-eventos');
-            let canchasData = [];
-
-            const ids = h.canchas || [];
-            if(ids.length === 0) {
-                container.innerHTML = `<div class="empty-state"><h2>🎾</h2><p>No hay canchas publicadas.</p></div>`;
-                return;
-            }
-
-            // Traemos los detalles de cada cancha
-            for(let id of ids) {
-                const sEv = await db.ref('eventos/' + id).once('value');
-                if(sEv.exists()) {
-                    const d = sEv.val();
-                    // FILTRO: Solo si NO está deshabilitada
+    if(orgId){
+        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { document.getElementById('hub-name').innerText = s.val()?.nombreOrg?.toUpperCase() || orgId.toUpperCase(); });
+        db.ref('hubs/'+orgId).on('value', async snap => {
+            const list = document.getElementById('lista-eventos'); list.innerHTML = "";
+            const ids = snap.val()?.canchas || [];
+            for(let id of ids){
+                const eSnap = await db.ref('eventos/'+id).once('value');
+                if(eSnap.exists()) {
+                    const d = eSnap.val();
                     if(d.estado !== 'deshabilitada') {
-                        canchasData.push({ id, ...d });
+                        list.innerHTML += `<div class="event-card">
+                            <div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias}</span></div>
+                            <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                            <a href="i.html?id=${id}&org=${orgId}" class="btn-join">ANOTARME</a>
+                        </div>`;
                     }
                 }
             }
-
-            // Orden cronológico
-            canchasData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-
-            if(canchasData.length === 0) {
-                container.innerHTML = `<div class="empty-state"><h2>🎾</h2><p>No hay canchas disponibles por el momento.</p></div>`;
-                return;
-            }
-
-            // Dibujamos las tarjetas
-            container.innerHTML = "";
-            canchasData.forEach(d => {
-                container.innerHTML += `
-                    <div class="event-card">
-                        <div style="display:flex; align-items:center; justify-content:space-between">
-                            <h3 style="margin:0; font-size:20px; font-weight:800; letter-spacing:-0.5px">🎾 ${d.organiza}</h3>
-                            <span class="tag-cat">${d.categorias || 'Gral'}</span>
-                        </div>
-                        <div class="info-row">📅 <span>${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</span></div>
-                        <div class="info-row">📍 <span>${d.lugar || 'Sede a confirmar'}</span></div>
-                        <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME AHORA</a>
-                    </div>
-                `;
-            });
         });
     }
-
-    cargarCartelera();
 </script>
 </body>
 </html>

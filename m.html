@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; }
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
@@ -16,6 +16,10 @@
         .hub-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 20px; display: none; border-top: 1px solid #eee; background: #fafafa; }
         .hub-item.active .hub-content { display: block; }
+        .tag-status { font-size: 9px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
+        .st-trial { background: #eef6ff; color: var(--primary); }
+        .st-activo { background: #e8f9ee; color: var(--success); }
+        .st-susp { background: #fff2f2; color: var(--danger); }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; font-family: inherit; box-sizing: border-box; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #eee; padding: 10px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block;}
@@ -29,7 +33,7 @@
     <div class="container">
         <div class="card">
             <h3>🚀 Alta de Organizador</h3>
-            <input id="new-id" class="input-std" placeholder="ID Club (ej: smash)">
+            <input id="new-id" class="input-std" placeholder="ID Club (ej: smash-padel)">
             <input id="new-name" class="input-std" placeholder="Nombre Comercial">
             <button class="btn-blue" onclick="crearHub()">REGISTRAR</button>
         </div>
@@ -45,8 +49,11 @@
             <hr>
             <label>Días de Trial (Gratis)</label>
             <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30">
-            <p style="font-size: 11px; color: gray;">* Los días cuentan desde el momento en que guardas los cambios hoy.</p>
-            <button class="btn-blue" onclick="guardarPerfil()">ACTUALIZAR TRIAL Y PERFIL</button>
+            <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
+                <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
+                <input type="checkbox" id="mod-susp" style="transform:scale(1.5)">
+            </div>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
@@ -63,25 +70,19 @@
             for (let id in hubs) {
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
                 const f = fSnap.val() || {};
-                
-                // Cálculo de días restantes de trial
-                let trialMsj = "Sin Trial";
-                if(f.trialStartDate && f.trialDays) {
-                    const diff = Date.now() - f.trialStartDate;
-                    const daysPassed = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const remaining = f.trialDays - daysPassed;
-                    trialMsj = remaining > 0 ? `Trial: ${remaining} días rest.` : "Trial Vencido (Cobrando)";
+                let tagClass = "st-activo", tagText = "Activo";
+                if(f.cuentaSuspendida) { tagClass = "st-susp"; tagText = "Suspendido"; }
+                else if(f.trialStartDate && f.trialDays) {
+                    const remaining = f.trialDays - Math.floor((Date.now() - f.trialStartDate) / 86400000);
+                    if(remaining > 0) { tagClass = "st-trial"; tagText = `Trial: ${remaining}d`; }
                 }
-
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
-                            <span>${f.nombreOrg || id}</span> <span>▾</span>
+                            <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> <span>▾</span>
                         </div>
                         <div class="hub-content">
-                            <p style="font-size:13px; color:#555"><b>Estado:</b> ${trialMsj}</p>
-                            <p style="font-size:13px; color:#555"><b>Link Dash:</b> d.html?org=${id}</p>
-                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR PERFIL / TRIAL</button>
+                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ EDITAR TRIAL / PERFIL</button>
                             <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff">ABRIR DASHBOARD</a>
                         </div>
                     </div>`;
@@ -94,8 +95,8 @@
         const nom = document.getElementById('new-name').value.trim();
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, limiteCredito: 50000, trialDays: 0, trialStartDate: 0 });
-        alert("Creado!");
+        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, trialDays: 0, trialStartDate: 0, cuentaSuspendida: false });
+        alert("¡Creado!");
     }
 
     function abrirPerfil(id) {
@@ -105,6 +106,7 @@
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-cel').value = f.celularContacto || "";
             document.getElementById('mod-trial-days').value = f.trialDays || 0;
+            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -115,9 +117,10 @@
             nombreOrg: document.getElementById('mod-nom').value,
             celularContacto: document.getElementById('mod-cel').value,
             trialDays: parseInt(document.getElementById('mod-trial-days').value),
-            trialStartDate: Date.now() // Empieza a contar desde hoy
+            trialStartDate: Date.now(),
+            cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Trial actualizado"); cerrarModal(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
     }
 
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }

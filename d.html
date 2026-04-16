@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Organizador - PadelApp</title>
+    <title>Dashboard PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
@@ -11,86 +11,114 @@
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
         
-        /* HEADER Y HERO */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 5px; }
         .fin-box b { font-size: 16px; font-weight: 900; }
 
-        /* CANCHA CARD */
         .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; padding: 20px; box-shadow: var(--shadow); }
         .cancha-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
         
-        /* BOTONES */
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 8px; }
         .btn-config { background: #f2f2f7; color: var(--text); } 
         .btn-players { background: #000; color: #fff; }
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; margin-bottom: 20px; }
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; margin-bottom: 15px; }
 
-        /* MODALES */
+        .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
+        .day-check { display: none; }
+        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
+        .day-check:checked + .day-label { background: var(--primary); color: white; }
+
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
         .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #eee; }
         .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; cursor: pointer; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 4px 5px; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; }
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
+            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1px">Cargando...</h1>
             <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
 
         <div class="hero">
-            <span>Balance del Club</span>
+            <span>Resumen del Organizador</span>
             <div class="fin-grid">
                 <div class="fin-box"><span>Deuda Actual</span><b id="txt-deu">$0</b></div>
-                <div class="fin-box"><span>Crédito Disp.</span><b id="txt-lim">$0</b></div>
+                <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
             </div>
         </div>
 
-        <button class="btn-full" id="btn-share">🔗 COMPARTIR CARTELERA PÚBLICA</button>
-        
-        <div id="canchas-list">Cargando tus canchas...</div>
+        <button class="btn-full" id="btn-share">🔗 COMPARTIR CARTELERA</button>
+        <div id="canchas-list"></div>
     </div>
 
     <div id="modal-players" class="modal hidden">
         <div class="modal-content">
-            <h2 style="margin-top:0">👥 Lista de Jugadores</h2>
+            <h2 style="margin-top:0">👥 Jugadores Inscriptos</h2>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px">
                 <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Conf</span><b id="st-pag" style="color:var(--success)">0</b></div>
                 <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Pend</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Libre</span><b id="st-lib" style="color:var(--primary)">0</b></div>
             </div>
             <div id="players-list"></div>
-            <button class="btn-full" onclick="window.cerrarModals()" style="background:#000; margin-top:20px">CERRAR</button>
+            <button class="btn-full" onclick="window.cerrarModals()" style="background:#000; margin-top:20px">CERRAR LISTA</button>
         </div>
     </div>
 
     <div id="modal-config" class="modal hidden">
         <div class="modal-content">
-            <h2 style="margin-top:0">Configurar Cancha</h2>
-            <label>Nombre Cancha</label><input id="ed-org" class="input-std">
-            <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
-            <label>📍 Lugar</label><input id="ed-lug" class="input-std">
+            <h2 style="margin-top:0">Configuración de Cancha</h2>
+            
+            <label>Nombre de la Cancha / Evento</label>
+            <input id="ed-org" class="input-std" placeholder="Ej: Mixta">
+            
+            <label>Responsable</label>
+            <input id="ed-owner" class="input-std" placeholder="Nombre de quien organiza">
+            
+            <label>WhatsApp del Organizador (para comprobantes)</label>
+            <input id="ed-celu" class="input-std" placeholder="Ej: 54911...">
+
+            <label>🏷️ Categorías</label>
+            <input id="ed-cat" class="input-std" placeholder="Ej: 4ta y 5ta">
+            
+            <label>📍 Lugar / Sede</label>
+            <input id="ed-lug" class="input-std" placeholder="Nombre del Club">
+            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>📅 Fecha</label><input id="ed-fec" type="date" class="input-std"></div>
-                <div><label>👥 Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
+                <div><label>👥 Cupo Jugadores</label><input id="ed-cup" type="number" class="input-std"></div>
             </div>
+            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>🕒 Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
-                <div><label>🕒 Fin</label><input id="ed-h2" type="time" class="input-std"></div>
+                <div><label>🕒 Hora Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
+                <div><label>🕒 Hora Fin</label><input id="ed-h2" type="time" class="input-std"></div>
             </div>
-            <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
-            <button class="btn-full" onclick="window.guardarConfig()">GUARDAR</button>
+
+            <label>🔄 Repetir Semanalmente (Seleccionar días)</label>
+            <div class="days-grid">
+                <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
+                <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
+                <input type="checkbox" id="check-WE" value="WE" class="day-check"><label for="check-WE" class="day-label">Mi</label>
+                <input type="checkbox" id="check-TH" value="TH" class="day-check"><label for="check-TH" class="day-label">J</label>
+                <input type="checkbox" id="check-FR" value="FR" class="day-check"><label for="check-FR" class="day-label">V</label>
+                <input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label>
+                <input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label>
+            </div>
+
+            <label>Alias Mercado Pago</label>
+            <input id="ed-ali" class="input-std">
+            
+            <button class="btn-full" onclick="window.guardarConfig()">GUARDAR CAMBIOS</button>
             <button class="btn-full" onclick="window.cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
@@ -106,7 +134,6 @@
     let currentCanchaId = null;
     let currentCanchaData = null;
 
-    // FORMATO DE FECHA PROFESIONAL
     const fmtFechaHumana = (f, h1, h2) => {
         if(!f) return '--';
         const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -114,7 +141,6 @@
         return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} de ${h1} a ${h2 || '--'} hs`;
     };
 
-    // CARGA DE DATOS FINANCIEROS
     if(orgId) {
         onValue(ref(db, `facturacion/${orgId}/cuenta`), snap => {
             const f = snap.val() || {};
@@ -125,7 +151,6 @@
         });
     }
 
-    // RENDER DE TARJETAS
     async function renderCanchas() {
         const hSnap = await get(ref(db, 'hubs/'+orgId)); 
         const h = hSnap.val() || {};
@@ -142,6 +167,7 @@
         
         canchas.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
+            const isRec = d.rrule && d.rrule.includes('WEEKLY');
             const item = document.createElement('div'); 
             item.className = "cancha-card";
             item.innerHTML = `
@@ -151,7 +177,7 @@
                 </div>
                 <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
                 <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
-                <div class="info-row">👥 ${conf}/${d.cupo} Jugadores</div>
+                <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${isRec ? '• 🔄 Recurrente' : ''}</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px">
                     <button class="btn-dash btn-config" onclick="window.abrirConfig('${d.id}')">⚙️ CONFIG</button>
                     <button class="btn-dash btn-players" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
@@ -160,7 +186,7 @@
         });
     }
 
-    // FUNCIÓN: ABRIR JUGADORES (MODAL)
+    // --- FUNCIONES GLOBALES REPARADAS ---
     window.abrirJugadores = async (id) => {
         currentCanchaId = id;
         const s = await get(ref(db, 'eventos/'+id));
@@ -179,15 +205,15 @@
         
         const list = document.getElementById('players-list'); 
         list.innerHTML = "";
-        ins.forEach((p, idx) => {
-            const originalIdx = currentCanchaData.inscriptos.indexOf(p);
+        ins.forEach((p) => {
+            const oIdx = currentCanchaData.inscriptos.indexOf(p);
             list.innerHTML += `
                 <div class="player-row">
                     <span style="flex:1; font-weight:700">${p.nombre}</span>
-                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${originalIdx})">
+                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">
                         ${p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase()}
                     </button>
-                    <button onclick="window.borrarP(${originalIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer">✕</button>
+                    <button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer">✕</button>
                 </div>`;
         });
         document.getElementById('modal-players').classList.remove('hidden');
@@ -206,12 +232,13 @@
         }
     };
 
-    // CONFIGURACIÓN
     window.abrirConfig = async id => {
         currentCanchaId = id;
         const s = await get(ref(db, 'eventos/'+id));
         const d = s.val();
         document.getElementById('ed-org').value = d.organiza || "";
+        document.getElementById('ed-owner').value = d.nombreOrganizador || "";
+        document.getElementById('ed-celu').value = d.celuOrganizador || "";
         document.getElementById('ed-cat').value = d.categorias || "";
         document.getElementById('ed-lug').value = d.lugar || "";
         document.getElementById('ed-fec').value = d.fecha || "";
@@ -219,21 +246,35 @@
         document.getElementById('ed-h2').value = d.horaFin || "";
         document.getElementById('ed-cup').value = d.cupo || 0;
         document.getElementById('ed-ali').value = d.alias || "";
+        
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => {
+            document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false;
+        });
+        
         document.getElementById('modal-config').classList.remove('hidden');
     };
 
     window.guardarConfig = async () => {
+        const days = [];
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => {
+            if(document.getElementById('check-'+d).checked) days.push(d);
+        });
+        const rrule = days.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${days.join(',')}` : "RRULE:FREQ=NONE";
+
         await update(ref(db, 'eventos/'+currentCanchaId), {
             organiza: document.getElementById('ed-org').value,
+            nombreOrganizador: document.getElementById('ed-owner').value,
+            celuOrganizador: document.getElementById('ed-celu').value,
             categorias: document.getElementById('ed-cat').value,
             lugar: document.getElementById('ed-lug').value,
             fecha: document.getElementById('ed-fec').value,
             hora: document.getElementById('ed-h1').value,
             horaFin: document.getElementById('ed-h2').value,
             cupo: parseInt(document.getElementById('ed-cup').value),
-            alias: document.getElementById('ed-ali').value
+            alias: document.getElementById('ed-ali').value,
+            rrule: rrule
         });
-        alert("Guardado"); window.cerrarModals();
+        alert("¡Cancha actualizada!"); window.cerrarModals();
     };
 
     window.cerrarModals = () => {
@@ -245,7 +286,6 @@
         const url = window.location.origin + "/canchaabierta/v.html?org=" + orgId;
         navigator.clipboard.writeText(url).then(() => alert("Copiado: " + url));
     };
-
 </script>
 </body>
 </html>

@@ -3,51 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Organizador - PadelApp</title>
+    <title>Dashboard - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
-        
-        /* MURO DE SUSPENSIÓN */
         #suspension-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 9999; color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
-        
-        /* ESTADO DE CUENTA */
-        .card { background: var(--card); padding: 22px; border-radius: 28px; box-shadow: var(--shadow); margin-bottom: 15px; }
-        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; }
+        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 20px; }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 5px; }
-        .fin-box b { font-size: 16px; font-weight: 900; }
-
-        /* CANCHA CARD */
         .cancha-card { background: white; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; padding: 20px; box-shadow: var(--shadow); }
-        .cancha-title { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .cancha-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
-        .info-line { font-size: 13px; color: var(--sub); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        
-        /* BOTONES */
-        .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
-        .btn-config { background: #f2f2f7; color: var(--text); } 
-        .btn-players { background: #000; color: #fff; margin-top: 6px; }
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; }
-
-        /* RECURRENCIA GRID */
+        .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
+        .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 8px; }
+        .btn-config { background: #f2f2f7; color: var(--text); } .btn-players { background: #000; color: #fff; }
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
-
-        /* MODALES */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
-        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid #e5e5e7; margin-bottom: 10px; outline: none; font-family: inherit; }
         .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #eee; }
         .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; cursor: pointer; }
         .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .hidden { display: none !important; }
+        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
     </style>
 </head>
@@ -55,20 +39,20 @@
     <div id="suspension-overlay">
         <h1 style="font-size:80px">🚫</h1><h2>ACCESO BLOQUEADO</h2>
         <h2 id="muro-deuda" style="color:var(--danger); font-size:32px">$0</h2>
-        <button class="btn-full" onclick="window.open('https://wa.me/5491166463800')">CONTACTAR SOPORTE</button>
+        <button class="btn-full" onclick="window.open('https://wa.me/5491166463800')">SOPORTE</button>
     </div>
 
     <div class="container" id="main-content">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-            <h1 id="org-display-name" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
+            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
             <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
 
-        <div class="card hero">
-            <span>Balance del Organizador</span>
+        <div class="hero">
+            <span>Balance del Club</span>
             <div class="fin-grid">
-                <div class="fin-box"><span>Deuda Actual</span><b id="txt-deuda">$0</b></div>
-                <div class="fin-box"><span>Límite Crédito</span><b id="txt-limite">$0</b></div>
+                <div class="fin-box"><span>Deuda</span><b id="txt-deu">$0</b></div>
+                <div class="fin-box"><span>Crédito</span><b id="txt-lim">$0</b></div>
             </div>
         </div>
 
@@ -78,22 +62,19 @@
 
     <div id="modal-config" class="modal hidden">
         <div class="modal-content">
-            <h2 style="margin-top:0">Configuración de Cancha</h2>
-            <label>Nombre de la Cancha (ej: Mixta)</label><input id="ed-organiza" class="input-std">
-            <label>🏷️ Categorías (ej: 4ta y 5ta)</label><input id="ed-cat" class="input-std">
-            <label>📍 Lugar / Sede</label><input id="ed-lugar" class="input-std">
-            
+            <h2 style="margin-top:0">Configuración</h2>
+            <label>Nombre Cancha</label><input id="ed-org" class="input-std" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd; margin-bottom:10px">
+            <label>🏷️ Categorías</label><input id="ed-cat" class="input-std" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd; margin-bottom:10px">
+            <label>📍 Lugar</label><input id="ed-lug" class="input-std" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd; margin-bottom:10px">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>📅 Próxima Fecha</label><input id="ed-fecha" class="input-std" type="date"></div>
-                <div><label>👥 Cupo</label><input id="ed-cupo" class="input-std" type="number"></div>
+                <div><label>📅 Fecha</label><input id="ed-fec" type="date" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd"></div>
+                <div><label>👥 Cupo</label><input id="ed-cup" type="number" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd"></div>
             </div>
-            
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>🕒 Hora Inicio</label><input id="ed-hora" class="input-std" type="time"></div>
-                <div><label>🕒 Hora Fin</label><input id="ed-hora-fin" class="input-std" type="time"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
+                <div><label>🕒 Inicio</label><input id="ed-h1" type="time" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd"></div>
+                <div><label>🕒 Fin</label><input id="ed-h2" type="time" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd"></div>
             </div>
-
-            <label>🔄 Repetir Semanalmente (Dejar vacío si es única)</label>
+            <label>🔄 Recurrencia Semanal</label>
             <div class="days-grid">
                 <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
                 <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
@@ -103,24 +84,22 @@
                 <input type="checkbox" id="check-SA" value="SA" class="day-check"><label for="check-SA" class="day-label">S</label>
                 <input type="checkbox" id="check-SU" value="SU" class="day-check"><label for="check-SU" class="day-label">D</label>
             </div>
-
-            <label>Alias Mercado Pago</label><input id="ed-alias" class="input-std">
-            
-            <button class="btn-full" onclick="guardarConfig()">GUARDAR CAMBIOS</button>
+            <label>Alias MP</label><input id="ed-ali" class="input-std" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd">
+            <button class="btn-full" onclick="guardarConfig()" style="margin-top:15px">GUARDAR</button>
             <button class="btn-full" onclick="cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CERRAR</button>
         </div>
     </div>
 
-    <div id="modal-jugadores" class="modal hidden">
+    <div id="modal-players" class="modal hidden">
         <div class="modal-content">
-            <h2 id="players-title" style="margin-top:0">👥 Lista de Jugadores</h2>
+            <h2 style="margin-top:0">👥 Jugadores</h2>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:20px">
-                <div class="fin-box" style="background:#f8f9fb"><span>Confirm</span><b id="st-pag" style="color:var(--success)">0</b></div>
+                <div class="fin-box" style="background:#f8f9fb"><span>Conf</span><b id="st-pag" style="color:var(--success)">0</b></div>
                 <div class="fin-box" style="background:#f8f9fb"><span>Pend</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="fin-box" style="background:#f8f9fb"><span>Libre</span><b id="st-lib" style="color:var(--primary)">0</b></div>
             </div>
             <div id="players-list"></div>
-            <button class="btn-full" onclick="cerrarModals()" style="background:#000; margin-top:20px">CERRAR LISTA</button>
+            <button class="btn-full" onclick="cerrarModals()" style="background:#000; margin-top:20px">CERRAR</button>
         </div>
     </div>
 
@@ -132,11 +111,11 @@
     const orgId = new URLSearchParams(window.location.search).get('org');
     let cId = null, cEv = null;
 
-    const fmtFechaFull = (f, h1, h2) => {
+    const fmtFechaHumana = (f, h1, h2) => {
         if(!f) return '--';
         const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         const [y, m, d] = f.split('-'); const dO = new Date(y, m - 1, d);
-        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} de ${h1} a ${h2 || '--'} HS`;
+        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} de ${h1} a ${h2 || '--'} hs`;
     };
 
     if(orgId) {
@@ -146,9 +125,9 @@
                 document.getElementById('suspension-overlay').style.display = 'flex';
                 document.getElementById('muro-deuda').innerText = `$${(f.consumoActual || 0).toLocaleString()}`;
             } else {
-                document.getElementById('org-display-name').innerText = f.nombreOrg || orgId;
-                document.getElementById('txt-deuda').innerText = "$" + (f.consumoActual || 0).toLocaleString();
-                document.getElementById('txt-limite').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
+                document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
+                document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0).toLocaleString();
+                document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
                 renderCanchas();
             }
         });
@@ -165,59 +144,55 @@
         data.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
         data.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-            const isRecurrente = d.rrule && d.rrule.includes("WEEKLY");
-            list.innerHTML += `<div class="cancha-card">
-                <div class="cancha-title">
-                    <b style="font-size:16px">🎾 ${d.organiza}</b>
-                    <span class="tag-cat">${d.categorias || 'General'}</span>
-                </div>
-                <div class="info-line">📅 ${fmtFechaFull(d.fecha, d.hora, d.horaFin)}</div>
-                <div class="info-line">📍 ${d.lugar || 'Sede a definir'}</div>
-                <div class="info-line">👥 ${conf}/${d.cupo} Jugadores ${isRecurrente ? '• 🔄 Recurrente' : ''}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
-                    <button class="btn-dash btn-config" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                    <button class="btn-dash btn-players" onclick="abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                </div>
-            </div>`;
+            const item = document.createElement('div'); item.className = "cancha-card";
+            item.innerHTML = `
+                <div class="cancha-header"><b style="font-size:16px">🎾 ${d.organiza}</b><span class="tag-cat">${d.categorias || 'Gral'}</span></div>
+                <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
+                <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
+                <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${d.rrule && d.rrule.includes('WEEKLY') ? '• 🔄 Recurrente' : ''}</div>
+                <button class="btn-dash btn-config" onclick="window.abrirConfig('${d.id}')">⚙️ CONFIG</button>
+                <button class="btn-dash btn-players" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>`;
+            list.appendChild(item);
         });
     }
 
     window.abrirJugadores = async id => {
-        cId = id; const s = await get(ref(db, 'eventos/'+id)); cEv = s.val();
-        const ins = cEv.inscriptos || [];
+        cId = id; const s = await get(ref(db, 'eventos/'+id));
+        if(!s.exists()) return;
+        cEv = s.val(); const ins = cEv.inscriptos || [];
         const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
-        ins.sort((a,b) => pesos[a.estado] - pesos[b.estado]);
-        const ocupados = ins.filter(p => p.estado !== 'pendiente').length;
+        ins.sort((a,b) => (pesos[a.estado] || 99) - (pesos[b.estado] || 99));
+        const conf = ins.filter(p => p.estado !== 'pendiente').length;
         document.getElementById('st-total').innerText = cEv.cupo;
-        document.getElementById('st-pag').innerText = ocupados;
-        document.getElementById('st-pen').innerText = ins.length - ocupados;
-        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - ocupados);
+        document.getElementById('st-pag').innerText = conf;
+        document.getElementById('st-pen').innerText = ins.length - conf;
+        document.getElementById('st-lib').innerText = Math.max(0, cEv.cupo - conf);
         const list = document.getElementById('players-list'); list.innerHTML = "";
         ins.forEach(p => {
             const oIdx = cEv.inscriptos.indexOf(p);
-            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="togglePago(${oIdx})">${p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="borrarP(${oIdx})" style="background:none; border:none; color:var(--danger)">✕</button></div>`;
+            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase()}</button><button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger)">✕</button></div>`;
         });
-        document.getElementById('modal-jugadores').classList.remove('hidden');
+        document.getElementById('modal-players').classList.remove('hidden');
     };
 
     window.togglePago = (i) => {
-        const estados = ["pendiente", "paga-en-la-cancha", "pagado"];
-        cEv.inscriptos[i].estado = estados[(estados.indexOf(cEv.inscriptos[i].estado) + 1) % 3];
-        update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId));
+        const ests = ["pendiente", "paga-en-la-cancha", "pagado"];
+        cEv.inscriptos[i].estado = ests[(ests.indexOf(cEv.inscriptos[i].estado) + 1) % 3];
+        update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => window.abrirJugadores(cId));
     };
 
-    window.borrarP = (i) => { if(confirm("¿Borrar?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => abrirJugadores(cId)); } };
+    window.borrarP = (i) => { if(confirm("¿Borrar?")) { cEv.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+cId), { inscriptos: cEv.inscriptos }).then(() => window.abrirJugadores(cId)); } };
 
     window.abrirConfig = async id => {
         cId = id; const s = await get(ref(db, 'eventos/'+id)); const d = s.val();
-        document.getElementById('ed-organiza').value = d.organiza || "";
+        document.getElementById('ed-org').value = d.organiza || "";
         document.getElementById('ed-cat').value = d.categorias || "";
-        document.getElementById('ed-lugar').value = d.lugar || "";
-        document.getElementById('ed-fecha').value = d.fecha || "";
-        document.getElementById('ed-hora').value = d.hora || "";
-        document.getElementById('ed-hora-fin').value = d.horaFin || "";
-        document.getElementById('ed-cupo').value = d.cupo || 0;
-        document.getElementById('ed-alias').value = d.alias || "";
+        document.getElementById('ed-lug').value = d.lugar || "";
+        document.getElementById('ed-fec').value = d.fecha || "";
+        document.getElementById('ed-h1').value = d.hora || "";
+        document.getElementById('ed-h2').value = d.horaFin || "";
+        document.getElementById('ed-cup').value = d.cupo || 0;
+        document.getElementById('ed-ali').value = d.alias || "";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false);
         document.getElementById('modal-config').classList.remove('hidden');
     };
@@ -225,14 +200,14 @@
     window.guardarConfig = async () => {
         const sd = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) sd.push(d); });
         const rrule = sd.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${sd.join(',')}` : "RRULE:FREQ=NONE";
-        await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-organiza').value, categorias: document.getElementById('ed-cat').value, lugar: document.getElementById('ed-lugar').value, fecha: document.getElementById('ed-fecha').value, hora: document.getElementById('ed-hora').value, horaFin: document.getElementById('ed-hora-fin').value, cupo: parseInt(document.getElementById('ed-cupo').value), alias: document.getElementById('ed-alias').value, rrule: rrule });
+        await update(ref(db, 'eventos/'+cId), { organiza: document.getElementById('ed-org').value, categorias: document.getElementById('ed-cat').value, lugar: document.getElementById('ed-lug').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), alias: document.getElementById('ed-ali').value, rrule: rrule });
         alert("Guardado"); cerrarModals();
     };
 
-    window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-jugadores').classList.add('hidden'); };
+    window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-players').classList.add('hidden'); };
     window.copiarLink = () => {
         const url = window.location.origin + window.location.pathname.replace('d.html', 'v.html') + '?org=' + orgId;
-        navigator.clipboard.writeText(url).then(() => alert("Link copiado"));
+        navigator.clipboard.writeText(url).then(() => alert("Copiado"));
     };
 </script>
 </body>

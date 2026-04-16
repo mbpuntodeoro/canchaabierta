@@ -44,6 +44,11 @@
             }
             data.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             data.forEach(d => {
+                // SI LA CANCHA ESTÁ DESHABILITADA, NO LA MOSTRAMOS
+    if(d.estado === 'deshabilitada') return; 
+
+    list.innerHTML += `... resto del código ...`;
+});
                 list.innerHTML += `<div class="event-card">
                     <div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'Gral'}</span></div>
                     <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>

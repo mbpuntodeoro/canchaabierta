@@ -34,11 +34,15 @@
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         .hidden { display: none !important; }
         
-        /* JUGADORES (DISEÑO IGUAL A TU FOTO) */
-        .player-card { background: white; border: 1.5px solid #eee; border-radius: 20px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .player-name { font-weight: 800; font-size: 16px; color: #000; text-transform: capitalize; }
-        .btn-status { width: 160px; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer; text-transform: uppercase; }
+        /* JUGADORES LISTA */
+        .player-card { background: white; border: 1.5px solid #eee; border-radius: 20px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .player-name { font-weight: 800; font-size: 16px; color: #000; }
+        .btn-status { width: 150px; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer; text-transform: uppercase; }
+        .pagado { background: var(--success); }
+        .pendiente { background: var(--danger); }
+        .paga-en-la-cancha { background: var(--warning); }
 
+        /* CONFIGURACIÓN */
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
@@ -58,8 +62,8 @@
         <div class="hero">
             <span>Balance del Club</span>
             <div class="fin-grid">
-                <div class="fin-box"><span>Deuda</span><b id="txt-deu">$0</b></div>
-                <div class="fin-box"><span>Crédito</span><b id="txt-lim">$0</b></div>
+                <div class="fin-box"><span>Deuda Actual</span><b id="txt-deu">$0</b></div>
+                <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
             </div>
         </div>
 
@@ -71,8 +75,12 @@
         <div class="modal-content">
             <h2 style="margin-top:0">👥 Jugadores</h2>
             <input type="hidden" id="pl-cancha-id">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
+                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>TOTAL</span><b id="st-total">0</b></div>
                 <div class="fin-box" style="background:#f2f2f7; color:#333"><span>CONF</span><b id="st-pag" style="color:var(--success)">0</b></div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px">
+                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>PEND</span><b id="st-pen" style="color:var(--danger)">0</b></div>
                 <div class="fin-box" style="background:#f2f2f7; color:#333"><span>LIBRE</span><b id="st-lib" style="color:var(--primary)">0</b></div>
             </div>
             <div id="players-list"></div>
@@ -93,7 +101,7 @@
 
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
             <label>Responsable</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp Org</label><input id="ed-celu" class="input-std">
+            <label>WhatsApp Organizador (54911...)</label><input id="ed-celu" class="input-std">
             <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <label>📍 Lugar</label><input id="ed-lug" class="input-std">
             
@@ -110,7 +118,7 @@
             <label>💰 Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
             <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
             
-            <label>🔄 Recurrencia</label>
+            <label>🔄 Recurrencia Semanal</label>
             <div class="days-grid">
                 <input type="checkbox" id="check-MO" value="MO" class="day-check"><label for="check-MO" class="day-label">L</label>
                 <input type="checkbox" id="check-TU" value="TU" class="day-check"><label for="check-TU" class="day-label">M</label>
@@ -166,7 +174,7 @@
                     <div class="cancha-header"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Gral'}</span></div>
                     <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
                     <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
-                    <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${isDis ? '• 🚫' : ''}</div>
+                    <div class="info-row">👥 ${conf}/${d.cupo} Jugadores</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
                         <button class="btn-dash btn-config" onclick="window.abrirConfig('${d.id}')">⚙️ CONFIG</button>
                         <button class="btn-dash btn-players" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
@@ -177,7 +185,7 @@
 
         document.getElementById('btn-share-link').onclick = () => {
             const url = window.location.origin + "/canchaabierta/v.html?org=" + orgId;
-            navigator.clipboard.writeText(url).then(() => alert("Link copiado!"));
+            navigator.clipboard.writeText(url).then(() => alert("¡Copiado!"));
         };
     }
 
@@ -185,22 +193,25 @@
         document.getElementById('pl-cancha-id').value = id;
         const s = await get(ref(db, 'eventos/'+id)); const d = s.val();
         const ins = d.inscriptos || [];
-        const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
-        ins.sort((a,b) => (pesos[a.estado] || 99) - (pesos[b.estado] || 99));
-        
         const conf = ins.filter(p => p.estado !== 'pendiente').length;
+        
+        document.getElementById('st-total').innerText = d.cupo;
         document.getElementById('st-pag').innerText = conf;
+        document.getElementById('st-pen').innerText = ins.length - conf;
         document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
         
-        const list = document.getElementById('players-list'); list.innerHTML = ins.length ? "" : "<p style='text-align:center; color:#888'>Sin inscriptos</p>";
+        const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
+        ins.sort((a,b) => (pesos[a.estado] || 99) - (pesos[b.estado] || 99));
+
+        const list = document.getElementById('players-list'); list.innerHTML = "";
         ins.forEach((p) => {
             const oIdx = d.inscriptos.indexOf(p);
-            const labelStatus = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
+            const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
             list.innerHTML += `
                 <div class="player-card">
                     <span class="player-name">${p.nombre}</span>
-                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${labelStatus}</button>
-                    <button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer; font-size:18px; margin-left:10px">✕</button>
+                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${label}</button>
+                    <button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer; font-size:18px">✕</button>
                 </div>`;
         });
         document.getElementById('modal-players').classList.remove('hidden');
@@ -264,7 +275,6 @@
             rrule: rrule
         };
 
-        // USAMOS SET SI UPDATE FALLA
         try {
             await update(ref(db, 'eventos/' + id), upd);
             alert("¡Guardado!"); window.cerrarModals();

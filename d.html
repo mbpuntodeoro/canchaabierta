@@ -15,15 +15,29 @@
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box b { font-size: 16px; font-weight: 900; display: block;}
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800;}
+        
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-top: 5px; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
+        
+        /* MODAL */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 95vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        .player-row { background: white; border: 1.5px solid #eee; border-radius: 20px; padding: 12px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-status { width: 130px; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer;}
-        .pagado { background: #34c759; } .pendiente { background: #ff3b30; } .paga-en-la-cancha { background: #ff9500; }
+        .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        
+        /* ESTADISTICAS MODAL */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .stat-box { background: #f8f9fb; padding: 12px; border-radius: 18px; text-align: center; border: 1px solid #eee; }
+        .stat-box span { font-size: 8px; font-weight: 900; color: #999; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .stat-box b { font-size: 18px; font-weight: 900; }
+
+        /* LISTA JUGADORES */
+        .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .player-name { font-weight: 800; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-status { width: 110px; padding: 10px; border-radius: 12px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer; text-transform: uppercase; }
+        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
+        .btn-delete { width: 30px; height: 30px; border-radius: 50%; border: none; background: #fff1f1; color: var(--danger); font-size: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
@@ -31,6 +45,7 @@
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
         .error-msj { background: #fff2f2; color: var(--danger); padding: 10px; border-radius: 10px; font-size: 11px; font-weight: 800; margin-bottom: 10px; display: none; }
+        
         .footer-personal { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
         .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; box-shadow: 0 5px 15px rgba(255,149,0,0.3); }
     </style>
@@ -61,18 +76,19 @@
 
     <div id="modal-players" class="modal">
         <div class="modal-content">
-            <h2 style="margin:0 0 15px 0">👥 Jugadores</h2>
+            <h2 style="margin:0 0 20px 0; text-align:center; font-weight:900; letter-spacing:-1px">👥 Lista de Jugadores</h2>
             <input type="hidden" id="pl-id">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>CUPO</span><b id="st-total">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>CONF</span><b id="st-pag" style="color:var(--success)">0</b></div>
+            
+            <div class="stat-grid">
+                <div class="stat-box"><span>Cupo</span><b id="st-total">0</b></div>
+                <div class="stat-box"><span>Conf</span><b id="st-pag" style="color:var(--success)">0</b></div>
+                <div class="stat-box"><span>Pend</span><b id="st-pen" style="color:var(--danger)">0</b></div>
+                <div class="stat-box"><span>Libre</span><b id="st-lib" style="color:var(--primary)">0</b></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>PEND</span><b id="st-pen" style="color:var(--danger)">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333; padding:10px"><span>LIBRE</span><b id="st-lib" style="color:var(--primary)">0</b></div>
-            </div>
-            <div id="players-list"></div>
-            <button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:18px; background:#000; color:white; border:none; margin-top:10px; cursor:pointer">CERRAR</button>
+
+            <div id="players-list" style="margin-bottom:20px"></div>
+            
+            <button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; cursor:pointer">CERRAR LISTA</button>
         </div>
     </div>
 
@@ -80,11 +96,13 @@
         <div class="modal-content">
             <h2 id="modal-title" style="margin-top:0">⚙️ Configuración</h2>
             <input type="hidden" id="ed-id">
+            
             <label>Tipo de Evento</label>
             <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
                 <option value="unico">Evento Único</option>
                 <option value="recurrente">Todas las semanas</option>
             </select>
+
             <div id="days-container" style="display:none">
                 <label>Días que se repite</label>
                 <div class="days-grid">
@@ -97,7 +115,9 @@
                     <input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label>
                 </div>
             </div>
+
             <div id="msg-error-rec" class="error-msj">⚠️ La fecha elegida no coincide con los días de recurrencia.</div>
+
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
             <label>Organizador (Nombre)</label><input id="ed-owner" class="input-std">
             <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
@@ -113,6 +133,7 @@
             </div>
             <label>Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
             <label>Alias MP</label><input id="ed-ali" class="input-std">
+            
             <button id="btn-save-config" onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button>
             <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button>
         </div>
@@ -136,7 +157,6 @@
         const sortedArray = Object.values(courtData).sort((a,b) => {
             return new Date(a.fecha + 'T' + a.hora) - new Date(b.fecha + 'T' + b.hora);
         });
-
         listContainer.innerHTML = sortedArray.length ? "" : "No tienes canchas creadas.";
         sortedArray.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
@@ -246,15 +266,26 @@
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
+            
+            // LOGICA DE ORDEN: Pagado (1), En Cancha (2), Pendiente (3)
+            const statusOrder = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
+            const sortedIns = [...ins].sort((a,b) => (statusOrder[a.estado] || 99) - (statusOrder[b.estado] || 99));
+
             const conf = ins.filter(p => p.estado !== 'pendiente').length;
-            document.getElementById('st-total').innerText = d.cupo; document.getElementById('st-pag').innerText = conf;
-            document.getElementById('st-pen').innerText = ins.length - conf; document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
+            document.getElementById('st-total').innerText = d.cupo; 
+            document.getElementById('st-pag').innerText = conf;
+            document.getElementById('st-pen').innerText = ins.length - conf; 
+            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
+            
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            ins.forEach((p, idx) => {
+            sortedIns.forEach((p) => {
+                const originalIdx = ins.indexOf(p); // Mantener referencia original para update
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
-                list.innerHTML += `<div class="player-row"><b>${p.nombre}</b>
-                    <button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${label}</button>
-                    <button onclick="borrarP(${idx})" style="border:none;background:none;color:red;font-weight:900;cursor:pointer">✕</button></div>`;
+                list.innerHTML += `<div class="player-row">
+                    <span class="player-name">${p.nombre}</span>
+                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${originalIdx})">${label}</button>
+                    <button class="btn-delete" onclick="window.borrarP(${originalIdx})">✕</button>
+                </div>`;
             });
             document.getElementById('modal-players').style.display = 'flex';
         });
@@ -270,7 +301,7 @@
     };
 
     window.borrarP = function(idx) {
-        if(!confirm("¿Borrar?")) return;
+        if(!confirm("¿Borrar jugador de la lista?")) return;
         const id = document.getElementById('pl-id').value;
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             let ins = s.val(); ins.splice(idx, 1);

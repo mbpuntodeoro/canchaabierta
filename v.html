@@ -3,126 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera de Canchas - PadelApp</title>
+    <title>Cartelera - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --shadow: 0 8px 25px rgba(0,0,0,0.05); }
-        * { box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        
-        header { background: #fff; padding: 30px 20px; text-align: center; border-bottom: 1px solid #e5e5e7; position: sticky; top: 0; z-index: 100; }
-        header h1 { margin: 0; font-weight: 900; letter-spacing: -1.5px; font-size: 28px; }
-
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
+        header { background: #fff; padding: 25px; text-align: center; border-bottom: 1px solid #e5e5e7; }
         .container { max-width: 500px; margin: auto; padding: 20px 15px; }
-        
-        .event-card { background: white; border-radius: 28px; padding: 25px; margin-bottom: 15px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02); position: relative; overflow: hidden; }
-        
+        .event-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 8px; }
-        
-        .info-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--sub); margin-top: 10px; font-weight: 600; }
-        
-        .btn-join { 
-            background: var(--primary); 
-            color: white; 
-            text-decoration: none; 
-            display: block; 
-            text-align: center; 
-            padding: 20px; 
-            border-radius: 20px; 
-            font-weight: 900; 
-            margin-top: 25px; 
-            font-size: 16px;
-            transition: transform 0.2s;
-        }
-        .btn-join:active { transform: scale(0.98); }
-
-        .empty-state { text-align: center; padding: 50px 20px; color: var(--sub); }
-        .empty-state h2 { font-size: 50px; margin-bottom: 10px; }
-
-        .footer-brand { margin-top: 30px; text-align: center; opacity: 0.5; }
+        .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); margin-top: 10px; font-weight: 600; }
+        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; }
+        .empty-state { text-align: center; padding: 50px; color: #888; }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1 id="hub-name">Cargando...</h1>
-    </header>
-
-    <div class="container">
-        <div id="lista-eventos">
-            </div>
-        
-        <div class="footer-brand">
-            <p style="font-size:10px; font-weight:800; letter-spacing:1px">POTENCIADO POR PADELAPP</p>
-        </div>
-    </div>
-
+    <header><h1 id="hub-name" style="margin:0; font-weight:900">PadelApp</h1></header>
+    <div class="container"><div id="lista-eventos"></div></div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-    
-    // Obtenemos el ID del club de la URL
     const orgId = new URLSearchParams(window.location.search).get('org');
-
-    // Función para formato de fecha: "Sábado 18/4 de 15 a 18 hs"
+    
     const fmtFechaHumana = (f, h1, h2) => {
         if(!f) return '--';
-        const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const [y, m, d] = f.split('-'); const dO = new Date(y, m - 1, d);
-        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} de ${h1} a ${h2 || '--'} hs`;
+        const ds = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const [y, m, d] = f.split('-'); const dO = new Date(y, m-1, d);
+        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} - ${h1} a ${h2 || '--'} hs`;
     };
 
     if(orgId){
         onValue(ref(db, `hubs/${orgId}`), async snap => {
-            const h = snap.val() || {};
-            document.getElementById('hub-name').innerText = h.nombre || "Cartelera";
-            
-            const list = document.getElementById('lista-eventos');
+            const h = snap.val() || {}; document.getElementById('hub-name').innerText = h.nombre || "Cartelera";
+            const list = document.getElementById('lista-eventos'); list.innerHTML = "";
             let data = [];
-
-            // Obtenemos los detalles de cada cancha
-            const canchasIds = h.canchas || [];
-            for(let cid of canchasIds){
-                const eSnap = await get(ref(db, `eventos/${cid}`));
+            for(let id of (h.canchas || [])){
+                const eSnap = await get(ref(db, `eventos/${id}`));
                 if(eSnap.exists()) {
-                    const d = eSnap.val();
-                    // FILTRO CRÍTICO: Si la cancha está deshabilitada, NO la cargamos en la lista
-                    if(d.estado === 'deshabilitada') continue;
-                    
-                    data.push({ id: cid, ...d });
+                    const ev = eSnap.val();
+                    if(ev.estado !== 'deshabilitada') data.push({ id, ...ev });
                 }
             }
-
-            // Ordenamos por fecha y hora (las más próximas arriba)
             data.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-
             if(data.length === 0) {
-                list.innerHTML = `<div class="empty-state"><h2>🎾</h2><p>No hay canchas disponibles por el momento.</p></div>`;
+                list.innerHTML = `<div class="empty-state">No hay canchas disponibles</div>`;
                 return;
             }
-
-            list.innerHTML = "";
             data.forEach(d => {
-                list.innerHTML += `
-                    <div class="event-card">
-                        <div style="display:flex; align-items:center; justify-content:space-between">
-                            <h3 style="margin:0; font-size:20px; font-weight:800; text-transform:uppercase; letter-spacing:-0.5px">🎾 ${d.organiza}</h3>
-                            <span class="tag-cat">${d.categorias || 'General'}</span>
-                        </div>
-                        
-                        <div class="info-row">📅 <span>${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</span></div>
-                        <div class="info-row">📍 <span>${d.lugar || 'Sede a confirmar'}</span></div>
-                        
-                        <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME AHORA</a>
-                    </div>
-                `;
+                list.innerHTML += `<div class="event-card">
+                    <div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias || 'Gral'}</span></div>
+                    <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
+                    <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                    <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a>
+                </div>`;
             });
         });
-    } else {
-        document.getElementById('hub-name').innerText = "Error: Club no encontrado";
     }
 </script>
 </body>

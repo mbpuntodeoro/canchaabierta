@@ -1,35 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Organizador</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
-        * { box-sizing: border-box; }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 20px; }
-        .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
-        .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; }
-        .fin-box b { font-size: 16px; font-weight: 900; }
-        .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; }
-        .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; }
+        .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
+        .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
+        .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-top: 5px; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
-        .player-row { background: white; border: 1.5px solid #eee; border-radius: 20px; padding: 12px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-status { width: 130px; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 10px; }
-        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
-        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; }
+        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; }
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
-        .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
-        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
-        input[type="checkbox"]:checked + .day-label { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
@@ -39,44 +28,16 @@
             <button onclick="window.location.href='m.html'" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
 
-        <div class="hero">
-            <div class="fin-grid">
-                <div class="fin-box"><span>Deuda Actual</span><b id="txt-deu">$0</b></div>
-                <div class="fin-box"><span>Crédito</span><b id="txt-lim">$0</b></div>
-            </div>
-        </div>
-
-        <button onclick="copiarCartelera()" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px">🔗 COPIAR LINK CARTELERA</button>
         <div id="canchas-list">Cargando...</div>
-    </div>
-
-    <div id="modal-players" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-top:0">👥 Jugadores</h2>
-            <input type="hidden" id="pl-id">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>TOTAL</span><b id="st-total">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>CONF</span><b id="st-pag" style="color:var(--success)">0</b></div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:15px">
-                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>PEND</span><b id="st-pen" style="color:var(--danger)">0</b></div>
-                <div class="fin-box" style="background:#f2f2f7; color:#333"><span>LIBRE</span><b id="st-lib" style="color:var(--primary)">0</b></div>
-            </div>
-            <div id="players-list"></div>
-            <button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:18px; background:#000; color:white; border:none; margin-top:10px">CERRAR</button>
-        </div>
     </div>
 
     <div id="modal-config" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">Configuración</h2>
+            <h2 style="margin-top:0">⚙️ Configuración</h2>
             <input type="hidden" id="ed-id">
-            <label>Estado</label><select id="ed-status" class="input-std"><option value="activa">✅ ACTIVA</option><option value="deshabilitada">🚫 DESHABILITADA</option></select>
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
-            <label>Responsable</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp</label><input id="ed-celu" class="input-std">
-            <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <label>📍 Lugar</label><input id="ed-lug" class="input-std">
+            <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Fecha</label><input id="ed-fec" type="date" class="input-std"></div>
                 <div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
@@ -87,47 +48,39 @@
             </div>
             <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
             <label>Alias MP</label><input id="ed-ali" class="input-std">
-            <label>Recurrencia</label>
-            <div class="days-grid">
-                <input type="checkbox" id="d-MO" class="day-check" hidden><label for="d-MO" class="day-label">L</label>
-                <input type="checkbox" id="d-TU" class="day-check" hidden><label for="d-TU" class="day-label">M</label>
-                <input type="checkbox" id="d-WE" class="day-check" hidden><label for="d-WE" class="day-label">Mi</label>
-                <input type="checkbox" id="d-TH" class="day-check" hidden><label for="d-TH" class="day-label">J</label>
-                <input type="checkbox" id="d-FR" class="day-check" hidden><label for="d-FR" class="day-label">V</label>
-                <input type="checkbox" id="d-SA" class="day-check" hidden><label for="d-SA" class="day-label">S</label>
-                <input type="checkbox" id="d-SU" class="day-check" hidden><label for="d-SU" class="day-label">D</label>
-            </div>
-            <button onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900">GUARDAR</button>
+            
+            <button onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900">GUARDAR CAMBIOS</button>
             <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px">CANCELAR</button>
         </div>
     </div>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
     const db = firebase.database();
     const orgId = new URLSearchParams(window.location.search).get('org');
 
+    function fmtFecha(f) {
+        if(!f) return '--';
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const d = new Date(f + 'T00:00:00');
+        return dias[d.getDay()] + ' ' + f.split('-').reverse().slice(0,2).join('/');
+    }
+
     function init() {
-        if(!orgId) return;
-        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => {
-            const f = s.val() || {};
-            document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
-            document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0);
-            document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0);
-        });
+        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { document.getElementById('org-name-disp').innerText = s.val()?.nombreOrg || orgId; });
 
         db.ref('hubs/'+orgId).on('value', async snap => {
-            const h = snap.val() || {}; const list = document.getElementById('canchas-list'); list.innerHTML = "";
-            for(let id of (h.canchas || [])) {
+            const list = document.getElementById('canchas-list'); list.innerHTML = "";
+            const ids = snap.val()?.canchas || [];
+            for(let id of ids) {
                 const evS = await db.ref('eventos/'+id).once('value');
                 if(evS.exists()) {
-                    const d = evS.val(); const isDis = d.estado === 'deshabilitada';
-                    list.innerHTML += `<div class="cancha-card ${isDis?'disabled':''}">
-                        <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias||'Gral'}</span></div>
-                        <div class="info-row">📅 ${d.fecha} | 🕒 ${d.hora} hs</div>
+                    const d = evS.val();
+                    list.innerHTML += `<div class="cancha-card">
+                        <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
+                        <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                        <div class="info-row">📍 ${d.lugar || 'Sede no definida'}</div>
                         <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${id}')">⚙️ CONFIG</button>
-                        <button class="btn-dash" style="background:#000;color:#fff" onclick="abrirJugadores('${id}')">👥 JUGADORES</button>
                     </div>`;
                 }
             }
@@ -137,88 +90,36 @@
     function abrirConfig(id) {
         db.ref('eventos/'+id).once('value', s => {
             const d = s.val(); document.getElementById('ed-id').value = id;
-            document.getElementById('ed-status').value = d.estado || 'activa';
             document.getElementById('ed-org').value = d.organiza || "";
-            document.getElementById('ed-owner').value = d.nombreOrganizador || "";
-            document.getElementById('ed-celu').value = d.celuOrganizador || "";
-            document.getElementById('ed-cat').value = d.categorias || "";
             document.getElementById('ed-lug').value = d.lugar || "";
+            document.getElementById('ed-cat').value = d.categorias || "";
             document.getElementById('ed-fec').value = d.fecha || "";
             document.getElementById('ed-h1').value = d.hora || "";
             document.getElementById('ed-h2').value = d.horaFin || "";
             document.getElementById('ed-cup').value = d.cupo || 0;
             document.getElementById('ed-val').value = d.valor || 0;
             document.getElementById('ed-ali').value = d.alias || "";
-            ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => document.getElementById('d-'+day).checked = d.rrule?.includes(day));
             document.getElementById('modal-config').style.display = 'flex';
         });
     }
 
     function guardarConfig() {
         const id = document.getElementById('ed-id').value;
-        const days = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) days.push(d); });
-        const rrule = days.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${days.join(',')}` : "RRULE:FREQ=NONE";
         const upd = {
-            estado: document.getElementById('ed-status').value,
             organiza: document.getElementById('ed-org').value,
-            nombreOrganizador: document.getElementById('ed-owner').value,
-            celuOrganizador: document.getElementById('ed-celu').value,
-            categorias: document.getElementById('ed-cat').value,
             lugar: document.getElementById('ed-lug').value,
+            categorias: document.getElementById('ed-cat').value,
             fecha: document.getElementById('ed-fec').value,
             hora: document.getElementById('ed-h1').value,
             horaFin: document.getElementById('ed-h2').value,
             cupo: parseInt(document.getElementById('ed-cup').value),
             valor: parseInt(document.getElementById('ed-val').value),
-            alias: document.getElementById('ed-ali').value,
-            rrule: rrule
+            alias: document.getElementById('ed-ali').value
         };
-        db.ref('eventos/'+id).update(upd).then(() => { alert("Grabado!"); cerrarModals(); });
+        db.ref('eventos/'+id).update(upd).then(() => { alert("¡Cambios grabados!"); cerrarModals(); });
     }
 
-    function abrirJugadores(id) {
-        document.getElementById('pl-id').value = id;
-        db.ref('eventos/'+id).once('value', s => {
-            const d = s.val(); const ins = d.inscriptos || [];
-            const conf = ins.filter(p => p.estado !== 'pendiente').length;
-            document.getElementById('st-total').innerText = d.cupo;
-            document.getElementById('st-pag').innerText = conf;
-            document.getElementById('st-pen').innerText = ins.length - conf;
-            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
-            const list = document.getElementById('players-list'); list.innerHTML = "";
-            ins.sort((a,b) => (a.estado==='pendiente'?1:-1));
-            ins.forEach((p, idx) => {
-                list.innerHTML += `<div class="player-row"><b>${p.nombre}</b>
-                    <button class="btn-status ${p.estado}" onclick="togglePago(${idx})">${p.estado.toUpperCase()}</button>
-                    <button onclick="borrarP(${idx})" style="border:none;background:none;color:red;font-weight:900;cursor:pointer">✕</button></div>`;
-            });
-            document.getElementById('modal-players').style.display = 'flex';
-        });
-    }
-
-    function togglePago(idx) {
-        const id = document.getElementById('pl-id').value;
-        db.ref('eventos/'+id+'/inscriptos/'+idx).once('value', s => {
-            const ests = ["pendiente", "paga-en-la-cancha", "pagado"];
-            const next = ests[(ests.indexOf(s.val().estado) + 1) % 3];
-            db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(next).then(() => abrirJugadores(id));
-        });
-    }
-
-    function borrarP(idx) {
-        if(!confirm("¿Borrar?")) return;
-        const id = document.getElementById('pl-id').value;
-        db.ref('eventos/'+id+'/inscriptos').once('value', s => {
-            const ins = s.val(); ins.splice(idx, 1);
-            db.ref('eventos/'+id+'/inscriptos').set(ins).then(() => abrirJugadores(id));
-        });
-    }
-
-    function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-    function copiarCartelera() {
-        const url = window.location.origin + "/v.html?org=" + orgId;
-        navigator.clipboard.writeText(url).then(() => alert("Copiado!"));
-    }
+    function cerrarModals() { document.getElementById('modal-config').style.display = 'none'; }
     init();
 </script>
 </body>

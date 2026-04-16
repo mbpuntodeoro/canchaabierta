@@ -22,10 +22,17 @@
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         .player-row { background: white; border: 1.5px solid #eee; border-radius: 20px; padding: 12px 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-status { width: 130px; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 10px; }
+        .btn-status { width: 130px; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer;}
         .pagado { background: #34c759; } .pendiente { background: #ff3b30; } .paga-en-la-cancha { background: #ff9500; }
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
+        
+        /* CUADRÍCULA DE DÍAS */
+        .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
+        .day-check { display: none; }
+        .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .day-check:checked + .day-label { background: var(--primary); color: white; }
+
         .footer-personal { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
         .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; box-shadow: 0 5px 15px rgba(255,149,0,0.3); }
     </style>
@@ -79,10 +86,23 @@
             <input type="hidden" id="ed-id">
             
             <label>Tipo de Evento</label>
-            <select id="ed-tipo" class="input-std">
+            <select id="ed-tipo" class="input-std" onchange="toggleDaysGrid()">
                 <option value="unico">Evento Único</option>
-                <option value="recurrente">Recurrente Semanal</option>
+                <option value="recurrente">Todas las semanas</option>
             </select>
+
+            <div id="days-container" style="display:none">
+                <label>Días que se repite</label>
+                <div class="days-grid">
+                    <input type="checkbox" id="d-MO" class="day-check"><label for="d-MO" class="day-label">L</label>
+                    <input type="checkbox" id="d-TU" class="day-check"><label for="d-TU" class="day-label">M</label>
+                    <input type="checkbox" id="d-WE" class="day-check"><label for="d-WE" class="day-label">Mi</label>
+                    <input type="checkbox" id="d-TH" class="day-check"><label for="d-TH" class="day-label">J</label>
+                    <input type="checkbox" id="d-FR" class="day-check"><label for="d-FR" class="day-label">V</label>
+                    <input type="checkbox" id="d-SA" class="day-check"><label for="d-SA" class="day-label">S</label>
+                    <input type="checkbox" id="d-SU" class="day-check"><label for="d-SU" class="day-label">D</label>
+                </div>
+            </div>
 
             <label>Nombre Cancha</label><input id="ed-org" class="input-std">
             <label>Organizador (Nombre)</label><input id="ed-owner" class="input-std">
@@ -98,7 +118,7 @@
                 <div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div>
             </div>
             <label>Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
-            <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
+            <label>Alias MP</label><input id="ed-ali" class="input-std">
             
             <button onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button>
             <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button>
@@ -117,6 +137,11 @@
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const d = new Date(f + 'T00:00:00');
         return dias[d.getDay()] + ' ' + f.split('-').reverse().slice(0,2).join('/');
+    }
+
+    function toggleDaysGrid() {
+        const val = document.getElementById('ed-tipo').value;
+        document.getElementById('days-container').style.display = (val === 'recurrente') ? 'block' : 'none';
     }
 
     function init() {
@@ -164,6 +189,8 @@
         document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('ed-id').value = "";
         document.getElementById('ed-tipo').value = "unico";
+        toggleDaysGrid();
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
         document.getElementById('ed-org').value = "";
         document.getElementById('ed-owner').value = "";
         document.getElementById('ed-celu').value = "";
@@ -185,6 +212,10 @@
             const d = s.val(); 
             document.getElementById('ed-id').value = id;
             document.getElementById('ed-tipo').value = d.tipo || "unico";
+            toggleDaysGrid();
+            ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => {
+                document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day);
+            });
             document.getElementById('ed-org').value = d.organiza || "";
             document.getElementById('ed-owner').value = d.nombreOrganizador || "";
             document.getElementById('ed-celu').value = d.celuOrganizador || "";
@@ -202,8 +233,14 @@
 
     function guardarConfig() {
         let id = document.getElementById('ed-id').value;
+        const dias = [];
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => {
+            if(document.getElementById('d-'+d).checked) dias.push(d);
+        });
+
         const upd = {
             tipo: document.getElementById('ed-tipo').value,
+            diasRecurrencia: dias,
             organiza: document.getElementById('ed-org').value,
             nombreOrganizador: document.getElementById('ed-owner').value,
             celuOrganizador: document.getElementById('ed-celu').value,
@@ -239,7 +276,8 @@
             document.getElementById('st-pag').innerText = conf;
             document.getElementById('st-total').innerText = d.cupo;
             document.getElementById('st-pen').innerText = ins.length - conf;
-            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - conf);
+            document.getElementById('st-lib').innerText = d.cupo - conf;
+            
             const list = document.getElementById('players-list'); list.innerHTML = "";
             ins.forEach((p, idx) => {
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
@@ -257,6 +295,8 @@
             const ests = ["pendiente", "paga-en-la-cancha", "pagado"];
             const next = ests[(ests.indexOf(s.val().estado) + 1) % 3];
             db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(next);
+            // IMPORTANTE: No hace falta llamar a abrirJugadores ni refrescar nada.
+            // La escucha .on('value') ya se encarga de redibujar todo arriba.
         });
     }
 
@@ -272,7 +312,8 @@
     function cerrarModals() { 
         document.getElementById('modal-config').style.display = 'none'; 
         document.getElementById('modal-players').style.display = 'none';
-        if(document.getElementById('pl-id').value) db.ref('eventos/'+document.getElementById('pl-id').value).off();
+        const plId = document.getElementById('pl-id').value;
+        if(plId) db.ref('eventos/'+plId).off();
     }
 
     function copiarLink() {

@@ -46,7 +46,7 @@
 
         <button onclick="copiarLink()" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
 
-        <div id="canchas-list">Cargando...</div>
+        <div id="canchas-list">Cargando canchas en tiempo real...</div>
 
         <button onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
 
@@ -92,6 +92,7 @@
             </div>
             <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
             <label>Alias MP</label><input id="ed-ali" class="input-std">
+            
             <button onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button>
             <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button>
         </div>
@@ -102,6 +103,7 @@
     const db = firebase.database();
     const orgId = new URLSearchParams(window.location.search).get('org');
     let isNew = false;
+    let courtListeners = {}; // Para no duplicar escuchas
 
     function fmtFecha(f) {
         if(!f) return '--';
@@ -112,33 +114,53 @@
 
     function init() {
         if(!orgId) return;
+        
+        // Datos Financieros
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             const f = s.val() || {};
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
-            document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0);
-            document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0);
+            document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0).toLocaleString();
+            document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
         });
 
-        db.ref('hubs/'+orgId).on('value', async snap => {
-            const list = document.getElementById('canchas-list'); list.innerHTML = "";
+        // Escucha del HUB (Lista de IDs de canchas)
+        db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
-            for(let id of ids) {
-                const evS = await db.ref('eventos/'+id).once('value');
-                if(evS.exists()) {
-                    const d = evS.val();
-                    const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-                    list.innerHTML += `<div class="cancha-card">
-                        <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                        <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                        <div class="info-row">📍 ${d.lugar || 'Sede no definida'}</div>
-                        <div class="info-row">👥 ${conf} / ${d.cupo} Jugadores</div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                            <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${id}')">⚙️ CONFIG</button>
-                            <button class="btn-dash" style="background:#000; color:#fff" onclick="abrirJugadores('${id}')">👥 JUGADORES</button>
-                        </div>
-                    </div>`;
+            const listContainer = document.getElementById('canchas-list');
+            
+            // Limpiar visualmente si no hay nada
+            if(ids.length === 0) listContainer.innerHTML = "No tienes canchas creadas.";
+
+            // Por cada ID en el Hub, creamos un contenedor y le ponemos un "oído" (listener)
+            ids.forEach(id => {
+                if(!document.getElementById('card-'+id)) {
+                    const div = document.createElement('div');
+                    div.id = 'card-'+id;
+                    listContainer.appendChild(div);
                 }
-            }
+                
+                // Si no estamos escuchando esta cancha todavía, activamos el listener real-time
+                if(!courtListeners[id]) {
+                    courtListeners[id] = true;
+                    db.ref('eventos/'+id).on('value', evS => {
+                        const d = evS.val();
+                        if(!d) return;
+                        const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
+                        const cardDiv = document.getElementById('card-'+id);
+                        cardDiv.innerHTML = `
+                            <div class="cancha-card">
+                                <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
+                                <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                                <div class="info-row">📍 ${d.lugar || 'Sede no definida'}</div>
+                                <div class="info-row">👥 ${conf} / ${d.cupo} Confirmados</div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                                    <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${id}')">⚙️ CONFIG</button>
+                                    <button class="btn-dash" style="background:#000; color:#fff" onclick="abrirJugadores('${id}')">👥 JUGADORES</button>
+                                </div>
+                            </div>`;
+                    });
+                }
+            });
         });
     }
 
@@ -217,10 +239,11 @@
         db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); const ins = d.inscriptos || [];
             const conf = ins.filter(p => p.estado !== 'pendiente').length;
-            document.getElementById('st-total').innerText = d.cupo;
             document.getElementById('st-pag').innerText = conf;
+            document.getElementById('st-total').innerText = d.cupo;
             document.getElementById('st-pen').innerText = ins.length - conf;
             document.getElementById('st-lib').innerText = d.cupo - conf;
+            
             const list = document.getElementById('players-list'); list.innerHTML = "";
             ins.forEach((p, idx) => {
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();

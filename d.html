@@ -11,32 +11,27 @@
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
         
-        /* BANNER HERO */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 5px; }
         .fin-box b { font-size: 16px; font-weight: 900; }
 
-        /* CANCHA CARD */
         .cancha-card { background: white; padding: 20px; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .cancha-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
         
-        /* BOTONES */
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 8px; }
         .btn-config { background: #f2f2f7; color: var(--text); } 
         .btn-players { background: #000; color: #fff; }
         .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; margin-bottom: 15px; }
 
-        /* RECURRENCIA GRID */
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
 
-        /* MODALES */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
         .hidden { display: none !important; }
@@ -101,6 +96,9 @@
                 <div><label>🕒 Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
                 <div><label>🕒 Fin</label><input id="ed-h2" type="time" class="input-std"></div>
             </div>
+
+            <label>💰 Precio por Persona ($)</label>
+            <input id="ed-val" type="number" class="input-std" placeholder="Ej: 15000">
 
             <label>🔄 Recurrencia Semanal</label>
             <div class="days-grid">
@@ -177,14 +175,11 @@
         currentCanchaData = s.val(); const ins = currentCanchaData.inscriptos || [];
         const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
         ins.sort((a,b) => (pesos[a.estado] || 99) - (pesos[b.estado] || 99));
-        
         const conf = ins.filter(p => p.estado !== 'pendiente').length;
-        // AQUÍ ESTÁ EL ARREGLO:
         document.getElementById('st-total').innerText = currentCanchaData.cupo;
         document.getElementById('st-pag').innerText = conf;
         document.getElementById('st-pen').innerText = ins.length - conf;
         document.getElementById('st-lib').innerText = Math.max(0, currentCanchaData.cupo - conf);
-        
         const list = document.getElementById('players-list'); list.innerHTML = "";
         ins.forEach((p) => {
             const oIdx = currentCanchaData.inscriptos.indexOf(p);
@@ -212,6 +207,7 @@
         document.getElementById('ed-h1').value = d.hora || "";
         document.getElementById('ed-h2').value = d.horaFin || "";
         document.getElementById('ed-cup').value = d.cupo || 0;
+        document.getElementById('ed-val').value = d.valor || 0;
         document.getElementById('ed-ali').value = d.alias || "";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false);
         document.getElementById('modal-config').classList.remove('hidden');
@@ -220,8 +216,30 @@
     window.guardarConfig = async () => {
         const days = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) days.push(d); });
         const rrule = days.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${days.join(',')}` : "RRULE:FREQ=NONE";
-        await update(ref(db, 'eventos/'+currentCanchaId), { organiza: document.getElementById('ed-org').value, nombreOrganizador: document.getElementById('ed-owner').value, celuOrganizador: document.getElementById('ed-celu').value, categorias: document.getElementById('ed-cat').value, lugar: document.getElementById('ed-lug').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), alias: document.getElementById('ed-ali').value, rrule: rrule });
-        alert("¡Cancha actualizada!"); window.cerrarModals();
+
+        const updates = {
+            organiza: document.getElementById('ed-org').value,
+            nombreOrganizador: document.getElementById('ed-owner').value,
+            celuOrganizador: document.getElementById('ed-celu').value,
+            categorias: document.getElementById('ed-cat').value,
+            lugar: document.getElementById('ed-lug').value,
+            fecha: document.getElementById('ed-fec').value,
+            hora: document.getElementById('ed-h1').value,
+            horaFin: document.getElementById('ed-h2').value,
+            cupo: parseInt(document.getElementById('ed-cup').value),
+            valor: parseInt(document.getElementById('ed-val').value),
+            alias: document.getElementById('ed-ali').value,
+            rrule: rrule
+        };
+
+        try {
+            await update(ref(db, 'eventos/'+currentCanchaId), updates);
+            alert("¡Cancha actualizada!"); 
+            window.cerrarModals();
+            renderCanchas(); // FORZAMOS EL REFRESCO DE LA LISTA
+        } catch(e) {
+            alert("Error al guardar: " + e.message);
+        }
     };
 
     window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-players').classList.add('hidden'); };

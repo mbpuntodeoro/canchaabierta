@@ -11,81 +11,53 @@
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 550px; margin: auto; }
         
-        /* HERO FINANCIERO */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 5px; }
         .fin-box b { font-size: 16px; font-weight: 900; }
 
-        /* CANCHAS */
-        .cancha-card { background: white; padding: 20px; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; }
+        .cancha-card { background: white; padding: 20px; border-radius: 24px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; transition: 0.3s; }
         .cancha-card.disabled { opacity: 0.5; filter: grayscale(1); border: 2px dashed #ccc; }
-        .cancha-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 6px; }
         
-        /* BOTONES */
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 8px; }
         .btn-config { background: #f2f2f7; color: var(--text); } 
         .btn-players { background: #000; color: #fff; }
-        .btn-full { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 900; background: var(--primary); color: white; cursor: pointer; margin-bottom: 15px; }
-
-        /* RECURRENCIA */
+        
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
+        .hidden { display: none !important; }
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; font-size: 15px; }
+        
+        .switch-box { background: #f8f9fb; padding: 15px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid #eee; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
+        
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
         .day-check { display: none; }
         .day-label { flex: 1; background: #f2f2f7; color: #8e8e93; padding: 10px 0; text-align: center; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
         .day-check:checked + .day-label { background: var(--primary); color: white; }
-
-        /* MODALES */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 30px; max-height: 90vh; overflow-y: auto; }
-        .hidden { display: none !important; }
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-family: inherit; outline: none; }
-        
-        /* JUGADORES LISTA */
-        .player-row { display: flex; align-items: center; padding: 12px; background: #f8f9fb; border-radius: 14px; margin-bottom: 6px; gap: 10px; border: 1px solid #eee; }
-        .btn-status { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 800; font-size: 9px; cursor: pointer; }
-        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
-        
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 4px 5px; }
-        .switch-box { background: #f8f9fb; padding: 15px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1px">Cargando...</h1>
-            <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">ACTUALIZAR</button>
+            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">Cargando...</h1>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">REFRESCAR</button>
         </header>
 
         <div class="hero">
-            <span>Balance del Organizador</span>
+            <span>Balance del Club</span>
             <div class="fin-grid">
                 <div class="fin-box"><span>Deuda Actual</span><b id="txt-deu">$0</b></div>
                 <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
             </div>
         </div>
 
-        <button class="btn-full" id="btn-share">🔗 COMPARTIR CARTELERA PÚBLICA</button>
-        <div id="canchas-list"></div>
-    </div>
-
-    <div id="modal-players" class="modal hidden">
-        <div class="modal-content">
-            <h2 style="margin-top:0">👥 Jugadores Inscriptos</h2>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
-                <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Total</span><b id="st-total">0</b></div>
-                <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Confirm</span><b id="st-pag" style="color:var(--success)">0</b></div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px">
-                <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Pend</span><b id="st-pen" style="color:var(--danger)">0</b></div>
-                <div class="fin-box" style="background:#f8f9fb; color:#333"><span>Libre</span><b id="st-lib" style="color:var(--primary)">0</b></div>
-            </div>
-            <div id="players-list"></div>
-            <button class="btn-full" onclick="window.cerrarModals()" style="background:#000; margin-top:20px">CERRAR LISTA</button>
-        </div>
+        <div id="canchas-list">Cargando canchas...</div>
     </div>
 
     <div id="modal-config" class="modal hidden">
@@ -100,9 +72,9 @@
                 </select>
             </div>
 
-            <label>Nombre de la Cancha (ej: Mixta)</label><input id="ed-org" class="input-std">
+            <label>Nombre de la Cancha</label><input id="ed-org" class="input-std">
             <label>Responsable</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp Org (ej: 54911...)</label><input id="ed-celu" class="input-std">
+            <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
             <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <label>📍 Lugar / Sede</label><input id="ed-lug" class="input-std">
             
@@ -116,7 +88,8 @@
                 <div><label>🕒 Fin</label><input id="ed-h2" type="time" class="input-std"></div>
             </div>
 
-            <label>💰 Precio por Persona ($)</label><input id="ed-val" type="number" class="input-std">
+            <label>💰 Precio por Persona ($)</label>
+            <input id="ed-val" type="number" class="input-std">
 
             <label>🔄 Recurrencia Semanal</label>
             <div class="days-grid">
@@ -131,8 +104,8 @@
 
             <label>Alias Mercado Pago</label><input id="ed-ali" class="input-std">
             
-            <button class="btn-full" onclick="window.guardarConfig()">GUARDAR CAMBIOS</button>
-            <button class="btn-full" onclick="window.cerrarModals()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
+            <button onclick="window.guardarConfig()" style="width:100%; padding:18px; border-radius:18px; border:none; font-weight:900; background:var(--primary); color:white; cursor:pointer">GUARDAR CAMBIOS</button>
+            <button onclick="window.cerrarModals()" style="width:100%; padding:15px; border-radius:18px; border:none; font-weight:800; background:#eee; color:#333; margin-top:10px; cursor:pointer">CANCELAR</button>
         </div>
     </div>
 
@@ -143,84 +116,47 @@
     const firebaseConfig = { apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI", authDomain: "padelapp-e72af.firebaseapp.com", databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com", projectId: "padelapp-e72af", storageBucket: "padelapp-e72af.appspot.com", messagingSenderId: "806914592971", appId: "1:806914592971:web:84720063fc36a882b40b4e" };
     const app = initializeApp(firebaseConfig); const db = getDatabase(app);
     const orgId = new URLSearchParams(window.location.search).get('org');
-    let currentCanchaId = null, currentCanchaData = null;
-
-    const fmtFechaHumana = (f, h1, h2) => {
-        if(!f) return '--';
-        const ds = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const [y, m, d] = f.split('-'); const dO = new Date(y, m - 1, d);
-        return `${ds[dO.getDay()]} ${parseInt(d)}/${parseInt(m)} de ${h1} a ${h2 || '--'} hs`;
-    };
+    let currentCanchaId = null;
 
     if(orgId) {
+        // Escuchamos datos del club
         onValue(ref(db, `facturacion/${orgId}/cuenta`), snap => {
             const f = snap.val() || {};
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
             document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0).toLocaleString();
             document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
-            renderCanchas();
+        });
+
+        // Escuchamos la lista de canchas del Hub
+        onValue(ref(db, 'hubs/'+orgId), async snap => {
+            const h = snap.val() || {};
+            const list = document.getElementById('canchas-list'); list.innerHTML = "";
+            
+            for(let id of (h.canchas || [])) {
+                const s = await get(ref(db, 'eventos/'+id));
+                if(s.exists()){
+                    const d = s.val(); const isDis = d.estado === 'deshabilitada';
+                    const card = document.createElement('div');
+                    card.className = `cancha-card ${isDis ? 'disabled' : ''}`;
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias || 'Gral'}</span></div>
+                        <div class="info-row">📅 ${d.fecha} | 🕒 ${d.hora} HS ${isDis ? '| 🚫' : ''}</div>
+                        <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px">
+                            <button class="btn-dash btn-config" onclick="window.abrirConfig('${id}')">⚙️ CONFIG</button>
+                            <button class="btn-dash btn-players" onclick="alert('Abriendo jugadores...')">👥 JUGADORES</button>
+                        </div>`;
+                    list.appendChild(card);
+                }
+            }
         });
     }
 
-    async function renderCanchas() {
-        const hSnap = await get(ref(db, 'hubs/'+orgId)); const h = hSnap.val() || {};
-        const list = document.getElementById('canchas-list'); list.innerHTML = "";
-        let data = [];
-        for(let id of (h.canchas || [])) {
-            const s = await get(ref(db, 'eventos/'+id));
-            if(s.exists()) data.push({ id, ...s.val() });
-        }
-        data.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        data.forEach(d => {
-            const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-            const isDis = d.estado === 'deshabilitada';
-            const item = document.createElement('div'); 
-            item.className = `cancha-card ${isDis ? 'disabled' : ''}`;
-            item.innerHTML = `
-                <div class="cancha-header"><b style="font-size:17px">🎾 ${d.organiza}</b><span class="tag-cat">${d.categorias || 'Gral'}</span></div>
-                <div class="info-row">📅 ${fmtFechaHumana(d.fecha, d.hora, d.horaFin)}</div>
-                <div class="info-row">📍 ${d.lugar || 'Sede a definir'}</div>
-                <div class="info-row">👥 ${conf}/${d.cupo} Jugadores ${d.rrule?.includes('WEEKLY') ? '• 🔄' : ''} ${isDis ? '• 🚫' : ''}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px">
-                    <button class="btn-dash btn-config" onclick="window.abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                    <button class="btn-dash btn-players" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                </div>`;
-            list.appendChild(item);
-        });
-    }
-
-    // --- FUNCIONES GLOBALES ---
-    window.abrirJugadores = async (id) => {
-        currentCanchaId = id; const s = await get(ref(db, 'eventos/'+id));
-        if(!s.exists()) return;
-        currentCanchaData = s.val(); const ins = currentCanchaData.inscriptos || [];
-        const pesos = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
-        ins.sort((a,b) => (pesos[a.estado] || 99) - (pesos[b.estado] || 99));
+    window.abrirConfig = async (id) => {
+        currentCanchaId = id;
+        const s = await get(ref(db, 'eventos/'+id));
+        const d = s.val();
         
-        const conf = ins.filter(p => p.estado !== 'pendiente').length;
-        document.getElementById('st-total').innerText = currentCanchaData.cupo;
-        document.getElementById('st-pag').innerText = conf;
-        document.getElementById('st-pen').innerText = ins.length - conf;
-        document.getElementById('st-lib').innerText = Math.max(0, currentCanchaData.cupo - conf);
-        
-        const list = document.getElementById('players-list'); list.innerHTML = "";
-        ins.forEach((p) => {
-            const oIdx = currentCanchaData.inscriptos.indexOf(p);
-            list.innerHTML += `<div class="player-row"><span style="flex:1; font-weight:700">${p.nombre}</span><button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${p.estado==='paga-en-la-cancha'?'EN CANCHA':p.estado.toUpperCase()}</button><button onclick="window.borrarP(${oIdx})" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer">✕</button></div>`;
-        });
-        document.getElementById('modal-players').classList.remove('hidden');
-    };
-
-    window.togglePago = (i) => {
-        const ests = ["pendiente", "paga-en-la-cancha", "pagado"];
-        currentCanchaData.inscriptos[i].estado = ests[(ests.indexOf(currentCanchaData.inscriptos[i].estado) + 1) % 3];
-        update(ref(db, 'eventos/'+currentCanchaId), { inscriptos: currentCanchaData.inscriptos }).then(() => window.abrirJugadores(currentCanchaId));
-    };
-
-    window.borrarP = (i) => { if(confirm("¿Borrar?")) { currentCanchaData.inscriptos.splice(i, 1); update(ref(db, 'eventos/'+currentCanchaId), { inscriptos: currentCanchaData.inscriptos }).then(() => window.abrirJugadores(currentCanchaId)); } };
-
-    window.abrirConfig = async id => {
-        currentCanchaId = id; const s = await get(ref(db, 'eventos/'+id)); const d = s.val();
         document.getElementById('ed-status').value = d.estado || 'activa';
         document.getElementById('ed-org').value = d.organiza || "";
         document.getElementById('ed-owner').value = d.nombreOrganizador || "";
@@ -233,12 +169,21 @@
         document.getElementById('ed-cup').value = d.cupo || 0;
         document.getElementById('ed-val').value = d.valor || 0;
         document.getElementById('ed-ali').value = d.alias || "";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false);
+        
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => {
+            document.getElementById('check-'+day).checked = d.rrule?.includes(day) || false;
+        });
+        
         document.getElementById('modal-config').classList.remove('hidden');
     };
 
     window.guardarConfig = async () => {
-        const days = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('check-'+d).checked) days.push(d); });
+        if(!currentCanchaId) return;
+
+        const days = [];
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => {
+            if(document.getElementById('check-'+d).checked) days.push(d);
+        });
         const rrule = days.length > 0 ? `RRULE:FREQ=WEEKLY;BYDAY=${days.join(',')}` : "RRULE:FREQ=NONE";
 
         const updates = {
@@ -257,14 +202,19 @@
             rrule: rrule
         };
 
-        await update(ref(db, 'eventos/'+currentCanchaId), updates);
-        alert("¡Guardado!"); window.cerrarModals(); renderCanchas();
+        try {
+            console.log("Intentando guardar en:", 'eventos/'+currentCanchaId);
+            await update(ref(db, 'eventos/'+currentCanchaId), updates);
+            alert("¡Cambios guardados!");
+            window.cerrarModals();
+        } catch (error) {
+            console.error(error);
+            alert("Error de Firebase: " + error.message);
+        }
     };
 
-    window.cerrarModals = () => { document.getElementById('modal-config').classList.add('hidden'); document.getElementById('modal-players').classList.add('hidden'); };
-    document.getElementById('btn-share').onclick = () => {
-        const url = window.location.origin + "/canchaabierta/v.html?org=" + orgId;
-        navigator.clipboard.writeText(url).then(() => alert("Copiado"));
+    window.cerrarModals = () => {
+        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
     };
 </script>
 </body>

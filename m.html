@@ -29,15 +29,18 @@
     </style>
 </head>
 <body>
-    <header><h2>Master PadelApp</h2></header>
+    <header>
+        <h2>Master PadelApp</h2>
+        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight: 800;">CERRAR SESIÓN</button>
+    </header>
     <div class="container">
         <div class="card">
             <h3>🚀 Alta de Organizador</h3>
-            <input id="new-id" class="input-std" placeholder="ID Club (ej: smash-padel)">
+            <input id="new-id" class="input-std" placeholder="ID Club (ej: adictos-al-padel)">
             <input id="new-name" class="input-std" placeholder="Nombre Comercial">
-            <button class="btn-blue" onclick="crearHub()">REGISTRAR</button>
+            <button class="btn-blue" onclick="crearHub()">REGISTRAR NUEVO CLUB</button>
         </div>
-        <div id="lista-clubes">Cargando clubes...</div>
+        <div id="lista-clubes">Cargando base de datos...</div>
     </div>
 
     <div id="modal-edit" class="modal">
@@ -82,7 +85,8 @@
                             <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> <span>▾</span>
                         </div>
                         <div class="hub-content">
-                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ EDITAR TRIAL / PERFIL</button>
+                            <p style="font-size: 13px; margin: 0 0 10px 0;"><b>ID Organizador:</b> ${id}</p>
+                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR TRIAL / PERFIL</button>
                             <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff">ABRIR DASHBOARD</a>
                         </div>
                     </div>`;
@@ -96,7 +100,7 @@
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
         db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, trialDays: 0, trialStartDate: 0, cuentaSuspendida: false });
-        alert("¡Creado!");
+        alert("¡Club creado exitosamente!");
     }
 
     function abrirPerfil(id) {
@@ -120,7 +124,7 @@
             trialStartDate: Date.now(),
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Trial y Perfil actualizados"); cerrarModal(); });
     }
 
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }

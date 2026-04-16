@@ -43,22 +43,28 @@
     if(orgId){
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { document.getElementById('hub-name').innerText = s.val()?.nombreOrg?.toUpperCase() || orgId.toUpperCase(); });
         db.ref('hubs/'+orgId).on('value', async snap => {
-            const list = document.getElementById('lista-eventos'); list.innerHTML = "";
+            const list = document.getElementById('lista-eventos');
             const ids = snap.val()?.canchas || [];
+            let canchasData = [];
             for(let id of ids){
                 const eSnap = await db.ref('eventos/'+id).once('value');
                 if(eSnap.exists()) {
                     const d = eSnap.val();
                     if(d.estado !== 'deshabilitada') {
-                        list.innerHTML += `<div class="event-card">
-                            <div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias}</span></div>
-                            <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                            <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                            <a href="i.html?id=${id}&org=${orgId}" class="btn-join">ANOTARME</a>
-                        </div>`;
+                        canchasData.push({ id, ...d });
                     }
                 }
             }
+            canchasData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+            list.innerHTML = "";
+            canchasData.forEach(d => {
+                list.innerHTML += `<div class="event-card">
+                    <div style="display:flex;align-items:center"><h3 style="margin:0;font-size:18px;font-weight:800;text-transform:uppercase">🎾 ${d.organiza}</h3><span class="tag-cat">${d.categorias}</span></div>
+                    <div class="info-row">📅 ${fmtFecha(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                    <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                    <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a>
+                </div>`;
+            });
         });
     }
 </script>

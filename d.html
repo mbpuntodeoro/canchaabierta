@@ -131,11 +131,12 @@
     <div id="modal-suspension" class="modal">
         <div class="modal-content" style="max-width:400px; text-align:center;">
             <h2 style="margin-top:0">🚫 Suspender Evento</h2>
-            <p style="font-size:14px; color:var(--sub); font-weight:600; margin-bottom:20px">Esta acción no genera cargos de sistema.<br>¿Qué desea hacer con esta cancha?</p>
+            <p style="font-size:15px; color:var(--text); font-weight:700; margin-bottom:5px">Esta acción no genera cargos de sistema.</p>
+            <p style="font-size:16px; color:var(--sub); font-weight:800; margin-bottom:25px">¿Qué desea hacer con esta cancha?</p>
             
-            <button class="btn-dash" style="background:var(--success); color:white; margin-bottom:12px" onclick="confirmarSuspension(true)">SÍ, REPROGRAMAR</button>
+            <button class="btn-dash" style="background:var(--success); color:white; margin-bottom:12px; font-size:12px;" onclick="confirmarSuspension(true)">REPROGRAMARLA PARA LA SEMANA QUE VIENE</button>
             
-            <button class="btn-dash" style="background:var(--danger); color:white; margin-bottom:12px" onclick="confirmarSuspension(false)">NO, ELIMINAR CANCHA</button>
+            <button class="btn-dash" style="background:var(--danger); color:white; margin-bottom:12px; font-size:12px;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button>
             
             <button class="btn-dash" style="background:#f2f2f7; color:#333" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
         </div>
@@ -295,7 +296,7 @@
         if (reprogramar) {
             const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia);
             db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => {
-                alert("Reprogramado para el " + nf);
+                alert("Reprogramada!");
                 cerrarModals();
             });
         } else {

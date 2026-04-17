@@ -179,80 +179,19 @@
     const orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
     window.defaultData = { owner: "", celu: "", alias: "" };
-    window.movimientos = []; // 🧠 NUEVO: Memoria de transacciones
+    window.movimientos = []; 
 
-    // --- EL CEREBRO FINANCIERO (SAAS LEDGER) ---
-    function procesarAbonoMensual() {
+    function calculateFinancials(f) {
         const ahora = Date.now();
-        const trialEx = cuentaInfo.trialExpiryDate || ahora;
+        const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || ahora;
         
-        // Inicializar el próximo cobro si no existe
-        if (!cuentaInfo.proximoCobroAbono) {
-            db.ref(`facturacion/${orgId}/cuenta`).update({ proximoCobroAbono: trialEx });
-            cuentaInfo.proximoCobroAbono = trialEx;
-        }
-
-        // Si ya pasó la fecha del abono, generamos el ticket pendiente
-        if (ahora > cuentaInfo.proximoCobroAbono) {
-            db.ref(`facturacion/${orgId}/movimientos`).push({
-                tipo: 'abono',
-                descripcion: 'Abono Mensual',
-                monto: cuentaInfo.abonoMensual || 0,
-                estado: 'pendiente',
-                fecha: ahora
-            });
-            // Pateamos la fecha 30 días
-            db.ref(`facturacion/${orgId}/cuenta`).update({
-                proximoCobroAbono: cuentaInfo.proximoCobroAbono + (30 * 86400000)
-            });
-        }
-    }
-
-    function checkAndRollover(id, data) {
-        const ahora = Date.now();
-        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
-
-        // Solo operamos si el evento ya terminó y NO fue suspendido
-        if (ahora > eventEnd && data.estado !== 'suspendida') {
-            if (data.tipo === 'recurrente') {
-                // 1. Crear TICKET de cobro en el Ledger
-                db.ref(`facturacion/${orgId}/movimientos`).push({
-                    tipo: 'turno',
-                    descripcion: `Turno: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`,
-                    monto: cuentaInfo.costoPorCancha || 0,
-                    estado: 'pendiente',
-                    fecha: ahora
-                });
-                // 2. Rollover
-                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
-                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
-            
-            } else if (data.tipo === 'unico' && !data.cobrado) {
-                // 1. Crear TICKET de cobro
-                db.ref(`facturacion/${orgId}/movimientos`).push({
-                    tipo: 'turno',
-                    descripcion: `Turno Único: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`,
-                    monto: cuentaInfo.costoPorCancha || 0,
-                    estado: 'pendiente',
-                    fecha: ahora
-                });
-                // 2. Marcar para no volver a cobrar
-                db.ref('eventos/' + id).update({ cobrado: true });
-            }
-        }
-    }
-
-    function renderFinancials() {
-        if (!cuentaInfo.nombreOrg) return;
-
         let deudaAbono = 0;
         let deudaTurnos = 0;
         let cantTurnosPendientes = 0;
         let pagadoEsteMes = 0;
         const mesActual = new Date().getMonth();
-        const ahora = Date.now();
 
-        // 🧠 Sumamos basándonos ÚNICAMENTE en el Libro Mayor (Movimientos)
+        // 1. Calcular Deuda Real (Ledger)
         window.movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
                 if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
@@ -262,22 +201,19 @@
                 }
             } else if (m.estado === 'pagado') {
                 const d = new Date(m.fechaPago || m.fecha);
-                if (d.getMonth() === mesActual) {
-                    pagadoEsteMes += (m.monto || 0);
-                }
+                if (d.getMonth() === mesActual) pagadoEsteMes += (m.monto || 0);
             }
         });
 
         const deudaTotal = deudaAbono + deudaTurnos;
-        const limite = cuentaInfo.limiteCredito || 50000;
+        const limite = f.limiteCredito || 50000;
         const disponible = Math.max(0, limite - deudaTotal);
 
+        // 2. Actualizar UI Financiera
         document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
         document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
-        
-        // Llenar Tarjeta Detalle
         document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(deudaAbono);
-        document.getElementById('det-turnos-texto').innerText = `Turnos pendientes (${cantTurnosPendientes} × ${PadelUtils.fmtDinero(cuentaInfo.costoPorCancha || 0)})`;
+        document.getElementById('det-turnos-texto').innerText = `Turnos pendientes (${cantTurnosPendientes} × ${PadelUtils.fmtDinero(f.costoPorCancha || 0)})`;
         document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(deudaTurnos);
         document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(limite);
         document.getElementById('det-pagado').innerText = PadelUtils.fmtDinero(pagadoEsteMes);
@@ -285,23 +221,34 @@
         const elDisp = document.getElementById('det-disponible');
         const cajaDisp = document.getElementById('caja-disponible');
         if (deudaTotal > limite) {
-            elDisp.innerText = "Límite excedido";
-            cajaDisp.style.color = "var(--danger)";
+            elDisp.innerText = "Límite excedido"; cajaDisp.style.color = "var(--danger)";
         } else {
             elDisp.innerText = PadelUtils.fmtDinero(disponible);
             cajaDisp.style.color = disponible < (limite * 0.1) ? "var(--warning)" : "var(--success)";
         }
 
-        isAccountBlocked = (deudaTotal > (limite * 1.05)) || cuentaInfo.cuentaSuspendida;
+        // 3. LÓGICA DEL DOBLE CANDADO
+        const bloqueoPorLimite = deudaTotal > (limite * 1.05);
+        const bloqueoPorTiempo = ahora > vencimientoAbono;
+        
+        isAccountBlocked = bloqueoPorLimite || bloqueoPorTiempo || f.cuentaSuspendida;
         document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
-        document.getElementById('msg-locked').style.display = isAccountBlocked ? 'block' : 'none';
+        
+        const msgLocked = document.getElementById('msg-locked');
+        if (isAccountBlocked) {
+            msgLocked.style.display = 'block';
+            if (bloqueoPorTiempo) msgLocked.innerText = "Abono vencido. Regularice su pago para seguir operando.";
+            else if (bloqueoPorLimite) msgLocked.innerText = "Límite de crédito excedido. Regularice su pago.";
+            else msgLocked.innerText = "Cuenta suspendida administrativamente.";
+        } else {
+            msgLocked.style.display = 'none';
+        }
 
-        // LÓGICA DE UX "ABONO MENSUAL"
+        // 4. LÓGICA DE UX "ABONO MENSUAL" Y ALERTAS DE 3 DÍAS
         const statusTxt = document.getElementById('plan-status');
         const daysTxt = document.getElementById('plan-days');
         const btnPlan = document.getElementById('btn-plan-action');
-        const trialEx = cuentaInfo.trialExpiryDate || ahora;
-        const proxAbono = cuentaInfo.proximoCobroAbono || trialEx;
+        const diasParaVencer = Math.ceil((vencimientoAbono - ahora) / 86400000);
 
         const dateToStr = (ms) => {
             const d = new Date(ms);
@@ -309,25 +256,68 @@
         };
 
         if (isAccountBlocked) {
-            statusTxt.innerHTML = "🔴 Cuenta Suspendida"; statusTxt.style.color = "var(--danger)";
-            daysTxt.innerText = "Límite de crédito excedido"; daysTxt.style.color = "var(--danger)";
+            statusTxt.innerHTML = bloqueoPorTiempo ? "🔴 Abono Vencido" : "🔴 Cuenta Suspendida"; 
+            statusTxt.style.color = "var(--danger)";
+            daysTxt.innerText = bloqueoPorTiempo ? "Venció el " + dateToStr(vencimientoAbono) : "Límite de crédito excedido"; 
+            daysTxt.style.color = "var(--danger)";
             btnPlan.innerText = "ACTIVAR PLAN"; btnPlan.style.background = "var(--danger)";
         } else {
-            if (ahora < trialEx) {
-                const remTrial = Math.ceil((trialEx - ahora) / 86400000);
-                statusTxt.innerHTML = "🟡 Prueba hasta el " + dateToStr(trialEx); statusTxt.style.color = "var(--warning)";
-                daysTxt.innerText = "Te quedan " + remTrial + " días gratis"; daysTxt.style.color = "var(--text)";
+            if (diasParaVencer <= 3 && diasParaVencer > 0) {
+                statusTxt.innerHTML = "⚠️ Vence en " + diasParaVencer + (diasParaVencer === 1 ? " día" : " días"); 
+                statusTxt.style.color = "var(--danger)";
+                daysTxt.innerText = "Aboná para evitar el corte"; 
+                daysTxt.style.color = "var(--danger)";
+                btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--danger)";
+            } else if (diasParaVencer <= 7) {
+                statusTxt.innerHTML = "🟡 Activo hasta el " + dateToStr(vencimientoAbono); 
+                statusTxt.style.color = "var(--warning)";
+                daysTxt.innerText = "Tu plan vence pronto"; 
+                daysTxt.style.color = "var(--warning)";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             } else {
-                const daysLeft = Math.ceil((proxAbono - ahora) / 86400000);
-                if (daysLeft < 5) {
-                    statusTxt.innerHTML = "🟡 Activo hasta el " + dateToStr(proxAbono); statusTxt.style.color = "var(--warning)";
-                    daysTxt.innerText = "Tu plan está por vencer (" + Math.max(0,daysLeft) + " días)"; daysTxt.style.color = "var(--warning)";
-                } else {
-                    statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(proxAbono); statusTxt.style.color = "var(--success)";
-                    daysTxt.innerText = "Te quedan " + daysLeft + " días"; daysTxt.style.color = "var(--text)";
-                }
+                statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(vencimientoAbono); 
+                statusTxt.style.color = "var(--success)";
+                daysTxt.innerText = "Te quedan " + diasParaVencer + " días"; 
+                daysTxt.style.color = "var(--text)";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
+            }
+        }
+    }
+
+    function procesarAbonoMensual() {
+        const ahora = Date.now();
+        const trialEx = cuentaInfo.trialExpiryDate || ahora;
+        
+        if (!cuentaInfo.vencimientoAbono) {
+            db.ref(`facturacion/${orgId}/cuenta`).update({ vencimientoAbono: trialEx });
+            cuentaInfo.vencimientoAbono = trialEx;
+        }
+
+        if (ahora > cuentaInfo.vencimientoAbono) {
+            db.ref(`facturacion/${orgId}/movimientos`).push({
+                tipo: 'abono', descripcion: 'Abono Mensual', monto: cuentaInfo.abonoMensual || 0, estado: 'pendiente', fecha: ahora
+            });
+            // Esto solo se patea visualmente si lo quisiéramos, pero ahora lo controlás desde el master.
+            // Para evitar loops, solo generamos el ticket. El cliente DEBE pagar para que la fecha se mueva.
+        }
+    }
+
+    function checkAndRollover(id, data) {
+        const ahora = Date.now();
+        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+
+        if (ahora > eventEnd && data.estado !== 'suspendida') {
+            if (data.tipo === 'recurrente') {
+                db.ref(`facturacion/${orgId}/movimientos`).push({
+                    tipo: 'turno', descripcion: `Turno: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora
+                });
+                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
+                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
+            } else if (data.tipo === 'unico' && !data.cobrado) {
+                db.ref(`facturacion/${orgId}/movimientos`).push({
+                    tipo: 'turno', descripcion: `Turno Único: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora
+                });
+                db.ref('eventos/' + id).update({ cobrado: true });
             }
         }
     }
@@ -335,7 +325,6 @@
     function init() {
         if(!orgId) return;
         
-        // 1. Escuchar Cuenta
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
@@ -344,14 +333,12 @@
             renderFinancials();
         });
 
-        // 2. Escuchar Movimientos del Ledger
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {};
             window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
             renderFinancials();
         });
 
-        // 3. Escuchar Eventos (Canchas)
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             ids.forEach(id => {
@@ -365,11 +352,10 @@
         });
     }
 
-    // --- FUNCIONES DE INTERFAZ ESTÁNDAR ---
     function renderizarCanchas() {
         const list = document.getElementById('canchas-list');
         const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        list.innerHTML = sorted.length ? "" : "No hay canchas.";
+        list.innerHTML = sorted.length ? "" : "No hay canchas activas.";
         sorted.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
             list.innerHTML += `<div class="cancha-card">
@@ -384,7 +370,7 @@
     }
 
     function abrirNuevaCancha() {
-        if(isAccountBlocked) return alert("Cuenta bloqueada.");
+        if(isAccountBlocked) return alert("Cuenta bloqueada. Regularice su pago.");
         isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('btn-suspender').style.display = 'none';
         document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";

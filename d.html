@@ -12,7 +12,6 @@
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         
-        /* PANTALLA DE LOGIN */
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
         
@@ -42,10 +41,8 @@
         <div class="login-card">
             <h1 style="margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px;">PadelApp</h1>
             <p style="color: var(--sub); font-size: 14px; font-weight: 600; margin-bottom: 25px;">Acceso Organizador</p>
-            
             <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
             <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
-            
             <button class="btn-dash" style="background: black; color: white; font-size: 13px; margin-top: 10px; padding: 16px;" onclick="iniciarSesion()">INGRESAR</button>
             <p id="log-error" style="color: var(--danger); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
         </div>
@@ -74,9 +71,7 @@
                 <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
                     <span style="color:var(--text)" id="det-turnos-texto">Canchas (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
                 </div>
-                
                 <button class="btn-dash" style="background:#f2f2f7; color:var(--text); margin-top:10px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER DETALLE DE MOVIMIENTOS</button>
-
                 <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
                 <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
                     <span>Límite Total:</span><span id="det-limite">$0</span>
@@ -126,23 +121,48 @@
     <div id="modal-suspension" class="modal"><div class="modal-content" style="max-width:400px; text-align:center;"><h2 style="margin-top:0">🚫 Suspender Evento</h2><p style="font-size:15px; color:var(--text); font-weight:700; margin-bottom:5px">Esta acción no genera cargos de sistema.</p><p style="font-size:16px; color:var(--sub); font-weight:800; margin-bottom:25px">¿Qué desea hacer con esta cancha?</p><button class="btn-dash" style="background:var(--success); color:white; margin-bottom:12px; font-size:12px;" onclick="confirmarSuspension(true)">REPROGRAMARLA PARA LA SEMANA QUE VIENE</button><button class="btn-dash" style="background:var(--danger); color:white; margin-bottom:12px; font-size:12px;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button><button class="btn-dash" style="background:#f2f2f7; color:#333" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button></div></div>
 
 <script>
-    const orgId = new URLSearchParams(window.location.search).get('org');
+    let orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
     window.defaultData = { owner: "", celu: "", alias: "" };
     window.movimientos = []; 
     let currentMovsData = [];
     let isInitialized = false;
 
-    // 🔒 SISTEMA DE AUTENTICACIÓN
+    // 🔒 SISTEMA DE AUTENTICACIÓN Y ENRUTAMIENTO INTELIGENTE
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            if(!isInitialized) {
-                init();
-                isInitialized = true;
+            
+            // Si entró sin el ?org=club en la URL, buscamos cuál es su club
+            if (!orgId) {
+                document.getElementById('org-name-disp').innerText = "Localizando tu club...";
+                db.ref('facturacion').once('value', snap => {
+                    let foundOrg = null;
+                    const data = snap.val() || {};
+                    for (let id in data) {
+                        if (data[id].cuenta && data[id].cuenta.emailOrganizador === user.email) {
+                            foundOrg = id;
+                            break;
+                        }
+                    }
+                    if (foundOrg) {
+                        orgId = foundOrg;
+                        // Actualiza la URL para que no la pierda y carga los datos
+                        window.history.replaceState(null, null, `?org=${orgId}`);
+                        if(!isInitialized) { init(); isInitialized = true; }
+                    } else {
+                        alert("⚠️ Tu usuario no tiene un club asignado en la base de datos. Contactá a Mariano.");
+                        cerrarSesion();
+                    }
+                });
+            } else {
+                if(!isInitialized) {
+                    init();
+                    isInitialized = true;
+                }
             }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
@@ -162,9 +182,7 @@
     }
 
     function cerrarSesion() { 
-        auth.signOut().then(() => {
-            window.location.href = 'index.html';
-        });
+        auth.signOut().then(() => { window.location.href = 'index.html'; }); 
     }
 
     function formatFec(f) {
@@ -403,7 +421,6 @@
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
     window.borrarP = function(idx) { if(!confirm("¿Borrar?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
-    
 </script>
 </body>
 </html>

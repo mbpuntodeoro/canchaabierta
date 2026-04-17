@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Hub - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -12,30 +13,38 @@
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 850px; margin: 30px auto; padding: 0 20px; }
+        
+        /* CARDS */
         .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid var(--primary); }
         .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; }
         .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 0 22px 22px 22px; display: none; border-top: 1px solid #f9f9f9; background: #fafafa; }
         .hub-item.active .hub-content { display: block; }
+        
+        /* ESTADOS */
         .tag-status { font-size: 9px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
         .st-prueba { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-vencido { background: #fff2f2; color: var(--danger); }
+        
+        /* FORMULARIOS */
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
+        
+        /* BOTONES */
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
         .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
+        .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
+
+        /* MODALES */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-        .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
         
-        /* ESTILOS DEL HISTORIAL DE MOVIMIENTOS */
+        /* FILAS MOVIMIENTOS */
         .mov-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; align-items: center; }
-        .mov-row:last-child { border-bottom: none; }
-        .tag-pend { color: var(--danger); font-weight: 900; font-size: 9px; background: #fff2f2; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
-        .tag-pag { color: var(--success); font-weight: 900; font-size: 9px; background: #e8f9ee; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .tag-pend { color: var(--danger); font-weight: 900; font-size: 9px; background: #fff2f2; padding: 4px 8px; border-radius: 6px; }
+        .tag-pag { color: var(--success); font-weight: 900; font-size: 9px; background: #e8f9ee; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -61,12 +70,16 @@
             <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
             <input type="hidden" id="edit-id">
             
-            <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
+            <label>Nombre Comercial</label>
+            <input id="mod-nom" class="input-std">
+            
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            <label>Alias (Cobros del Club)</label><input id="mod-ali" class="input-std">
+            
+            <label>Alias de Cobros (Club)</label>
+            <input id="mod-ali" class="input-std">
             
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
@@ -74,14 +87,15 @@
                 <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
                 <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
             </div>
-            <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
+            <label>Límite de Crédito ($)</label>
+            <input id="mod-limite" type="number" class="input-std">
 
             <hr>
-            <label>Gestión de Vencimiento / Prueba</label>
+            <label>Gestión de Vencimiento / Tiempo</label>
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
                 <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
-                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasPrueba()">SUMAR DÍAS</button>
-                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FORZAR VENCIMIENTO</button>
+                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasVencimiento()">SUMAR</button>
+                <button class="btn-action" style="background:var(--success); color:white;" onclick="forzarVencimientoHoy()">FORZAR VENCIMIENTO</button>
             </div>
             <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
             
@@ -99,10 +113,7 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">📋 Detalle de Movimientos</h2>
             <p style="font-size:13px; color:var(--sub); font-weight:600; margin-top:-10px;">Historial de cargos generados por el sistema.</p>
-            
-            <div id="lista-movimientos" style="margin-top: 20px; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
-                </div>
-            
+            <div id="lista-movimientos" style="margin-top: 20px; max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
             <button class="btn-blue" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
     </div>
@@ -122,21 +133,20 @@
                 
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
-                const now = Date.now();
-                const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || now;
-                const daysLeft = Math.ceil((vencimientoAbono - now) / 86400000);
+                const ahora = Date.now();
+                const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || ahora;
+                const daysLeft = Math.ceil((vencimientoAbono - ahora) / 86400000);
                 
-                // Calculamos Deuda Exacta
                 let deudaTotal = 0;
                 for (let k in movs) {
-                    if (movs[k].estado === 'pendiente') deudaTotal += (movs[k].monto || 0);
+                    if (movs[k].estado === 'pendiente') {
+                        deudaTotal += (movs[k].monto || 0);
+                    }
                 }
 
-                // Etiqueta de Estado
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
-                else if(daysLeft < 0) tag = `<span class="tag-status st-vencido">Vencido</span>`;
-                else if(f.trialExpiryDate && f.trialExpiryDate > now) tag = `<span class="tag-status st-prueba">Prueba (${daysLeft}d)</span>`;
+                else if(ahora > vencimientoAbono) tag = `<span class="tag-status st-vencido">Vencido</span>`;
                 else tag = `<span class="tag-status st-activo">Activo (${daysLeft}d)</span>`;
 
                 container.innerHTML += `
@@ -148,10 +158,10 @@
                         <div class="hub-content">
                             <div style="background: ${deudaTotal > 0 ? '#fff2f2' : '#f8f9fb'}; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid ${deudaTotal > 0 ? '#ffdbdb' : '#eee'};">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                    <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA ACTUAL:</span>
+                                    <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA PENDIENTE:</span>
                                     <span style="font-size:22px; font-weight:900; color:${deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(deudaTotal)}</span>
                                 </div>
-                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y EXTENDER 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
+                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y RENOVAR 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
                             </div>
 
                             <button class="btn-edit" style="width:100%; margin-bottom:15px; background:#f8f9fb; border:1px solid #eee;" onclick="abrirDetalle('${id}')">📋 VER DETALLE DE MOVIMIENTOS</button>
@@ -173,35 +183,29 @@
         });
     }
 
-    // AUDITORÍA DE LEDGER
     function abrirDetalle(id) {
         db.ref(`facturacion/${id}/movimientos`).once('value', s => {
             const movs = s.val() || {};
             const lista = document.getElementById('lista-movimientos');
             lista.innerHTML = "";
-
-            // Convertir a Array y ordenar del más nuevo al más viejo
             const arr = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
 
             if(arr.length === 0) {
-                lista.innerHTML = "<p style='text-align:center; color:#888; font-size:13px; font-weight:600;'>No hay movimientos registrados.</p>";
+                lista.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No hay registros.</p>";
             } else {
                 arr.forEach(m => {
-                    const dateStr = new Date(m.fecha).toLocaleDateString('es-AR', {day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit'});
-                    const tag = m.estado === 'pendiente' ? `<span class="tag-pend">PENDIENTE</span>` : `<span class="tag-pag">PAGADO</span>`;
-                    
+                    const dStr = new Date(m.fecha).toLocaleDateString('es-AR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
                     lista.innerHTML += `
                         <div class="mov-row">
                             <div style="flex:1">
-                                <strong style="display:block; color:var(--text); font-size:14px;">${m.descripcion}</strong>
-                                <span style="font-size:11px; color:var(--sub); font-weight:600;">Generado: ${dateStr}</span>
+                                <strong style="display:block; font-size:13px;">${m.descripcion}</strong>
+                                <span style="font-size:10px; color:var(--sub); font-weight:600;">${dStr}</span>
                             </div>
-                            <div style="text-align:right; margin-left:10px;">
-                                <strong style="display:block; font-size:15px; margin-bottom:3px;">${PadelUtils.fmtDinero(m.monto)}</strong>
-                                ${tag}
+                            <div style="text-align:right">
+                                <strong style="display:block; font-size:14px;">${PadelUtils.fmtDinero(m.monto)}</strong>
+                                ${m.estado === 'pendiente' ? '<span class="tag-pend">PENDIENTE</span>' : '<span class="tag-pag">PAGADO</span>'}
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
             document.getElementById('modal-detalle').style.display = 'flex';
@@ -209,8 +213,8 @@
     }
 
     function registrarPago(id, monto) {
-        if(!confirm(`¿Confirmás que el cliente te transfirió ${PadelUtils.fmtDinero(monto)}?\n\nAl aceptar:\n1. La deuda pasará a cero.\n2. Su abono se renovará por 30 días.`)) return;
-
+        if(!confirm(`¿Registrar pago de ${PadelUtils.fmtDinero(monto)}?\n\nEsto limpiará la deuda y extenderá el abono 30 días.`)) return;
+        
         db.ref(`facturacion/${id}`).once('value', snap => {
             const data = snap.val() || {};
             const movs = data.movimientos || {};
@@ -225,31 +229,14 @@
                 }
             }
 
-            const vencimientoActual = cuenta.vencimientoAbono || cuenta.trialExpiryDate || ahora;
-            const baseVencimiento = Math.max(ahora, vencimientoActual); 
-            updates[`cuenta/vencimientoAbono`] = baseVencimiento + (30 * 86400000);
+            const vencActual = cuenta.vencimientoAbono || cuenta.trialExpiryDate || ahora;
+            updates[`cuenta/vencimientoAbono`] = Math.max(ahora, vencActual) + (30 * 86400000);
 
-            if(Object.keys(updates).length > 0) {
-                db.ref(`facturacion/${id}`).update(updates).then(() => {
-                    alert("¡Pago procesado! Deuda en cero y plan extendido 30 días.");
-                    render();
-                });
-            }
+            db.ref(`facturacion/${id}`).update(updates).then(() => {
+                alert("Pago registrado con éxito.");
+                render();
+            });
         });
-    }
-
-    function crearHub() {
-        const id = document.getElementById('new-id').value.trim().toLowerCase();
-        const nom = document.getElementById('new-name').value.trim();
-        if(!id || !nom) return alert("Faltan datos");
-        db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ 
-            nombreOrg: nom, 
-            vencimientoAbono: Date.now() + (7 * 86400000), 
-            abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000, 
-            cuentaSuspendida: false
-        });
-        alert("Club creado con 7 días de prueba.");
     }
 
     function abrirPerfil(id) {
@@ -265,26 +252,22 @@
             document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0;
             document.getElementById('mod-limite').value = f.limiteCredito || 50000;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            document.getElementById('mod-trial-days').value = "";
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento Actual: " + new Date(currentVencimiento).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento: " + new Date(currentVencimiento).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
-    function sumarDiasPrueba() {
-        const dias = parseInt(document.getElementById('mod-trial-days').value);
-        if(!dias) return alert("Ingresá días");
-        const base = Math.max(currentVencimiento, Date.now());
-        currentVencimiento = base + (dias * 86400000);
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentVencimiento).toLocaleDateString();
-        alert("Días sumados. Recordá presionar GUARDAR.");
+    function sumarDiasVencimiento() {
+        const d = parseInt(document.getElementById('mod-trial-days').value);
+        if(!d) return alert("Ingresá días");
+        currentVencimiento = Math.max(currentVencimiento, Date.now()) + (d * 86400000);
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + new Date(currentVencimiento).toLocaleDateString();
     }
 
-    function finalizarPruebaAhora() {
-        if(!confirm("¿Forzar vencimiento ahora? El cliente pasará a VENCIDO y se bloqueará su dashboard si no paga.")) return;
+    function forzarVencimientoHoy() {
+        if(!confirm("¿Vencer ahora?")) return;
         currentVencimiento = Date.now();
         document.getElementById('txt-venc-actual').innerText = "Vencido ahora";
-        alert("Vencimiento forzado. Recordá presionar GUARDAR.");
     }
 
     function guardarPerfil() {
@@ -300,13 +283,30 @@
             vencimientoAbono: currentVencimiento,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada"); cerrarModals(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { 
+            alert("¡Guardado!"); 
+            cerrarModals(); 
+        });
+    }
+
+    function crearHub() {
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
+        const nom = document.getElementById('new-name').value.trim();
+        if(!id || !nom) return alert("Faltan datos");
+        db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
+        db.ref(`facturacion/${id}/cuenta`).set({ 
+            nombreOrg: nom, 
+            vencimientoAbono: Date.now() + (7 * 86400000), 
+            abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000, 
+            cuentaSuspendida: false 
+        });
+        alert("Club creado con 7 días de prueba.");
     }
 
     function cerrarModals() { 
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
     }
-    
+
     render();
 </script>
 </body>

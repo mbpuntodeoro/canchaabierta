@@ -128,7 +128,6 @@
     let currentMovsData = [];
     let isInitialized = false;
 
-    // 🔒 SISTEMA DE AUTENTICACIÓN Y ENRUTAMIENTO INTELIGENTE
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
@@ -136,7 +135,6 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             
-            // Si entró sin el ?org=club en la URL, buscamos cuál es su club
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Localizando tu club...";
                 db.ref('facturacion').once('value', snap => {
@@ -150,11 +148,10 @@
                     }
                     if (foundOrg) {
                         orgId = foundOrg;
-                        // Actualiza la URL para que no la pierda y carga los datos
                         window.history.replaceState(null, null, `?org=${orgId}`);
                         if(!isInitialized) { init(); isInitialized = true; }
                     } else {
-                        alert("⚠️ Tu usuario no tiene un club asignado en la base de datos. Contactá a Mariano.");
+                        alert("⚠️ Tu usuario no tiene un club asignado en la base de datos.");
                         cerrarSesion();
                     }
                 });
@@ -191,8 +188,9 @@
         return `${d}-${m}-${y}`;
     }
 
+    // CORRECCIÓN APLICADA ACÁ: Eliminada la dependencia estricta de window.PadelSaaS
     function calculateFinancials() {
-        if (!window.PadelSaaS || Object.keys(cuentaInfo).length === 0) return; 
+        if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
@@ -249,7 +247,7 @@
         } else {
             filtrados.forEach(m => {
                 const dateObj = new Date(m.fecha);
-                const dStr = (window.PadelSaaS ? PadelSaaS.fmtFecha(m.fecha) : '') + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 
                 lista.innerHTML += `
                     <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
@@ -421,6 +419,7 @@
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
     window.borrarP = function(idx) { if(!confirm("¿Borrar?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
+    
 </script>
 </body>
 </html>

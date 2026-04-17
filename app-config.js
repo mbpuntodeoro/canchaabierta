@@ -15,10 +15,7 @@ if (!firebase.apps.length) {
 const db = firebase.database();
 
 
-// =======================================================
-// A PARTIR DE ACÁ, PEGÁS LA LÓGICA QUE TE PASÉ ANTES
-// =======================================================
-
+// 2. UTILIDADES Y MOTOR FINANCIERO
 const PadelUtils = {
     fmtDinero: (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val || 0),
     copiarLink: (url) => { navigator.clipboard.writeText(url).then(() => alert("¡Link copiado!")); },

@@ -24,14 +24,18 @@
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
-        
-        /* BOTÓN DE COBRO */
         .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
         .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        
+        /* ESTILOS DEL HISTORIAL DE MOVIMIENTOS */
+        .mov-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; align-items: center; }
+        .mov-row:last-child { border-bottom: none; }
+        .tag-pend { color: var(--danger); font-weight: 900; font-size: 9px; background: #fff2f2; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .tag-pag { color: var(--success); font-weight: 900; font-size: 9px; background: #e8f9ee; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -62,7 +66,7 @@
                 <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            <label>Alias Mercado Pago (Cobros del Club)</label><input id="mod-ali" class="input-std">
+            <label>Alias (Cobros del Club)</label><input id="mod-ali" class="input-std">
             
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
@@ -77,7 +81,7 @@
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
                 <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
                 <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasPrueba()">SUMAR DÍAS</button>
-                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FORZAR VENCIMIENTO HOY</button>
+                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FORZAR VENCIMIENTO</button>
             </div>
             <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
             
@@ -87,7 +91,19 @@
             </div>
 
             <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
-            <button class="btn-blue" onclick="cerrarModal()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
+            <button class="btn-blue" onclick="cerrarModals()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
+        </div>
+    </div>
+
+    <div id="modal-detalle" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0; font-weight: 900;">📋 Detalle de Movimientos</h2>
+            <p style="font-size:13px; color:var(--sub); font-weight:600; margin-top:-10px;">Historial de cargos generados por el sistema.</p>
+            
+            <div id="lista-movimientos" style="margin-top: 20px; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
+                </div>
+            
+            <button class="btn-blue" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
     </div>
 
@@ -113,12 +129,10 @@
                 // Calculamos Deuda Exacta
                 let deudaTotal = 0;
                 for (let k in movs) {
-                    if (movs[k].estado === 'pendiente') {
-                        deudaTotal += (movs[k].monto || 0);
-                    }
+                    if (movs[k].estado === 'pendiente') deudaTotal += (movs[k].monto || 0);
                 }
 
-                // Etiqueta de Estado (Doble Candado)
+                // Etiqueta de Estado
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
                 else if(daysLeft < 0) tag = `<span class="tag-status st-vencido">Vencido</span>`;
@@ -140,6 +154,8 @@
                                 ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y EXTENDER 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
                             </div>
 
+                            <button class="btn-edit" style="width:100%; margin-bottom:15px; background:#f8f9fb; border:1px solid #eee;" onclick="abrirDetalle('${id}')">📋 VER DETALLE DE MOVIMIENTOS</button>
+
                             <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
@@ -157,7 +173,41 @@
         });
     }
 
-    // EL MOTOR DE COBRO CON EXTENSIÓN DE ABONO
+    // AUDITORÍA DE LEDGER
+    function abrirDetalle(id) {
+        db.ref(`facturacion/${id}/movimientos`).once('value', s => {
+            const movs = s.val() || {};
+            const lista = document.getElementById('lista-movimientos');
+            lista.innerHTML = "";
+
+            // Convertir a Array y ordenar del más nuevo al más viejo
+            const arr = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
+
+            if(arr.length === 0) {
+                lista.innerHTML = "<p style='text-align:center; color:#888; font-size:13px; font-weight:600;'>No hay movimientos registrados.</p>";
+            } else {
+                arr.forEach(m => {
+                    const dateStr = new Date(m.fecha).toLocaleDateString('es-AR', {day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit'});
+                    const tag = m.estado === 'pendiente' ? `<span class="tag-pend">PENDIENTE</span>` : `<span class="tag-pag">PAGADO</span>`;
+                    
+                    lista.innerHTML += `
+                        <div class="mov-row">
+                            <div style="flex:1">
+                                <strong style="display:block; color:var(--text); font-size:14px;">${m.descripcion}</strong>
+                                <span style="font-size:11px; color:var(--sub); font-weight:600;">Generado: ${dateStr}</span>
+                            </div>
+                            <div style="text-align:right; margin-left:10px;">
+                                <strong style="display:block; font-size:15px; margin-bottom:3px;">${PadelUtils.fmtDinero(m.monto)}</strong>
+                                ${tag}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('modal-detalle').style.display = 'flex';
+        });
+    }
+
     function registrarPago(id, monto) {
         if(!confirm(`¿Confirmás que el cliente te transfirió ${PadelUtils.fmtDinero(monto)}?\n\nAl aceptar:\n1. La deuda pasará a cero.\n2. Su abono se renovará por 30 días.`)) return;
 
@@ -175,7 +225,6 @@
                 }
             }
 
-            // CARGAR NAFTA: Extender 30 días
             const vencimientoActual = cuenta.vencimientoAbono || cuenta.trialExpiryDate || ahora;
             const baseVencimiento = Math.max(ahora, vencimientoActual); 
             updates[`cuenta/vencimientoAbono`] = baseVencimiento + (30 * 86400000);
@@ -251,10 +300,13 @@
             vencimientoAbono: currentVencimiento,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada"); cerrarModal(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada"); cerrarModals(); });
     }
 
-    function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }
+    function cerrarModals() { 
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
+    }
+    
     render();
 </script>
 </body>

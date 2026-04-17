@@ -10,7 +10,7 @@
         :root { --primary: #007aff; --bg: #f2f2f7; --text: #1d1d1f; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; flex-direction: column; align-items: center;}
         .card { background: white; padding: 35px; border-radius: 35px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; max-width: 450px; width: 100%; box-sizing: border-box;}
-        .info-box { background: #f8f9fb; padding: 25px; border-radius: 20px; margin: 20px 0; text-align: left; font-size: 15px; border: 1px solid #eee;}
+        .info-box { background: #f8f9fb; padding: 25px; border-radius: 20px; margin: 20px 0; text-align: left; font-size: 15px; border: 1px solid #eee; line-height: 1.6;}
         .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; box-sizing: border-box; font-family: inherit;}
         .btn-pay { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-weight: 900; cursor: pointer; font-size: 17px;}
         .payment-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 25px; margin-top: 25px; }
@@ -33,38 +33,47 @@
     <input id="p-tel" class="input-std" placeholder="Tu WhatsApp">
     <button class="btn-pay" onclick="registrar()">ANOTARME</button>
 </div>
+
 <div class="footer-personal">
     <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
     <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
 </div>
+
 <script>
     firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
     const db = firebase.database();
     const eid = new URLSearchParams(window.location.search).get('id');
-    let ev = null;
+    let evento = null;
+
+    // FUNCIÓN DE FECHA HUMANA REPARADA
     function fmtFechaFull(f) {
         if(!f) return '--';
-        const d = new Date(f + 'T00:00:00');
-        return ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][d.getDay()] + ' ' + f.split('-').reverse().join('/');
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const [year, month, day] = f.split('-');
+        const d = new Date(year, month - 1, day); // month es 0-indexed
+        return dias[d.getDay()] + ' ' + day + '/' + month + '/' + year;
     }
+
     if(eid) {
         db.ref('eventos/'+eid).once('value', s => {
-            ev = s.val();
-            document.getElementById('t-org').innerText = ev.organiza.toUpperCase();
-            document.getElementById('t-fec').innerText = fmtFechaFull(ev.fecha);
-            document.getElementById('t-hor').innerText = ev.hora + ' a ' + (ev.horaFin || '--') + ' hs';
-            document.getElementById('t-lug').innerText = ev.lugar || 'Sede a confirmar';
-            document.getElementById('t-owner').innerText = ev.nombreOrganizador || 'Admin';
-            document.getElementById('t-cat').innerText = ev.categorias || 'General';
-            document.getElementById('t-val').innerText = "$" + (ev.valor || 0);
+            evento = s.val();
+            document.getElementById('t-org').innerText = evento.organiza.toUpperCase();
+            document.getElementById('t-fec').innerText = fmtFechaFull(evento.fecha);
+            document.getElementById('t-hor').innerText = evento.hora + ' a ' + (evento.horaFin || '--') + ' hs';
+            document.getElementById('t-lug').innerText = evento.lugar || 'Sede a confirmar';
+            document.getElementById('t-owner').innerText = evento.nombreOrganizador || 'Admin';
+            document.getElementById('t-cat').innerText = evento.categorias || 'General';
+            document.getElementById('t-val').innerText = "$" + (evento.valor || 0);
         });
     }
+
     function registrar() {
-        const n = document.getElementById('p-nom').value.trim(), t = document.getElementById('p-tel').value.trim();
+        const n = document.getElementById('p-nom').value.trim();
+        const t = document.getElementById('p-tel').value.trim();
         if(!n || !t) return alert("Faltan datos");
         db.ref('eventos/'+eid+'/inscriptos').once('value', s => {
             const ins = s.val() || [];
-            if(ins.length >= ev.cupo) return alert("Cancha llena");
+            if(ins.length >= evento.cupo) return alert("Cancha llena");
             ins.push({ nombre: n, telefono: t, estado: 'pendiente' });
             db.ref('eventos/'+eid+'/inscriptos').set(ins).then(() => {
                 document.getElementById('main-card').innerHTML = `
@@ -72,10 +81,10 @@
                     <h2>¡Inscripción Exitosa!</h2>
                     <div class="payment-box">
                         <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, REALIZÁ LA TRANSFERENCIA O ESCRIBIME PARA COORDINAR OTRO MEDIO DE PAGO</b>
-                        <h1 style="margin:15px 0">${ev.alias}</h1>
-                        <button onclick="navigator.clipboard.writeText('${ev.alias}'); alert('Copiado')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
+                        <h1 style="margin:15px 0">${evento.alias}</h1>
+                        <button onclick="navigator.clipboard.writeText('${evento.alias}'); alert('Alias Copiado')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
                     </div>
-                    <a href="https://wa.me/${ev.celuOrganizador}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:20px; margin-top:15px; text-decoration:none; font-weight:800">💬 ENVIAR COMPROBANTE</a>
+                    <a href="https://wa.me/${evento.celuOrganizador}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:20px; margin-top:15px; text-decoration:none; font-weight:800">💬 ENVIAR COMPROBANTE</a>
                 `;
             });
         });

@@ -1,5 +1,4 @@
-// app-config.js - V15.0 (Cerebro con Control de Suspensión)
-
+// app-config.js - CEREBRO INTEGRAL PADELAPP
 const firebaseConfig = {
     apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
     authDomain: "padelapp-e72af.firebaseapp.com",
@@ -14,6 +13,7 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const PadelUtils = {
+    // Miércoles 22/04/2026
     fmtFechaFull: (f) => {
         if (!f) return '--';
         const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -21,6 +21,7 @@ const PadelUtils = {
         const d = new Date(partes[0], partes[1] - 1, partes[2]); 
         return `${dias[d.getDay()]} ${partes[2]}/${partes[1]}/${partes[0]}`;
     },
+    // Mié 22/04
     fmtFechaCorta: (f) => {
         if (!f) return '--';
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -29,32 +30,35 @@ const PadelUtils = {
         return `${dias[d.getDay()]} ${partes[2]}/${partes[1]}`;
     },
     fmtDinero: (n) => "$" + (n || 0).toLocaleString('es-AR'),
+    
     copiarLink: (url) => {
         const t = document.createElement("input");
         document.body.appendChild(t); t.value = url; t.select();
         document.execCommand("copy"); document.body.removeChild(t);
         alert("¡Link copiado!");
     },
+
     calcularSiguienteFecha: (fechaActual, diasArray) => {
+        const dayMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
+        let d = new Date(fechaActual + 'T12:00:00');
+        
         if (!diasArray || diasArray.length === 0) {
-            let d = new Date(fechaActual + 'T12:00:00');
             d.setDate(d.getDate() + 7);
             return d.toISOString().split('T')[0];
         }
-        const dayMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
+        
         const targetDays = diasArray.map(d => dayMap[d]);
-        let d = new Date(fechaActual + 'T12:00:00');
         for (let i = 1; i <= 14; i++) {
             d.setDate(d.getDate() + 1);
             if (targetDays.includes(d.getDay())) return d.toISOString().split('T')[0];
         }
         return fechaActual;
     },
-    // NUEVA: Verifica si falta más de 1 hora para el inicio
+
     puedeSuspender: (fecha, hora) => {
         const inicio = new Date(fecha + 'T' + hora).getTime();
         const ahora = Date.now();
-        const diferenciaHoras = (inicio - ahora) / (1000 * 60 * 60);
-        return diferenciaHoras > 1;
+        const diffHoras = (inicio - ahora) / (1000 * 60 * 60);
+        return diffHoras > 1; // True si falta más de una hora
     }
 };

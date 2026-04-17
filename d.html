@@ -9,206 +9,177 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
-        .container { max-width: 550px; margin: auto; padding-bottom: 100px;}
-        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; box-shadow: var(--shadow); }
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
-        .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
+        .container { max-width: 550px; margin: auto; padding-bottom: 100px; display: none; }
+        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; }
+        .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; margin-bottom: 4px;}
-        .fin-box b { font-size: 15px; font-weight: 900; color: #fff; }
+        .fin-box b { font-size: 16px; display: block; color: #fff; margin-top: 5px; }
+        .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800; }
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
-        .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
-        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .btn-dash { border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; font-size: 11px; }
+        .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 15px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--success); transition: 0.5s; }
+        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; font-family: inherit;}
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
-        .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
-        .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h1 style="margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px;">PadelApp</h1>
+            <h2 style="margin: 0 0 20px 0; font-weight: 900;">PadelApp</h2>
             <input id="log-email" type="email" class="input-std" placeholder="Email">
             <input id="log-pass" type="password" class="input-std" placeholder="Clave">
             <button class="btn-dash" style="background: black; color: white;" onclick="iniciarSesion()">INGRESAR</button>
         </div>
     </div>
 
-    <div id="app-content" style="display: none;">
-        <div class="container">
-            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
-                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
-            </header>
+    <div id="app-content" class="container">
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h1 id="org-name" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
+            <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
+        </header>
 
-            <div class="hero">
-                <div id="abono-status-badge" class="status-badge">...</div>
-                <div style="font-size: 13px; font-weight: 700; margin-bottom: 20px;">Vencimiento abono: <span id="txt-venc-abono">--</span></div>
-                <div class="fin-grid">
-                    <div class="fin-box"><span>Deuda Canchas</span><b id="txt-consumo-canchas">$0</b></div>
-                    <div class="fin-box"><span>Límite Disponible</span><b id="txt-disponible-canchas">$0</b></div>
-                </div>
-                <div class="progress-bar"><div id="limit-progress" class="progress-fill" style="width: 0%"></div></div>
-                <div style="font-size: 9px; color: #888; font-weight: 800; margin-top: 8px; text-transform: uppercase; text-align: center;">Límite Total: <span id="txt-limite-total">$0</span></div>
-            </div>
-
-            <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer; text-transform: uppercase; font-size: 11px;">🔗 COPIAR LINK CARTELERA</button>
-
-            <div id="canchas-list">Cargando canchas...</div>
-
-            <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
+        <div class="hero">
+            <div id="badge-abono" style="display:inline-block; padding:4px 10px; border-radius:8px; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:10px;">...</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff;">Abono vence: <span id="venc-abono">--/--/----</span></div>
             
-            <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:15px; background: #fff2f2; padding: 10px; border-radius: 10px;"></p>
-
-            <div style="text-align:center; margin-top:50px;">
-                <button onclick="abrirDetalle()" class="btn-dash" style="background:#f2f2f7; color:var(--text); width: auto; padding: 10px 20px; border: 1px solid #ddd; margin-bottom: 15px;">📋 VER HISTORIAL DE PAGOS</button>
-                <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
+            <div class="fin-grid">
+                <div class="fin-box"><span>Deuda Canchas</span><b id="deuda-canchas">$0</b></div>
+                <div class="fin-box"><span>Crédito Disponible</span><b id="disp-canchas">$0</b></div>
             </div>
+            <div class="progress-bar"><div id="bar-fill" class="progress-fill" style="width: 0%"></div></div>
+            <div style="font-size: 9px; color: #666; font-weight: 800; margin-top: 10px; text-transform: uppercase; text-align: center;">Límite Total: <span id="limite-total">$0</span></div>
+        </div>
+
+        <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" class="btn-dash" style="background:var(--primary); color:white; margin-bottom:20px;">🔗 COPIAR LINK CARTELERA</button>
+
+        <div id="lista-canchas">Buscando canchas...</div>
+
+        <button id="btn-nueva" onclick="abrirNueva()" class="btn-dash" style="background:#000; color:white; margin-top:10px; padding:20px; border-radius:22px; font-size:13px;">➕ AGREGAR NUEVA CANCHA</button>
+        
+        <div id="alerta-bloqueo" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:15px; background: #fff2f2; padding: 12px; border-radius: 12px;"></div>
+
+        <div style="text-align:center; margin-top:40px; padding:20px; border-top:1px solid #eee;">
+            <button onclick="abrirHistorial()" class="btn-dash" style="background:#f2f2f7; color:var(--text); width: auto; padding: 10px 20px; border: 1px solid #ddd; margin-bottom: 15px;">📋 VER HISTORIAL DE PAGOS</button>
+            <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
         </div>
     </div>
 
-    <div id="modal-detalle" class="modal"><div class="modal-content"><h2>📋 Historial</h2><div id="lista-movimientos-det"></div><button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR</button></div></div>
-    <div id="modal-players" class="modal"><div class="modal-content"><h2>👥 Jugadores</h2><input type="hidden" id="pl-id"><div id="players-list"></div><button onclick="cerrarModals()" class="btn-dash" style="background:#000; color:white; margin-top:15px">CERRAR</button></div></div>
-    <div id="modal-config" class="modal"><div class="modal-content"><h2 id="modal-title">⚙️ Configuración</h2><input type="hidden" id="ed-id"><label>Nombre Cancha</label><input id="ed-org" class="input-std"><label>Sede</label><input id="ed-lug" class="input-std"><label>🏷️ Categoría</label><input id="ed-cat" class="input-std"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Fecha</label><input id="ed-fec" type="date" class="input-std"></div><div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div><div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div></div><label>Precio ($)</label><input id="ed-val" type="number" class="input-std"><label>Alias MP</label><input id="ed-ali" class="input-std"><button id="btn-save-config" onclick="guardarConfig()" class="btn-dash" style="background:#007aff; color:white;">GUARDAR</button><button onclick="cerrarModals()" class="btn-dash" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button></div></div>
+    <div id="modal-historial" class="modal"><div class="modal-content"><h2>📋 Historial</h2><div id="historial-items"></div><button onclick="cerrarModals()" class="btn-dash" style="background:#000; color:white; margin-top:20px">CERRAR</button></div></div>
 
 <script>
     let orgId = new URLSearchParams(window.location.search).get('org');
-    let courtData = {}, cuentaInfo = {}, movimientos = [];
+    let store = { cuenta: {}, movimientos: [], canchas: {} };
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
+            
             if (!orgId) {
                 const snap = await db.ref('facturacion').once('value');
-                const allData = snap.val() || {};
-                for (let id in allData) {
-                    if (allData[id].cuenta && allData[id].cuenta.emailOrganizador === user.email) {
-                        orgId = id; window.history.replaceState(null, null, `?org=${orgId}`);
+                const data = snap.val() || {};
+                for (let id in data) {
+                    if (data[id].cuenta && data[id].cuenta.emailOrganizador === user.email) {
+                        orgId = id; window.history.replaceState(null, null, `?org=${id}`);
                         break;
                     }
                 }
             }
-            if (orgId) { initDashboard(); }
+            if (orgId) cargarTodo();
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app-content').style.display = 'none';
         }
     });
 
-    function initDashboard() {
-        // 1. Datos del Club
-        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => {
-            cuentaInfo = s.val() || {};
-            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
-            updateFinancials();
+    function cargarTodo() {
+        // Escuchar Cuenta
+        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { store.cuenta = s.val() || {}; refrescarUI(); });
+
+        // Escuchar Movimientos
+        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => { 
+            const d = s.val() || {}; store.movimientos = Object.keys(d).map(k => ({id:k, ...d[k]}));
+            refrescarUI(); 
         });
 
-        // 2. Movimientos Contables
-        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
-            const data = s.val() || {};
-            movimientos = Object.keys(data).map(k => ({id: k, ...data[k]}));
-            updateFinancials();
-        });
-
-        // 3. CANCHAS (FIX: Lectura de Objeto o Array)
+        // Escuchar IDs de Canchas y luego cada Cancha
         db.ref(`hubs/${orgId}/canchas`).on('value', snap => {
             const val = snap.val();
             const ids = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+            if(ids.length === 0) document.getElementById('lista-canchas').innerHTML = "No hay canchas.";
             
-            if(ids.length === 0) {
-                document.getElementById('canchas-list').innerHTML = "<p style='text-align:center; color:#888; padding:20px;'>No hay canchas configuradas.</p>";
-            }
-
             ids.forEach(id => {
                 db.ref(`eventos/${id}`).on('value', evS => {
-                    const d = evS.val();
-                    if(d) { courtData[id] = { id, ...d }; renderCanchas(); }
+                    if(evS.val()) { store.canchas[id] = { id, ...evS.val() }; dibujarCanchas(); }
                 });
             });
         });
     }
 
-    function updateFinancials() {
-        if (!cuentaInfo.nombreOrg || typeof PadelSaaS === 'undefined') return;
-        const res = PadelSaaS.analizarCuenta(cuentaInfo, movimientos);
-        if (!res) return;
+    function refrescarUI() {
+        const res = PadelSaaS.analizarCuenta(store.cuenta, store.movimientos);
+        if(!res) return;
 
-        document.getElementById('txt-venc-abono').innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
-        document.getElementById('txt-consumo-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchasPendiente);
-        document.getElementById('txt-disponible-canchas').innerText = PadelUtils.fmtDinero(res.disponibleLimite);
-        document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteAsignado);
-        document.getElementById('limit-progress').style.width = res.porcentajeConsumido + '%';
-        
-        const badge = document.getElementById('abono-status-badge');
-        const vencido = Date.now() > res.vencimientoAbono;
-        badge.innerText = vencido ? "Abono Vencido" : "Abono al día";
-        badge.style.background = vencido ? 'var(--danger)' : 'var(--success)';
+        document.getElementById('org-name').innerText = store.cuenta.nombreOrg || orgId;
+        document.getElementById('venc-abono').innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
+        document.getElementById('deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
+        document.getElementById('disp-canchas').innerText = PadelUtils.fmtDinero(res.disponible);
+        document.getElementById('limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
+        document.getElementById('bar-fill').style.width = res.porcentaje + '%';
+
+        const badge = document.getElementById('badge-abono');
+        badge.innerText = res.bloqueado && Date.now() > res.vencimientoAbono ? "VENCIDO" : "AL DÍA";
+        badge.style.background = res.bloqueado && Date.now() > res.vencimientoAbono ? 'var(--danger)' : 'var(--success)';
         badge.style.color = 'white';
 
-        document.getElementById('btn-add-cancha').style.opacity = res.isBlocked ? '0.3' : '1';
-        const msg = document.getElementById('msg-locked');
-        if (res.isBlocked) { msg.style.display = 'block'; msg.innerText = res.msgLocked; }
-        else { msg.style.display = 'none'; }
+        document.getElementById('btn-nueva').style.opacity = res.bloqueado ? '0.3' : '1';
+        const alerta = document.getElementById('alerta-bloqueo');
+        if(res.bloqueado) { alerta.style.display = 'block'; alerta.innerText = res.msg; }
+        else { alerta.style.display = 'none'; }
     }
 
-    function renderCanchas() {
-        const list = document.getElementById('canchas-list');
-        const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        
+    function dibujarCanchas() {
+        const list = document.getElementById('lista-canchas');
+        const sorted = Object.values(store.canchas).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
         let html = "";
-        sorted.forEach(d => {
-            const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-            html += `
-                <div class="cancha-card">
-                    <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                    <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelUtils.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} hs</div>
-                    <div style="font-size:11px; color:var(--sub); margin-top:5px;">👥 ${conf} / ${d.cupo} confirmados</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-                        <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                        <button class="btn-dash" style="background:#000; color:#fff" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                    </div>
-                </div>`;
+        sorted.forEach(c => {
+            const conf = (c.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
+            html += `<div class="cancha-card">
+                <div style="display:flex;justify-content:space-between"><b>🎾 ${c.organiza}</b> <span class="tag-cat">${c.categorias}</span></div>
+                <div style="font-size:12px; color:var(--sub); margin:8px 0;">📅 ${PadelSaaS.fmtFecha(new Date(c.fecha+'T12:00:00'))} | 🕒 ${c.hora} hs</div>
+                <div style="font-size:11px; font-weight:700;">👥 ${conf} / ${c.cupo} confirmados</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px">
+                    <button class="btn-dash" style="background:#f2f2f7; margin:0;" onclick="alert('Configurar ID: '+ '${c.id}')">⚙️ CONFIG</button>
+                    <button class="btn-dash" style="background:#000; color:#fff; margin:0;" onclick="alert('Jugadores ID: '+ '${c.id}')">👥 JUGADORES</button>
+                </div>
+            </div>`;
         });
         list.innerHTML = html;
     }
 
-    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Clave incorrecta")); }
-    function cerrarSesion() { auth.signOut().then(() => window.location.href='index.html'); }
-    function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-    
-    function abrirDetalle() {
-        const list = document.getElementById('lista-movimientos-det'); list.innerHTML = "";
-        movimientos.sort((a,b)=>b.fecha-a.fecha).forEach(m => {
-            list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-size:13px;">
+    function abrirHistorial() {
+        const items = document.getElementById('historial-items'); items.innerHTML = "";
+        store.movimientos.sort((a,b)=>b.fecha-a.fecha).forEach(m => {
+            items.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-size:13px;">
                 <div><b>${m.descripcion}</b><br><small>${PadelSaaS.fmtFecha(m.fecha)}</small></div>
                 <div style="text-align:right"><b>${PadelUtils.fmtDinero(m.monto)}</b><br><span style="font-size:9px; font-weight:900; color:${m.estado==='pagado'?'green':'red'}">${m.estado.toUpperCase()}</span></div>
             </div>`;
         });
-        document.getElementById('modal-detalle').style.display='flex';
+        document.getElementById('modal-historial').style.display='flex';
     }
 
-    window.abrirJugadores = function(id) {
-        document.getElementById('pl-id').value = id;
-        db.ref(`eventos/${id}/inscriptos`).on('value', s => {
-            const ins = s.val() || [], list = document.getElementById('players-list'); list.innerHTML = "";
-            ins.forEach(p => { list.innerHTML += `<div class="player-row"><span>${p.nombre}</span><span style="font-size:10px; font-weight:800; color:var(--primary)">${p.estado.toUpperCase()}</span></div>`; });
-            document.getElementById('modal-players').style.display = 'flex';
-        });
-    }
-
-    function abrirNuevaCancha() { if(document.getElementById('btn-add-cancha').style.opacity === '0.3') return alert("Cuenta bloqueada."); document.getElementById('modal-title').innerText = "➕ Nueva Cancha"; document.getElementById('ed-id').value = ""; document.getElementById('modal-config').style.display = 'flex'; }
-    function abrirConfig(id) { const d = courtData[id]; document.getElementById('ed-id').value = id; document.getElementById('ed-org').value = d.organiza; document.getElementById('ed-lug').value = d.lugar; document.getElementById('ed-cat').value = d.categorias; document.getElementById('ed-fec').value = d.fecha; document.getElementById('ed-h1').value = d.hora; document.getElementById('ed-h2').value = d.horaFin; document.getElementById('ed-cup').value = d.cupo; document.getElementById('ed-val').value = d.valor; document.getElementById('ed-ali').value = d.alias; document.getElementById('modal-config').style.display = 'flex'; }
-    function guardarConfig() { const id = document.getElementById('ed-id').value; const upd = { organiza: document.getElementById('ed-org').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value }; if(!id) { const nR = db.ref('eventos').push(); nR.set({...upd, inscriptos: []}).then(() => { db.ref(`hubs/${orgId}/canchas`).once('value', s => { const val = s.val(); let c = val ? (Array.isArray(val) ? val : Object.values(val)) : []; c.push(nR.key); db.ref(`hubs/${orgId}/canchas`).set(c); }); }); } else { db.ref(`eventos/${id}`).update(upd); } cerrarModals(); }
+    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Error")); }
+    function cerrarSesion() { auth.signOut().then(() => window.location.href='index.html'); }
+    function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 </script>
 </body>
 </html>

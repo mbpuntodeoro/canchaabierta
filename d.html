@@ -7,7 +7,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js"></script>
+    
+    <script src="app-config.js?v=999"></script>
+    
+    <script>
+        // 🚨 DETECTOR DE INFARTOS SILENCIOSOS
+        window.onerror = function(msg, url, line) {
+            alert("⚠️ ERROR CRÍTICO EN EL CÓDIGO:\n\n" + msg + "\nLínea: " + line + "\n\nRevisá tu app-config.js");
+        };
+    </script>
+
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
@@ -16,10 +25,12 @@
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
         
         .container { max-width: 550px; margin: auto; padding-bottom: 100px;}
+        
+        /* NUEVA TARJETA FINANCIERA UNIFICADA */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
-        .fin-box b { font-size: 16px; font-weight: 900; display: block; margin-top: 4px;}
+        .fin-box b { font-size: 16px; font-weight: 900; display: block; margin-top: 5px;}
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800;}
         
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
@@ -44,7 +55,7 @@
             <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
             <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
             <button class="btn-dash" style="background: black; color: white; font-size: 13px; margin-top: 10px; padding: 16px;" onclick="iniciarSesion()">INGRESAR</button>
-            <p id="log-error" style="color: var(--danger); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
+            <p id="log-error" style="color: var(--danger); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;"></p>
         </div>
     </div>
 
@@ -79,7 +90,7 @@
             <div id="canchas-list">Cargando canchas...</div>
 
             <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
-            <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido o cuenta suspendida.</p>
+            <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;"></p>
 
             <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #eee;">
                 <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
@@ -112,7 +123,12 @@
     let currentMovsData = [];
     let isInitialized = false;
 
-    const auth = firebase.auth();
+    let auth;
+    try {
+        auth = firebase.auth();
+    } catch(e) {
+        alert("Error crítico conectando a Firebase. Revisá tu app-config.js. Detalle: " + e.message);
+    }
 
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -153,18 +169,26 @@
     });
 
     function iniciarSesion() {
-        const e = document.getElementById('log-email').value;
-        const p = document.getElementById('log-pass').value;
-        document.getElementById('log-error').style.display = 'none';
-        auth.signInWithEmailAndPassword(e, p).catch(err => {
-            document.getElementById('log-error').style.display = 'block';
-            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
-        });
+        try {
+            const e = document.getElementById('log-email').value;
+            const p = document.getElementById('log-pass').value;
+            
+            if(!e || !p) {
+                alert("Por favor, ingresá correo y contraseña.");
+                return;
+            }
+
+            document.getElementById('log-error').style.display = 'none';
+            auth.signInWithEmailAndPassword(e, p).catch(err => {
+                document.getElementById('log-error').style.display = 'block';
+                document.getElementById('log-error').innerText = "Error al loguear: " + err.message;
+            });
+        } catch(error) {
+            alert("Error en el botón de ingreso: " + error.message);
+        }
     }
 
-    function cerrarSesion() { 
-        auth.signOut().then(() => { window.location.href = 'index.html'; }); 
-    }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
 
     function formatFec(f) {
         if(!f) return '--';
@@ -178,7 +202,6 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
-        // SE ACTUALIZA LA TARJETA ÚNICA
         document.getElementById('txt-deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
         document.getElementById('txt-disponible').innerText = PadelUtils.fmtDinero(res.disponible);
         document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);

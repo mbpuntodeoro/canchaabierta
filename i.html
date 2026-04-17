@@ -62,14 +62,18 @@
             ins.push({ nombre: n, telefono: t, estado: 'pendiente' });
             db.ref('eventos/'+eid+'/inscriptos').set(ins).then(() => {
                 document.getElementById('main-card').innerHTML = `
-                    <div style="font-size:60px">✅</div>
-                    <h2>¡Inscripción Exitosa!</h2>
+                    <div style="font-size:60px; margin-bottom:10px">✅</div>
+                    <h2 style="font-weight:900; margin-bottom:5px">¡Inscripción Exitosa!</h2>
+                    <p style="color:#888; font-weight:600; margin-bottom:20px">Tu lugar está pre-reservado.</p>
                     <div class="payment-box">
-                        <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, TRANSFERÍ Y ENVIÁ EL COMPROBANTE</b>
-                        <h1 style="margin:15px 0">${ev.alias}</h1>
-                        <button onclick="PadelUtils.copiarLink('${ev.alias}')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
+                        <b style="color:#ff3b30; font-size:12px; display:block; margin-bottom:15px; text-transform:uppercase; letter-spacing:0.5px">PARA ASEGURAR TU LUGAR, TRANSFERÍ EL MONTO TOTAL Y ENVIÁ EL COMPROBANTE</b>
+                        <p style="font-size:14px; color:#555; margin-bottom:5px">Monto a transferir:</p>
+                        <h2 style="margin:0 0 15px 0; font-weight:900">${PadelUtils.fmtDinero(ev.valor)}</h2>
+                        <p style="font-size:13px; color:#555; margin-bottom:5px">Alias Mercado Pago:</p>
+                        <h2 style="margin:0 0 15px 0; font-weight:900; color:var(--primary)">${ev.alias}</h2>
+                        <button onclick="PadelUtils.copiarLink('${ev.alias}')" style="padding:12px 25px; border-radius:15px; border:1.5px solid #ddd; background:white; cursor:pointer; font-family:inherit; font-weight:800; font-size:12px">📋 COPIAR ALIAS</button>
                     </div>
-                    <a href="https://wa.me/${ev.celuOrganizador}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:20px; margin-top:15px; text-decoration:none; font-weight:800">💬 ENVIAR COMPROBANTE</a>
+                    <a href="https://wa.me/${ev.celuOrganizador}?text=Hola! Soy ${n}, te envío el comprobante por la cancha de ${ev.organiza} del ${PadelUtils.fmtFechaCorta(ev.fecha)}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:22px; margin-top:20px; text-decoration:none; font-weight:900; font-size:16px">💬 ENVIAR COMPROBANTE</a>
                 `;
             });
         });

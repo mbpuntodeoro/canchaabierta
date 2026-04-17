@@ -22,11 +22,8 @@
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        .stat-box { background: #f8f9fb; padding: 12px; border-radius: 18px; text-align: center; border: 1px solid #eee; }
         .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
         .btn-status { width: 110px; padding: 10px; border-radius: 12px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer; }
-        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
         .days-grid { display: flex; justify-content: space-between; gap: 4px; margin: 10px 0; }
@@ -43,8 +40,8 @@
         </header>
 
         <div class="hero"><div class="fin-grid">
-            <div class="fin-box"><span>Ingresos Est.</span><b id="txt-deu">$0</b></div>
-            <div class="fin-box"><span>Saldo Sistema</span><b id="txt-lim">$0</b></div>
+            <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
+            <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
         </div></div>
 
         <div class="plan-card" id="card-plan">
@@ -55,14 +52,10 @@
 
         <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
 
-        <div id="canchas-list">Cargando...</div>
+        <div id="canchas-list">Cargando canchas...</div>
 
         <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
-
-        <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #eee;">
-            <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
-            <a href="https://wa.me/5491166463800" style="background:#ff9500; color:white; text-decoration:none; padding:12px 25px; border-radius:50px; font-weight:900; font-size:13px; display:inline-block; margin-top:10px;">💬 ¿DUDAS? ESCRIBIME</a>
-        </div>
+        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido. Regularice su abono para seguir operando.</p>
     </div>
 
     <div id="modal-players" class="modal">
@@ -124,22 +117,59 @@
 
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
-    let courtData = {}, isNew = false, isPlanActive = true, playersListener = null;
+    let courtData = {}, isAccountBlocked = false, playersListener = null;
     window.defaultData = { owner: "", celu: "", alias: "" };
+    window.pricing = { abono: 0, costoCancha: 0 };
 
-    function updatePlanUI(f) {
-        const remaining = Math.ceil((f.planExpiryDate - Date.now()) / 86400000);
+    function calculateFinancials(f) {
+        const now = Date.now();
+        const trialExpiry = f.trialExpiryDate || now;
+        const abonoMensual = f.abonoMensual || 0;
+        const costoPorCancha = f.costoPorCancha || 0;
+        const limite = f.limiteCredito || 50000;
+        
+        let deudaTotal = 0;
+
+        if (now > trialExpiry) {
+            // 1. Calcular ciclos de abono (cada 30 días post-trial)
+            const diasPostTrial = Math.floor((now - trialExpiry) / 86400000);
+            const ciclosAbono = Math.floor(diasPostTrial / 30) + 1;
+            deudaTotal += (ciclosAbono * abonoMensual);
+
+            // 2. Sumar canchas finalizadas post-trial
+            Object.values(courtData).forEach(c => {
+                const courtEndTime = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
+                if (courtEndTime > trialExpiry && courtEndTime < now && c.estado !== 'suspendida') {
+                    deudaTotal += costoPorCancha;
+                }
+            });
+        }
+
+        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
+        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
+
+        // Bloqueo: Deuda > Límite + 5%
+        isAccountBlocked = (deudaTotal > (limite * 1.05)) || f.cuentaSuspendida;
+        const btnAdd = document.getElementById('btn-add-cancha');
+        if (isAccountBlocked) {
+            btnAdd.style.opacity = '0.3'; btnAdd.onclick = null;
+            document.getElementById('msg-locked').style.display = 'block';
+        } else {
+            btnAdd.style.opacity = '1'; btnAdd.onclick = () => abrirNuevaCancha();
+            document.getElementById('msg-locked').style.display = 'none';
+        }
+
+        // UI Plan
         const statusTxt = document.getElementById('plan-status');
         const daysTxt = document.getElementById('plan-days');
-        const btnAdd = document.getElementById('btn-add-cancha');
-        if (remaining <= 0) {
-            isPlanActive = false; statusTxt.innerText = "🔴 Vencido"; statusTxt.style.color = 'var(--danger)';
-            daysTxt.innerText = "Debés renovar para crear canchas";
-            btnAdd.style.opacity = '0.3'; btnAdd.onclick = null;
+        const remainingTrial = Math.ceil((trialExpiry - now) / 86400000);
+
+        if (remainingTrial > 0) {
+            statusTxt.innerText = "🟡 Período de PRUEBA"; statusTxt.style.color = 'var(--warning)';
+            daysTxt.innerText = `Quedan ${remainingTrial} días gratis`;
         } else {
-            isPlanActive = true; statusTxt.innerText = "🟢 Activo"; statusTxt.style.color = 'var(--success)';
-            daysTxt.innerText = `Quedan ${remaining} días de plan`;
-            if (remaining < 5) statusTxt.style.color = 'var(--warning)';
+            statusTxt.innerText = "🟢 Cliente ACTIVO"; statusTxt.style.color = 'var(--success)';
+            daysTxt.innerText = isAccountBlocked ? "CUENTA BLOQUEADA" : "Abono al día";
         }
     }
 
@@ -149,7 +179,8 @@
             const f = s.val() || {};
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
             window.defaultData = { owner: f.nombreContacto || "", celu: f.celularContacto || "", alias: f.aliasPredeterminado || "" };
-            updatePlanUI(f);
+            window.pricing = { abono: f.abonoMensual || 0, costoCancha: f.costoPorCancha || 0 };
+            calculateFinancials(f);
         });
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
@@ -195,13 +226,14 @@
     }
 
     function abrirNuevaCancha() {
-        if(!isPlanActive) return alert("Plan Vencido");
-        isNew = true; document.getElementById('modal-config').style.display = 'flex';
+        if(isAccountBlocked) return alert("Cuenta suspendida. Regularice su pago.");
+        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
         document.getElementById('ed-owner').value = window.defaultData.owner;
         document.getElementById('ed-celu').value = window.defaultData.celu;
         document.getElementById('ed-ali').value = window.defaultData.alias;
+        document.getElementById('modal-config').style.display = 'flex';
         validarRecurrencia();
     }
 
@@ -215,7 +247,8 @@
         document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || "";
         document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0;
         document.getElementById('ed-ali').value = d.alias || "";
-        validarRecurrencia(); document.getElementById('modal-config').style.display = 'flex';
+        document.getElementById('modal-config').style.display = 'flex';
+        validarRecurrencia();
     }
 
     function guardarConfig() {

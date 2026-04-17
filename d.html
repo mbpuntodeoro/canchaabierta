@@ -27,10 +27,6 @@
         
         /* JUGADORES Y COLORES DE ESTADO */
         .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
-        .btn-status { width: 120px; padding: 10px; border-radius: 12px; border: none; color: white !important; font-weight: 900; font-size: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-        .pagado { background: var(--success) !important; } 
-        .paga-en-la-cancha { background: var(--warning) !important; } 
-        .pendiente { background: var(--danger) !important; }
 
         /* FORMULARIOS */
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
@@ -181,7 +177,11 @@
     window.defaultData = { owner: "", celu: "", alias: "" };
     window.movimientos = []; 
 
-    function calculateFinancials(f) {
+    function calculateFinancials() {
+        // SOLUCIÓN AL BUG: Si cuentaInfo está vacío (club nuevo o sin datos), no lo bloqueamos
+        if (Object.keys(cuentaInfo).length === 0) return; 
+
+        const f = cuentaInfo;
         const ahora = Date.now();
         const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || ahora;
         
@@ -284,24 +284,6 @@
         }
     }
 
-    function procesarAbonoMensual() {
-        const ahora = Date.now();
-        const trialEx = cuentaInfo.trialExpiryDate || ahora;
-        
-        if (!cuentaInfo.vencimientoAbono) {
-            db.ref(`facturacion/${orgId}/cuenta`).update({ vencimientoAbono: trialEx });
-            cuentaInfo.vencimientoAbono = trialEx;
-        }
-
-        if (ahora > cuentaInfo.vencimientoAbono) {
-            db.ref(`facturacion/${orgId}/movimientos`).push({
-                tipo: 'abono', descripcion: 'Abono Mensual', monto: cuentaInfo.abonoMensual || 0, estado: 'pendiente', fecha: ahora
-            });
-            // Esto solo se patea visualmente si lo quisiéramos, pero ahora lo controlás desde el master.
-            // Para evitar loops, solo generamos el ticket. El cliente DEBE pagar para que la fecha se mueva.
-        }
-    }
-
     function checkAndRollover(id, data) {
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
@@ -324,21 +306,23 @@
 
     function init() {
         if(!orgId) return;
-        
+
+        // Listener 1: Cuenta
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
             window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
-            procesarAbonoMensual();
-            renderFinancials();
+            calculateFinancials();
         });
 
+        // Listener 2: Movimientos (Ledger)
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {};
             window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
-            renderFinancials();
+            calculateFinancials();
         });
 
+        // Listener 3: Canchas
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             ids.forEach(id => {
@@ -355,7 +339,7 @@
     function renderizarCanchas() {
         const list = document.getElementById('canchas-list');
         const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        list.innerHTML = sorted.length ? "" : "No hay canchas activas.";
+        list.innerHTML = sorted.length ? "" : "No hay canchas.";
         sorted.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
             list.innerHTML += `<div class="cancha-card">
@@ -470,15 +454,18 @@
             document.getElementById('st-total').innerText = d.cupo; 
             document.getElementById('st-pag').innerText = confCount;
             document.getElementById('st-pen').innerText = pendCount;
-            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - confCount);
+            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - ins.length);
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
+            const bgColors = { "pagado": "var(--success)", "paga-en-la-cancha": "var(--warning)", "pendiente": "var(--danger)" };
+
             sorted.forEach((p) => {
                 const oIdx = ins.indexOf(p);
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
+                
                 list.innerHTML += `<div class="player-row"><span class="player-name">${p.nombre}</span>
-                    <button class="btn-status ${p.estado}" onclick="window.togglePago(${oIdx})">${label}</button>
-                    <button style="border:none;background:none;color:red;font-weight:900;cursor:pointer" onclick="window.borrarP(${oIdx})">✕</button></div>`;
+                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:900; font-size:10px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; background:${bgColors[p.estado] || '#ccc'}" onclick="window.togglePago(${oIdx})">${label}</button>
+                    <button style="border:none;background:none;color:red;font-weight:900;cursor:pointer;font-size:14px;" onclick="window.borrarP(${oIdx})">✕</button></div>`;
             });
             document.getElementById('modal-players').style.display = 'flex';
         });

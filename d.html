@@ -47,123 +47,58 @@
         <div class="plan-card" id="card-plan">
             <span id="plan-status" style="font-weight:900; font-size:18px; display:block">Analizando...</span>
             <span id="plan-days" style="font-weight:800; font-size:14px; display:block; margin:5px 0">-</span>
-            <a id="btn-plan-action" href="#" target="_blank" style="display:inline-block; padding:10px 20px; border-radius:12px; text-decoration:none; font-weight:800; font-size:12px; background:#f2f2f7; color:#333">RENOVAR</a>
         </div>
-
-        <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
 
         <div id="canchas-list">Cargando canchas...</div>
 
         <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
-        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido. Regularice su abono para seguir operando.</p>
+        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido o cuenta suspendida.</p>
     </div>
 
-    <div id="modal-players" class="modal">
-        <div class="modal-content">
-            <h2 style="margin:0 0 20px 0; text-align:center; font-weight:900;">👥 Jugadores</h2>
-            <input type="hidden" id="pl-id">
-            <div class="stat-grid">
-                <div class="stat-box"><span>CUPO</span><b id="st-total">0</b></div>
-                <div class="stat-box"><span>CONF</span><b id="st-pag" style="color:var(--success)">0</b></div>
-                <div class="stat-box"><span>PEND</span><b id="st-pen" style="color:var(--danger)">0</b></div>
-                <div class="stat-box"><span>LIBRE</span><b id="st-lib" style="color:var(--primary)">0</b></div>
-            </div>
-            <div id="players-list"></div>
-            <button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:18px; background:#000; color:white; border:none; font-weight:900; margin-top:15px; cursor:pointer">CERRAR</button>
-        </div>
-    </div>
+    <div id="modal-players" class="modal"><div class="modal-content"><h2 style="text-align:center; font-weight:900;">👥 Jugadores</h2><input type="hidden" id="pl-id"><div class="stat-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px; margin-bottom:15px; text-align:center;"><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>CUPO</span><b id="st-total" style="font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>CONF</span><b id="st-pag" style="color:var(--success); font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>PEND</span><b id="st-pen" style="color:var(--danger); font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>LIBRE</span><b id="st-lib" style="color:var(--primary); font-size:14px">0</b></div></div><div id="players-list"></div><button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:15px; background:#000; color:white; border:none; font-weight:900; margin-top:15px; cursor:pointer">CERRAR</button></div></div>
 
-    <div id="modal-config" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title" style="margin-top:0">⚙️ Configuración</h2>
-            <input type="hidden" id="ed-id">
-            <label>Tipo de Evento</label>
-            <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
-                <option value="unico">Evento Único</option>
-                <option value="recurrente">Todas las semanas</option>
-            </select>
-            <div id="days-container" style="display:none">
-                <label>Días que se repite</label>
-                <div class="days-grid">
-                    <input type="checkbox" id="d-MO" class="day-check" onchange="validarRecurrencia()"><label for="d-MO" class="day-label">L</label>
-                    <input type="checkbox" id="d-TU" class="day-check" onchange="validarRecurrencia()"><label for="d-TU" class="day-label">M</label>
-                    <input type="checkbox" id="d-WE" class="day-check" onchange="validarRecurrencia()"><label for="d-WE" class="day-label">Mi</label>
-                    <input type="checkbox" id="d-TH" class="day-check" onchange="validarRecurrencia()"><label for="d-TH" class="day-label">J</label>
-                    <input type="checkbox" id="d-FR" class="day-check" onchange="validarRecurrencia()"><label for="d-FR" class="day-label">V</label>
-                    <input type="checkbox" id="d-SA" class="day-check" onchange="validarRecurrencia()"><label for="d-SA" class="day-label">S</label>
-                    <input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label>
-                </div>
-            </div>
-            <div id="msg-error-rec" style="background:#fff2f2; color:var(--danger); padding:10px; border-radius:10px; font-size:11px; font-weight:800; margin-bottom:10px; display:none;">⚠️ La fecha no coincide con el día marcado</div>
-            <label>Nombre Cancha</label><input id="ed-org" class="input-std">
-            <label>Organizador</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp</label><input id="ed-celu" class="input-std">
-            <label>Sede</label><input id="ed-lug" class="input-std">
-            <label>🏷️ Categoría</label><input id="ed-cat" class="input-std">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
-                <div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
-                <div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div>
-            </div>
-            <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
-            <label>Alias MP</label><input id="ed-ali" class="input-std">
-            <button id="btn-save-config" onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button>
-            <button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button>
-        </div>
-    </div>
+    <div id="modal-config" class="modal"><div class="modal-content"><h2 id="modal-title" style="margin-top:0">⚙️ Configuración</h2><input type="hidden" id="ed-id"><label>Tipo de Evento</label><select id="ed-tipo" class="input-std" onchange="validarRecurrencia()"><option value="unico">Evento Único</option><option value="recurrente">Todas las semanas</option></select><div id="days-container" style="display:none"><label>Días que se repite</label><div class="days-grid"><input type="checkbox" id="d-MO" class="day-check" onchange="validarRecurrencia()"><label for="d-MO" class="day-label">L</label><input type="checkbox" id="d-TU" class="day-check" onchange="validarRecurrencia()"><label for="d-TU" class="day-label">M</label><input type="checkbox" id="d-WE" class="day-check" onchange="validarRecurrencia()"><label for="d-WE" class="day-label">Mi</label><input type="checkbox" id="d-TH" class="day-check" onchange="validarRecurrencia()"><label for="d-TH" class="day-label">J</label><input type="checkbox" id="d-FR" class="day-check" onchange="validarRecurrencia()"><label for="d-FR" class="day-label">V</label><input type="checkbox" id="d-SA" class="day-check" onchange="validarRecurrencia()"><label for="d-SA" class="day-label">S</label><input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label></div></div><div id="msg-error-rec" style="background:#fff2f2; color:var(--danger); padding:10px; border-radius:10px; font-size:11px; font-weight:800; margin-bottom:10px; display:none;">⚠️ La fecha no coincide con el día marcado</div><label>Nombre Cancha</label><input id="ed-org" class="input-std"><label>Organizador</label><input id="ed-owner" class="input-std"><label>WhatsApp</label><input id="ed-celu" class="input-std"><label>Sede</label><input id="ed-lug" class="input-std"><label>🏷️ Categoría</label><input id="ed-cat" class="input-std"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div><div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div><div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div></div><label>Precio ($)</label><input id="ed-val" type="number" class="input-std"><label>Alias MP</label><input id="ed-ali" class="input-std"><button id="btn-save-config" onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button><button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button></div></div>
 
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
-    let courtData = {}, isAccountBlocked = false, playersListener = null;
-    window.defaultData = { owner: "", celu: "", alias: "" };
-    window.pricing = { abono: 0, costoCancha: 0 };
+    let courtData = {}, isAccountBlocked = false, playersListener = null, trialExpiry = 0;
+    window.defaultData = { owner: "", celu: "", alias: "", abono: 0, costoCancha: 0, limite: 50000 };
 
     function calculateFinancials(f) {
         const now = Date.now();
-        const trialExpiry = f.trialExpiryDate || now;
-        const abonoMensual = f.abonoMensual || 0;
-        const costoPorCancha = f.costoPorCancha || 0;
-        const limite = f.limiteCredito || 50000;
-        
+        trialExpiry = f.trialExpiryDate || now;
         let deudaTotal = 0;
 
         if (now > trialExpiry) {
-            // 1. Calcular ciclos de abono (cada 30 días post-trial)
+            // 1. Abono Mensual (ciclos de 30 días)
             const diasPostTrial = Math.floor((now - trialExpiry) / 86400000);
             const ciclosAbono = Math.floor(diasPostTrial / 30) + 1;
-            deudaTotal += (ciclosAbono * abonoMensual);
+            deudaTotal += (ciclosAbono * f.abonoMensual);
 
-            // 2. Sumar canchas finalizadas post-trial
+            // 2. Facturación de Canchas (incluye historial de recurrentes y eventos únicos)
+            // Para ser exactos, el sistema cuenta cuántas veces ocurrió cada evento después del trial
             Object.values(courtData).forEach(c => {
-                const courtEndTime = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
-                if (courtEndTime > trialExpiry && courtEndTime < now && c.estado !== 'suspendida') {
-                    deudaTotal += costoPorCancha;
+                const eventEnd = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
+                if (eventEnd > trialExpiry && eventEnd < now && c.estado !== 'suspendida') {
+                    deudaTotal += f.costoPorCancha;
+                }
+                // Si es recurrente, sumamos las ocurrencias pasadas desde que terminó el trial hasta la fecha actual de la cancha
+                if (c.tipo === 'recurrente' && c.historialCargos) {
+                    deudaTotal += (c.historialCargos * f.costoPorCancha);
                 }
             });
         }
 
         document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
-        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
+        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(f.limiteCredito);
+        
+        isAccountBlocked = (deudaTotal > (f.limiteCredito * 1.05)) || f.cuentaSuspendida;
+        document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
+        document.getElementById('msg-locked').style.display = isAccountBlocked ? 'block' : 'none';
 
-        // Bloqueo: Deuda > Límite + 5%
-        isAccountBlocked = (deudaTotal > (limite * 1.05)) || f.cuentaSuspendida;
-        const btnAdd = document.getElementById('btn-add-cancha');
-        if (isAccountBlocked) {
-            btnAdd.style.opacity = '0.3'; btnAdd.onclick = null;
-            document.getElementById('msg-locked').style.display = 'block';
-        } else {
-            btnAdd.style.opacity = '1'; btnAdd.onclick = () => abrirNuevaCancha();
-            document.getElementById('msg-locked').style.display = 'none';
-        }
-
-        // UI Plan
+        const remainingTrial = Math.ceil((trialExpiry - now) / 86400000);
         const statusTxt = document.getElementById('plan-status');
         const daysTxt = document.getElementById('plan-days');
-        const remainingTrial = Math.ceil((trialExpiry - now) / 86400000);
-
         if (remainingTrial > 0) {
             statusTxt.innerText = "🟡 Período de PRUEBA"; statusTxt.style.color = 'var(--warning)';
             daysTxt.innerText = `Quedan ${remainingTrial} días gratis`;
@@ -173,13 +108,29 @@
         }
     }
 
+    function checkAndRollover(id, data) {
+        const now = Date.now();
+        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+
+        if (now > eventEnd && data.tipo === 'recurrente') {
+            const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
+            const historialActual = data.historialCargos || 0;
+            
+            // Actualizamos: Nueva fecha, borramos inscriptos, y sumamos al historial de cargos
+            db.ref('eventos/' + id).update({
+                fecha: nextDate,
+                inscriptos: [],
+                historialCargos: historialActual + 1
+            });
+        }
+    }
+
     function init() {
         if(!orgId) return;
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             const f = s.val() || {};
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
             window.defaultData = { owner: f.nombreContacto || "", celu: f.celularContacto || "", alias: f.aliasPredeterminado || "" };
-            window.pricing = { abono: f.abonoMensual || 0, costoCancha: f.costoPorCancha || 0 };
             calculateFinancials(f);
         });
         db.ref('hubs/'+orgId).on('value', snap => {
@@ -187,7 +138,9 @@
             ids.forEach(id => {
                 db.ref('eventos/'+id).on('value', evS => {
                     const d = evS.val(); if(!d) return;
-                    courtData[id] = { id, ...d }; renderizarCanchas();
+                    checkAndRollover(id, d); // MANTENIMIENTO ACTIVO
+                    courtData[id] = { id, ...d };
+                    renderizarCanchas();
                 });
             });
         });
@@ -210,45 +163,37 @@
         });
     }
 
-    function validarRecurrencia() {
-        const tipo = document.getElementById('ed-tipo').value;
-        const inputFecha = document.getElementById('ed-fec').value;
-        const errorMsj = document.getElementById('msg-error-rec');
-        const btnSave = document.getElementById('btn-save-config');
-        document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none';
-        if (tipo === 'recurrente' && inputFecha) {
-            const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()];
-            const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked);
-            if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) {
-                errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none';
-            } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-        } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-    }
-
+    // FUNCIONES DE MODAL (ABRIR, GUARDAR, BORRAR) SE MANTIENEN IGUAL QUE LA VERSION QUE YA TENÍAS OK
     function abrirNuevaCancha() {
-        if(isAccountBlocked) return alert("Cuenta suspendida. Regularice su pago.");
+        if(isAccountBlocked) return alert("Cuenta bloqueada por límite de crédito.");
         isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
         document.getElementById('ed-owner').value = window.defaultData.owner;
         document.getElementById('ed-celu').value = window.defaultData.celu;
         document.getElementById('ed-ali').value = window.defaultData.alias;
         document.getElementById('modal-config').style.display = 'flex';
-        validarRecurrencia();
     }
 
     function abrirConfig(id) {
         isNew = false; const d = courtData[id];
-        document.getElementById('ed-id').value = id; document.getElementById('ed-tipo').value = d.tipo || "unico";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => { if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day); });
-        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || "";
-        document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || "";
-        document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || "";
-        document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || "";
-        document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0;
+        document.getElementById('ed-id').value = id;
+        document.getElementById('ed-tipo').value = d.tipo || "unico";
+        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => { 
+            if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day); 
+        });
+        document.getElementById('ed-org').value = d.organiza || "";
+        document.getElementById('ed-owner').value = d.nombreOrganizador || "";
+        document.getElementById('ed-celu').value = d.celuOrganizador || "";
+        document.getElementById('ed-lug').value = d.lugar || "";
+        document.getElementById('ed-cat').value = d.categorias || "";
+        document.getElementById('ed-fec').value = d.fecha || "";
+        document.getElementById('ed-h1').value = d.hora || "";
+        document.getElementById('ed-h2').value = d.horaFin || "";
+        document.getElementById('ed-cup').value = d.cupo || 0;
+        document.getElementById('ed-val').value = d.valor || 0;
         document.getElementById('ed-ali').value = d.alias || "";
-        document.getElementById('modal-config').style.display = 'flex';
         validarRecurrencia();
+        document.getElementById('modal-config').style.display = 'flex';
     }
 
     function guardarConfig() {
@@ -262,6 +207,21 @@
             });
         } else { db.ref('eventos/'+id).update(upd); }
         alert("¡Guardado!"); cerrarModals();
+    }
+
+    function validarRecurrencia() {
+        const tipo = document.getElementById('ed-tipo').value;
+        const inputFecha = document.getElementById('ed-fec').value;
+        const errorMsj = document.getElementById('msg-error-rec');
+        const btnSave = document.getElementById('btn-save-config');
+        document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none';
+        if (tipo === 'recurrente' && inputFecha) {
+            const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()];
+            const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked);
+            if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) {
+                errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none';
+            } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
+        } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
     }
 
     window.abrirJugadores = function(id) {

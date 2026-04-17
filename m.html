@@ -23,24 +23,21 @@
         
         /* ESTADOS */
         .tag-status { font-size: 9px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
-        .st-prueba { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-vencido { background: #fff2f2; color: var(--danger); }
         
-        /* FORMULARIOS */
+        /* FORMULARIOS Y BOTONES */
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-        
-        /* BOTONES */
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
         .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
 
         /* MODALES */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
-        
     </style>
 </head>
 <body>
@@ -65,22 +62,19 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
             <input type="hidden" id="edit-id">
-            <label>Nombre Comercial</label>
-            <input id="mod-nom" class="input-std">
+            <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            <label>Alias de Cobros (Club)</label>
-            <input id="mod-ali" class="input-std">
+            <label>Alias de Cobros (Club)</label><input id="mod-ali" class="input-std">
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
                 <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
             </div>
-            <label>Límite de Crédito ($)</label>
-            <input id="mod-limite" type="number" class="input-std">
+            <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
             <hr>
             <label>Gestión de Vencimiento / Tiempo</label>
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
@@ -102,23 +96,17 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
             <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
-                <button id="tab-pend" class="btn-edit" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
-                <button id="tab-pag" class="btn-edit" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
+                <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
+                <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
             </div>
             <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
-            <button class="btn-blue" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
+            <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
     </div>
 
 <script>
     let currentVencimiento = 0;
     let currentMovsData = [];
-
-    // HERRAMIENTA FECHA DD-MM-YYYY
-    function formatMs(ms) {
-        const d = new Date(ms);
-        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-    }
 
     function render() {
         db.ref('hubs').on('value', async (snap) => {
@@ -132,21 +120,15 @@
                 
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
-                const ahora = Date.now();
-                const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || ahora;
-                const daysLeft = Math.ceil((vencimientoAbono - ahora) / 86400000);
                 
-                let deudaTotal = 0;
-                for (let k in movs) {
-                    if (movs[k].estado === 'pendiente') {
-                        deudaTotal += (movs[k].monto || 0);
-                    }
-                }
+                // LE PREGUNTAMOS AL CEREBRO (PadelSaaS)
+                const res = PadelSaaS.analizarCuenta(f, movs);
+                if (!res) continue;
 
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
-                else if(ahora > vencimientoAbono) tag = `<span class="tag-status st-vencido">Vencido</span>`;
-                else tag = `<span class="tag-status st-activo">Activo (${daysLeft}d)</span>`;
+                else if(res.isBlocked) tag = `<span class="tag-status st-vencido">Vencido</span>`;
+                else tag = `<span class="tag-status st-activo">Activo (${res.diasParaVencer}d)</span>`;
 
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
@@ -155,12 +137,12 @@
                             <span style="color:#ccc; font-size:11px">GESTIONAR ▾</span>
                         </div>
                         <div class="hub-content">
-                            <div style="background: ${deudaTotal > 0 ? '#fff2f2' : '#f8f9fb'}; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid ${deudaTotal > 0 ? '#ffdbdb' : '#eee'};">
+                            <div style="background: ${res.deudaTotal > 0 ? '#fff2f2' : '#f8f9fb'}; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid ${res.deudaTotal > 0 ? '#ffdbdb' : '#eee'};">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                     <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA PENDIENTE:</span>
-                                    <span style="font-size:22px; font-weight:900; color:${deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(deudaTotal)}</span>
+                                    <span style="font-size:22px; font-weight:900; color:${res.deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(res.deudaTotal)}</span>
                                 </div>
-                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y RENOVAR 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
+                                ${res.deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${res.deudaTotal})">💵 REGISTRAR PAGO Y RENOVAR 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
                             </div>
 
                             <button class="btn-edit" style="width:100%; margin-bottom:15px; background:#f8f9fb; border:1px solid #eee;" onclick="abrirDetalle('${id}')">📋 VER DETALLE DE MOVIMIENTOS</button>
@@ -168,8 +150,8 @@
                             <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
-                                <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(f.limiteCredito)}</div>
-                                <div><b>📅 Vence:</b> ${formatMs(vencimientoAbono)}</div>
+                                <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(res.limite)}</div>
+                                <div><b>📅 Vence:</b> ${PadelSaaS.fmtFecha(res.vencimientoAbono)}</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top:15px">
@@ -206,7 +188,7 @@
         } else {
             filtrados.forEach(m => {
                 const dateObj = new Date(m.fecha);
-                const dStr = formatMs(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 
                 lista.innerHTML += `
                     <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
@@ -263,7 +245,7 @@
             document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0;
             document.getElementById('mod-limite').value = f.limiteCredito || 50000;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento: " + formatMs(currentVencimiento);
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -272,7 +254,7 @@
         const d = parseInt(document.getElementById('mod-trial-days').value);
         if(!d) return alert("Ingresá días");
         currentVencimiento = Math.max(currentVencimiento, Date.now()) + (d * 86400000);
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + formatMs(currentVencimiento);
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento);
     }
 
     function forzarVencimientoHoy() {

@@ -20,7 +20,6 @@
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
-        
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
         .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
@@ -91,10 +90,12 @@
     <div id="modal-detalle" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">📋 Mis Movimientos</h2>
+            
             <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
                 <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
                 <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
             </div>
+
             <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
             <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
@@ -111,82 +112,40 @@
     window.movimientos = []; 
     let currentMovsData = [];
 
-    function formatMs(ms) {
-        const d = new Date(ms);
-        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-    }
-    function formatFec(f) {
-        if(!f) return '--';
-        const [y, m, d] = f.split('-');
-        return `${d}-${m}-${y}`;
-    }
-
+    // Ahora la función de cálculos es de 10 líneas, gracias al Core en app-config.js
     function calculateFinancials() {
-        if (Object.keys(cuentaInfo).length === 0) return; 
+        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
+        if (!res) return;
 
-        const f = cuentaInfo;
-        const ahora = Date.now();
-        const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || ahora;
-        
-        let deudaAbono = 0, deudaTurnos = 0, cantTurnosPendientes = 0;
-
-        window.movimientos.forEach(m => {
-            if (m.estado === 'pendiente') {
-                if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
-                if (m.tipo === 'turno') { deudaTurnos += (m.monto || 0); cantTurnosPendientes++; }
-            }
-        });
-
-        const deudaTotal = deudaAbono + deudaTurnos;
-        const limite = f.limiteCredito || 50000;
-        const disponible = Math.max(0, limite - deudaTotal);
-
-        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
-        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
-        document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(deudaAbono);
-        document.getElementById('det-turnos-texto').innerText = `Canchas pendientes (${cantTurnosPendientes} × ${PadelUtils.fmtDinero(f.costoPorCancha || 0)})`;
-        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(deudaTurnos);
-        document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(limite);
+        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(res.deudaTotal);
+        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(res.limite);
+        document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(res.deudaAbono);
+        document.getElementById('det-turnos-texto').innerText = `Canchas pendientes (${res.cantTurnosPendientes} × ${PadelUtils.fmtDinero(cuentaInfo.costoPorCancha || 0)})`;
+        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(res.deudaTurnos);
+        document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(res.limite);
         
         const elDisp = document.getElementById('det-disponible');
         const cajaDisp = document.getElementById('caja-disponible');
-        if (deudaTotal > limite) { elDisp.innerText = "Límite excedido"; cajaDisp.style.color = "var(--danger)"; } 
-        else { elDisp.innerText = PadelUtils.fmtDinero(disponible); cajaDisp.style.color = disponible < (limite * 0.1) ? "var(--warning)" : "var(--success)"; }
+        if (res.deudaTotal > res.limite) { 
+            elDisp.innerText = "Límite excedido"; cajaDisp.style.color = "var(--danger)"; 
+        } else { 
+            elDisp.innerText = PadelUtils.fmtDinero(res.disponible); 
+            cajaDisp.style.color = res.disponible < (res.limite * 0.1) ? "var(--warning)" : "var(--success)"; 
+        }
 
-        const bloqueoPorLimite = deudaTotal > (limite * 1.05), bloqueoPorTiempo = ahora > vencimientoAbono;
-        isAccountBlocked = bloqueoPorLimite || bloqueoPorTiempo || f.cuentaSuspendida;
+        isAccountBlocked = res.isBlocked;
         document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
         
         const msgLocked = document.getElementById('msg-locked');
         if (isAccountBlocked) {
-            msgLocked.style.display = 'block';
-            if (bloqueoPorTiempo) msgLocked.innerText = "Abono vencido. Regularice su pago.";
-            else if (bloqueoPorLimite) msgLocked.innerText = "Límite de crédito excedido.";
-            else msgLocked.innerText = "Cuenta suspendida administrativamente.";
+            msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked;
         } else { msgLocked.style.display = 'none'; }
 
         const statusTxt = document.getElementById('plan-status'), daysTxt = document.getElementById('plan-days'), btnPlan = document.getElementById('btn-plan-action');
-        const diasParaVencer = Math.ceil((vencimientoAbono - ahora) / 86400000);
-
-        if (isAccountBlocked) {
-            statusTxt.innerHTML = bloqueoPorTiempo ? "🔴 Abono Vencido" : "🔴 Cuenta Suspendida"; statusTxt.style.color = "var(--danger)";
-            daysTxt.innerText = bloqueoPorTiempo ? "Venció el " + formatMs(vencimientoAbono) : "Límite de crédito excedido"; daysTxt.style.color = "var(--danger)";
-            btnPlan.innerText = "ACTIVAR PLAN"; btnPlan.style.background = "var(--danger)";
-        } else {
-            if (diasParaVencer <= 3 && diasParaVencer > 0) {
-                statusTxt.innerHTML = "⚠️ Vence en " + diasParaVencer + (diasParaVencer === 1 ? " día" : " días"); statusTxt.style.color = "var(--danger)";
-                daysTxt.innerText = "Aboná para evitar el corte"; daysTxt.style.color = "var(--danger)";
-                btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--danger)";
-            } else if (diasParaVencer <= 7) {
-                statusTxt.innerHTML = "🟡 Activo hasta el " + formatMs(vencimientoAbono); statusTxt.style.color = "var(--warning)";
-                daysTxt.innerText = "Tu plan vence pronto"; daysTxt.style.color = "var(--warning)";
-                btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
-            } else {
-                statusTxt.innerHTML = "🟢 Activo hasta el " + formatMs(vencimientoAbono); statusTxt.style.color = "var(--success)";
-                daysTxt.innerText = "Te quedan " + diasParaVencer + " días"; daysTxt.style.color = "var(--text)";
-                btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
-            }
-        }
+        
+        statusTxt.innerHTML = res.ux.icon; statusTxt.style.color = res.ux.color;
+        daysTxt.innerText = res.ux.text; daysTxt.style.color = res.ux.color;
+        btnPlan.innerText = res.ux.btnText; btnPlan.style.background = res.ux.btnColor;
     }
 
     function abrirDetalle() {
@@ -210,7 +169,7 @@
         } else {
             filtrados.forEach(m => {
                 const dateObj = new Date(m.fecha);
-                const dStr = formatMs(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 
                 lista.innerHTML += `
                     <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
@@ -231,7 +190,7 @@
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${PadelSaaS.fmtFecha(new Date(data.fecha+'T12:00:00').getTime())}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
@@ -274,7 +233,7 @@
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
             list.innerHTML += `<div class="cancha-card">
                 <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelSaaS.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
                 <div style="font-size:12px; color:var(--sub)">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
                     <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>

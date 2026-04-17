@@ -70,8 +70,13 @@
                     <input id="new-email" type="email" class="input-std" placeholder="Email de Acceso">
                     <input id="new-pass" type="text" class="input-std" placeholder="Contraseña (mín 6 letras)">
                 </div>
+                <div style="margin-top: 5px; margin-bottom: 15px;">
+                    <label style="margin-left: 5px;">Días de Prueba Iniciales</label>
+                    <input id="new-trial" type="number" class="input-std" value="7" style="margin-bottom: 0;">
+                </div>
                 <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB Y CREAR USUARIO</button>
             </div>
+            
             <div id="lista-clubes">Cargando clubes y deudas...</div>
         </div>
 
@@ -182,6 +187,9 @@
                 
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
+                
+                if (typeof PadelSaaS === 'undefined') continue;
+                
                 const res = PadelSaaS.analizarCuenta(f, movs);
                 if (!res) continue;
 
@@ -226,8 +234,9 @@
         const nom = document.getElementById('new-name').value.trim();
         const email = document.getElementById('new-email').value.trim();
         const pass = document.getElementById('new-pass').value.trim();
+        const trialDays = parseInt(document.getElementById('new-trial').value) || 0; // Lee los días
 
-        if(!id || !nom || !email || !pass) return alert("Faltan datos. Llená los 4 campos.");
+        if(!id || !nom || !email || !pass) return alert("Faltan datos. Llená los 4 campos principales.");
         if(pass.length < 6) return alert("La contraseña debe tener al menos 6 letras/números.");
 
         try {
@@ -239,11 +248,14 @@
             await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
             await secondaryApp.auth().signOut();
 
+            // Cálculo dinámico del vencimiento según el input
+            const vencimientoInicial = Date.now() + (trialDays * 86400000);
+
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             await db.ref(`facturacion/${id}/cuenta`).set({
                 nombreOrg: nom,
                 emailOrganizador: email,
-                vencimientoAbono: Date.now() + (7 * 86400000),
+                vencimientoAbono: vencimientoInicial,
                 abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000,
                 cuentaSuspendida: false
             });
@@ -252,8 +264,9 @@
             document.getElementById('new-name').value = '';
             document.getElementById('new-email').value = '';
             document.getElementById('new-pass').value = '';
+            document.getElementById('new-trial').value = '7';
 
-            alert("✅ Club y Usuario creados con éxito.");
+            alert(`✅ Club y Usuario creados con éxito. Se le asignaron ${trialDays} días de prueba.`);
         } catch(error) {
             alert("Error al crear usuario: " + error.message);
         }
@@ -301,7 +314,6 @@
         });
     }
 
-    // ✉️ ENVIAR CORREO PARA CAMBIO DE CONTRASEÑA
     function enviarPassReset() {
         const email = document.getElementById('mod-email-disp').value.trim();
         if(!email || email === "") return alert("No hay un correo electrónico cargado.");

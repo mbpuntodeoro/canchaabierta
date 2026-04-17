@@ -21,13 +21,12 @@
         .st-trial { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-susp { background: #fff2f2; color: var(--danger); }
-        .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; }
+        .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 35px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-        .info-link { background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #eee; font-size: 11px; color: #555; word-break: break-all; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -35,34 +34,33 @@
         <h2>Master PadelApp</h2>
         <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">SALIR</button>
     </header>
-
     <div class="container">
         <div class="card-main">
-            <h3>🚀 Registrar Nuevo Club</h3>
+            <h3>🚀 Registrar Organizador</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input id="new-id" class="input-std" placeholder="ID (ej: club-padel)">
-                <input id="new-name" class="input-std" placeholder="Nombre Comercial">
+                <input id="new-id" class="input-std" placeholder="ID (ej: smash)">
+                <input id="new-name" class="input-std" placeholder="Nombre Club">
             </div>
-            <button class="btn-blue" onclick="crearHub()">REGISTRAR EN SISTEMA</button>
+            <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
         </div>
         <div id="lista-clubes">Cargando...</div>
     </div>
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0; font-weight: 900;">Configuración de Club</h2>
+            <h2 style="margin-top:0; font-weight: 900;">Configurar Club</h2>
             <input type="hidden" id="edit-id">
             <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <label>Responsable (Predet.)</label><input id="mod-con" class="input-std">
-            <label>WhatsApp (Predet.)</label><input id="mod-cel" class="input-std">
-            <label>Alias MP (Predet.)</label><input id="mod-ali" class="input-std">
+            <label>Responsable Predet.</label><input id="mod-con" class="input-std">
+            <label>WhatsApp Predet.</label><input id="mod-cel" class="input-std">
+            <label>Alias MP Predet.</label><input id="mod-ali" class="input-std">
             <hr>
             <label>Extender Plan (Días a sumar)</label>
             <div style="display: flex; gap: 10px;">
                 <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30" style="margin-bottom:0">
                 <button class="btn-blue" style="background: var(--success); width: auto; padding: 0 20px;" onclick="sumarDiasManual()">SUMAR</button>
             </div>
-            <p id="txt-venc-actual" style="font-size: 12px; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0;"></p>
+            <p id="txt-venc-actual" style="font-size: 12px; font-weight: 800; text-align: center; color: var(--primary); margin: 15px 0;"></p>
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
                 <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
@@ -74,7 +72,6 @@
 
 <script>
     let currentVenc = 0;
-
     function render() {
         db.ref('hubs').on('value', async (snap) => {
             const hubs = snap.val() || {};
@@ -92,16 +89,13 @@
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
-                            <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> 
+                            <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span>
                         </div>
                         <div class="hub-content">
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; color: #555;">
-                                <div><p><b>📅 Vence:</b> ${new Date(f.planExpiryDate).toLocaleDateString()}</p><p><b>👤 Resp:</b> ${f.nombreContacto || '--'}</p></div>
-                                <div><p><b>💳 Alias:</b> ${f.aliasPredeterminado || '--'}</p><p><b>📱 WA:</b> ${f.celularContacto || '--'}</p></div>
-                            </div>
-                            <div class="info-link">https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}</div>
+                            <p style="font-size:13px"><b>📅 Vence:</b> ${f.planExpiryDate ? new Date(f.planExpiryDate).toLocaleDateString() : '--'}</p>
+                            <p style="font-size:13px"><b>💳 Alias:</b> ${f.aliasPredeterminado || '--'}</p>
                             <div style="display: flex; gap: 10px;">
-                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ CONFIG</button>
+                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ EDITAR</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">DASHBOARD</a>
                             </div>
                         </div>
@@ -116,7 +110,7 @@
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
         db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false });
-        alert("Club Creado");
+        alert("Club Creado!");
     }
 
     function abrirPerfil(id) {
@@ -145,13 +139,15 @@
     function guardarPerfil() {
         const id = document.getElementById('edit-id').value;
         const upd = {
-            nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value,
-            celularContacto: document.getElementById('mod-cel').value, aliasPredeterminado: document.getElementById('mod-ali').value,
-            planExpiryDate: currentVenc, cuentaSuspendida: document.getElementById('mod-susp').checked
+            nombreOrg: document.getElementById('mod-nom').value,
+            nombreContacto: document.getElementById('mod-con').value,
+            celularContacto: document.getElementById('mod-cel').value,
+            aliasPredeterminado: document.getElementById('mod-ali').value,
+            planExpiryDate: currentVenc,
+            cuentaSuspendida: document.getElementById('mod-susp').checked
         };
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
     }
-
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }
     render();
 </script>

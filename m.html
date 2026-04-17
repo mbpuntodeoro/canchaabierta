@@ -1,163 +1,108 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Hub - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js"></script>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
-        
-        header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        header h2 { margin: 0; font-weight: 800; letter-spacing: -1px; }
-
+        header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        
         .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid var(--primary); }
-        .card-main h3 { margin-top: 0; font-weight: 900; color: var(--primary); }
-
-        /* ACORDEONES */
-        .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; transition: 0.3s; }
-        .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 17px; }
-        .hub-header:hover { background: #fafafa; }
+        .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; }
+        .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 0 22px 22px 22px; display: none; border-top: 1px solid #f9f9f9; background: #fafafa; }
         .hub-item.active .hub-content { display: block; }
-        
-        /* TAGS */
-        .tag-status { font-size: 10px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; letter-spacing: 0.5px; }
+        .tag-status { font-size: 9px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
         .st-trial { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-susp { background: #fff2f2; color: var(--danger); }
-
-        /* FORMULARIOS */
-        .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; transition: 0.2s; }
-        .input-std:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
-        
-        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; font-size: 15px; transition: 0.3s; }
-        .btn-blue:active { transform: scale(0.98); }
-        
-        .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; transition: 0.2s; }
-        .btn-edit:hover { border-color: var(--primary); color: var(--primary); }
-
-        /* MODAL */
+        .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; }
+        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
+        .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 500px; padding: 35px; border-radius: 35px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        .modal-content { background: white; width: 100%; max-width: 500px; padding: 35px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-
-        .info-link { background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #eee; font-size: 12px; color: #555; word-break: break-all; margin-top: 5px; }
+        .info-link { background: #fff; padding: 12px; border-radius: 12px; border: 1px solid #eee; font-size: 11px; color: #555; word-break: break-all; margin-top: 5px; }
     </style>
 </head>
 <body>
-
     <header>
         <h2>Master PadelApp</h2>
-        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">CERRAR SESIÓN</button>
+        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">SALIR</button>
     </header>
 
     <div class="container">
         <div class="card-main">
-            <h3>🚀 Alta de Nuevo Organizador</h3>
+            <h3>🚀 Registrar Nuevo Club</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input id="new-id" class="input-std" placeholder="ID (ej: club-smash)">
+                <input id="new-id" class="input-std" placeholder="ID (ej: club-padel)">
                 <input id="new-name" class="input-std" placeholder="Nombre Comercial">
             </div>
-            <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB EN SISTEMA</button>
+            <button class="btn-blue" onclick="crearHub()">REGISTRAR EN SISTEMA</button>
         </div>
-
-        <div id="lista-clubes">Cargando base de datos...</div>
+        <div id="lista-clubes">Cargando...</div>
     </div>
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0; font-weight: 900; letter-spacing: -1px;">Configuración de Club</h2>
+            <h2 style="margin-top:0; font-weight: 900;">Configuración de Club</h2>
             <input type="hidden" id="edit-id">
-            
-            <label>Nombre Comercial</label>
-            <input id="mod-nom" class="input-std" placeholder="Nombre del club">
-            
-            <label>Responsable de Turnos (Nombre)</label>
-            <input id="mod-con" class="input-std" placeholder="Ej: Juan Perez">
-            
-            <label>WhatsApp Contacto (Sin + ni espacios)</label>
-            <input id="mod-cel" class="input-std" placeholder="Ej: 5491166463800">
-            
-            <label>Alias Mercado Pago (Para Cobros)</label>
-            <input id="mod-ali" class="input-std" placeholder="Ej: club.padel.mp">
-            
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            
+            <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
+            <label>Responsable (Predet.)</label><input id="mod-con" class="input-std">
+            <label>WhatsApp (Predet.)</label><input id="mod-cel" class="input-std">
+            <label>Alias MP (Predet.)</label><input id="mod-ali" class="input-std">
+            <hr>
             <label>Extender Plan (Días a sumar)</label>
             <div style="display: flex; gap: 10px;">
                 <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30" style="margin-bottom:0">
-                <button class="btn-blue" style="background: var(--success); width: auto; white-space: nowrap; padding: 0 20px;" onclick="sumarDiasManual()">SUMAR</button>
+                <button class="btn-blue" style="background: var(--success); width: auto; padding: 0 20px;" onclick="sumarDiasManual()">SUMAR</button>
             </div>
             <p id="txt-venc-actual" style="font-size: 12px; font-weight: 800; text-align: center; color: var(--primary); margin: 10px 0;"></p>
-            
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
-                <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA POR FALTA DE PAGO</b>
+                <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
             </div>
-
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
 
 <script>
-    // CONFIGURACIÓN FIREBASE
-    firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
-    const db = firebase.database();
     let currentVenc = 0;
 
-    // RENDERIZADO DE LISTA
     function render() {
         db.ref('hubs').on('value', async (snap) => {
             const hubs = snap.val() || {};
             const container = document.getElementById('lista-clubes');
             container.innerHTML = "";
-            
             for (let id in hubs) {
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
                 const f = fSnap.val() || {};
-                
-                // Lógica de Semáforo
                 let tagClass = "st-activo", tagText = "Activo";
                 const remaining = Math.ceil((f.planExpiryDate - Date.now()) / 86400000);
-                
                 if(f.cuentaSuspendida) { tagClass = "st-susp"; tagText = "Suspendido"; }
                 else if(remaining <= 0) { tagClass = "st-susp"; tagText = "Vencido"; }
                 else if(remaining < 5) { tagClass = "st-trial"; tagText = `Vence en ${remaining}d`; }
-
-                const fechaVencStr = f.planExpiryDate ? new Date(f.planExpiryDate).toLocaleDateString() : 'Sin fecha';
 
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
                             <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> 
-                            <span style="color:#ccc; font-size:12px">DETALLES ▾</span>
                         </div>
                         <div class="hub-content">
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; color: #555;">
-                                <div>
-                                    <p><b>📍 ID Sistema:</b> ${id}</p>
-                                    <p><b>📅 Vencimiento:</b> ${fechaVencStr}</p>
-                                    <p><b>👤 Responsable:</b> ${f.nombreContacto || 'No cargado'}</p>
-                                </div>
-                                <div>
-                                    <p><b>💳 Alias MP:</b> ${f.aliasPredeterminado || 'No cargado'}</p>
-                                    <p><b>📱 WhatsApp:</b> ${f.celularContacto || 'No cargado'}</p>
-                                </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px; color: #555;">
+                                <div><p><b>📅 Vence:</b> ${new Date(f.planExpiryDate).toLocaleDateString()}</p><p><b>👤 Resp:</b> ${f.nombreContacto || '--'}</p></div>
+                                <div><p><b>💳 Alias:</b> ${f.aliasPredeterminado || '--'}</p><p><b>📱 WA:</b> ${f.celularContacto || '--'}</p></div>
                             </div>
-                            
-                            <p style="font-size:11px; font-weight:800; color:var(--sub); margin-bottom:5px; margin-top:15px">LINK CARTELERA PÚBLICA:</p>
                             <div class="info-link">https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}</div>
-                            
                             <div style="display: flex; gap: 10px;">
-                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR / EXTENDER</button>
-                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">ABRIR DASHBOARD</a>
+                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ CONFIG</button>
+                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">DASHBOARD</a>
                             </div>
                         </div>
                     </div>`;
@@ -165,24 +110,13 @@
         });
     }
 
-    // FUNCIONES DE ACCIÓN
     function crearHub() {
-        const id = document.getElementById('new-id').value.trim().toLowerCase().replace(/\s+/g, '-');
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
         const nom = document.getElementById('new-name').value.trim();
-        if(!id || !nom) return alert("Faltan datos para el registro");
-        
+        if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ 
-            nombreOrg: nom, 
-            planExpiryDate: Date.now() + (7 * 86400000), // 7 días gratis por defecto
-            cuentaSuspendida: false,
-            nombreContacto: "",
-            celularContacto: "",
-            aliasPredeterminado: ""
-        });
-        alert("¡Club registrado con éxito!");
-        document.getElementById('new-id').value = "";
-        document.getElementById('new-name').value = "";
+        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false });
+        alert("Club Creado");
     }
 
     function abrirPerfil(id) {
@@ -195,41 +129,30 @@
             document.getElementById('mod-cel').value = f.celularContacto || "";
             document.getElementById('mod-ali').value = f.aliasPredeterminado || "";
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            document.getElementById('mod-trial-days').value = "";
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento actual: " + new Date(currentVenc).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vence el: " + new Date(currentVenc).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
     function sumarDiasManual() {
         const dias = parseInt(document.getElementById('mod-trial-days').value);
-        if(!dias || dias <= 0) return alert("Ingresá una cantidad de días válida");
-        // Si el plan ya está vencido, sumamos desde hoy. Si no, extendemos desde el vencimiento.
+        if(!dias) return alert("Ingresá días");
         const base = currentVenc < Date.now() ? Date.now() : currentVenc;
         currentVenc = base + (dias * 86400000);
         document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentVenc).toLocaleDateString();
-        alert("Días añadidos visualmente. Recordá presionar GUARDAR.");
     }
 
     function guardarPerfil() {
         const id = document.getElementById('edit-id').value;
         const upd = {
-            nombreOrg: document.getElementById('mod-nom').value,
-            nombreContacto: document.getElementById('mod-con').value,
-            celularContacto: document.getElementById('mod-cel').value,
-            aliasPredeterminado: document.getElementById('mod-ali').value,
-            planExpiryDate: currentVenc,
-            cuentaSuspendida: document.getElementById('mod-susp').checked
+            nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value,
+            celularContacto: document.getElementById('mod-cel').value, aliasPredeterminado: document.getElementById('mod-ali').value,
+            planExpiryDate: currentVenc, cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { 
-            alert("Cambios guardados en la base de datos."); 
-            cerrarModal(); 
-        });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
     }
 
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }
-
-    // Iniciar renderizado
     render();
 </script>
 </body>

@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js"></script>
+    <script src="app-config.js?v=2"></script>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; }
@@ -15,7 +15,7 @@
         .event-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 8px; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); margin-top: 10px; font-weight: 600; }
-        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; }
+        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; text-transform: uppercase; }
         .footer-personal { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
         .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; }
         .suspendido-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 30px; text-align: center; margin-top: 20px;}
@@ -43,18 +43,13 @@
             
             document.getElementById('hub-name').innerText = cuentaInfo.nombreOrg?.toUpperCase() || orgId.toUpperCase();
             
-            // Le preguntamos al Core de app-config.js si está bloqueado
             const res = PadelSaaS.analizarCuenta(cuentaInfo, movimientos);
             const isBlocked = res ? res.isBlocked : false;
 
             const list = document.getElementById('lista-eventos');
             
             if (isBlocked) {
-                list.innerHTML = `
-                    <div class="suspendido-box">
-                        <h2>🚫 Canchas no disponibles</h2>
-                        <p>Los turnos de este organizador se encuentran temporalmente suspendidos.</p>
-                    </div>`;
+                list.innerHTML = `<div class="suspendido-box"><h2>🚫 Canchas no disponibles</h2><p>Los turnos de este organizador se encuentran temporalmente suspendidos.</p></div>`;
                 return; 
             }
 
@@ -67,7 +62,6 @@
                     if(eSnap.exists()) {
                         const d = eSnap.val();
                         
-                        // 🕒 RELOJ AUTOMÁTICO: Si no puso hora de fin, suma 90 minutos a la de inicio
                         let horaFinReal = d.horaFin;
                         if (!horaFinReal && d.hora) {
                             const [h, m] = d.hora.split(':');
@@ -78,10 +72,8 @@
                             horaFinReal = '23:59';
                         }
 
-                        // Calcula el tiempo límite exacto
                         const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
                         
-                        // Solo la agrega si HOY es MENOR al fin del evento
                         if(Date.now() < finEvento && d.estado !== 'suspendida') {
                             canchasData.push({ id, horaFinCalculada: horaFinReal, ...d });
                         }
@@ -95,14 +87,22 @@
                     list.innerHTML = `<div style="text-align:center; padding: 40px 20px; color: var(--sub); font-weight: 800;">No hay turnos programados por el momento.</div>`;
                 }
 
+                const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
                 canchasData.forEach(d => {
+                    const fObj = new Date(d.fecha + 'T12:00:00');
+                    const fechaTxt = `${diasSemana[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
+
                     list.innerHTML += `<div class="event-card">
                         <div style="display:flex;align-items:center;justify-content:space-between;">
                             <h3 style="margin:0;font-size:18px;font-weight:900;text-transform:uppercase">🎾 ${d.organiza}</h3>
                         </div>
-                        <div style="margin-top: 5px;"><span class="tag-cat" style="margin-left:0;">${d.categorias}</span></div>
-                        <div class="info-row" style="margin-top:15px;">📅 ${PadelSaaS.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
+                        <div style="margin-top: 5px;"><span class="tag-cat" style="margin-left:0;">${d.categorias || 'TODAS LAS CATEGORÍAS'}</span></div>
+                        
+                        <div class="info-row" style="margin-top:15px;">📅 ${fechaTxt} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
                         <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                        <div class="info-row">👤 Organiza: ${d.nombreOrganizador || 'No especificado'}</div>
+                        
                         <div class="info-row" style="font-size: 16px; color: var(--text); font-weight: 900; margin-top: 15px;">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
                         <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a>
                     </div>`;

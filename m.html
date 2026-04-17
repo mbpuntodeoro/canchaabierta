@@ -21,7 +21,7 @@
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-susp { background: #fff2f2; color: var(--danger); }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; font-family: inherit; box-sizing: border-box; }
-        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; }
+        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-bottom: 10px; }
         .btn-edit { background: #eee; padding: 10px 15px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block;}
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
@@ -45,20 +45,22 @@
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">Perfil y Datos Base</h2>
+            <h2 style="margin-top:0">Perfil y Plan</h2>
             <input type="hidden" id="edit-id">
             <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <label>Persona Responsable (Predet.)</label><input id="mod-con" class="input-std">
-            <label>WhatsApp Dueño (Predet.)</label><input id="mod-cel" class="input-std">
-            <label>Alias Mercado Pago (Predet.)</label><input id="mod-ali" class="input-std">
+            <label>Persona Responsable</label><input id="mod-con" class="input-std">
+            <label>WhatsApp Dueño</label><input id="mod-cel" class="input-std">
+            <label>Alias Mercado Pago</label><input id="mod-ali" class="input-std">
             <hr>
-            <label>Días de Trial (Gratis)</label>
-            <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30">
+            <label>Gestión de Abono</label>
+            <button class="btn-blue" style="background: var(--success);" onclick="sumarDias(30)">ACTIVAR / RENOVAR 30 DÍAS</button>
+            <p id="txt-venc-actual" style="font-size: 12px; font-weight: 700; text-align: center; color: var(--sub);"></p>
+            
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
                 <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.5)">
             </div>
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS PERFIL</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
@@ -66,6 +68,7 @@
 <script>
     firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
     const db = firebase.database();
+    let currentVenc = 0;
 
     function render() {
         db.ref('hubs').on('value', async (snap) => {
@@ -77,9 +80,10 @@
                 const f = fSnap.val() || {};
                 let tagClass = "st-activo", tagText = "Activo";
                 if(f.cuentaSuspendida) { tagClass = "st-susp"; tagText = "Suspendido"; }
-                else if(f.trialStartDate && f.trialDays) {
-                    const remaining = f.trialDays - Math.floor((Date.now() - f.trialStartDate) / 86400000);
-                    if(remaining > 0) { tagClass = "st-trial"; tagText = `Trial: ${remaining}d`; }
+                else if(f.planExpiryDate) {
+                    const remaining = Math.ceil((f.planExpiryDate - Date.now()) / 86400000);
+                    if(remaining <= 0) { tagClass = "st-susp"; tagText = "Vencido"; }
+                    else if(remaining < 5) { tagClass = "st-trial"; tagText = `Vence en ${remaining}d`; }
                 }
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
@@ -87,8 +91,7 @@
                             <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> <span>▾</span>
                         </div>
                         <div class="hub-content">
-                            <p style="font-size: 13px; margin: 0 0 10px 0;"><b>ID Organizador:</b> ${id}</p>
-                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR PERFIL / PREDET.</button>
+                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ GESTIONAR PLAN / PERFIL</button>
                             <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff">ABRIR DASHBOARD</a>
                         </div>
                     </div>`;
@@ -101,22 +104,33 @@
         const nom = document.getElementById('new-name').value.trim();
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, trialDays: 0, trialStartDate: 0, cuentaSuspendida: false, nombreContacto: "", celularContacto: "", aliasPredeterminado: "" });
-        alert("¡Club creado!");
+        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false });
+        alert("¡Club creado con 7 días de Trial!");
     }
 
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {};
+            currentVenc = f.planExpiryDate || Date.now();
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-con').value = f.nombreContacto || "";
             document.getElementById('mod-cel').value = f.celularContacto || "";
             document.getElementById('mod-ali').value = f.aliasPredeterminado || "";
-            document.getElementById('mod-trial-days').value = f.trialDays || 0;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
+            
+            const fechaLabel = new Date(currentVenc).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento actual: " + fechaLabel;
             document.getElementById('modal-edit').style.display = 'flex';
         });
+    }
+
+    function sumarDias(dias) {
+        const base = Math.max(currentVenc, Date.now());
+        currentVenc = base + (dias * 86400000);
+        const fechaLabel = new Date(currentVenc).toLocaleDateString();
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + fechaLabel;
+        alert("Se han sumado 30 días. Recordá darle a GUARDAR CAMBIOS.");
     }
 
     function guardarPerfil() {
@@ -126,8 +140,7 @@
             nombreContacto: document.getElementById('mod-con').value,
             celularContacto: document.getElementById('mod-cel').value,
             aliasPredeterminado: document.getElementById('mod-ali').value,
-            trialDays: parseInt(document.getElementById('mod-trial-days').value),
-            trialStartDate: Date.now(),
+            planExpiryDate: currentVenc,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Datos actualizados"); cerrarModal(); });

@@ -6,17 +6,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=3"></script>
+    <script src="app-config.js?v=4"></script>
     <style>
+        :root { --primary: #007aff; --danger: #ff3b30; }
         body { font-family: 'Outfit', sans-serif; background: #f2f2f7; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #1d1d1f; }
-        .card { background: white; border-radius: 30px; padding: 35px 30px; max-width: 400px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .card { background: white; border-radius: 30px; padding: 35px 30px; max-width: 400px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box;}
         .title { font-size: 24px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 25px; line-height: 1.2; }
         .info-box { background: #f8f9fb; border-radius: 20px; padding: 20px; margin-bottom: 25px; border: 1px solid #f2f2f7; }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 12px; }
         .info-row:last-child { margin-bottom: 0; }
         .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #eee; margin-bottom: 12px; font-family: inherit; font-size: 15px; outline: none; box-sizing: border-box; }
-        .btn-join { background: #007aff; color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 900; font-size: 15px; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .btn-join { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 900; font-size: 15px; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         #loading { text-align: center; font-weight: 800; color: #888; margin-top: 50px; }
+        
+        /* Estilos de la Caja Roja */
+        .warning-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 20px; padding: 20px; margin: 20px 0; text-align: center; }
+        .warning-title { color: var(--danger); font-weight: 900; font-size: 12px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .warning-text { color: #1d1d1f; font-weight: 600; font-size: 14px; margin: 0 0 15px 0; line-height: 1.4; }
+        .alias-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid #ffdbdb; }
+        .alias-label { font-size: 10px; font-weight: 800; color: #aaa; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .alias-value { font-size: 18px; color: #1d1d1f; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -41,21 +50,25 @@
             <input type="tel" id="p-celu" class="input-std" placeholder="Tu WhatsApp">
             
             <button onclick="anotarse()" class="btn-join" id="btn-submit">ANOTARME</button>
-            <button onclick="window.location.href='v.html?org='+org" style="width:100%; background:none; border:none; color:var(--sub); font-weight:800; margin-top:15px; cursor:pointer; font-size:12px;">CANCELAR Y VOLVER</button>
+            <button onclick="window.location.href='v.html?org='+org" style="width:100%; background:none; border:none; color:var(--sub); font-weight:800; margin-top:15px; cursor:pointer; font-size:12px; text-transform:uppercase;">CANCELAR Y VOLVER</button>
         </div>
 
         <div id="success-screen" style="display:none; text-align:center;">
-            <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-            <h2 style="margin-top:0; font-weight:900; letter-spacing:-0.5px;">¡ESTÁS ADENTRO!</h2>
-            <p style="color:#888; font-weight:600; font-size:14px; margin-top:0;">Tu lugar ya está reservado.</p>
+            <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
+            <h2 style="margin-top:0; font-weight:900; letter-spacing:-0.5px; text-transform:uppercase;">¡Solicitud Recibida!</h2>
             
-            <div style="background:#f8f9fb; border-radius:20px; padding:20px; margin:25px 0; border:2px dashed #e5e5e7;">
-                <p style="font-size:11px; font-weight:800; color:#aaa; margin:0 0 5px 0; text-transform:uppercase;">Alias Mercado Pago</p>
-                <b id="t-alias-pago" style="font-size:18px; color:#1d1d1f;">--</b>
+            <div class="warning-box">
+                <p class="warning-title">⚠️ IMPORTANTE</p>
+                <p class="warning-text">Tu lugar <b>NO</b> está confirmado hasta que realices la transferencia y envíes el comprobante al organizador.</p>
+                
+                <div class="alias-box">
+                    <span class="alias-label">ALIAS MERCADO PAGO</span>
+                    <span class="alias-value" id="t-alias-pago">--</span>
+                </div>
             </div>
 
-            <button onclick="notificarWa()" class="btn-join" style="background:#25D366; color:white; margin-top:0;">📲 AVISAR POR WHATSAPP</button>
-            <button onclick="window.location.href='v.html?org='+org" class="btn-join" style="background:#eef6ff; color:#007aff; margin-top:10px;">VOLVER A LA CARTELERA</button>
+            <button onclick="notificarWa()" class="btn-join" style="background:#25D366; color:white; margin-top:0;">📲 ENVIAR COMPROBANTE</button>
+            <button onclick="window.location.href='v.html?org='+org" class="btn-join" style="background:#eef6ff; color:var(--primary); margin-top:10px;">VOLVER A LA CARTELERA</button>
         </div>
 
     </div>
@@ -63,7 +76,7 @@
 <script>
     const id = new URLSearchParams(window.location.search).get('id');
     const org = new URLSearchParams(window.location.search).get('org');
-    let eventData = {}; // Guardamos los datos globalmente
+    let eventData = {}; 
 
     if(!id || !org) {
         document.getElementById('loading').innerText = "Link inválido o incompleto.";
@@ -90,7 +103,6 @@
             document.getElementById('t-cat').innerText = eventData.categorias || 'Todas las categorías';
             document.getElementById('t-val').innerText = PadelUtils.fmtDinero(eventData.valor);
             
-            // Cargamos el alias para la pantalla de éxito
             document.getElementById('t-alias-pago').innerText = eventData.alias || 'Consultar al organizador';
         });
     }
@@ -110,7 +122,6 @@
             list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                // ÉXITO: Ocultamos el formulario y mostramos la pantalla de éxito
                 document.getElementById('form-screen').style.display = 'none';
                 document.getElementById('success-screen').style.display = 'block';
             }).catch(err => {
@@ -130,11 +141,10 @@
             return;
         }
 
-        // Formateamos la fecha para el mensaje
         const fObj = new Date(eventData.fecha + 'T12:00:00');
         const fechaTxt = PadelSaaS.fmtFecha(fObj.getTime());
 
-        const texto = `Hola! Me acabo de anotar en la app a la cancha "${eventData.organiza}" del ${fechaTxt} a las ${eventData.hora}hs. Mi nombre es ${nombrePlayer}.`;
+        const texto = `Hola! Me acabo de anotar a la cancha "${eventData.organiza}" del ${fechaTxt} a las ${eventData.hora}hs. Soy ${nombrePlayer}. Te envío el comprobante de pago:`;
         const url = `https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`;
         
         window.open(url, '_blank');

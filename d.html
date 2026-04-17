@@ -56,12 +56,15 @@
         </div>
 
         <div class="plan-card" style="text-align: left; padding: 22px;">
-            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo</h3>
+            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo pendiente</h3>
             <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
                 <span style="color:var(--text)">Abono Mensual</span><span id="det-abono" style="font-weight:800">$0</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
                 <span style="color:var(--text)" id="det-turnos-texto">Turnos (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--success); margin-top: 10px; background: #e8f9ee; padding: 8px; border-radius: 8px;">
+                <span>Pagado este mes:</span><span id="det-pagado">$0</span>
             </div>
             <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
@@ -174,47 +177,110 @@
 
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
-    let courtData = {}, isAccountBlocked = false, playersListener = null;
+    let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
     window.defaultData = { owner: "", celu: "", alias: "" };
+    window.movimientos = []; // 🧠 NUEVO: Memoria de transacciones
 
-    function calculateFinancials(f) {
+    // --- EL CEREBRO FINANCIERO (SAAS LEDGER) ---
+    function procesarAbonoMensual() {
         const ahora = Date.now();
-        const trialEx = f.trialExpiryDate || ahora;
-        let deudaAbono = 0;
-        let cantidadTurnos = 0;
-        let costoTurnosTotal = 0;
-        let costoUnitario = f.costoPorCancha || 0;
-
-        if (ahora > trialEx) {
-            const diasPost = Math.floor((ahora - trialEx) / 86400000);
-            const ciclos = Math.floor(diasPost / 30) + 1;
-            deudaAbono = (ciclos * (f.abonoMensual || 0));
-
-            Object.values(courtData).forEach(c => {
-                const eventEnd = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
-                if (eventEnd > trialEx && eventEnd < ahora && c.estado !== 'suspendida') {
-                    cantidadTurnos++;
-                    costoTurnosTotal += costoUnitario;
-                }
-                if (c.historialCargos) {
-                    cantidadTurnos += c.historialCargos;
-                    costoTurnosTotal += (c.historialCargos * costoUnitario);
-                }
-            });
+        const trialEx = cuentaInfo.trialExpiryDate || ahora;
+        
+        // Inicializar el próximo cobro si no existe
+        if (!cuentaInfo.proximoCobroAbono) {
+            db.ref(`facturacion/${orgId}/cuenta`).update({ proximoCobroAbono: trialEx });
+            cuentaInfo.proximoCobroAbono = trialEx;
         }
 
-        const deudaTotal = deudaAbono + costoTurnosTotal;
-        const limite = f.limiteCredito || 50000;
+        // Si ya pasó la fecha del abono, generamos el ticket pendiente
+        if (ahora > cuentaInfo.proximoCobroAbono) {
+            db.ref(`facturacion/${orgId}/movimientos`).push({
+                tipo: 'abono',
+                descripcion: 'Abono Mensual',
+                monto: cuentaInfo.abonoMensual || 0,
+                estado: 'pendiente',
+                fecha: ahora
+            });
+            // Pateamos la fecha 30 días
+            db.ref(`facturacion/${orgId}/cuenta`).update({
+                proximoCobroAbono: cuentaInfo.proximoCobroAbono + (30 * 86400000)
+            });
+        }
+    }
+
+    function checkAndRollover(id, data) {
+        const ahora = Date.now();
+        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+
+        // Solo operamos si el evento ya terminó y NO fue suspendido
+        if (ahora > eventEnd && data.estado !== 'suspendida') {
+            if (data.tipo === 'recurrente') {
+                // 1. Crear TICKET de cobro en el Ledger
+                db.ref(`facturacion/${orgId}/movimientos`).push({
+                    tipo: 'turno',
+                    descripcion: `Turno: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`,
+                    monto: cuentaInfo.costoPorCancha || 0,
+                    estado: 'pendiente',
+                    fecha: ahora
+                });
+                // 2. Rollover
+                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
+                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
+            
+            } else if (data.tipo === 'unico' && !data.cobrado) {
+                // 1. Crear TICKET de cobro
+                db.ref(`facturacion/${orgId}/movimientos`).push({
+                    tipo: 'turno',
+                    descripcion: `Turno Único: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)})`,
+                    monto: cuentaInfo.costoPorCancha || 0,
+                    estado: 'pendiente',
+                    fecha: ahora
+                });
+                // 2. Marcar para no volver a cobrar
+                db.ref('eventos/' + id).update({ cobrado: true });
+            }
+        }
+    }
+
+    function renderFinancials() {
+        if (!cuentaInfo.nombreOrg) return;
+
+        let deudaAbono = 0;
+        let deudaTurnos = 0;
+        let cantTurnosPendientes = 0;
+        let pagadoEsteMes = 0;
+        const mesActual = new Date().getMonth();
+        const ahora = Date.now();
+
+        // 🧠 Sumamos basándonos ÚNICAMENTE en el Libro Mayor (Movimientos)
+        window.movimientos.forEach(m => {
+            if (m.estado === 'pendiente') {
+                if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
+                if (m.tipo === 'turno') {
+                    deudaTurnos += (m.monto || 0);
+                    cantTurnosPendientes++;
+                }
+            } else if (m.estado === 'pagado') {
+                const d = new Date(m.fechaPago || m.fecha);
+                if (d.getMonth() === mesActual) {
+                    pagadoEsteMes += (m.monto || 0);
+                }
+            }
+        });
+
+        const deudaTotal = deudaAbono + deudaTurnos;
+        const limite = cuentaInfo.limiteCredito || 50000;
         const disponible = Math.max(0, limite - deudaTotal);
 
         document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
         document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
         
-        // LLENADO DEL DETALLE DE CONSUMO
+        // Llenar Tarjeta Detalle
         document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(deudaAbono);
-        document.getElementById('det-turnos-texto').innerText = `Turnos (${cantidadTurnos} × ${PadelUtils.fmtDinero(costoUnitario)})`;
-        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(costoTurnosTotal);
+        document.getElementById('det-turnos-texto').innerText = `Turnos pendientes (${cantTurnosPendientes} × ${PadelUtils.fmtDinero(cuentaInfo.costoPorCancha || 0)})`;
+        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(deudaTurnos);
         document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(limite);
+        document.getElementById('det-pagado').innerText = PadelUtils.fmtDinero(pagadoEsteMes);
         
         const elDisp = document.getElementById('det-disponible');
         const cajaDisp = document.getElementById('caja-disponible');
@@ -226,15 +292,16 @@
             cajaDisp.style.color = disponible < (limite * 0.1) ? "var(--warning)" : "var(--success)";
         }
 
-        isAccountBlocked = (deudaTotal > (limite * 1.05)) || f.cuentaSuspendida;
+        isAccountBlocked = (deudaTotal > (limite * 1.05)) || cuentaInfo.cuentaSuspendida;
         document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
         document.getElementById('msg-locked').style.display = isAccountBlocked ? 'block' : 'none';
 
         // LÓGICA DE UX "ABONO MENSUAL"
         const statusTxt = document.getElementById('plan-status');
         const daysTxt = document.getElementById('plan-days');
-        const descTxt = document.getElementById('plan-desc');
         const btnPlan = document.getElementById('btn-plan-action');
+        const trialEx = cuentaInfo.trialExpiryDate || ahora;
+        const proxAbono = cuentaInfo.proximoCobroAbono || trialEx;
 
         const dateToStr = (ms) => {
             const d = new Date(ms);
@@ -244,51 +311,47 @@
         if (isAccountBlocked) {
             statusTxt.innerHTML = "🔴 Cuenta Suspendida"; statusTxt.style.color = "var(--danger)";
             daysTxt.innerText = "Límite de crédito excedido"; daysTxt.style.color = "var(--danger)";
-            descTxt.innerText = "No podés crear nuevos turnos hasta renovarlo";
             btnPlan.innerText = "ACTIVAR PLAN"; btnPlan.style.background = "var(--danger)";
         } else {
             if (ahora < trialEx) {
                 const remTrial = Math.ceil((trialEx - ahora) / 86400000);
                 statusTxt.innerHTML = "🟡 Prueba hasta el " + dateToStr(trialEx); statusTxt.style.color = "var(--warning)";
                 daysTxt.innerText = "Te quedan " + remTrial + " días gratis"; daysTxt.style.color = "var(--text)";
-                descTxt.innerText = "Estás usando el período de prueba";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             } else {
-                const diasPost = Math.floor((ahora - trialEx) / 86400000);
-                const ciclos = Math.floor(diasPost / 30) + 1;
-                const nextCycleEnd = trialEx + (ciclos * 30 * 86400000);
-                const daysLeft = Math.ceil((nextCycleEnd - ahora) / 86400000);
-                
+                const daysLeft = Math.ceil((proxAbono - ahora) / 86400000);
                 if (daysLeft < 5) {
-                    statusTxt.innerHTML = "🟡 Activo hasta el " + dateToStr(nextCycleEnd); statusTxt.style.color = "var(--warning)";
-                    daysTxt.innerText = "Tu plan está por vencer (" + daysLeft + " días)"; daysTxt.style.color = "var(--warning)";
+                    statusTxt.innerHTML = "🟡 Activo hasta el " + dateToStr(proxAbono); statusTxt.style.color = "var(--warning)";
+                    daysTxt.innerText = "Tu plan está por vencer (" + Math.max(0,daysLeft) + " días)"; daysTxt.style.color = "var(--warning)";
                 } else {
-                    statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(nextCycleEnd); statusTxt.style.color = "var(--success)";
+                    statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(proxAbono); statusTxt.style.color = "var(--success)";
                     daysTxt.innerText = "Te quedan " + daysLeft + " días"; daysTxt.style.color = "var(--text)";
                 }
-                descTxt.innerText = "El abono te habilita el uso del sistema durante 30 días";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             }
         }
     }
 
-    function checkAndRollover(id, data) {
-        const ahora = Date.now();
-        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
-        if (ahora > eventEnd && data.tipo === 'recurrente') {
-            const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
-            db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [], historialCargos: (data.historialCargos || 0) + 1 });
-        }
-    }
-
     function init() {
         if(!orgId) return;
+        
+        // 1. Escuchar Cuenta
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
-            const f = s.val() || {};
-            document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
-            window.defaultData = { owner: f.nombreContacto || "", celu: f.celularContacto || "", alias: f.aliasPredeterminado || "" };
-            calculateFinancials(f);
+            cuentaInfo = s.val() || {};
+            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
+            window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
+            procesarAbonoMensual();
+            renderFinancials();
         });
+
+        // 2. Escuchar Movimientos del Ledger
+        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
+            const movs = s.val() || {};
+            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
+            renderFinancials();
+        });
+
+        // 3. Escuchar Eventos (Canchas)
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             ids.forEach(id => {
@@ -302,6 +365,7 @@
         });
     }
 
+    // --- FUNCIONES DE INTERFAZ ESTÁNDAR ---
     function renderizarCanchas() {
         const list = document.getElementById('canchas-list');
         const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));

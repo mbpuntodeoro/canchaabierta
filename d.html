@@ -50,11 +50,11 @@
             </header>
 
             <div class="hero">
-                <div id="abono-status-badge" class="status-badge" style="background:var(--success); color:white;">Abono al día</div>
+                <div id="abono-status-badge" class="status-badge">...</div>
                 <div style="font-size: 13px; font-weight: 700; margin-bottom: 20px;">Vencimiento abono: <span id="txt-venc-abono">--</span></div>
                 <div class="fin-grid">
                     <div class="fin-box"><span>Deuda Canchas</span><b id="txt-consumo-canchas">$0</b></div>
-                    <div class="fin-box"><span>Crédito Disponible</span><b id="txt-disponible-canchas">$0</b></div>
+                    <div class="fin-box"><span>Límite Disponible</span><b id="txt-disponible-canchas">$0</b></div>
                 </div>
                 <div class="progress-bar"><div id="limit-progress" class="progress-fill" style="width: 0%"></div></div>
                 <div style="font-size: 9px; color: #888; font-weight: 800; margin-top: 8px; text-transform: uppercase; text-align: center;">Límite Total: <span id="txt-limite-total">$0</span></div>
@@ -90,15 +90,15 @@
             document.getElementById('app-content').style.display = 'block';
             if (!orgId) {
                 const snap = await db.ref('facturacion').once('value');
-                const data = snap.val() || {};
-                for (let id in data) {
-                    if (data[id].cuenta && data[id].cuenta.emailOrganizador === user.email) {
+                const allData = snap.val() || {};
+                for (let id in allData) {
+                    if (allData[id].cuenta && allData[id].cuenta.emailOrganizador === user.email) {
                         orgId = id; window.history.replaceState(null, null, `?org=${orgId}`);
                         break;
                     }
                 }
             }
-            if (orgId) { initDashboard(); } else { alert("Usuario no vinculado."); auth.signOut(); }
+            if (orgId) { initDashboard(); }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app-content').style.display = 'none';
@@ -106,24 +106,29 @@
     });
 
     function initDashboard() {
-        // 1. Escuchar Cuenta
+        // 1. Datos del Club
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => {
             cuentaInfo = s.val() || {};
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
-            renderFinancials();
+            updateFinancials();
         });
 
-        // 2. Escuchar Movimientos
+        // 2. Movimientos Contables
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const data = s.val() || {};
             movimientos = Object.keys(data).map(k => ({id: k, ...data[k]}));
-            renderFinancials();
+            updateFinancials();
         });
 
-        // 3. Escuchar Canchas del Hub
+        // 3. CANCHAS (FIX: Lectura de Objeto o Array)
         db.ref(`hubs/${orgId}/canchas`).on('value', snap => {
-            const ids = snap.val() || [];
-            if(ids.length === 0) document.getElementById('canchas-list').innerHTML = "No hay canchas.";
+            const val = snap.val();
+            const ids = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+            
+            if(ids.length === 0) {
+                document.getElementById('canchas-list').innerHTML = "<p style='text-align:center; color:#888; padding:20px;'>No hay canchas configuradas.</p>";
+            }
+
             ids.forEach(id => {
                 db.ref(`eventos/${id}`).on('value', evS => {
                     const d = evS.val();
@@ -133,7 +138,7 @@
         });
     }
 
-    function renderFinancials() {
+    function updateFinancials() {
         if (!cuentaInfo.nombreOrg || typeof PadelSaaS === 'undefined') return;
         const res = PadelSaaS.analizarCuenta(cuentaInfo, movimientos);
         if (!res) return;
@@ -142,13 +147,13 @@
         document.getElementById('txt-consumo-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchasPendiente);
         document.getElementById('txt-disponible-canchas').innerText = PadelUtils.fmtDinero(res.disponibleLimite);
         document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteAsignado);
-        
         document.getElementById('limit-progress').style.width = res.porcentajeConsumido + '%';
         
         const badge = document.getElementById('abono-status-badge');
         const vencido = Date.now() > res.vencimientoAbono;
         badge.innerText = vencido ? "Abono Vencido" : "Abono al día";
         badge.style.background = vencido ? 'var(--danger)' : 'var(--success)';
+        badge.style.color = 'white';
 
         document.getElementById('btn-add-cancha').style.opacity = res.isBlocked ? '0.3' : '1';
         const msg = document.getElementById('msg-locked');
@@ -159,21 +164,25 @@
     function renderCanchas() {
         const list = document.getElementById('canchas-list');
         const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        list.innerHTML = "";
+        
+        let html = "";
         sorted.forEach(d => {
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
-            list.innerHTML += `<div class="cancha-card">
-                <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelUtils.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} hs</div>
-                <div style="font-size:11px; color:var(--sub); margin-top:5px;">👥 ${conf} / ${d.cupo} confirmados</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-                    <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                    <button class="btn-dash" style="background:#000; color:#fff" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                </div></div>`;
+            html += `
+                <div class="cancha-card">
+                    <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
+                    <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelUtils.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} hs</div>
+                    <div style="font-size:11px; color:var(--sub); margin-top:5px;">👥 ${conf} / ${d.cupo} confirmados</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
+                        <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
+                        <button class="btn-dash" style="background:#000; color:#fff" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
+                    </div>
+                </div>`;
         });
+        list.innerHTML = html;
     }
 
-    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Error")); }
+    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Clave incorrecta")); }
     function cerrarSesion() { auth.signOut().then(() => window.location.href='index.html'); }
     function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     
@@ -199,7 +208,7 @@
 
     function abrirNuevaCancha() { if(document.getElementById('btn-add-cancha').style.opacity === '0.3') return alert("Cuenta bloqueada."); document.getElementById('modal-title').innerText = "➕ Nueva Cancha"; document.getElementById('ed-id').value = ""; document.getElementById('modal-config').style.display = 'flex'; }
     function abrirConfig(id) { const d = courtData[id]; document.getElementById('ed-id').value = id; document.getElementById('ed-org').value = d.organiza; document.getElementById('ed-lug').value = d.lugar; document.getElementById('ed-cat').value = d.categorias; document.getElementById('ed-fec').value = d.fecha; document.getElementById('ed-h1').value = d.hora; document.getElementById('ed-h2').value = d.horaFin; document.getElementById('ed-cup').value = d.cupo; document.getElementById('ed-val').value = d.valor; document.getElementById('ed-ali').value = d.alias; document.getElementById('modal-config').style.display = 'flex'; }
-    function guardarConfig() { const id = document.getElementById('ed-id').value; const upd = { organiza: document.getElementById('ed-org').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value }; if(!id) { const nR = db.ref('eventos').push(); nR.set({...upd, inscriptos: []}).then(() => { db.ref(`hubs/${orgId}/canchas`).once('value', s => { let c = s.val() || []; c.push(nR.key); db.ref(`hubs/${orgId}/canchas`).set(c); }); }); } else { db.ref(`eventos/${id}`).update(upd); } cerrarModals(); }
+    function guardarConfig() { const id = document.getElementById('ed-id').value; const upd = { organiza: document.getElementById('ed-org').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value }; if(!id) { const nR = db.ref('eventos').push(); nR.set({...upd, inscriptos: []}).then(() => { db.ref(`hubs/${orgId}/canchas`).once('value', s => { const val = s.val(); let c = val ? (Array.isArray(val) ? val : Object.values(val)) : []; c.push(nR.key); db.ref(`hubs/${orgId}/canchas`).set(c); }); }); } else { db.ref(`eventos/${id}`).update(upd); } cerrarModals(); }
 </script>
 </body>
 </html>

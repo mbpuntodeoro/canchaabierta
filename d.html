@@ -47,16 +47,36 @@
             <button onclick="window.location.href='index.html'" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
         </header>
 
-        <div class="hero"><div class="fin-grid">
-            <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
-            <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
-        </div></div>
+        <div class="hero">
+            <div class="fin-grid">
+                <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
+                <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
+            </div>
+            <div style="text-align: center; margin-top: 10px; font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase;">Incluye abono + turnos realizados</div>
+        </div>
+
+        <div class="plan-card" style="text-align: left; padding: 22px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo</h3>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                <span style="color:var(--text)">Abono Mensual</span><span id="det-abono" style="font-weight:800">$0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                <span style="color:var(--text)" id="det-turnos-texto">Turnos (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
+                <span>Límite Total:</span><span id="det-limite">$0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 900; color: var(--success);" id="caja-disponible">
+                <span>Disponible:</span><span id="det-disponible">$0</span>
+            </div>
+        </div>
 
         <div class="plan-card" id="card-plan">
-            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: left;">👉 Tu plan</h3>
+            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: left;">👉 ABONO MENSUAL</h3>
             <span id="plan-status" style="font-weight:900; font-size:22px; display:block; margin-bottom: 5px; text-align: left;">Analizando...</span>
             <span id="plan-days" style="font-weight:800; font-size:16px; display:block; margin-bottom: 5px; text-align: left;">-</span>
-            <span id="plan-desc" style="font-size:13px; color:var(--sub); display:block; margin-bottom: 20px; font-weight: 600; text-align: left;">-</span>
+            <span id="plan-desc" style="font-size:13px; color:var(--sub); display:block; margin-bottom: 20px; font-weight: 600; text-align: left;">El abono te habilita el uso del sistema durante 30 días</span>
             <a id="btn-plan-action" href="https://wa.me/5491166463800?text=Hola,%20necesito%20renovar%20mi%20plan%20en%20PadelApp" target="_blank" style="display:inline-block; padding:16px 20px; border-radius:16px; text-decoration:none; font-weight:900; font-size:14px; background:var(--primary); color:white; width: 100%; box-sizing: border-box; text-align: center;">RENOVAR AHORA</a>
             <p style="font-size: 10px; color: #bbb; margin: 15px 0 0 0; font-weight: 800; text-transform: uppercase; text-align: center;">El abono no depende del mes calendario</p>
         </div>
@@ -160,32 +180,57 @@
     function calculateFinancials(f) {
         const ahora = Date.now();
         const trialEx = f.trialExpiryDate || ahora;
-        let deudaTotal = 0;
+        let deudaAbono = 0;
+        let cantidadTurnos = 0;
+        let costoTurnosTotal = 0;
+        let costoUnitario = f.costoPorCancha || 0;
 
         if (ahora > trialEx) {
             const diasPost = Math.floor((ahora - trialEx) / 86400000);
             const ciclos = Math.floor(diasPost / 30) + 1;
-            deudaTotal += (ciclos * (f.abonoMensual || 0));
+            deudaAbono = (ciclos * (f.abonoMensual || 0));
 
             Object.values(courtData).forEach(c => {
                 const eventEnd = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
                 if (eventEnd > trialEx && eventEnd < ahora && c.estado !== 'suspendida') {
-                    deudaTotal += (f.costoPorCancha || 0);
+                    cantidadTurnos++;
+                    costoTurnosTotal += costoUnitario;
                 }
                 if (c.historialCargos) {
-                    deudaTotal += (c.historialCargos * (f.costoPorCancha || 0));
+                    cantidadTurnos += c.historialCargos;
+                    costoTurnosTotal += (c.historialCargos * costoUnitario);
                 }
             });
         }
 
-        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
-        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(f.limiteCredito || 50000);
+        const deudaTotal = deudaAbono + costoTurnosTotal;
+        const limite = f.limiteCredito || 50000;
+        const disponible = Math.max(0, limite - deudaTotal);
 
-        isAccountBlocked = (deudaTotal > ((f.limiteCredito || 50000) * 1.05)) || f.cuentaSuspendida;
+        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(deudaTotal);
+        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(limite);
+        
+        // LLENADO DEL DETALLE DE CONSUMO
+        document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(deudaAbono);
+        document.getElementById('det-turnos-texto').innerText = `Turnos (${cantidadTurnos} × ${PadelUtils.fmtDinero(costoUnitario)})`;
+        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(costoTurnosTotal);
+        document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(limite);
+        
+        const elDisp = document.getElementById('det-disponible');
+        const cajaDisp = document.getElementById('caja-disponible');
+        if (deudaTotal > limite) {
+            elDisp.innerText = "Límite excedido";
+            cajaDisp.style.color = "var(--danger)";
+        } else {
+            elDisp.innerText = PadelUtils.fmtDinero(disponible);
+            cajaDisp.style.color = disponible < (limite * 0.1) ? "var(--warning)" : "var(--success)";
+        }
+
+        isAccountBlocked = (deudaTotal > (limite * 1.05)) || f.cuentaSuspendida;
         document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
         document.getElementById('msg-locked').style.display = isAccountBlocked ? 'block' : 'none';
 
-        // LÓGICA DE UX "TU PLAN"
+        // LÓGICA DE UX "ABONO MENSUAL"
         const statusTxt = document.getElementById('plan-status');
         const daysTxt = document.getElementById('plan-days');
         const descTxt = document.getElementById('plan-desc');
@@ -221,7 +266,7 @@
                     statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(nextCycleEnd); statusTxt.style.color = "var(--success)";
                     daysTxt.innerText = "Te quedan " + daysLeft + " días"; daysTxt.style.color = "var(--text)";
                 }
-                descTxt.innerText = "Tu abono dura 30 días desde que lo activás";
+                descTxt.innerText = "El abono te habilita el uso del sistema durante 30 días";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             }
         }
@@ -230,7 +275,6 @@
     function checkAndRollover(id, data) {
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
-
         if (ahora > eventEnd && data.tipo === 'recurrente') {
             const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
             db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [], historialCargos: (data.historialCargos || 0) + 1 });

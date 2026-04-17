@@ -11,22 +11,30 @@
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 850px; margin: 30px auto; padding: 0 20px; }
         .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid var(--primary); }
+        
+        /* ACORDEONES */
         .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; }
         .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 0 22px 22px 22px; display: none; border-top: 1px solid #f9f9f9; background: #fafafa; }
         .hub-item.active .hub-content { display: block; }
+        
         .tag-status { font-size: 9px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
-        .st-trial { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
-        .st-susp { background: #fff2f2; color: var(--danger); }
+        .st-vencido { background: #fff2f2; color: var(--danger); }
+
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
+
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 35px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
+
+        /* LISTA DE CANCHAS DENTRO DEL M */
+        .courts-preview { background: #fff; padding: 15px; border-radius: 15px; border: 1px solid #eee; margin-top: 10px; }
+        .court-chip { display: inline-block; background: #eee; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-right: 5px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -34,15 +42,17 @@
         <h2>Master PadelApp</h2>
         <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">SALIR</button>
     </header>
+
     <div class="container">
         <div class="card-main">
-            <h3>🚀 Registrar Organizador</h3>
+            <h3>🚀 Alta de Organizador</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input id="new-id" class="input-std" placeholder="ID (ej: smash)">
                 <input id="new-name" class="input-std" placeholder="Nombre Club">
             </div>
             <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
         </div>
+
         <div id="lista-clubes">Cargando...</div>
     </div>
 
@@ -50,52 +60,63 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">Configurar Club</h2>
             <input type="hidden" id="edit-id">
+            
             <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <label>Responsable Predet.</label><input id="mod-con" class="input-std">
-            <label>WhatsApp Predet.</label><input id="mod-cel" class="input-std">
-            <label>Alias MP Predet.</label><input id="mod-ali" class="input-std">
+            <label>Responsable</label><input id="mod-con" class="input-std">
+            <label>WhatsApp</label><input id="mod-cel" class="input-std">
+            <label>Alias Mercado Pago</label><input id="mod-ali" class="input-std">
+            <label>Link Corto (URL)</label><input id="mod-short" class="input-std" placeholder="bit.ly/padel-tuclub">
+            
             <hr>
-            <label>Extender Plan (Días a sumar)</label>
-            <div style="display: flex; gap: 10px;">
-                <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30" style="margin-bottom:0">
-                <button class="btn-blue" style="background: var(--success); width: auto; padding: 0 20px;" onclick="sumarDiasManual()">SUMAR</button>
-            </div>
-            <p id="txt-venc-actual" style="font-size: 12px; font-weight: 800; text-align: center; color: var(--primary); margin: 15px 0;"></p>
+            <label>Días de Trial (Desde Hoy)</label>
+            <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 10">
+            <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center;"></p>
+            
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
                 <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
             </div>
+
             <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
 
 <script>
-    let currentVenc = 0;
     function render() {
         db.ref('hubs').on('value', async (snap) => {
             const hubs = snap.val() || {};
             const container = document.getElementById('lista-clubes');
             container.innerHTML = "";
+            
             for (let id in hubs) {
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
                 const f = fSnap.val() || {};
-                let tagClass = "st-activo", tagText = "Activo";
+                const canchasIds = hubs[id].canchas || [];
+                
+                // Info de canchas
+                let canchasHtml = "";
+                for(let cid of canchasIds) {
+                    const cSnap = await db.ref('eventos/'+cid).once('value');
+                    if(cSnap.exists()) canchasHtml += `<span class="court-chip">${cSnap.val().organiza}</span>`;
+                }
+
                 const remaining = Math.ceil((f.planExpiryDate - Date.now()) / 86400000);
-                if(f.cuentaSuspendida) { tagClass = "st-susp"; tagText = "Suspendido"; }
-                else if(remaining <= 0) { tagClass = "st-susp"; tagText = "Vencido"; }
-                else if(remaining < 5) { tagClass = "st-trial"; tagText = `Vence en ${remaining}d`; }
+                const tag = (remaining <= 0 || f.cuentaSuspendida) ? `<span class="tag-status st-vencido">Vencido</span>` : `<span class="tag-status st-activo">Activo (${remaining}d)</span>`;
 
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
-                            <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span>
+                            <span>${f.nombreOrg || id} ${tag}</span>
+                            <span style="color:#ccc; font-size:11px">INFO ▾</span>
                         </div>
                         <div class="hub-content">
-                            <p style="font-size:13px"><b>📅 Vence:</b> ${f.planExpiryDate ? new Date(f.planExpiryDate).toLocaleDateString() : '--'}</p>
-                            <p style="font-size:13px"><b>💳 Alias:</b> ${f.aliasPredeterminado || '--'}</p>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ EDITAR</button>
+                            <p style="font-size:12px"><b>📍 URL Corta:</b> ${f.shortUrl || 'No definida'}</p>
+                            <p style="font-size:12px"><b>💳 Alias:</b> ${f.aliasPredeterminado || '--'}</p>
+                            <p style="font-size:11px; color:var(--sub); margin-bottom:5px">CANCHAS VINCULADAS:</p>
+                            <div class="courts-preview">${canchasHtml || 'Sin canchas'}</div>
+                            <div style="display: flex; gap: 10px; margin-top:15px">
+                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">DASHBOARD</a>
                             </div>
                         </div>
@@ -109,45 +130,50 @@
         const nom = document.getElementById('new-name').value.trim();
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false });
-        alert("Club Creado!");
+        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false, shortUrl: "" });
+        alert("Club Creado");
     }
 
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {};
-            currentVenc = f.planExpiryDate || Date.now();
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-con').value = f.nombreContacto || "";
             document.getElementById('mod-cel').value = f.celularContacto || "";
             document.getElementById('mod-ali').value = f.aliasPredeterminado || "";
+            document.getElementById('mod-short').value = f.shortUrl || "";
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            document.getElementById('txt-venc-actual').innerText = "Vence el: " + new Date(currentVenc).toLocaleDateString();
+            document.getElementById('mod-trial-days').value = "";
+            document.getElementById('txt-venc-actual').innerText = "Vence el: " + new Date(f.planExpiryDate || Date.now()).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
-    function sumarDiasManual() {
-        const dias = parseInt(document.getElementById('mod-trial-days').value);
-        if(!dias) return alert("Ingresá días");
-        const base = currentVenc < Date.now() ? Date.now() : currentVenc;
-        currentVenc = base + (dias * 86400000);
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentVenc).toLocaleDateString();
-    }
-
     function guardarPerfil() {
         const id = document.getElementById('edit-id').value;
+        const diasTrial = parseInt(document.getElementById('mod-trial-days').value);
+        
         const upd = {
             nombreOrg: document.getElementById('mod-nom').value,
             nombreContacto: document.getElementById('mod-con').value,
             celularContacto: document.getElementById('mod-cel').value,
             aliasPredeterminado: document.getElementById('mod-ali').value,
-            planExpiryDate: currentVenc,
+            shortUrl: document.getElementById('mod-short').value,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
+
+        // LÓGICA DE TRIAL: Si cargó días, se cuentan desde hoy.
+        if(!isNaN(diasTrial) && diasTrial > 0) {
+            upd.planExpiryDate = Date.now() + (diasTrial * 86400000);
+        }
+
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { 
+            alert("Guardado!"); 
+            cerrarModal(); 
+        });
     }
+
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }
     render();
 </script>

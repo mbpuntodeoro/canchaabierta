@@ -24,6 +24,10 @@
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
+        
+        /* BOTÓN DE COBRO */
+        .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
@@ -45,7 +49,7 @@
             </div>
             <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
         </div>
-        <div id="lista-clubes">Cargando...</div>
+        <div id="lista-clubes">Cargando clubes y deudas...</div>
     </div>
 
     <div id="modal-edit" class="modal">
@@ -58,7 +62,7 @@
                 <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            <label>Alias Mercado Pago (Cobros)</label><input id="mod-ali" class="input-std">
+            <label>Alias Mercado Pago (Cobros del Club)</label><input id="mod-ali" class="input-std">
             
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
@@ -95,36 +99,87 @@
             const hubs = snap.val() || {};
             const container = document.getElementById('lista-clubes');
             container.innerHTML = "";
+            
             for (let id in hubs) {
+                // 1. Buscamos info de la cuenta y los movimientos (Tickets)
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
-                const f = fSnap.val() || {};
-                const now = Date.now();
-                const remainingTrial = Math.ceil((f.trialExpiryDate - now) / 86400000);
+                const mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
                 
+                const f = fSnap.val() || {};
+                const movs = mSnap.val() || {};
+                const now = Date.now();
+                const trialEx = f.trialExpiryDate || now;
+                const remainingTrial = Math.ceil((trialEx - now) / 86400000);
+                
+                // 2. Calculamos Deuda Exacta del Ledger
+                let deudaTotal = 0;
+                for (let k in movs) {
+                    if (movs[k].estado === 'pendiente') {
+                        deudaTotal += (movs[k].monto || 0);
+                    }
+                }
+
+                // 3. Etiqueta de Estado
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
                 else if(remainingTrial > 0) tag = `<span class="tag-status st-prueba">Prueba (${remainingTrial}d)</span>`;
                 else tag = `<span class="tag-status st-activo">Activo</span>`;
 
+                // 4. Armado de la Tarjeta del Hub
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
                             <span>${f.nombreOrg || id} ${tag}</span>
-                            <span style="color:#ccc; font-size:11px">CONFIG ▾</span>
+                            <span style="color:#ccc; font-size:11px">GESTIONAR ▾</span>
                         </div>
                         <div class="hub-content">
+                            <div style="background: ${deudaTotal > 0 ? '#fff2f2' : '#f8f9fb'}; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid ${deudaTotal > 0 ? '#ffdbdb' : '#eee'};">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                    <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA ACTUAL:</span>
+                                    <span style="font-size:22px; font-weight:900; color:${deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(deudaTotal)}</span>
+                                </div>
+                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y LIMPIAR DEUDA</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
+                            </div>
+
                             <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
                                 <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(f.limiteCredito)}</div>
-                                <div><b>📅 Vence Prueba:</b> ${new Date(f.trialExpiryDate).toLocaleDateString()}</div>
+                                <div><b>📅 Prueba:</b> ${new Date(trialEx).toLocaleDateString()}</div>
                             </div>
+                            
                             <div style="display: flex; gap: 10px; margin-top:15px">
-                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ EDITAR PARÁMETROS</button>
+                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">VER DASHBOARD</a>
                             </div>
                         </div>
                     </div>`;
+            }
+        });
+    }
+
+    // EL MOTOR DE COBRO (SAAS)
+    function registrarPago(id, monto) {
+        if(!confirm(`¿Confirmás que el cliente te transfirió ${PadelUtils.fmtDinero(monto)}?\n\nAl aceptar, todos los consumos pendientes pasarán a 'PAGADO'.`)) return;
+
+        db.ref(`facturacion/${id}/movimientos`).once('value', snap => {
+            const movs = snap.val() || {};
+            const updates = {};
+            const ahora = Date.now();
+            
+            for (let k in movs) {
+                if (movs[k].estado === 'pendiente') {
+                    updates[`${k}/estado`] = 'pagado';
+                    updates[`${k}/fechaPago`] = ahora;
+                }
+            }
+
+            if(Object.keys(updates).length > 0) {
+                db.ref(`facturacion/${id}/movimientos`).update(updates).then(() => {
+                    alert("¡Pago procesado con éxito! El dashboard del cliente ya refleja la deuda en cero.");
+                    // Forzar re-render visual en el admin
+                    render();
+                });
             }
         });
     }
@@ -138,7 +193,7 @@
             nombreOrg: nom, 
             trialExpiryDate: Date.now() + (7 * 86400000), 
             abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000, 
-            cuentaSuspendida: false, consumoActual: 0 
+            cuentaSuspendida: false
         });
         alert("Club creado con 7 días de prueba.");
     }

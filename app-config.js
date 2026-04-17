@@ -1,4 +1,4 @@
-// app-config.js - V14.0 (Cerebro con Inteligencia Temporal)
+// app-config.js - V15.0 (Cerebro con Control de Suspensión)
 
 const firebaseConfig = {
     apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
@@ -21,7 +21,6 @@ const PadelUtils = {
         const d = new Date(partes[0], partes[1] - 1, partes[2]); 
         return `${dias[d.getDay()]} ${partes[2]}/${partes[1]}/${partes[0]}`;
     },
-
     fmtFechaCorta: (f) => {
         if (!f) return '--';
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -29,29 +28,33 @@ const PadelUtils = {
         const d = new Date(partes[0], partes[1] - 1, partes[2]);
         return `${dias[d.getDay()]} ${partes[2]}/${partes[1]}`;
     },
-
     fmtDinero: (n) => "$" + (n || 0).toLocaleString('es-AR'),
-
     copiarLink: (url) => {
         const t = document.createElement("input");
         document.body.appendChild(t); t.value = url; t.select();
         document.execCommand("copy"); document.body.removeChild(t);
         alert("¡Link copiado!");
     },
-
-    // CALCULA LA PRÓXIMA FECHA SEGÚN DÍAS RECURRENTES
     calcularSiguienteFecha: (fechaActual, diasArray) => {
-        if (!diasArray || diasArray.length === 0) return fechaActual;
+        if (!diasArray || diasArray.length === 0) {
+            let d = new Date(fechaActual + 'T12:00:00');
+            d.setDate(d.getDate() + 7);
+            return d.toISOString().split('T')[0];
+        }
         const dayMap = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
         const targetDays = diasArray.map(d => dayMap[d]);
-        
-        let d = new Date(fechaActual + 'T12:00:00'); // Usamos mediodía para evitar errores de zona horaria
-        for (let i = 1; i <= 14; i++) { // Buscamos en los próximos 14 días
+        let d = new Date(fechaActual + 'T12:00:00');
+        for (let i = 1; i <= 14; i++) {
             d.setDate(d.getDate() + 1);
-            if (targetDays.includes(d.getDay())) {
-                return d.toISOString().split('T')[0];
-            }
+            if (targetDays.includes(d.getDay())) return d.toISOString().split('T')[0];
         }
         return fechaActual;
+    },
+    // NUEVA: Verifica si falta más de 1 hora para el inicio
+    puedeSuspender: (fecha, hora) => {
+        const inicio = new Date(fecha + 'T' + hora).getTime();
+        const ahora = Date.now();
+        const diferenciaHoras = (inicio - ahora) / (1000 * 60 * 60);
+        return diferenciaHoras > 1;
     }
 };

@@ -66,9 +66,24 @@
                     const eSnap = await db.ref('eventos/'+id).once('value');
                     if(eSnap.exists()) {
                         const d = eSnap.val();
-                        const finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
+                        
+                        // 🕒 RELOJ AUTOMÁTICO: Si no puso hora de fin, suma 90 minutos a la de inicio
+                        let horaFinReal = d.horaFin;
+                        if (!horaFinReal && d.hora) {
+                            const [h, m] = d.hora.split(':');
+                            const dateObj = new Date();
+                            dateObj.setHours(parseInt(h), parseInt(m) + 90);
+                            horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                        } else if (!horaFinReal) {
+                            horaFinReal = '23:59';
+                        }
+
+                        // Calcula el tiempo límite exacto
+                        const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+                        
+                        // Solo la agrega si HOY es MENOR al fin del evento
                         if(Date.now() < finEvento && d.estado !== 'suspendida') {
-                            canchasData.push({ id, ...d });
+                            canchasData.push({ id, horaFinCalculada: horaFinReal, ...d });
                         }
                     }
                 }
@@ -86,7 +101,7 @@
                             <h3 style="margin:0;font-size:18px;font-weight:900;text-transform:uppercase">🎾 ${d.organiza}</h3>
                         </div>
                         <div style="margin-top: 5px;"><span class="tag-cat" style="margin-left:0;">${d.categorias}</span></div>
-                        <div class="info-row" style="margin-top:15px;">📅 ${PadelSaaS.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                        <div class="info-row" style="margin-top:15px;">📅 ${PadelSaaS.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
                         <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
                         <div class="info-row" style="font-size: 16px; color: var(--text); font-weight: 900; margin-top: 15px;">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
                         <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a>

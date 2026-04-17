@@ -6,6 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js"></script>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --text: #1d1d1f; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; flex-direction: column; align-items: center;}
@@ -20,7 +21,7 @@
 </head>
 <body>
 <div class="card" id="main-card">
-    <h1 id="t-org" style="margin-top:0; font-weight: 900;">...</h1>
+    <h1 id="t-org" style="margin-top:0; font-weight: 900; letter-spacing: -1px;">...</h1>
     <div class="info-box">
         <p>📅 FECHA: <b id="t-fec">--</b></p>
         <p>🕒 HORARIO: <b id="t-hor">--</b></p>
@@ -40,30 +41,20 @@
 </div>
 
 <script>
-    firebase.initializeApp({ databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com" });
-    const db = firebase.database();
     const eid = new URLSearchParams(window.location.search).get('id');
     let evento = null;
-
-    // FUNCIÓN DE FECHA HUMANA REPARADA
-    function fmtFechaFull(f) {
-        if(!f) return '--';
-        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const [year, month, day] = f.split('-');
-        const d = new Date(year, month - 1, day); // month es 0-indexed
-        return dias[d.getDay()] + ' ' + day + '/' + month + '/' + year;
-    }
 
     if(eid) {
         db.ref('eventos/'+eid).once('value', s => {
             evento = s.val();
             document.getElementById('t-org').innerText = evento.organiza.toUpperCase();
-            document.getElementById('t-fec').innerText = fmtFechaFull(evento.fecha);
+            // USANDO EL CEREBRO PARA LA FECHA
+            document.getElementById('t-fec').innerText = PadelUtils.fmtFechaFull(evento.fecha);
             document.getElementById('t-hor').innerText = evento.hora + ' a ' + (evento.horaFin || '--') + ' hs';
             document.getElementById('t-lug').innerText = evento.lugar || 'Sede a confirmar';
             document.getElementById('t-owner').innerText = evento.nombreOrganizador || 'Admin';
             document.getElementById('t-cat').innerText = evento.categorias || 'General';
-            document.getElementById('t-val').innerText = "$" + (evento.valor || 0);
+            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(evento.valor);
         });
     }
 
@@ -80,7 +71,7 @@
                     <div style="font-size:60px">✅</div>
                     <h2>¡Inscripción Exitosa!</h2>
                     <div class="payment-box">
-                        <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, REALIZÁ LA TRANSFERENCIA O ESCRIBIME PARA COORDINAR OTRO MEDIO DE PAGO</b>
+                        <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, REALIZÁ LA TRANSFERENCIA O ESCRIBIME</b>
                         <h1 style="margin:15px 0">${evento.alias}</h1>
                         <button onclick="navigator.clipboard.writeText('${evento.alias}'); alert('Alias Copiado')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
                     </div>

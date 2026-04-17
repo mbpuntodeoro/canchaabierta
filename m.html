@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js"></script>
     <style>
-        :root { --primary: #000000; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--bg); padding: 20px; }
@@ -18,7 +18,7 @@
         
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 850px; margin: 30px auto; padding: 0 20px; }
-        .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid #007aff; }
+        .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid var(--primary); }
         .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; }
         .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 0 22px 22px 22px; display: none; border-top: 1px solid #f9f9f9; background: #fafafa; }
@@ -32,9 +32,9 @@
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
         
-        .btn-blue { background: #007aff; color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
+        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
-        .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-green { background: var(--success); color: white; border: none; padding: 18px; border-radius: 18px; font-weight: 900; cursor: pointer; width: 100%; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.2); }
         .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
 
@@ -68,62 +68,50 @@
                     <input id="new-id" class="input-std" placeholder="ID Club (ej: smash)">
                     <input id="new-name" class="input-std" placeholder="Nombre Comercial">
                     <input id="new-email" type="email" class="input-std" placeholder="Email de Acceso">
-                    <input id="new-pass" type="text" class="input-std" placeholder="Contraseña (mín 6 letras)">
+                    <input id="new-pass" type="text" class="input-std" placeholder="Contraseña">
                 </div>
-                <div style="margin-top: 5px; margin-bottom: 15px;">
-                    <label style="margin-left: 5px;">Días de Prueba Iniciales</label>
-                    <input id="new-trial" type="number" class="input-std" value="7" style="margin-bottom: 0;">
+                <div style="margin-bottom: 15px;">
+                    <label>Días de prueba iniciales</label>
+                    <input id="new-trial" type="number" class="input-std" value="7" style="margin-bottom:0">
                 </div>
                 <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB Y CREAR USUARIO</button>
             </div>
-            
-            <div id="lista-clubes">Cargando clubes y deudas...</div>
+            <div id="lista-clubes">Cargando...</div>
         </div>
 
         <div id="modal-edit" class="modal">
             <div class="modal-content">
-                <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
+                <h2 style="margin-top:0; font-weight: 900;">⚙️ Parámetros</h2>
                 <input type="hidden" id="edit-id">
-                
                 <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
+                    <div><label>Responsable</label><input id="mod-con" class="input-std"></div>
                     <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
                 </div>
-                
-                <label>Email de Acceso del Club</label>
-                <div style="display:flex; gap:10px; margin-bottom:5px;">
-                    <input id="mod-email-disp" class="input-std" placeholder="ejemplo@club.com" style="margin-bottom:0; background: #fff; color: #333;">
-                    <button class="btn-action" style="background:#000; color:white; padding: 0 20px;" onclick="enviarPassReset()">BLANQUEAR CLAVE</button>
+                <label>Email de Acceso</label>
+                <div style="display:flex; gap:10px; margin-bottom:12px;">
+                    <input id="mod-email-disp" class="input-std" style="margin-bottom:0;">
+                    <button class="btn-action" style="background:#000; color:white;" onclick="enviarPassReset()">BLANQUEAR CLAVE</button>
                 </div>
-                <p style="font-size: 10px; color: var(--warning); margin-top: 0; margin-bottom: 12px; font-weight: 800; line-height: 1.3;">⚠️ Si agregás o modificás un mail para un club viejo, recordá ir a "Firebase > Authentication > Add User" para crearle la clave temporal.</p>
-                
-                <label>Alias de Cobros (Club)</label><input id="mod-ali" class="input-std">
+                <label>Alias de Cobros</label><input id="mod-ali" class="input-std">
                 <hr>
-                
-                <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
-                    <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
+                    <div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div>
+                    <div><label>Costo Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
                 </div>
                 <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
                 <hr>
-                
-                <label>Gestión de Vencimiento / Tiempo</label>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
                     <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
-                    <button class="btn-action" style="background:#007aff; color:white;" onclick="sumarDiasVencimiento()">SUMAR</button>
-                    <button class="btn-action" style="background:var(--success); color:white;" onclick="forzarVencimientoHoy()">FORZAR VENCIMIENTO</button>
+                    <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasVencimiento()">SUMAR</button>
+                    <button class="btn-action" style="background:var(--danger); color:white;" onclick="forzarVencimientoHoy()">VENCER HOY</button>
                 </div>
-                <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: #007aff; text-align: center; margin-bottom: 15px;"></p>
-                
+                <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center;"></p>
                 <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
-                    <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA (BLOQUEO MANUAL)</b>
+                    <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA MANUALMENTE</b>
                     <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
                 </div>
-                
-                <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
+                <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
                 <button class="btn-blue" onclick="cerrarModals()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
             </div>
         </div>
@@ -132,7 +120,7 @@
             <div class="modal-content">
                 <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
                 <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
-                    <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: #007aff; color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
+                    <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
                     <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
                 </div>
                 <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
@@ -149,10 +137,7 @@
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            if(!isInitialized) {
-                render();
-                isInitialized = true;
-            }
+            if(!isInitialized) { render(); isInitialized = true; }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app-content').style.display = 'none';
@@ -163,11 +148,7 @@
     function iniciarSesion() {
         const e = document.getElementById('log-email').value;
         const p = document.getElementById('log-pass').value;
-        document.getElementById('log-error').style.display = 'none';
-        auth.signInWithEmailAndPassword(e, p).catch(err => {
-            document.getElementById('log-error').style.display = 'block';
-            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
-        });
+        auth.signInWithEmailAndPassword(e, p).catch(err => alert("Error de acceso"));
     }
 
     function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
@@ -187,9 +168,6 @@
                 
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
-                
-                if (typeof PadelSaaS === 'undefined') continue;
-                
                 const res = PadelSaaS.analizarCuenta(f, movs);
                 if (!res) continue;
 
@@ -205,14 +183,23 @@
                             <span style="color:#ccc; font-size:11px">GESTIONAR ▾</span>
                         </div>
                         <div class="hub-content">
-                            <div style="background: ${res.deudaTotal > 0 ? '#fff2f2' : '#f8f9fb'}; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1px solid ${res.deudaTotal > 0 ? '#ffdbdb' : '#eee'};">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                    <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA PENDIENTE:</span>
-                                    <span style="font-size:22px; font-weight:900; color:${res.deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(res.deudaTotal)}</span>
+                            <div style="background: white; padding: 20px; border-radius: 18px; margin-bottom: 15px; border: 1.5px solid #eee;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                    <span style="font-size:12px; font-weight:800; color:var(--sub)">DEUDA ACUMULADA:</span>
+                                    <span style="font-size:24px; font-weight:900; color:${res.deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(res.deudaTotal)}</span>
                                 </div>
-                                ${res.deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${res.deudaTotal})">💵 REGISTRAR PAGO Y RENOVAR 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
+                                
+                                <button class="btn-green" onclick="cobrarTodo('${id}', ${res.deudaTotal}, ${f.abonoMensual || 0})">
+                                    💵 REGISTRAR PAGO Y RENOVAR 30 DÍAS
+                                </button>
+                                
+                                <p style="font-size:10px; color:var(--sub); text-align:center; margin-top:10px; font-weight:700;">
+                                    Saldará turnos y generará ticket de Abono.
+                                </p>
                             </div>
-                            <button class="btn-edit" style="width:100%; margin-bottom:15px; background:#f8f9fb; border:1px solid #eee;" onclick="abrirDetalle('${id}')">📋 VER DETALLE DE MOVIMIENTOS</button>
+
+                            <button class="btn-edit" style="width:100%; margin-bottom:15px; background:#f8f9fb;" onclick="abrirDetalle('${id}')">📋 VER DETALLE DE MOVIMIENTOS</button>
+
                             <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
@@ -221,7 +208,7 @@
                             </div>
                             <div style="display: flex; gap: 10px; margin-top:15px">
                                 <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
-                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">VER DASHBOARD</a>
+                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">DASHBOARD</a>
                             </div>
                         </div>
                     </div>`;
@@ -229,15 +216,57 @@
         });
     }
 
+    // 🔥 FUNCIÓN DE COBRANZA DEFINITIVA
+    async function cobrarTodo(id, deudaTurnos, montoAbono) {
+        const totalACobrar = deudaTurnos + montoAbono;
+        if(!confirm(`¿Registrar cobro total de ${PadelUtils.fmtDinero(totalACobrar)}?\n\nAcciones:\n1. Genera ticket de Abono Mensual.\n2. Salda toda la deuda acumulada.\n3. Suma 30 días de acceso.`)) return;
+
+        const ahora = Date.now();
+        const refMovs = db.ref(`facturacion/${id}/movimientos`);
+        const refCuenta = db.ref(`facturacion/${id}/cuenta`);
+        
+        // 1. Crear el ticket de Abono en el Ledger como "Pagado"
+        await refMovs.push({
+            tipo: 'abono',
+            descripcion: `Abono Mensual (Renovación 30 días)`,
+            monto: montoAbono,
+            estado: 'pagado',
+            fecha: ahora,
+            fechaPago: ahora
+        });
+
+        // 2. Saldar todos los otros movimientos pendientes (Turnos)
+        const snap = await refMovs.once('value');
+        const movs = snap.val() || {};
+        const updates = {};
+        for (let k in movs) {
+            if (movs[k].estado === 'pendiente') {
+                updates[`${k}/estado`] = 'pagado';
+                updates[`${k}/fechaPago`] = ahora;
+            }
+        }
+        if(Object.keys(updates).length > 0) await refMovs.update(updates);
+
+        // 3. Extender el vencimiento
+        const snapC = await refCuenta.once('value');
+        const cuenta = snapC.val() || {};
+        const vencActual = cuenta.vencimientoAbono || ahora;
+        const nuevoVenc = Math.max(ahora, vencActual) + (30 * 86400000);
+        
+        await refCuenta.update({ vencimientoAbono: nuevoVenc });
+
+        alert("✅ Cobranza exitosa. El club está al día.");
+        render();
+    }
+
     async function crearHub() {
         const id = document.getElementById('new-id').value.trim().toLowerCase();
         const nom = document.getElementById('new-name').value.trim();
         const email = document.getElementById('new-email').value.trim();
         const pass = document.getElementById('new-pass').value.trim();
-        const trialDays = parseInt(document.getElementById('new-trial').value) || 0; // Lee los días
+        const trial = parseInt(document.getElementById('new-trial').value) || 0;
 
-        if(!id || !nom || !email || !pass) return alert("Faltan datos. Llená los 4 campos principales.");
-        if(pass.length < 6) return alert("La contraseña debe tener al menos 6 letras/números.");
+        if(!id || !nom || !email || !pass) return alert("Faltan datos");
 
         try {
             const config = firebase.app().options;
@@ -248,57 +277,45 @@
             await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
             await secondaryApp.auth().signOut();
 
-            // Cálculo dinámico del vencimiento según el input
-            const vencimientoInicial = Date.now() + (trialDays * 86400000);
-
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             await db.ref(`facturacion/${id}/cuenta`).set({
                 nombreOrg: nom,
                 emailOrganizador: email,
-                vencimientoAbono: vencimientoInicial,
-                abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000,
+                vencimientoAbono: Date.now() + (trial * 86400000),
+                abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000,
                 cuentaSuspendida: false
             });
 
-            document.getElementById('new-id').value = '';
-            document.getElementById('new-name').value = '';
-            document.getElementById('new-email').value = '';
-            document.getElementById('new-pass').value = '';
-            document.getElementById('new-trial').value = '7';
-
-            alert(`✅ Club y Usuario creados con éxito. Se le asignaron ${trialDays} días de prueba.`);
-        } catch(error) {
-            alert("Error al crear usuario: " + error.message);
-        }
+            alert("✅ Club y Usuario creados.");
+            render();
+        } catch(e) { alert("Error: " + e.message); }
     }
 
     function abrirDetalle(id) {
         db.ref(`facturacion/${id}/movimientos`).once('value', s => {
-            const movs = s.val() || {};
-            currentMovsData = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
+            currentMovsData = Object.values(s.val() || {}).sort((a, b) => b.fecha - a.fecha);
             cambiarTab('pendiente');
             document.getElementById('modal-detalle').style.display = 'flex';
         });
     }
 
-    function cambiarTab(estadoFiltro) {
-        document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? '#007aff' : 'transparent';
-        document.getElementById('tab-pend').style.color = estadoFiltro === 'pendiente' ? 'white' : 'var(--sub)';
-        document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? '#007aff' : 'transparent';
-        document.getElementById('tab-pag').style.color = estadoFiltro === 'pagado' ? 'white' : 'var(--sub)';
-        const lista = document.getElementById('lista-movimientos-det');
-        lista.innerHTML = "";
-        const filtrados = currentMovsData.filter(m => m.estado === estadoFiltro);
-        if(filtrados.length === 0) { lista.innerHTML = `<p style='text-align:center; padding:30px 20px; color:#888; font-weight:600; font-size:14px'>No hay movimientos ${estadoFiltro}s.</p>`; } 
-        else { filtrados.forEach(m => { const dateObj = new Date(m.fecha); const dStr = PadelSaaS.fmtFecha(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs'; lista.innerHTML += `<div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;"><div style="flex:1; padding-right:15px;"><strong style="display:block; font-size:13px; margin-bottom: 2px;">${m.descripcion}</strong><span style="font-size:10.5px; color:var(--sub); font-weight:600;">Generado el ${dStr}</span></div><div style="text-align:right"><strong style="display:block; font-size:15px; margin-bottom:5px;">${PadelUtils.fmtDinero(m.monto)}</strong>${m.estado === 'pendiente' ? '<span style="color:var(--danger); font-weight:900; font-size:9px; background:#fff2f2; padding:4px 8px; border-radius:6px;">PENDIENTE</span>' : '<span style="color:var(--success); font-weight:900; font-size:9px; background:#e8f9ee; padding:4px 8px; border-radius:6px;">PAGADO</span>'}</div></div>`; }); }
+    function cambiarTab(est) {
+        document.getElementById('tab-pend').style.background = est === 'pendiente' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pend').style.color = est === 'pendiente' ? 'white' : 'var(--sub)';
+        document.getElementById('tab-pag').style.background = est === 'pagado' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pag').style.color = est === 'pagado' ? 'white' : 'var(--sub)';
+        const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
+        const filtrados = currentMovsData.filter(m => m.estado === est);
+        filtrados.forEach(m => {
+            const dStr = PadelSaaS.fmtFecha(m.fecha);
+            lista.innerHTML += `<div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee;"><div><strong style="display:block; font-size:13px;">${m.descripcion}</strong><span style="font-size:10px; color:var(--sub);">${dStr}</span></div><div style="text-align:right"><strong style="display:block; font-size:14px;">${PadelUtils.fmtDinero(m.monto)}</strong><span style="font-size:9px; font-weight:900; color:${est==='pendiente'?'var(--danger)':'var(--success)'}">${est.toUpperCase()}</span></div></div>`;
+        });
     }
-
-    function registrarPago(id, monto) { if(!confirm(`¿Registrar pago de ${PadelUtils.fmtDinero(monto)}?\n\nEsto limpiará la deuda y extenderá el abono 30 días.`)) return; db.ref(`facturacion/${id}`).once('value', snap => { const data = snap.val() || {}, movs = data.movimientos || {}, cuenta = data.cuenta || {}, updates = {}, ahora = Date.now(); for (let k in movs) { if (movs[k].estado === 'pendiente') { updates[`movimientos/${k}/estado`] = 'pagado'; updates[`movimientos/${k}/fechaPago`] = ahora; } } const vencActual = cuenta.vencimientoAbono || cuenta.trialExpiryDate || ahora; updates[`cuenta/vencimientoAbono`] = Math.max(ahora, vencActual) + (30 * 86400000); db.ref(`facturacion/${id}`).update(updates).then(() => { alert("Pago registrado con éxito."); render(); }); }); }
 
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {};
-            currentVencimiento = f.vencimientoAbono || f.trialExpiryDate || Date.now();
+            currentVencimiento = f.vencimientoAbono || Date.now();
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-con').value = f.nombreContacto || "";
@@ -315,38 +332,13 @@
     }
 
     function enviarPassReset() {
-        const email = document.getElementById('mod-email-disp').value.trim();
-        if(!email || email === "") return alert("No hay un correo electrónico cargado.");
-        if(!confirm(`¿Mandar correo oficial a ${email} para que restablezca su clave?`)) return;
-        
-        auth.sendPasswordResetEmail(email)
-            .then(() => alert("✉️ Correo de recuperación enviado con éxito."))
-            .catch(error => {
-                if(error.code === 'auth/user-not-found') alert("Este mail no está creado en Firebase Authentication. Tenés que ir a agregarlo manualmente a la consola.");
-                else alert("Error: " + error.message);
-            });
+        const email = document.getElementById('mod-email-disp').value;
+        auth.sendPasswordResetEmail(email).then(() => alert("Mail enviado")).catch(e => alert(e.message));
     }
 
-    function sumarDiasVencimiento() { const d = parseInt(document.getElementById('mod-trial-days').value); if(!d) return alert("Ingresá días"); currentVencimiento = Math.max(currentVencimiento, Date.now()) + (d * 86400000); document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento); }
-    function forzarVencimientoHoy() { if(!confirm("¿Vencer ahora?")) return; currentVencimiento = Date.now(); document.getElementById('txt-venc-actual').innerText = "Vencido ahora"; }
-    
-    function guardarPerfil() { 
-        const id = document.getElementById('edit-id').value;
-        const upd = { 
-            nombreOrg: document.getElementById('mod-nom').value, 
-            nombreContacto: document.getElementById('mod-con').value, 
-            celularContacto: document.getElementById('mod-cel').value, 
-            emailOrganizador: document.getElementById('mod-email-disp').value,
-            aliasPredeterminado: document.getElementById('mod-ali').value, 
-            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
-            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
-            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
-            vencimientoAbono: currentVencimiento, 
-            cuentaSuspendida: document.getElementById('mod-susp').checked 
-        }; 
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("¡Guardado!"); cerrarModals(); }); 
-    }
-    
+    function sumarDiasVencimiento() { const d = parseInt(document.getElementById('mod-trial-days').value) || 0; currentVencimiento += (d * 86400000); document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento); }
+    function forzarVencimientoHoy() { currentVencimiento = Date.now(); document.getElementById('txt-venc-actual').innerText = "Vence hoy"; }
+    function guardarPerfil() { const id = document.getElementById('edit-id').value; const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, aliasPredeterminado: document.getElementById('mod-ali').value, abonoMensual: parseFloat(document.getElementById('mod-abono').value), costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value), limiteCredito: parseFloat(document.getElementById('mod-limite').value), vencimientoAbono: currentVencimiento, cuentaSuspendida: document.getElementById('mod-susp').checked }; db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModals(); }); }
     function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 </script>
 </body>

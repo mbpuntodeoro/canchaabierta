@@ -19,9 +19,9 @@
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
-        .fin-box b { font-size: 16px; font-weight: 900; display: block;}
+        .fin-box b { font-size: 16px; font-weight: 900; display: block; margin-top: 4px;}
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800;}
-        .plan-card { background: white; padding: 25px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 15px; box-shadow: var(--shadow); }
+        
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
@@ -56,39 +56,23 @@
             </header>
 
             <div class="hero">
-                <div class="fin-grid">
-                    <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
-                    <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="font-size:12px; font-weight:800; color:#aaa; text-transform:uppercase;">ESTADO ABONO</div>
+                    <div id="badge-abono" style="background:var(--success); color:white; padding:4px 10px; border-radius:8px; font-size:10px; font-weight:900; text-transform:uppercase;">AL DÍA</div>
                 </div>
-                <div style="text-align: center; margin-top: 10px; font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase;">Incluye abono + canchas realizadas</div>
+                <div style="font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 20px;">Vence el: <span id="txt-venc-abono" style="color:var(--success)">--/--/----</span></div>
+                
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+                
+                <div style="font-size:12px; font-weight:800; color:#aaa; text-transform:uppercase; margin-bottom:15px;">CRÉDITO DE CANCHAS</div>
+                <div class="fin-grid" style="margin-top:0;">
+                    <div class="fin-box"><span>Deuda Canchas</span><b id="txt-deuda-canchas">$0</b></div>
+                    <div class="fin-box"><span>Límite Disponible</span><b id="txt-disponible">$0</b></div>
+                </div>
+                <div style="text-align: center; margin-top: 12px; font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase;">Límite total asignado: <span id="txt-limite-total">$0</span></div>
             </div>
 
-            <div class="plan-card" style="text-align: left; padding: 22px;">
-                <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo pendiente</h3>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
-                    <span style="color:var(--text)">Abono Mensual</span><span id="det-abono" style="font-weight:800">$0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
-                    <span style="color:var(--text)" id="det-turnos-texto">Canchas (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
-                </div>
-                <button class="btn-dash" style="background:#f2f2f7; color:var(--text); margin-top:10px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER DETALLE DE MOVIMIENTOS</button>
-                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
-                    <span>Límite Total:</span><span id="det-limite">$0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 900; color: var(--success);" id="caja-disponible">
-                    <span>Disponible:</span><span id="det-disponible">$0</span>
-                </div>
-            </div>
-
-            <div class="plan-card" id="card-plan">
-                <h3 style="margin: 0 0 15px 0; font-size: 15px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: left;">👉 ABONO MENSUAL</h3>
-                <span id="plan-status" style="font-weight:900; font-size:22px; display:block; margin-bottom: 5px; text-align: left;">Analizando...</span>
-                <span id="plan-days" style="font-weight:800; font-size:16px; display:block; margin-bottom: 5px; text-align: left;">-</span>
-                <span id="plan-desc" style="font-size:13px; color:var(--sub); display:block; margin-bottom: 20px; font-weight: 600; text-align: left;">El abono te habilita el uso del sistema durante 30 días</span>
-                <a id="btn-plan-action" href="https://wa.me/5491166463800?text=Hola,%20necesito%20renovar%20mi%20plan%20en%20PadelApp" target="_blank" style="display:inline-block; padding:16px 20px; border-radius:16px; text-decoration:none; font-weight:900; font-size:14px; background:var(--primary); color:white; width: 100%; box-sizing: border-box; text-align: center;">RENOVAR AHORA</a>
-                <p style="font-size: 10px; color: #bbb; margin: 15px 0 0 0; font-weight: 800; text-transform: uppercase; text-align: center;">El abono no depende del mes calendario</p>
-            </div>
+            <button class="btn-dash" style="background:#fff; color:var(--text); margin-bottom:20px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
 
             <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
 
@@ -188,27 +172,30 @@
         return `${d}-${m}-${y}`;
     }
 
-    // CORRECCIÓN APLICADA ACÁ: Eliminada la dependencia estricta de window.PadelSaaS
     function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
-        document.getElementById('txt-deu').innerText = PadelUtils.fmtDinero(res.deudaTotal);
-        document.getElementById('txt-lim').innerText = PadelUtils.fmtDinero(res.limite);
-        document.getElementById('det-abono').innerText = PadelUtils.fmtDinero(res.deudaAbono);
-        document.getElementById('det-turnos-texto').innerText = `Canchas pendientes (${res.cantTurnosPendientes} × ${PadelUtils.fmtDinero(cuentaInfo.costoPorCancha || 0)})`;
-        document.getElementById('det-turnos-total').innerText = PadelUtils.fmtDinero(res.deudaTurnos);
-        document.getElementById('det-limite').innerText = PadelUtils.fmtDinero(res.limite);
+        // SE ACTUALIZA LA TARJETA ÚNICA
+        document.getElementById('txt-deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
+        document.getElementById('txt-disponible').innerText = PadelUtils.fmtDinero(res.disponible);
+        document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
         
-        const elDisp = document.getElementById('det-disponible');
-        const cajaDisp = document.getElementById('caja-disponible');
-        if (res.deudaTotal > res.limite) { 
-            elDisp.innerText = "Límite excedido"; cajaDisp.style.color = "var(--danger)"; 
-        } else { 
-            elDisp.innerText = PadelUtils.fmtDinero(res.disponible); 
-            cajaDisp.style.color = res.disponible < (res.limite * 0.1) ? "var(--warning)" : "var(--success)"; 
+        const badge = document.getElementById('badge-abono');
+        const txtVenc = document.getElementById('txt-venc-abono');
+        
+        txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
+        
+        if (res.bloqueadoAbono) {
+            badge.innerText = "VENCIDO";
+            badge.style.background = "var(--danger)";
+            txtVenc.style.color = "var(--danger)";
+        } else {
+            badge.innerText = "AL DÍA";
+            badge.style.background = "var(--success)";
+            txtVenc.style.color = "var(--success)";
         }
 
         isAccountBlocked = res.isBlocked;
@@ -218,12 +205,6 @@
         if (isAccountBlocked) {
             msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked;
         } else { msgLocked.style.display = 'none'; }
-
-        const statusTxt = document.getElementById('plan-status'), daysTxt = document.getElementById('plan-days'), btnPlan = document.getElementById('btn-plan-action');
-        
-        statusTxt.innerHTML = res.ux.icon; statusTxt.style.color = res.ux.color;
-        daysTxt.innerText = res.ux.text; daysTxt.style.color = res.ux.color;
-        btnPlan.innerText = res.ux.btnText; btnPlan.style.background = res.ux.btnColor;
     }
 
     function abrirDetalle() {

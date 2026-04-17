@@ -73,11 +73,11 @@
             <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
 
             <hr>
-            <label>Gestión de Período de Prueba</label>
+            <label>Gestión de Vencimiento / Prueba</label>
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
                 <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
-                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasPrueba()">SUMAR</button>
-                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FINALIZAR PRUEBA AHORA</button>
+                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasPrueba()">SUMAR DÍAS</button>
+                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FORZAR VENCIMIENTO HOY</button>
             </div>
             <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
             
@@ -92,7 +92,7 @@
     </div>
 
 <script>
-    let currentTrialExpiry = 0;
+    let currentVencimiento = 0;
 
     function render() {
         db.ref('hubs').on('value', async (snap) => {
@@ -101,17 +101,16 @@
             container.innerHTML = "";
             
             for (let id in hubs) {
-                // 1. Buscamos info de la cuenta y los movimientos (Tickets)
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
                 const mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
                 
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
                 const now = Date.now();
-                const trialEx = f.trialExpiryDate || now;
-                const remainingTrial = Math.ceil((trialEx - now) / 86400000);
+                const vencimientoAbono = f.vencimientoAbono || f.trialExpiryDate || now;
+                const daysLeft = Math.ceil((vencimientoAbono - now) / 86400000);
                 
-                // 2. Calculamos Deuda Exacta del Ledger
+                // Calculamos Deuda Exacta
                 let deudaTotal = 0;
                 for (let k in movs) {
                     if (movs[k].estado === 'pendiente') {
@@ -119,13 +118,13 @@
                     }
                 }
 
-                // 3. Etiqueta de Estado
+                // Etiqueta de Estado (Doble Candado)
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
-                else if(remainingTrial > 0) tag = `<span class="tag-status st-prueba">Prueba (${remainingTrial}d)</span>`;
-                else tag = `<span class="tag-status st-activo">Activo</span>`;
+                else if(daysLeft < 0) tag = `<span class="tag-status st-vencido">Vencido</span>`;
+                else if(f.trialExpiryDate && f.trialExpiryDate > now) tag = `<span class="tag-status st-prueba">Prueba (${daysLeft}d)</span>`;
+                else tag = `<span class="tag-status st-activo">Activo (${daysLeft}d)</span>`;
 
-                // 4. Armado de la Tarjeta del Hub
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
@@ -138,14 +137,14 @@
                                     <span style="font-size:12px; font-weight:800; color:var(--text)">DEUDA ACTUAL:</span>
                                     <span style="font-size:22px; font-weight:900; color:${deudaTotal > 0 ? 'var(--danger)' : 'var(--success)'}">${PadelUtils.fmtDinero(deudaTotal)}</span>
                                 </div>
-                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y LIMPIAR DEUDA</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
+                                ${deudaTotal > 0 ? `<button class="btn-green" onclick="registrarPago('${id}', ${deudaTotal})">💵 REGISTRAR PAGO Y EXTENDER 30 DÍAS</button>` : `<div style="font-size:12px; color:var(--success); font-weight:800; text-align:center;">El cliente está al día 🙌</div>`}
                             </div>
 
                             <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
                                 <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(f.limiteCredito)}</div>
-                                <div><b>📅 Prueba:</b> ${new Date(trialEx).toLocaleDateString()}</div>
+                                <div><b>📅 Vence:</b> ${new Date(vencimientoAbono).toLocaleDateString()}</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top:15px">
@@ -158,26 +157,32 @@
         });
     }
 
-    // EL MOTOR DE COBRO (SAAS)
+    // EL MOTOR DE COBRO CON EXTENSIÓN DE ABONO
     function registrarPago(id, monto) {
-        if(!confirm(`¿Confirmás que el cliente te transfirió ${PadelUtils.fmtDinero(monto)}?\n\nAl aceptar, todos los consumos pendientes pasarán a 'PAGADO'.`)) return;
+        if(!confirm(`¿Confirmás que el cliente te transfirió ${PadelUtils.fmtDinero(monto)}?\n\nAl aceptar:\n1. La deuda pasará a cero.\n2. Su abono se renovará por 30 días.`)) return;
 
-        db.ref(`facturacion/${id}/movimientos`).once('value', snap => {
-            const movs = snap.val() || {};
+        db.ref(`facturacion/${id}`).once('value', snap => {
+            const data = snap.val() || {};
+            const movs = data.movimientos || {};
+            const cuenta = data.cuenta || {};
             const updates = {};
             const ahora = Date.now();
             
             for (let k in movs) {
                 if (movs[k].estado === 'pendiente') {
-                    updates[`${k}/estado`] = 'pagado';
-                    updates[`${k}/fechaPago`] = ahora;
+                    updates[`movimientos/${k}/estado`] = 'pagado';
+                    updates[`movimientos/${k}/fechaPago`] = ahora;
                 }
             }
 
+            // CARGAR NAFTA: Extender 30 días
+            const vencimientoActual = cuenta.vencimientoAbono || cuenta.trialExpiryDate || ahora;
+            const baseVencimiento = Math.max(ahora, vencimientoActual); 
+            updates[`cuenta/vencimientoAbono`] = baseVencimiento + (30 * 86400000);
+
             if(Object.keys(updates).length > 0) {
-                db.ref(`facturacion/${id}/movimientos`).update(updates).then(() => {
-                    alert("¡Pago procesado con éxito! El dashboard del cliente ya refleja la deuda en cero.");
-                    // Forzar re-render visual en el admin
+                db.ref(`facturacion/${id}`).update(updates).then(() => {
+                    alert("¡Pago procesado! Deuda en cero y plan extendido 30 días.");
                     render();
                 });
             }
@@ -191,7 +196,7 @@
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
         db.ref(`facturacion/${id}/cuenta`).set({ 
             nombreOrg: nom, 
-            trialExpiryDate: Date.now() + (7 * 86400000), 
+            vencimientoAbono: Date.now() + (7 * 86400000), 
             abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000, 
             cuentaSuspendida: false
         });
@@ -201,7 +206,7 @@
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {};
-            currentTrialExpiry = f.trialExpiryDate || Date.now();
+            currentVencimiento = f.vencimientoAbono || f.trialExpiryDate || Date.now();
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-con').value = f.nombreContacto || "";
@@ -212,7 +217,7 @@
             document.getElementById('mod-limite').value = f.limiteCredito || 50000;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
             document.getElementById('mod-trial-days').value = "";
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento Prueba: " + new Date(currentTrialExpiry).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento Actual: " + new Date(currentVencimiento).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -220,17 +225,17 @@
     function sumarDiasPrueba() {
         const dias = parseInt(document.getElementById('mod-trial-days').value);
         if(!dias) return alert("Ingresá días");
-        const base = Math.max(currentTrialExpiry, Date.now());
-        currentTrialExpiry = base + (dias * 86400000);
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentTrialExpiry).toLocaleDateString();
+        const base = Math.max(currentVencimiento, Date.now());
+        currentVencimiento = base + (dias * 86400000);
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentVencimiento).toLocaleDateString();
         alert("Días sumados. Recordá presionar GUARDAR.");
     }
 
     function finalizarPruebaAhora() {
-        if(!confirm("¿Finalizar prueba ahora? El cliente pasará a ACTIVO y empezará a facturar inmediatamente.")) return;
-        currentTrialExpiry = Date.now();
-        document.getElementById('txt-venc-actual').innerText = "Prueba finalizada (Activo ahora)";
-        alert("Prueba finalizada. Recordá presionar GUARDAR.");
+        if(!confirm("¿Forzar vencimiento ahora? El cliente pasará a VENCIDO y se bloqueará su dashboard si no paga.")) return;
+        currentVencimiento = Date.now();
+        document.getElementById('txt-venc-actual').innerText = "Vencido ahora";
+        alert("Vencimiento forzado. Recordá presionar GUARDAR.");
     }
 
     function guardarPerfil() {
@@ -243,7 +248,7 @@
             abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0,
             costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0,
             limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0,
-            trialExpiryDate: currentTrialExpiry,
+            vencimientoAbono: currentVencimiento,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada"); cerrarModal(); });

@@ -24,7 +24,6 @@
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
         .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
         .btn-status { width: 110px; padding: 10px; border-radius: 12px; border: none; color: white; font-weight: 800; font-size: 10px; cursor: pointer; }
-        .pagado { background: var(--success); } .pendiente { background: var(--danger); } .paga-en-la-cancha { background: var(--warning); }
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
         .day-check { display: none; }
@@ -54,7 +53,7 @@
         <div id="canchas-list">Cargando canchas...</div>
 
         <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
-        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido. Cuenta suspendida.</p>
+        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido o cuenta suspendida.</p>
 
         <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #eee;">
             <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
@@ -82,7 +81,7 @@
             <h2 id="modal-title" style="margin-top:0">⚙️ Configuración</h2>
             <input type="hidden" id="ed-id">
             
-            <button id="btn-suspender" onclick="suspenderEvento()" style="width:100%; padding:15px; border-radius:15px; background:var(--danger); color:white; border:none; font-weight:900; margin-bottom:20px; display:none; cursor:pointer">🚫 SUSPENDER EVENTO (SIN CARGO)</button>
+            <button id="btn-suspender" onclick="abrirModalSuspension()" style="width:100%; padding:15px; border-radius:15px; background:var(--danger); color:white; border:none; font-weight:900; margin-bottom:20px; display:none; cursor:pointer">🚫 SUSPENDER EVENTO (SIN CARGO)</button>
 
             <label>Tipo de Evento</label>
             <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
@@ -129,6 +128,19 @@
         </div>
     </div>
 
+    <div id="modal-suspension" class="modal">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+            <h2 style="margin-top:0">🚫 Suspender Evento</h2>
+            <p style="font-size:14px; color:var(--sub); font-weight:600; margin-bottom:20px">Esta acción no genera cargos de sistema.<br>¿Qué desea hacer con esta cancha?</p>
+            
+            <button class="btn-dash" style="background:var(--success); color:white; margin-bottom:12px" onclick="confirmarSuspension(true)">SÍ, REPROGRAMAR</button>
+            
+            <button class="btn-dash" style="background:var(--danger); color:white; margin-bottom:12px" onclick="confirmarSuspension(false)">NO, ELIMINAR CANCHA</button>
+            
+            <button class="btn-dash" style="background:#f2f2f7; color:#333" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
+        </div>
+    </div>
+
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, isAccountBlocked = false, playersListener = null;
@@ -146,11 +158,9 @@
 
             Object.values(courtData).forEach(c => {
                 const eventEnd = new Date(c.fecha + 'T' + (c.horaFin || '23:59')).getTime();
-                // Facturar las que terminaron y no son prueba
                 if (eventEnd > trialEx && eventEnd < ahora && c.estado !== 'suspendida') {
                     deudaTotal += (f.costoPorCancha || 0);
                 }
-                // Historial de cargos de semanas pasadas
                 if (c.historialCargos) {
                     deudaTotal += (c.historialCargos * (f.costoPorCancha || 0));
                 }
@@ -173,7 +183,7 @@
             daysTxt.innerText = `Quedan ${remTrial} días gratis`;
         } else {
             statusTxt.innerText = "🟢 Cliente ACTIVO"; statusTxt.style.color = 'var(--success)';
-            daysTxt.innerText = isAccountBlocked ? "BLOQUEADO" : "Plan al día";
+            daysTxt.innerText = isAccountBlocked ? "CUENTA BLOQUEADA" : "Abono al día";
         }
     }
 
@@ -274,21 +284,30 @@
         document.getElementById('modal-config').style.display = 'flex';
     }
 
-    function suspenderEvento() {
+    function abrirModalSuspension() {
+        document.getElementById('modal-suspension').style.display = 'flex';
+    }
+
+    function confirmarSuspension(reprogramar) {
         const id = document.getElementById('ed-id').value;
         const d = courtData[id];
-        if(!confirm("¿Suspender evento? No se generarán cargos.")) return;
-        if(confirm("¿Reprogramar para la semana próxima?")) {
+        
+        if (reprogramar) {
             const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia);
-            db.ref('eventos/'+id).update({ fecha: nf, inscriptos: [] });
+            db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => {
+                alert("Reprogramado para el " + nf);
+                cerrarModals();
+            });
         } else {
-            db.ref('hubs/'+orgId+'/canchas').once('value', s => {
+            db.ref('hubs/' + orgId + '/canchas').once('value', s => {
                 let c = s.val() || []; c = c.filter(cid => cid !== id);
-                db.ref('hubs/'+orgId+'/canchas').set(c);
-                db.ref('eventos/'+id).remove();
+                db.ref('hubs/' + orgId + '/canchas').set(c);
+                db.ref('eventos/' + id).remove().then(() => {
+                    alert("Cancha eliminada.");
+                    cerrarModals();
+                });
             });
         }
-        cerrarModals();
     }
 
     function guardarConfig() {

@@ -41,10 +41,6 @@
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         
-        /* FILAS MOVIMIENTOS */
-        .mov-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #eee; align-items: center; }
-        .tag-pend { color: var(--danger); font-weight: 900; font-size: 9px; background: #fff2f2; padding: 4px 8px; border-radius: 6px; }
-        .tag-pag { color: var(--success); font-weight: 900; font-size: 9px; background: #e8f9ee; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -69,18 +65,14 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
             <input type="hidden" id="edit-id">
-            
             <label>Nombre Comercial</label>
             <input id="mod-nom" class="input-std">
-            
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
                 <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
             </div>
-            
             <label>Alias de Cobros (Club)</label>
             <input id="mod-ali" class="input-std">
-            
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -89,7 +81,6 @@
             </div>
             <label>Límite de Crédito ($)</label>
             <input id="mod-limite" type="number" class="input-std">
-
             <hr>
             <label>Gestión de Vencimiento / Tiempo</label>
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
@@ -98,12 +89,10 @@
                 <button class="btn-action" style="background:var(--success); color:white;" onclick="forzarVencimientoHoy()">FORZAR VENCIMIENTO</button>
             </div>
             <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
-            
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
                 <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA (BLOQUEO MANUAL)</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
             </div>
-
             <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModals()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
         </div>
@@ -112,21 +101,24 @@
     <div id="modal-detalle" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
-            
             <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
                 <button id="tab-pend" class="btn-edit" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
                 <button id="tab-pag" class="btn-edit" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
             </div>
-
-            <div id="lista-movimientos" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
-            
+            <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
             <button class="btn-blue" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
     </div>
 
 <script>
     let currentVencimiento = 0;
-    let currentMovsData = []; // Memoria temporal para las pestañas
+    let currentMovsData = [];
+
+    // HERRAMIENTA FECHA DD-MM-YYYY
+    function formatMs(ms) {
+        const d = new Date(ms);
+        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+    }
 
     function render() {
         db.ref('hubs').on('value', async (snap) => {
@@ -177,7 +169,7 @@
                                 <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
                                 <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
                                 <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(f.limiteCredito)}</div>
-                                <div><b>📅 Vence:</b> ${new Date(vencimientoAbono).toLocaleDateString()}</div>
+                                <div><b>📅 Vence:</b> ${formatMs(vencimientoAbono)}</div>
                             </div>
                             
                             <div style="display: flex; gap: 10px; margin-top:15px">
@@ -190,31 +182,23 @@
         });
     }
 
-    // LÓGICA DE PESTAÑAS (TABS)
     function abrirDetalle(id) {
         db.ref(`facturacion/${id}/movimientos`).once('value', s => {
             const movs = s.val() || {};
-            // Guardamos todo ordenado en la variable global para poder filtrar sin volver a consultar Firebase
             currentMovsData = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
-            
-            // Abrimos por defecto en "pendiente"
             cambiarTab('pendiente');
             document.getElementById('modal-detalle').style.display = 'flex';
         });
     }
 
     function cambiarTab(estadoFiltro) {
-        // 1. Cambiar aspecto visual de los botones
         document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? 'var(--primary)' : 'transparent';
         document.getElementById('tab-pend').style.color = estadoFiltro === 'pendiente' ? 'white' : 'var(--sub)';
-        
         document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? 'var(--primary)' : 'transparent';
         document.getElementById('tab-pag').style.color = estadoFiltro === 'pagado' ? 'white' : 'var(--sub)';
 
-        // 2. Filtrar y renderizar la lista
-        const lista = document.getElementById('lista-movimientos');
+        const lista = document.getElementById('lista-movimientos-det');
         lista.innerHTML = "";
-        
         const filtrados = currentMovsData.filter(m => m.estado === estadoFiltro);
 
         if(filtrados.length === 0) {
@@ -222,17 +206,17 @@
         } else {
             filtrados.forEach(m => {
                 const dateObj = new Date(m.fecha);
-                const dStr = dateObj.toLocaleDateString('es-AR', {day:'2-digit', month:'short'}) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                const dStr = formatMs(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 
                 lista.innerHTML += `
-                    <div class="mov-row">
+                    <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
                         <div style="flex:1; padding-right:15px;">
                             <strong style="display:block; font-size:13px; margin-bottom: 2px;">${m.descripcion}</strong>
                             <span style="font-size:10.5px; color:var(--sub); font-weight:600;">Generado el ${dStr}</span>
                         </div>
                         <div style="text-align:right">
                             <strong style="display:block; font-size:15px; margin-bottom:5px;">${PadelUtils.fmtDinero(m.monto)}</strong>
-                            ${m.estado === 'pendiente' ? '<span class="tag-pend">PENDIENTE</span>' : '<span class="tag-pag">PAGADO</span>'}
+                            ${m.estado === 'pendiente' ? '<span style="color:var(--danger); font-weight:900; font-size:9px; background:#fff2f2; padding:4px 8px; border-radius:6px;">PENDIENTE</span>' : '<span style="color:var(--success); font-weight:900; font-size:9px; background:#e8f9ee; padding:4px 8px; border-radius:6px;">PAGADO</span>'}
                         </div>
                     </div>`;
             });
@@ -279,7 +263,7 @@
             document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0;
             document.getElementById('mod-limite').value = f.limiteCredito || 50000;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento: " + new Date(currentVencimiento).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento: " + formatMs(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -288,7 +272,7 @@
         const d = parseInt(document.getElementById('mod-trial-days').value);
         if(!d) return alert("Ingresá días");
         currentVencimiento = Math.max(currentVencimiento, Date.now()) + (d * 86400000);
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + new Date(currentVencimiento).toLocaleDateString();
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + formatMs(currentVencimiento);
     }
 
     function forzarVencimientoHoy() {

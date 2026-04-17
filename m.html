@@ -31,28 +31,28 @@
 <body>
     <header>
         <h2>Master PadelApp</h2>
-        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight: 800;">CERRAR SESIÓN</button>
+        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight: 800;">SALIR</button>
     </header>
     <div class="container">
         <div class="card">
-            <h3>🚀 Alta de Organizador</h3>
+            <h3>🚀 Nuevo Organizador</h3>
             <input id="new-id" class="input-std" placeholder="ID Club (ej: adictos-al-padel)">
             <input id="new-name" class="input-std" placeholder="Nombre Comercial">
-            <button class="btn-blue" onclick="crearHub()">REGISTRAR NUEVO CLUB</button>
+            <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
         </div>
-        <div id="lista-clubes">Cargando base de datos...</div>
+        <div id="lista-clubes">Cargando...</div>
     </div>
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">Perfil y Plan</h2>
+            <h2 style="margin-top:0">Configuración Base</h2>
             <input type="hidden" id="edit-id">
             <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <label>Persona Responsable</label><input id="mod-con" class="input-std">
-            <label>WhatsApp Dueño</label><input id="mod-cel" class="input-std">
-            <label>Alias Mercado Pago</label><input id="mod-ali" class="input-std">
+            <label>Responsable Turnos (Predet.)</label><input id="mod-con" class="input-std">
+            <label>WhatsApp (Predet.)</label><input id="mod-cel" class="input-std">
+            <label>Alias Mercado Pago (Predet.)</label><input id="mod-ali" class="input-std">
             <hr>
-            <label>Gestión de Abono</label>
+            <label>Gestión de Plan</label>
             <button class="btn-blue" style="background: var(--success);" onclick="sumarDias(30)">ACTIVAR / RENOVAR 30 DÍAS</button>
             <p id="txt-venc-actual" style="font-size: 12px; font-weight: 700; text-align: center; color: var(--sub);"></p>
             
@@ -60,7 +60,7 @@
                 <b style="color:var(--danger); font-size:11px">SUSPENDER CUENTA</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.5)">
             </div>
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS PERFIL</button>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#eee; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
@@ -83,7 +83,7 @@
                 else if(f.planExpiryDate) {
                     const remaining = Math.ceil((f.planExpiryDate - Date.now()) / 86400000);
                     if(remaining <= 0) { tagClass = "st-susp"; tagText = "Vencido"; }
-                    else if(remaining < 5) { tagClass = "st-trial"; tagText = `Vence en ${remaining}d`; }
+                    else if(remaining < 5) { tagClass = "st-warning"; tagText = `Vence en ${remaining}d`; }
                 }
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
@@ -91,7 +91,7 @@
                             <span>${f.nombreOrg || id} <span class="tag-status ${tagClass}">${tagText}</span></span> <span>▾</span>
                         </div>
                         <div class="hub-content">
-                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ GESTIONAR PLAN / PERFIL</button>
+                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ EDITAR PERFIL / PLAN</button>
                             <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff">ABRIR DASHBOARD</a>
                         </div>
                     </div>`;
@@ -105,7 +105,7 @@
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
         db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, planExpiryDate: Date.now() + (7 * 86400000), cuentaSuspendida: false });
-        alert("¡Club creado con 7 días de Trial!");
+        alert("Club Creado");
     }
 
     function abrirPerfil(id) {
@@ -118,9 +118,7 @@
             document.getElementById('mod-cel').value = f.celularContacto || "";
             document.getElementById('mod-ali').value = f.aliasPredeterminado || "";
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
-            
-            const fechaLabel = new Date(currentVenc).toLocaleDateString();
-            document.getElementById('txt-venc-actual').innerText = "Vencimiento actual: " + fechaLabel;
+            document.getElementById('txt-venc-actual').innerText = "Vence el: " + new Date(currentVenc).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -128,9 +126,8 @@
     function sumarDias(dias) {
         const base = Math.max(currentVenc, Date.now());
         currentVenc = base + (dias * 86400000);
-        const fechaLabel = new Date(currentVenc).toLocaleDateString();
-        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + fechaLabel;
-        alert("Se han sumado 30 días. Recordá darle a GUARDAR CAMBIOS.");
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentVenc).toLocaleDateString();
+        alert("Días sumados. No olvides Guardar.");
     }
 
     function guardarPerfil() {
@@ -143,9 +140,8 @@
             planExpiryDate: currentVenc,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Datos actualizados"); cerrarModal(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModal(); });
     }
-
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }
     render();
 </script>

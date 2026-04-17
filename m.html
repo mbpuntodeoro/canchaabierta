@@ -87,11 +87,12 @@
                     <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
                 </div>
                 
-                <label>Email de Acceso <span style="text-transform:none; color:var(--warning); font-weight:600;">(Si erró el login, debe cambiarlo tmb en Firebase)</span></label>
-                <div style="display:flex; gap:10px; margin-bottom:12px;">
-                    <input id="mod-email-disp" class="input-std" style="margin-bottom:0;">
+                <label>Email de Acceso del Club</label>
+                <div style="display:flex; gap:10px; margin-bottom:5px;">
+                    <input id="mod-email-disp" class="input-std" placeholder="ejemplo@club.com" style="margin-bottom:0; background: #fff; color: #333;">
                     <button class="btn-action" style="background:#000; color:white; padding: 0 20px;" onclick="enviarPassReset()">BLANQUEAR CLAVE</button>
                 </div>
+                <p style="font-size: 10px; color: var(--warning); margin-top: 0; margin-bottom: 12px; font-weight: 800; line-height: 1.3;">⚠️ Si agregás o modificás un mail para un club viejo, recordá ir a "Firebase > Authentication > Add User" para crearle la clave temporal.</p>
                 
                 <label>Alias de Cobros (Club)</label><input id="mod-ali" class="input-std">
                 <hr>
@@ -137,15 +138,20 @@
 
 <script>
     const auth = firebase.auth();
+    let isInitialized = false;
 
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
-            render();
+            if(!isInitialized) {
+                render();
+                isInitialized = true;
+            }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('app-content').style.display = 'none';
+            isInitialized = false;
         }
     });
 
@@ -159,7 +165,7 @@
         });
     }
 
-    function cerrarSesion() { auth.signOut(); }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
 
     let currentVencimiento = 0;
     let currentMovsData = [];
@@ -295,7 +301,7 @@
         });
     }
 
-    // 🔥 FUNCIÓN PARA MANDAR MAIL DE RECUPERACIÓN
+    // ✉️ ENVIAR CORREO PARA CAMBIO DE CONTRASEÑA
     function enviarPassReset() {
         const email = document.getElementById('mod-email-disp').value.trim();
         if(!email || email === "") return alert("No hay un correo electrónico cargado.");
@@ -304,7 +310,7 @@
         auth.sendPasswordResetEmail(email)
             .then(() => alert("✉️ Correo de recuperación enviado con éxito."))
             .catch(error => {
-                if(error.code === 'auth/user-not-found') alert("Ese email no existe en la base de datos de Firebase.");
+                if(error.code === 'auth/user-not-found') alert("Este mail no está creado en Firebase Authentication. Tenés que ir a agregarlo manualmente a la consola.");
                 else alert("Error: " + error.message);
             });
     }

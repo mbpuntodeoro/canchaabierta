@@ -102,14 +102,14 @@
                 </div>
             </div>
             <div id="msg-error-rec" class="error-msj">⚠️ La fecha elegida no coincide con los días de recurrencia.</div>
-            <label>Nombre Cancha</label><input id="ed-org" class="input-std">
+            <label>Nombre Cancha (Título)</label><input id="ed-org" class="input-std">
             <label>Organizador (Nombre)</label><input id="ed-owner" class="input-std">
             <label>WhatsApp Organizador</label><input id="ed-celu" class="input-std">
             <label>📍 Lugar / Sede</label><input id="ed-lug" class="input-std">
             <label>🏷️ Categorías</label><input id="ed-cat" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
-                <div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
+                <div><label>Fecha Próximo Evento</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
+                <div><label>Cupo Total</label><input id="ed-cup" type="number" class="input-std"></div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
@@ -127,6 +127,9 @@
     const db = firebase.database();
     const orgId = new URLSearchParams(window.location.search).get('org');
     let isNew = false, courtData = {}, playersListener = null;
+
+    // VARIABLE GLOBAL PARA DATOS PREDETERMINADOS
+    window.defaultData = { owner: "", celu: "", alias: "" };
 
     function fmtFecha(f) {
         if(!f) return '--';
@@ -184,6 +187,13 @@
             document.getElementById('org-name-disp').innerText = f.nombreOrg || orgId;
             document.getElementById('txt-deu').innerText = "$" + (f.consumoActual || 0).toLocaleString();
             document.getElementById('txt-lim').innerText = "$" + (f.limiteCredito || 0).toLocaleString();
+            
+            // CARGAR DATOS PREDETERMINADOS EN MEMORIA
+            window.defaultData = {
+                owner: f.nombreContacto || "",
+                celu: f.celularContacto || "",
+                alias: f.aliasPredeterminado || ""
+            };
         });
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
@@ -200,12 +210,23 @@
         isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
         document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
-        validarRecurrencia(); document.getElementById('ed-org').value = ""; document.getElementById('ed-owner').value = "";
-        document.getElementById('ed-celu').value = ""; document.getElementById('ed-lug').value = "";
-        document.getElementById('ed-cat').value = "Todas las categorías"; document.getElementById('ed-fec').value = "";
-        document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30";
-        document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0;
-        document.getElementById('ed-ali').value = ""; document.getElementById('modal-config').style.display = 'flex';
+        validarRecurrencia(); 
+        
+        // PRECARGA DE DATOS DESDE EL PERFIL
+        document.getElementById('ed-org').value = "";
+        document.getElementById('ed-owner').value = window.defaultData.owner;
+        document.getElementById('ed-celu').value = window.defaultData.celu;
+        document.getElementById('ed-ali').value = window.defaultData.alias;
+        
+        document.getElementById('ed-lug').value = "";
+        document.getElementById('ed-cat').value = "Todas las categorías"; 
+        document.getElementById('ed-fec').value = "";
+        document.getElementById('ed-h1').value = "15:00"; 
+        document.getElementById('ed-h2').value = "16:30";
+        document.getElementById('ed-cup').value = 12; 
+        document.getElementById('ed-val').value = 0;
+        
+        document.getElementById('modal-config').style.display = 'flex';
     }
 
     function abrirConfig(id) {
@@ -215,11 +236,16 @@
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => {
             if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day);
         });
-        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || "";
-        document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || "";
-        document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || "";
-        document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || "";
-        document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0;
+        document.getElementById('ed-org').value = d.organiza || ""; 
+        document.getElementById('ed-owner').value = d.nombreOrganizador || "";
+        document.getElementById('ed-celu').value = d.celuOrganizador || ""; 
+        document.getElementById('ed-lug').value = d.lugar || "";
+        document.getElementById('ed-cat').value = d.categorias || ""; 
+        document.getElementById('ed-fec').value = d.fecha || "";
+        document.getElementById('ed-h1').value = d.hora || ""; 
+        document.getElementById('ed-h2').value = d.horaFin || "";
+        document.getElementById('ed-cup').value = d.cupo || 0; 
+        document.getElementById('ed-val').value = d.valor || 0;
         document.getElementById('ed-ali').value = d.alias || "";
         validarRecurrencia(); document.getElementById('modal-config').style.display = 'flex';
     }

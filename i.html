@@ -21,7 +21,7 @@
 </head>
 <body>
 <div class="card" id="main-card">
-    <h1 id="t-org" style="margin-top:0; font-weight: 900; letter-spacing: -1px;">...</h1>
+    <h1 id="t-org" style="margin-top:0; font-weight: 900;">...</h1>
     <div class="info-box">
         <p>📅 FECHA: <b id="t-fec">--</b></p>
         <p>🕒 HORARIO: <b id="t-hor">--</b></p>
@@ -34,48 +34,42 @@
     <input id="p-tel" class="input-std" placeholder="Tu WhatsApp">
     <button class="btn-pay" onclick="registrar()">ANOTARME</button>
 </div>
-
 <div class="footer-personal">
     <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
     <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
 </div>
-
 <script>
     const eid = new URLSearchParams(window.location.search).get('id');
-    let evento = null;
-
+    let ev = null;
     if(eid) {
         db.ref('eventos/'+eid).once('value', s => {
-            evento = s.val();
-            document.getElementById('t-org').innerText = evento.organiza.toUpperCase();
-            // USANDO EL CEREBRO PARA LA FECHA
-            document.getElementById('t-fec').innerText = PadelUtils.fmtFechaFull(evento.fecha);
-            document.getElementById('t-hor').innerText = evento.hora + ' a ' + (evento.horaFin || '--') + ' hs';
-            document.getElementById('t-lug').innerText = evento.lugar || 'Sede a confirmar';
-            document.getElementById('t-owner').innerText = evento.nombreOrganizador || 'Admin';
-            document.getElementById('t-cat').innerText = evento.categorias || 'General';
-            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(evento.valor);
+            ev = s.val();
+            document.getElementById('t-org').innerText = ev.organiza.toUpperCase();
+            document.getElementById('t-fec').innerText = PadelUtils.fmtFechaFull(ev.fecha);
+            document.getElementById('t-hor').innerText = ev.hora + ' a ' + (ev.horaFin || '--') + ' hs';
+            document.getElementById('t-lug').innerText = ev.lugar || 'Sede a confirmar';
+            document.getElementById('t-owner').innerText = ev.nombreOrganizador || 'Admin';
+            document.getElementById('t-cat').innerText = ev.categorias || 'General';
+            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(ev.valor);
         });
     }
-
     function registrar() {
-        const n = document.getElementById('p-nom').value.trim();
-        const t = document.getElementById('p-tel').value.trim();
+        const n = document.getElementById('p-nom').value.trim(), t = document.getElementById('p-tel').value.trim();
         if(!n || !t) return alert("Faltan datos");
         db.ref('eventos/'+eid+'/inscriptos').once('value', s => {
             const ins = s.val() || [];
-            if(ins.length >= evento.cupo) return alert("Cancha llena");
+            if(ins.length >= ev.cupo) return alert("Cancha llena");
             ins.push({ nombre: n, telefono: t, estado: 'pendiente' });
             db.ref('eventos/'+eid+'/inscriptos').set(ins).then(() => {
                 document.getElementById('main-card').innerHTML = `
                     <div style="font-size:60px">✅</div>
                     <h2>¡Inscripción Exitosa!</h2>
                     <div class="payment-box">
-                        <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, REALIZÁ LA TRANSFERENCIA O ESCRIBIME</b>
-                        <h1 style="margin:15px 0">${evento.alias}</h1>
-                        <button onclick="navigator.clipboard.writeText('${evento.alias}'); alert('Alias Copiado')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
+                        <b style="color:#ff3b30; font-size:11px">PARA ASEGURAR TU LUGAR, TRANSFERÍ Y ENVIÁ EL COMPROBANTE</b>
+                        <h1 style="margin:15px 0">${ev.alias}</h1>
+                        <button onclick="PadelUtils.copiarLink('${ev.alias}')" style="padding:10px; border-radius:10px; border:1px solid #ddd; cursor:pointer; font-family:inherit; font-weight:700">📋 COPIAR ALIAS</button>
                     </div>
-                    <a href="https://wa.me/${evento.celuOrganizador}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:20px; margin-top:15px; text-decoration:none; font-weight:800">💬 ENVIAR COMPROBANTE</a>
+                    <a href="https://wa.me/${ev.celuOrganizador}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:20px; margin-top:15px; text-decoration:none; font-weight:800">💬 ENVIAR COMPROBANTE</a>
                 `;
             });
         });

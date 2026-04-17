@@ -20,8 +20,11 @@
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
+        
+        /* MODALES */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 35px; max-height: 90vh; overflow-y: auto; }
+        
         .player-row { background: white; border: 1px solid #eee; border-radius: 20px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
         .input-std { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid #ddd; margin-bottom: 10px; outline: none; box-sizing: border-box; font-family: inherit;}
         label { display: block; font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 10px 0 2px 5px; }
@@ -53,7 +56,10 @@
             <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
                 <span style="color:var(--text)" id="det-turnos-texto">Canchas (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--success); margin-top: 10px; background: #e8f9ee; padding: 8px; border-radius: 8px;">
+            
+            <button class="btn-dash" style="background:#f2f2f7; color:var(--text); margin-top:10px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER DETALLE DE MOVIMIENTOS</button>
+
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--success); margin-top: 15px; background: #e8f9ee; padding: 8px; border-radius: 8px;">
                 <span>Pagado este mes:</span><span id="det-pagado">$0</span>
             </div>
             <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
@@ -87,6 +93,20 @@
         </div>
     </div>
 
+    <div id="modal-detalle" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0; font-weight: 900;">📋 Mis Movimientos</h2>
+            
+            <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
+                <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
+                <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
+            </div>
+
+            <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
+            <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
+        </div>
+    </div>
+
     <div id="modal-players" class="modal"><div class="modal-content"><h2 style="margin:0 0 20px 0; text-align:center; font-weight:900;">👥 Jugadores</h2><input type="hidden" id="pl-id"><div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px; margin-bottom:15px; text-align:center;"><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>CUPO</span><b id="st-total" style="font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>CONF</span><b id="st-pag" style="color:var(--success); font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>PEND</span><b id="st-pen" style="color:var(--danger); font-size:14px">0</b></div><div class="fin-box" style="background:#f2f2f7; color:#333; padding:5px;"><span>LIBRE</span><b id="st-lib" style="color:var(--primary); font-size:14px">0</b></div></div><div id="players-list"></div><button onclick="cerrarModals()" style="width:100%; padding:18px; border-radius:18px; background:#000; color:white; border:none; font-weight:900; margin-top:15px; cursor:pointer">CERRAR</button></div></div>
 
     <div id="modal-config" class="modal"><div class="modal-content"><h2 id="modal-title" style="margin-top:0">⚙️ Configuración</h2><input type="hidden" id="ed-id"><button id="btn-suspender" onclick="abrirModalSuspension()" style="width:100%; padding:15px; border-radius:15px; background:var(--danger); color:white; border:none; font-weight:900; margin-bottom:20px; display:none; cursor:pointer">🚫 SUSPENDER EVENTO (SIN CARGO)</button><label>Tipo de Evento</label><select id="ed-tipo" class="input-std" onchange="validarRecurrencia()"><option value="unico">Evento Único</option><option value="recurrente">Todas las semanas</option></select><div id="days-container" style="display:none"><label>Días que se repite</label><div style="display:flex; gap:4px; margin-bottom:10px;"><input type="checkbox" id="d-MO" class="day-check" onchange="validarRecurrencia()"><label for="d-MO" class="day-label">L</label><input type="checkbox" id="d-TU" class="day-check" onchange="validarRecurrencia()"><label for="d-TU" class="day-label">M</label><input type="checkbox" id="d-WE" class="day-check" onchange="validarRecurrencia()"><label for="d-WE" class="day-label">Mi</label><input type="checkbox" id="d-TH" class="day-check" onchange="validarRecurrencia()"><label for="d-TH" class="day-label">J</label><input type="checkbox" id="d-FR" class="day-check" onchange="validarRecurrencia()"><label for="d-FR" class="day-label">V</label><input type="checkbox" id="d-SA" class="day-check" onchange="validarRecurrencia()"><label for="d-SA" class="day-label">S</label><input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label></div></div><div id="msg-error-rec" style="background:#fff2f2; color:var(--danger); padding:10px; border-radius:10px; font-size:11px; font-weight:800; margin-bottom:10px; display:none;">⚠️ La fecha no coincide con el día marcado</div><label>Nombre Cancha</label><input id="ed-org" class="input-std"><label>Organizador</label><input id="ed-owner" class="input-std"><label>WhatsApp</label><input id="ed-celu" class="input-std"><label>Sede</label><input id="ed-lug" class="input-std"><label>🏷️ Categoría</label><input id="ed-cat" class="input-std"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div><div><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div><div><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div></div><label>Precio ($)</label><input id="ed-val" type="number" class="input-std"><label>Alias MP</label><input id="ed-ali" class="input-std"><button id="btn-save-config" onclick="guardarConfig()" style="width:100%; padding:18px; border-radius:18px; background:#007aff; color:white; border:none; font-weight:900; cursor:pointer">GUARDAR CAMBIOS</button><button onclick="cerrarModals()" style="width:100%; padding:15px; border-radius:18px; background:#eee; color:#333; border:none; margin-top:10px; cursor:pointer">CANCELAR</button></div></div>
@@ -98,6 +118,18 @@
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
     window.defaultData = { owner: "", celu: "", alias: "" };
     window.movimientos = []; 
+    let currentMovsData = [];
+
+    // HERRAMIENTAS FECHA DD-MM-YYYY
+    function formatMs(ms) {
+        const d = new Date(ms);
+        return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+    }
+    function formatFec(f) {
+        if(!f) return '--';
+        const [y, m, d] = f.split('-');
+        return `${d}-${m}-${y}`;
+    }
 
     function calculateFinancials() {
         if (Object.keys(cuentaInfo).length === 0) return; 
@@ -150,11 +182,10 @@
 
         const statusTxt = document.getElementById('plan-status'), daysTxt = document.getElementById('plan-days'), btnPlan = document.getElementById('btn-plan-action');
         const diasParaVencer = Math.ceil((vencimientoAbono - ahora) / 86400000);
-        const dateToStr = (ms) => { const d = new Date(ms); return PadelUtils.fmtFechaCorta(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); };
 
         if (isAccountBlocked) {
             statusTxt.innerHTML = bloqueoPorTiempo ? "🔴 Abono Vencido" : "🔴 Cuenta Suspendida"; statusTxt.style.color = "var(--danger)";
-            daysTxt.innerText = bloqueoPorTiempo ? "Venció el " + dateToStr(vencimientoAbono) : "Límite de crédito excedido"; daysTxt.style.color = "var(--danger)";
+            daysTxt.innerText = bloqueoPorTiempo ? "Venció el " + formatMs(vencimientoAbono) : "Límite de crédito excedido"; daysTxt.style.color = "var(--danger)";
             btnPlan.innerText = "ACTIVAR PLAN"; btnPlan.style.background = "var(--danger)";
         } else {
             if (diasParaVencer <= 3 && diasParaVencer > 0) {
@@ -162,14 +193,53 @@
                 daysTxt.innerText = "Aboná para evitar el corte"; daysTxt.style.color = "var(--danger)";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--danger)";
             } else if (diasParaVencer <= 7) {
-                statusTxt.innerHTML = "🟡 Activo hasta el " + dateToStr(vencimientoAbono); statusTxt.style.color = "var(--warning)";
+                statusTxt.innerHTML = "🟡 Activo hasta el " + formatMs(vencimientoAbono); statusTxt.style.color = "var(--warning)";
                 daysTxt.innerText = "Tu plan vence pronto"; daysTxt.style.color = "var(--warning)";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             } else {
-                statusTxt.innerHTML = "🟢 Activo hasta el " + dateToStr(vencimientoAbono); statusTxt.style.color = "var(--success)";
+                statusTxt.innerHTML = "🟢 Activo hasta el " + formatMs(vencimientoAbono); statusTxt.style.color = "var(--success)";
                 daysTxt.innerText = "Te quedan " + diasParaVencer + " días"; daysTxt.style.color = "var(--text)";
                 btnPlan.innerText = "RENOVAR AHORA"; btnPlan.style.background = "var(--primary)";
             }
+        }
+    }
+
+    // FUNCIONES DE AUDITORÍA
+    function abrirDetalle() {
+        currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha);
+        cambiarTab('pendiente');
+        document.getElementById('modal-detalle').style.display = 'flex';
+    }
+
+    function cambiarTab(estadoFiltro) {
+        document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pend').style.color = estadoFiltro === 'pendiente' ? 'white' : 'var(--sub)';
+        document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pag').style.color = estadoFiltro === 'pagado' ? 'white' : 'var(--sub)';
+
+        const lista = document.getElementById('lista-movimientos-det');
+        lista.innerHTML = "";
+        const filtrados = currentMovsData.filter(m => m.estado === estadoFiltro);
+
+        if(filtrados.length === 0) {
+            lista.innerHTML = `<p style='text-align:center; padding:30px 20px; color:#888; font-weight:600; font-size:14px'>No hay movimientos ${estadoFiltro}s.</p>`;
+        } else {
+            filtrados.forEach(m => {
+                const dateObj = new Date(m.fecha);
+                const dStr = formatMs(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                
+                lista.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
+                        <div style="flex:1; padding-right:15px;">
+                            <strong style="display:block; font-size:13px; margin-bottom: 2px;">${m.descripcion}</strong>
+                            <span style="font-size:10.5px; color:var(--sub); font-weight:600;">Generado el ${dStr}</span>
+                        </div>
+                        <div style="text-align:right">
+                            <strong style="display:block; font-size:15px; margin-bottom:5px;">${PadelUtils.fmtDinero(m.monto)}</strong>
+                            ${m.estado === 'pendiente' ? '<span style="color:var(--danger); font-weight:900; font-size:9px; background:#fff2f2; padding:4px 8px; border-radius:6px;">PENDIENTE</span>' : '<span style="color:var(--success); font-weight:900; font-size:9px; background:#e8f9ee; padding:4px 8px; border-radius:6px;">PAGADO</span>'}
+                        </div>
+                    </div>`;
+            });
         }
     }
 
@@ -177,7 +247,7 @@
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${PadelUtils.fmtFechaCorta(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
@@ -220,7 +290,7 @@
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
             list.innerHTML += `<div class="cancha-card">
                 <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelUtils.fmtFechaCorta(d.fecha)} | 🕒 ${d.hora} hs</div>
+                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
                 <div style="font-size:12px; color:var(--sub)">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
                     <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>

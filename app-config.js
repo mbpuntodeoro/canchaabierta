@@ -68,91 +68,64 @@ const PadelUtils = {
 // ==========================================
 const PadelSaaS = {
     analizarCuenta: function(cuentaInfo, movimientosObj) {
-        // 1. Validaciones iniciales
-        if (!cuentaInfo || !cuentaInfo.nombreOrg) return null;
+        if (!cuentaInfo) return null;
 
         const ahora = Date.now();
-        const limite = cuentaInfo.limiteCredito || 50000;
-        const vencimientoAbono = cuentaInfo.vencimientoAbono || cuentaInfo.trialExpiryDate || ahora;
+        // El límite financiero SOLO aplica a las canchas (turnos)
+        const limiteCredito = cuentaInfo.limiteCredito || 50000;
+        const vencimientoAbono = cuentaInfo.vencimientoAbono || ahora;
         
         let deudaAbono = 0;
-        let deudaTurnos = 0;
-        let cantTurnosPendientes = 0;
-        let pagadoEsteMes = 0;
-        const mesActual = new Date().getMonth();
+        let deudaCanchas = 0;
+        let cantCanchasPendientes = 0;
 
-        // 2. Procesar el Libro Mayor (Ledger)
         const movimientos = movimientosObj ? Object.values(movimientosObj) : [];
         
         movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
                 if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
                 if (m.tipo === 'turno') {
-                    deudaTurnos += (m.monto || 0);
-                    cantTurnosPendientes++;
-                }
-            } else if (m.estado === 'pagado') {
-                const d = new Date(m.fechaPago || m.fecha);
-                if (d.getMonth() === mesActual) {
-                    pagadoEsteMes += (m.monto || 0);
+                    deudaCanchas += (m.monto || 0);
+                    cantCanchasPendientes++;
                 }
             }
         });
 
-        const deudaTotal = deudaAbono + deudaTurnos;
-        const disponible = Math.max(0, limite - deudaTotal);
+        // REGLAS DE SUSPENSIÓN SEPARADAS
+        const bloqueadoPorTiempo = ahora > vencimientoAbono;
+        const bloqueadoPorLimite = deudaCanchas > (limiteCredito * 1.05); // Margen del 5%
+        const isBlocked = bloqueadoPorTiempo || bloqueadoPorLimite || cuentaInfo.cuentaSuspendida;
 
-        // 3. Evaluar el Doble Candado
-        const bloqueoPorLimite = deudaTotal > (limite * 1.05);
-        const bloqueoPorTiempo = ahora > vencimientoAbono;
-        const isBlocked = bloqueoPorLimite || bloqueoPorTiempo || cuentaInfo.cuentaSuspendida;
-
-        // 4. Determinar Textos de Alertas y UX
         let msgLocked = "";
         if (isBlocked) {
-            if (bloqueoPorTiempo) msgLocked = "Abono vencido. Regularice su pago.";
-            else if (bloqueoPorLimite) msgLocked = "Límite de crédito excedido.";
-            else msgLocked = "Cuenta suspendida administrativamente.";
+            if (cuentaInfo.cuentaSuspendida) msgLocked = "Cuenta suspendida administrativamente.";
+            else if (bloqueadoPorTiempo) msgLocked = "Abono mensual vencido.";
+            else if (bloqueadoPorLimite) msgLocked = "Límite de crédito por canchas excedido.";
         }
 
         const diasParaVencer = Math.ceil((vencimientoAbono - ahora) / 86400000);
-        let uxStatus = { icon: "", text: "", color: "", btnColor: "", btnText: "RENOVAR AHORA" };
+        let uxStatus = { icon: "", text: "", color: "", btnColor: "", btnText: "RENOVAR" };
 
         if (isBlocked) {
             uxStatus = {
-                icon: bloqueoPorTiempo ? "🔴 Abono Vencido" : "🔴 Cuenta Suspendida",
-                text: bloqueoPorTiempo ? "Venció el " + this.fmtFecha(vencimientoAbono) : "Operación bloqueada",
-                color: "var(--danger)", btnColor: "var(--danger)", btnText: "ACTIVAR PLAN"
-            };
-        } else if (diasParaVencer <= 3 && diasParaVencer > 0) {
-            uxStatus = {
-                icon: `⚠️ Vence en ${diasParaVencer} ${diasParaVencer === 1 ? 'día' : 'días'}`,
-                text: "Aboná para evitar el corte",
-                color: "var(--danger)", btnColor: "var(--danger)", btnText: "RENOVAR AHORA"
-            };
-        } else if (diasParaVencer <= 7) {
-            uxStatus = {
-                icon: "🟡 Activo hasta el " + this.fmtFecha(vencimientoAbono),
-                text: "Tu plan vence pronto",
-                color: "var(--warning)", btnColor: "var(--primary)", btnText: "RENOVAR AHORA"
+                icon: bloqueadoPorTiempo ? "🔴 Abono Vencido" : "🔴 Límite Excedido",
+                text: bloqueadoPorTiempo ? "Venció el " + this.fmtFecha(vencimientoAbono) : "Debe saldar canchas",
+                color: "var(--danger)", btnColor: "var(--danger)", btnText: "ACTIVAR"
             };
         } else {
             uxStatus = {
-                icon: "🟢 Activo hasta el " + this.fmtFecha(vencimientoAbono),
-                text: "Te quedan " + diasParaVencer + " días",
-                color: "var(--success)", btnColor: "var(--primary)", btnText: "RENOVAR AHORA"
+                icon: `🟢 Activo (Vence ${this.fmtFecha(vencimientoAbono)})`,
+                text: `Límite disponible: ${PadelUtils.fmtDinero(limiteCredito - deudaCanchas)}`,
+                color: "var(--success)", btnColor: "var(--primary)", btnText: "RENOVAR"
             };
         }
 
-        // 5. Retornar la "Foto" Financiera completa
         return {
             deudaAbono,
-            deudaTurnos,
-            cantTurnosPendientes,
-            pagadoEsteMes,
-            deudaTotal,
-            limite,
-            disponible,
+            deudaCanchas,
+            cantCanchasPendientes,
+            deudaTotal: deudaAbono + deudaCanchas,
+            limiteCredito,
             isBlocked,
             msgLocked,
             diasParaVencer,
@@ -160,7 +133,6 @@ const PadelSaaS = {
             ux: uxStatus
         };
     },
-
     fmtFecha: function(ms) {
         const d = new Date(ms);
         return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;

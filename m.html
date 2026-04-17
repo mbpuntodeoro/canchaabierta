@@ -45,10 +45,12 @@
 
     <div id="modal-edit" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">Perfil y Trial</h2>
+            <h2 style="margin-top:0">Perfil y Datos Base</h2>
             <input type="hidden" id="edit-id">
             <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <label>WhatsApp Dueño</label><input id="mod-cel" class="input-std">
+            <label>Persona Responsable (Predet.)</label><input id="mod-con" class="input-std">
+            <label>WhatsApp Dueño (Predet.)</label><input id="mod-cel" class="input-std">
+            <label>Alias Mercado Pago (Predet.)</label><input id="mod-ali" class="input-std">
             <hr>
             <label>Días de Trial (Gratis)</label>
             <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 30">
@@ -86,7 +88,7 @@
                         </div>
                         <div class="hub-content">
                             <p style="font-size: 13px; margin: 0 0 10px 0;"><b>ID Organizador:</b> ${id}</p>
-                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR TRIAL / PERFIL</button>
+                            <button class="btn-edit" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR PERFIL / PREDET.</button>
                             <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff">ABRIR DASHBOARD</a>
                         </div>
                     </div>`;
@@ -99,8 +101,8 @@
         const nom = document.getElementById('new-name').value.trim();
         if(!id || !nom) return alert("Faltan datos");
         db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, trialDays: 0, trialStartDate: 0, cuentaSuspendida: false });
-        alert("¡Club creado exitosamente!");
+        db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, consumoActual: 0, trialDays: 0, trialStartDate: 0, cuentaSuspendida: false, nombreContacto: "", celularContacto: "", aliasPredeterminado: "" });
+        alert("¡Club creado!");
     }
 
     function abrirPerfil(id) {
@@ -108,7 +110,9 @@
             const f = s.val() || {};
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
+            document.getElementById('mod-con').value = f.nombreContacto || "";
             document.getElementById('mod-cel').value = f.celularContacto || "";
+            document.getElementById('mod-ali').value = f.aliasPredeterminado || "";
             document.getElementById('mod-trial-days').value = f.trialDays || 0;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
             document.getElementById('modal-edit').style.display = 'flex';
@@ -119,12 +123,14 @@
         const id = document.getElementById('edit-id').value;
         const upd = {
             nombreOrg: document.getElementById('mod-nom').value,
+            nombreContacto: document.getElementById('mod-con').value,
             celularContacto: document.getElementById('mod-cel').value,
+            aliasPredeterminado: document.getElementById('mod-ali').value,
             trialDays: parseInt(document.getElementById('mod-trial-days').value),
             trialStartDate: Date.now(),
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Trial y Perfil actualizados"); cerrarModal(); });
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Datos actualizados"); cerrarModal(); });
     }
 
     function cerrarModal() { document.getElementById('modal-edit').style.display = 'none'; }

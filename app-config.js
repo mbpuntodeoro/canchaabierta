@@ -1,3 +1,24 @@
+// 1. ACÁ VAN TUS LLAVES DE FIREBASE (¡No las borres!)
+const firebaseConfig = {
+  apiKey: "AIzaSyA0g_t1wW1ZIeQP9KPR-SkjiEO7HAbWGjI",
+  authDomain: "padelapp-e72af.firebaseapp.com",
+  databaseURL: "https://padelapp-e72af-default-rtdb.firebaseio.com",
+  projectId: "padelapp-e72af",
+  storageBucket: "padelapp-e72af.firebasestorage.app",
+  messagingSenderId: "806914592971",
+  appId: "1:806914592971:web:84720063fc36a882b40b4e"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+
+// =======================================================
+// A PARTIR DE ACÁ, PEGÁS LA LÓGICA QUE TE PASÉ ANTES
+// =======================================================
+
 const PadelUtils = {
     fmtDinero: (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val || 0),
     copiarLink: (url) => { navigator.clipboard.writeText(url).then(() => alert("¡Link copiado!")); },

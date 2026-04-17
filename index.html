@@ -11,44 +11,30 @@
         h1 { font-weight: 900; letter-spacing: -1.5px; margin-bottom: 5px; font-size: 26px; }
         p { color: var(--sub); font-size: 14px; margin-bottom: 30px; font-weight: 600; }
         .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; margin-bottom: 15px; font-size: 16px; outline: none; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
-        .input-std:focus { border-color: var(--primary); }
-        .btn-login { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-weight: 900; cursor: pointer; font-size: 17px; margin-top: 10px; box-shadow: 0 10px 25px rgba(0,122,255,0.2); }
+        .btn-login { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-weight: 900; cursor: pointer; font-size: 17px; margin-top: 10px; }
         .footer-personal { text-align: center; margin-top: 40px; width: 100%; }
-        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; box-shadow: 0 5px 15px rgba(255,149,0,0.3); }
+        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div class="card">
         <h1>Organización de<br>Canchas Abiertas</h1>
         <p>Ingresá a tu panel de control</p>
-        
         <input type="text" id="user" class="input-std" placeholder="Usuario / ID Club">
         <input type="password" id="pass" class="input-std" placeholder="Contraseña">
-        
         <button class="btn-login" onclick="login()">INGRESAR AL PANEL</button>
     </div>
-
     <div class="footer-personal">
         <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px; margin-bottom: 5px;">DESARROLLADO POR MARIANO BLUMENFELD</p>
         <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
     </div>
-
 <script>
     function login() {
         const u = document.getElementById('user').value.trim();
-        const p = document.getElementById('pass').value.trim();
-        
-        if(!u || !p) return alert("Completá todos los campos");
-        
-        // Redirigir al dashboard usando el usuario como el org ID
+        if(!u) return alert("Ingresá tu usuario");
         window.location.href = "d.html?org=" + u;
     }
-
-    // Permitir Enter para loguear
-    document.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') login();
-    });
+    document.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
 </script>
 </body>
 </html>

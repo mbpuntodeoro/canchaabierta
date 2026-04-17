@@ -111,15 +111,22 @@
 
     <div id="modal-detalle" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0; font-weight: 900;">📋 Detalle de Movimientos</h2>
-            <p style="font-size:13px; color:var(--sub); font-weight:600; margin-top:-10px;">Historial de cargos generados por el sistema.</p>
-            <div id="lista-movimientos" style="margin-top: 20px; max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
+            <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
+            
+            <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
+                <button id="tab-pend" class="btn-edit" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
+                <button id="tab-pag" class="btn-edit" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
+            </div>
+
+            <div id="lista-movimientos" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
+            
             <button class="btn-blue" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
     </div>
 
 <script>
     let currentVencimiento = 0;
+    let currentMovsData = []; // Memoria temporal para las pestañas
 
     function render() {
         db.ref('hubs').on('value', async (snap) => {
@@ -183,33 +190,53 @@
         });
     }
 
+    // LÓGICA DE PESTAÑAS (TABS)
     function abrirDetalle(id) {
         db.ref(`facturacion/${id}/movimientos`).once('value', s => {
             const movs = s.val() || {};
-            const lista = document.getElementById('lista-movimientos');
-            lista.innerHTML = "";
-            const arr = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
-
-            if(arr.length === 0) {
-                lista.innerHTML = "<p style='text-align:center; padding:20px; color:#888;'>No hay registros.</p>";
-            } else {
-                arr.forEach(m => {
-                    const dStr = new Date(m.fecha).toLocaleDateString('es-AR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
-                    lista.innerHTML += `
-                        <div class="mov-row">
-                            <div style="flex:1">
-                                <strong style="display:block; font-size:13px;">${m.descripcion}</strong>
-                                <span style="font-size:10px; color:var(--sub); font-weight:600;">${dStr}</span>
-                            </div>
-                            <div style="text-align:right">
-                                <strong style="display:block; font-size:14px;">${PadelUtils.fmtDinero(m.monto)}</strong>
-                                ${m.estado === 'pendiente' ? '<span class="tag-pend">PENDIENTE</span>' : '<span class="tag-pag">PAGADO</span>'}
-                            </div>
-                        </div>`;
-                });
-            }
+            // Guardamos todo ordenado en la variable global para poder filtrar sin volver a consultar Firebase
+            currentMovsData = Object.values(movs).sort((a, b) => b.fecha - a.fecha);
+            
+            // Abrimos por defecto en "pendiente"
+            cambiarTab('pendiente');
             document.getElementById('modal-detalle').style.display = 'flex';
         });
+    }
+
+    function cambiarTab(estadoFiltro) {
+        // 1. Cambiar aspecto visual de los botones
+        document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pend').style.color = estadoFiltro === 'pendiente' ? 'white' : 'var(--sub)';
+        
+        document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pag').style.color = estadoFiltro === 'pagado' ? 'white' : 'var(--sub)';
+
+        // 2. Filtrar y renderizar la lista
+        const lista = document.getElementById('lista-movimientos');
+        lista.innerHTML = "";
+        
+        const filtrados = currentMovsData.filter(m => m.estado === estadoFiltro);
+
+        if(filtrados.length === 0) {
+            lista.innerHTML = `<p style='text-align:center; padding:30px 20px; color:#888; font-weight:600; font-size:14px'>No hay movimientos ${estadoFiltro}s.</p>`;
+        } else {
+            filtrados.forEach(m => {
+                const dateObj = new Date(m.fecha);
+                const dStr = dateObj.toLocaleDateString('es-AR', {day:'2-digit', month:'short'}) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                
+                lista.innerHTML += `
+                    <div class="mov-row">
+                        <div style="flex:1; padding-right:15px;">
+                            <strong style="display:block; font-size:13px; margin-bottom: 2px;">${m.descripcion}</strong>
+                            <span style="font-size:10.5px; color:var(--sub); font-weight:600;">Generado el ${dStr}</span>
+                        </div>
+                        <div style="text-align:right">
+                            <strong style="display:block; font-size:15px; margin-bottom:5px;">${PadelUtils.fmtDinero(m.monto)}</strong>
+                            ${m.estado === 'pendiente' ? '<span class="tag-pend">PENDIENTE</span>' : '<span class="tag-pag">PAGADO</span>'}
+                        </div>
+                    </div>`;
+            });
+        }
     }
 
     function registrarPago(id, monto) {

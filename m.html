@@ -6,105 +6,156 @@
     <title>Master Hub - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
+        :root { --primary: #000000; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
+        
+        /* PANTALLA DE LOGIN */
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--bg); padding: 20px; }
+        .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 350px; text-align: center; }
+        
         header { background: #000; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 850px; margin: 30px auto; padding: 0 20px; }
-        
-        /* CARDS */
-        .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid var(--primary); }
+        .card-main { background: white; padding: 30px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; border: 2px solid #007aff; }
         .hub-item { background: white; border-radius: 22px; margin-bottom: 12px; border: 1px solid #eee; overflow: hidden; }
         .hub-header { padding: 22px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .hub-content { padding: 0 22px 22px 22px; display: none; border-top: 1px solid #f9f9f9; background: #fafafa; }
         .hub-item.active .hub-content { display: block; }
         
-        /* ESTADOS */
         .tag-status { font-size: 9px; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 900; }
+        .st-prueba { background: #fff9e6; color: var(--warning); }
         .st-activo { background: #e8f9ee; color: var(--success); }
         .st-vencido { background: #fff2f2; color: var(--danger); }
         
-        /* FORMULARIOS Y BOTONES */
         .input-std { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid #ddd; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-        .btn-blue { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
+        
+        .btn-blue { background: #007aff; color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; cursor: pointer; width: 100%; }
         .btn-edit { background: #fff; border: 1.5px solid #ddd; padding: 12px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none; color: #333; margin-top: 10px; display: inline-block; }
         .btn-green { background: var(--success); color: white; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; width: 100%; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
         .btn-dash { border: none; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 11px; cursor: pointer; width: 100%; margin-top: 8px; text-transform: uppercase; }
 
-        /* MODALES */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
     </style>
 </head>
 <body>
-    <header>
-        <h2>Master PadelApp</h2>
-        <button onclick="window.location.href='index.html'" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">SALIR</button>
-    </header>
 
-    <div class="container">
-        <div class="card-main">
-            <h3>🚀 Alta de Organizador</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input id="new-id" class="input-std" placeholder="ID Club (ej: smash)">
-                <input id="new-name" class="input-std" placeholder="Nombre Comercial">
-            </div>
-            <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
-        </div>
-        <div id="lista-clubes">Cargando clubes y deudas...</div>
-    </div>
-
-    <div id="modal-edit" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
-            <input type="hidden" id="edit-id">
-            <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
-                <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
-            </div>
-            <label>Alias de Cobros (Club)</label><input id="mod-ali" class="input-std">
-            <hr>
-            <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
-                <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
-            </div>
-            <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
-            <hr>
-            <label>Gestión de Vencimiento / Tiempo</label>
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
-                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasVencimiento()">SUMAR</button>
-                <button class="btn-action" style="background:var(--success); color:white;" onclick="forzarVencimientoHoy()">FORZAR VENCIMIENTO</button>
-            </div>
-            <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
-            <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
-                <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA (BLOQUEO MANUAL)</b>
-                <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
-            </div>
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
-            <button class="btn-blue" onclick="cerrarModals()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
+    <div id="login-screen">
+        <div class="login-card">
+            <h1 style="margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px;">PadelApp</h1>
+            <p style="color: var(--sub); font-size: 14px; font-weight: 600; margin-bottom: 25px;">Acceso Master Hub</p>
+            
+            <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
+            <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
+            
+            <button class="btn-blue" style="background: black; margin-top: 10px;" onclick="iniciarSesion()">INGRESAR</button>
+            <p id="log-error" style="color: var(--danger); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
         </div>
     </div>
 
-    <div id="modal-detalle" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
-            <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
-                <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
-                <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
+    <div id="app-content" style="display: none;">
+        <header>
+            <h2>Master PadelApp</h2>
+            <button onclick="cerrarSesion()" style="background:#333; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight: 800; font-size: 12px;">SALIR</button>
+        </header>
+
+        <div class="container">
+            <div class="card-main">
+                <h3>🚀 Alta de Organizador</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input id="new-id" class="input-std" placeholder="ID Club (ej: smash)">
+                    <input id="new-name" class="input-std" placeholder="Nombre Comercial">
+                </div>
+                <button class="btn-blue" onclick="crearHub()">REGISTRAR CLUB</button>
             </div>
-            <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
-            <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
+            <div id="lista-clubes">Cargando clubes y deudas...</div>
+        </div>
+
+        <div id="modal-edit" class="modal">
+            <div class="modal-content">
+                <h2 style="margin-top:0; font-weight: 900;">Configuración Integral</h2>
+                <input type="hidden" id="edit-id">
+                <label>Nombre Comercial</label><input id="mod-nom" class="input-std">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><label>Responsable Turnos</label><input id="mod-con" class="input-std"></div>
+                    <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
+                </div>
+                <label>Alias de Cobros (Club)</label><input id="mod-ali" class="input-std">
+                <hr>
+                <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
+                    <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
+                </div>
+                <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
+                <hr>
+                <label>Gestión de Vencimiento / Tiempo</label>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                    <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
+                    <button class="btn-action" style="background:#007aff; color:white;" onclick="sumarDiasVencimiento()">SUMAR</button>
+                    <button class="btn-action" style="background:var(--success); color:white;" onclick="forzarVencimientoHoy()">FORZAR VENCIMIENTO</button>
+                </div>
+                <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: #007aff; text-align: center; margin-bottom: 15px;"></p>
+                <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
+                    <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA (BLOQUEO MANUAL)</b>
+                    <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
+                </div>
+                <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
+                <button class="btn-blue" onclick="cerrarModals()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
+            </div>
+        </div>
+
+        <div id="modal-detalle" class="modal">
+            <div class="modal-content">
+                <h2 style="margin-top:0; font-weight: 900;">📋 Movimientos</h2>
+                <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
+                    <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: #007aff; color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
+                    <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
+                </div>
+                <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
+                <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
+            </div>
         </div>
     </div>
 
 <script>
+    // 🔒 SISTEMA DE AUTENTICACIÓN
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // Usuario validado: Mostrar App, ocultar Login
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            render(); // Arrancamos el motor de datos
+        } else {
+            // No hay usuario: Mostrar Login, ocultar App
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('app-content').style.display = 'none';
+        }
+    });
+
+    function iniciarSesion() {
+        const e = document.getElementById('log-email').value;
+        const p = document.getElementById('log-pass').value;
+        document.getElementById('log-error').style.display = 'none';
+        
+        auth.signInWithEmailAndPassword(e, p).catch(err => {
+            document.getElementById('log-error').style.display = 'block';
+            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
+        });
+    }
+
+    function cerrarSesion() {
+        auth.signOut();
+    }
+
+    // 🚀 LÓGICA DEL MASTER HUB
     let currentVencimiento = 0;
     let currentMovsData = [];
 
@@ -121,7 +172,6 @@
                 const f = fSnap.val() || {};
                 const movs = mSnap.val() || {};
                 
-                // LE PREGUNTAMOS AL CEREBRO (PadelSaaS)
                 const res = PadelSaaS.analizarCuenta(f, movs);
                 if (!res) continue;
 
@@ -174,9 +224,9 @@
     }
 
     function cambiarTab(estadoFiltro) {
-        document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pend').style.background = estadoFiltro === 'pendiente' ? '#007aff' : 'transparent';
         document.getElementById('tab-pend').style.color = estadoFiltro === 'pendiente' ? 'white' : 'var(--sub)';
-        document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? 'var(--primary)' : 'transparent';
+        document.getElementById('tab-pag').style.background = estadoFiltro === 'pagado' ? '#007aff' : 'transparent';
         document.getElementById('tab-pag').style.color = estadoFiltro === 'pagado' ? 'white' : 'var(--sub)';
 
         const lista = document.getElementById('lista-movimientos-det');
@@ -299,8 +349,6 @@
     function cerrarModals() { 
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
     }
-
-    render();
 </script>
 </body>
 </html>

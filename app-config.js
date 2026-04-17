@@ -47,58 +47,73 @@ const PadelUtils = {
 
 // 3. MOTOR DE LÓGICA DE NEGOCIO (PadelSaaS) - EL CORAZÓN DEL SISTEMA
 const PadelSaaS = {
-    analizarCuenta: function(cuenta, movsObj) {
-        if (!cuenta) return null;
-        
-        const ahora = Date.now();
-        const movimientos = movsObj ? (Array.isArray(movsObj) ? movsObj : Object.values(movsObj)) : [];
-        
-        let deudaCanchasPendiente = 0;
-        let deudaAbonoPendiente = 0;
+    analizarCuenta: function(cuentaInfo, movimientosObj) {
+        if (!cuentaInfo) return null;
 
-        // Procesar movimientos del Ledger
+        const ahora = Date.now();
+        // El límite financiero SOLO aplica a las canchas (turnos)
+        const limiteCredito = cuentaInfo.limiteCredito || 50000;
+        const vencimientoAbono = cuentaInfo.vencimientoAbono || ahora;
+        
+        let deudaAbono = 0;
+        let deudaCanchas = 0;
+        let cantCanchasPendientes = 0;
+
+        const movimientos = movimientosObj ? Object.values(movimientosObj) : [];
+        
         movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
-                if (m.tipo === 'abono') {
-                    deudaAbonoPendiente += (m.monto || 0);
-                } else {
-                    deudaCanchasPendiente += (m.monto || 0);
+                if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
+                if (m.tipo === 'turno') {
+                    deudaCanchas += (m.monto || 0);
+                    cantCanchasPendientes++;
                 }
             }
         });
 
-        const limiteAsignado = cuenta.limiteCredito || 0;
-        const vencimientoAbono = cuenta.vencimientoAbono || ahora;
-        
-        // REGLAS INDEPENDIENTES DE SUSPENSIÓN
+        // REGLAS DE SUSPENSIÓN SEPARADAS
         const bloqueadoPorTiempo = ahora > vencimientoAbono;
-        const bloqueadoPorLimite = deudaCanchasPendiente > (limiteAsignado * 1.05);
-        const bloqueadoAdministrativo = cuenta.cuentaSuspendida === true;
+        const bloqueadoPorLimite = deudaCanchas > (limiteCredito * 1.05); // Margen del 5%
+        const isBlocked = bloqueadoPorTiempo || bloqueadoPorLimite || cuentaInfo.cuentaSuspendida;
 
-        const isBlocked = bloqueadoPorTiempo || bloqueadoPorLimite || bloqueadoAdministrativo;
-
-        // Definir mensaje de error
         let msgLocked = "";
-        if (bloqueadoAdministrativo) msgLocked = "Cuenta suspendida por administración.";
-        else if (bloqueadoPorTiempo) msgLocked = "Abono mensual vencido.";
-        else if (bloqueadoPorLimite) msgLocked = "Límite de crédito por canchas excedido.";
+        if (isBlocked) {
+            if (cuentaInfo.cuentaSuspendida) msgLocked = "Cuenta suspendida administrativamente.";
+            else if (bloqueadoPorTiempo) msgLocked = "Abono mensual vencido.";
+            else if (bloqueadoPorLimite) msgLocked = "Límite de crédito por canchas excedido.";
+        }
+
+        const diasParaVencer = Math.ceil((vencimientoAbono - ahora) / 86400000);
+        let uxStatus = { icon: "", text: "", color: "", btnColor: "", btnText: "RENOVAR" };
+
+        if (isBlocked) {
+            uxStatus = {
+                icon: bloqueadoPorTiempo ? "🔴 Abono Vencido" : "🔴 Límite Excedido",
+                text: bloqueadoPorTiempo ? "Venció el " + this.fmtFecha(vencimientoAbono) : "Debe saldar canchas",
+                color: "var(--danger)", btnColor: "var(--danger)", btnText: "ACTIVAR"
+            };
+        } else {
+            uxStatus = {
+                icon: `🟢 Activo (Vence ${this.fmtFecha(vencimientoAbono)})`,
+                text: `Límite disponible: ${PadelUtils.fmtDinero(limiteCredito - deudaCanchas)}`,
+                color: "var(--success)", btnColor: "var(--primary)", btnText: "RENOVAR"
+            };
+        }
 
         return {
-            vencimientoAbono: vencimientoAbono,
-            deudaCanchas: deudaCanchasPendiente,
-            deudaAbono: deudaAbonoPendiente,
-            limiteTotal: limiteAsignado,
-            disponible: Math.max(0, limiteAsignado - deudaCanchasPendiente),
-            porcentaje: limiteAsignado > 0 ? (deudaCanchasPendiente / limiteAsignado) * 100 : 0,
-            isBlocked: isBlocked,
-            msgLocked: msgLocked,
-            statusTime: bloqueadoPorTiempo ? 'vencido' : 'ok',
-            statusLimit: bloqueadoPorLimite ? 'vencido' : 'ok'
+            deudaAbono,
+            deudaCanchas,
+            cantCanchasPendientes,
+            deudaTotal: deudaAbono + deudaCanchas,
+            limiteCredito,
+            isBlocked,
+            msgLocked,
+            diasParaVencer,
+            vencimientoAbono,
+            ux: uxStatus
         };
     },
-
     fmtFecha: function(ms) {
-        if (!ms) return '--/--/----';
         const d = new Date(ms);
         return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
     }

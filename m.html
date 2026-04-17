@@ -27,7 +27,7 @@
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 550px; padding: 35px; border-radius: 35px; max-height: 95vh; overflow-y: auto; }
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
-        .court-chip { display: inline-block; background: #eee; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin: 0 5px 5px 0; }
+        .btn-action { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; transition: 0.2s; }
     </style>
 </head>
 <body>
@@ -63,27 +63,33 @@
             <hr>
             <h3 style="font-size: 14px; margin-bottom: 10px;">💰 Parámetros Financieros</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std" placeholder="0"></div>
-                <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std" placeholder="0"></div>
+                <div><label>Abono Mensual ($)</label><input id="mod-abono" type="number" class="input-std"></div>
+                <div><label>Costo por Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
             </div>
-            <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std" placeholder="50000">
+            <label>Límite de Crédito ($)</label><input id="mod-limite" type="number" class="input-std">
 
             <hr>
-            <label>Días de Prueba (A partir de hoy)</label>
-            <input id="mod-trial-days" class="input-std" type="number" placeholder="Ej: 15">
+            <label>Gestión de Período de Prueba</label>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <input id="mod-trial-days" class="input-std" type="number" placeholder="Sumar días..." style="margin-bottom:0; flex:1">
+                <button class="btn-action" style="background:var(--primary); color:white;" onclick="sumarDiasPrueba()">SUMAR</button>
+                <button class="btn-action" style="background:var(--success); color:white;" onclick="finalizarPruebaAhora()">FINALIZAR PRUEBA AHORA</button>
+            </div>
             <p id="txt-venc-actual" style="font-size: 11px; font-weight: 800; color: var(--primary); text-align: center; margin-bottom: 15px;"></p>
             
             <div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
-                <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA</b>
+                <b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA (BLOQUEO MANUAL)</b>
                 <input type="checkbox" id="mod-susp" style="transform:scale(1.6)">
             </div>
 
-            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR CONFIGURACIÓN</button>
+            <button class="btn-blue" onclick="guardarPerfil()">GUARDAR TODOS LOS CAMBIOS</button>
             <button class="btn-blue" onclick="cerrarModal()" style="background:#f2f2f7; color:#333; margin-top:10px">CANCELAR</button>
         </div>
     </div>
 
 <script>
+    let currentTrialExpiry = 0;
+
     function render() {
         db.ref('hubs').on('value', async (snap) => {
             const hubs = snap.val() || {};
@@ -98,24 +104,24 @@
                 let tag = "";
                 if(f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
                 else if(remainingTrial > 0) tag = `<span class="tag-status st-prueba">Prueba (${remainingTrial}d)</span>`;
-                else tag = `<span class="tag-status st-activo">Cliente Activo</span>`;
+                else tag = `<span class="tag-status st-activo">Activo</span>`;
 
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
                             <span>${f.nombreOrg || id} ${tag}</span>
-                            <span style="color:#ccc; font-size:11px">DETALLES ▾</span>
+                            <span style="color:#ccc; font-size:11px">CONFIG ▾</span>
                         </div>
                         <div class="hub-content">
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:10px;">
-                                <div><b>👤 Responsable:</b> ${f.nombreContacto || '--'}</div>
-                                <div><b>💳 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
-                                <div><b>🎾 Por Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; font-size: 12px; gap:8px;">
+                                <div><b>💰 Abono:</b> ${PadelUtils.fmtDinero(f.abonoMensual)}</div>
+                                <div><b>🎾 Cancha:</b> ${PadelUtils.fmtDinero(f.costoPorCancha)}</div>
                                 <div><b>🛑 Límite:</b> ${PadelUtils.fmtDinero(f.limiteCredito)}</div>
+                                <div><b>📅 Vence Prueba:</b> ${new Date(f.trialExpiryDate).toLocaleDateString()}</div>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top:15px">
-                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ CONFIGURAR</button>
-                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">ABRIR DASHBOARD</a>
+                                <button class="btn-edit" style="flex:1" onclick="abrirPerfil('${id}')">⚙️ EDITAR PARÁMETROS</button>
+                                <a href="d.html?org=${id}" target="_blank" class="btn-edit" style="background: #000; color:#fff; border:none; flex:1; text-align:center">VER DASHBOARD</a>
                             </div>
                         </div>
                     </div>`;
@@ -134,12 +140,13 @@
             abonoMensual: 0, costoPorCancha: 0, limiteCredito: 50000, 
             cuentaSuspendida: false, consumoActual: 0 
         });
-        alert("Club creado exitosamente");
+        alert("Club creado con 7 días de prueba.");
     }
 
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {};
+            currentTrialExpiry = f.trialExpiryDate || Date.now();
             document.getElementById('edit-id').value = id;
             document.getElementById('mod-nom').value = f.nombreOrg || "";
             document.getElementById('mod-con').value = f.nombreContacto || "";
@@ -150,14 +157,29 @@
             document.getElementById('mod-limite').value = f.limiteCredito || 50000;
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false;
             document.getElementById('mod-trial-days').value = "";
-            document.getElementById('txt-venc-actual').innerText = "Prueba vence el: " + new Date(f.trialExpiryDate).toLocaleDateString();
+            document.getElementById('txt-venc-actual').innerText = "Vencimiento Prueba: " + new Date(currentTrialExpiry).toLocaleDateString();
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
+    function sumarDiasPrueba() {
+        const dias = parseInt(document.getElementById('mod-trial-days').value);
+        if(!dias) return alert("Ingresá días");
+        const base = Math.max(currentTrialExpiry, Date.now());
+        currentTrialExpiry = base + (dias * 86400000);
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Vencimiento: " + new Date(currentTrialExpiry).toLocaleDateString();
+        alert("Días sumados. Recordá presionar GUARDAR.");
+    }
+
+    function finalizarPruebaAhora() {
+        if(!confirm("¿Finalizar prueba ahora? El cliente pasará a ACTIVO y empezará a facturar inmediatamente.")) return;
+        currentTrialExpiry = Date.now();
+        document.getElementById('txt-venc-actual').innerText = "Prueba finalizada (Activo ahora)";
+        alert("Prueba finalizada. Recordá presionar GUARDAR.");
+    }
+
     function guardarPerfil() {
         const id = document.getElementById('edit-id').value;
-        const diasTrial = parseInt(document.getElementById('mod-trial-days').value);
         const upd = {
             nombreOrg: document.getElementById('mod-nom').value,
             nombreContacto: document.getElementById('mod-con').value,
@@ -166,11 +188,9 @@
             abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0,
             costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0,
             limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0,
+            trialExpiryDate: currentTrialExpiry,
             cuentaSuspendida: document.getElementById('mod-susp').checked
         };
-        if(!isNaN(diasTrial) && diasTrial > 0) {
-            upd.trialExpiryDate = Date.now() + (diasTrial * 86400000);
-        }
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada"); cerrarModal(); });
     }
 

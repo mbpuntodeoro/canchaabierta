@@ -5,11 +5,17 @@
     <title>Dashboard - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js"></script>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        
+        /* PANTALLA DE LOGIN */
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
+        .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
+        
         .container { max-width: 550px; margin: auto; padding-bottom: 100px;}
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
@@ -31,71 +37,85 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-            <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">...</h1>
-            <button onclick="window.location.href='index.html'" style="background:none; border:none; color:var(--sub); font-weight:800; cursor:pointer">SALIR</button>
-        </header>
 
-        <div class="hero">
-            <div class="fin-grid">
-                <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
-                <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
-            </div>
-            <div style="text-align: center; margin-top: 10px; font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase;">Incluye abono + canchas realizadas</div>
-        </div>
-
-        <div class="plan-card" style="text-align: left; padding: 22px;">
-            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo pendiente</h3>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
-                <span style="color:var(--text)">Abono Mensual</span><span id="det-abono" style="font-weight:800">$0</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
-                <span style="color:var(--text)" id="det-turnos-texto">Canchas (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
-            </div>
+    <div id="login-screen">
+        <div class="login-card">
+            <h1 style="margin: 0 0 5px 0; font-weight: 900; letter-spacing: -1px;">PadelApp</h1>
+            <p style="color: var(--sub); font-size: 14px; font-weight: 600; margin-bottom: 25px;">Acceso Organizador</p>
             
-            <button class="btn-dash" style="background:#f2f2f7; color:var(--text); margin-top:10px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER DETALLE DE MOVIMIENTOS</button>
-
-            <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
-                <span>Límite Total:</span><span id="det-limite">$0</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 900; color: var(--success);" id="caja-disponible">
-                <span>Disponible:</span><span id="det-disponible">$0</span>
-            </div>
+            <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
+            <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
+            
+            <button class="btn-dash" style="background: black; color: white; font-size: 13px; margin-top: 10px; padding: 16px;" onclick="iniciarSesion()">INGRESAR</button>
+            <p id="log-error" style="color: var(--danger); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
         </div>
+    </div>
 
-        <div class="plan-card" id="card-plan">
-            <h3 style="margin: 0 0 15px 0; font-size: 15px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: left;">👉 ABONO MENSUAL</h3>
-            <span id="plan-status" style="font-weight:900; font-size:22px; display:block; margin-bottom: 5px; text-align: left;">Analizando...</span>
-            <span id="plan-days" style="font-weight:800; font-size:16px; display:block; margin-bottom: 5px; text-align: left;">-</span>
-            <span id="plan-desc" style="font-size:13px; color:var(--sub); display:block; margin-bottom: 20px; font-weight: 600; text-align: left;">El abono te habilita el uso del sistema durante 30 días</span>
-            <a id="btn-plan-action" href="https://wa.me/5491166463800?text=Hola,%20necesito%20renovar%20mi%20plan%20en%20PadelApp" target="_blank" style="display:inline-block; padding:16px 20px; border-radius:16px; text-decoration:none; font-weight:900; font-size:14px; background:var(--primary); color:white; width: 100%; box-sizing: border-box; text-align: center;">RENOVAR AHORA</a>
-            <p style="font-size: 10px; color: #bbb; margin: 15px 0 0 0; font-weight: 800; text-transform: uppercase; text-align: center;">El abono no depende del mes calendario</p>
-        </div>
+    <div id="app-content" style="display: none;">
+        <div class="container">
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">Cargando...</h1>
+                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--danger); font-weight:800; cursor:pointer">SALIR</button>
+            </header>
 
-        <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
+            <div class="hero">
+                <div class="fin-grid">
+                    <div class="fin-box"><span>Consumo Actual</span><b id="txt-deu">$0</b></div>
+                    <div class="fin-box"><span>Límite Crédito</span><b id="txt-lim">$0</b></div>
+                </div>
+                <div style="text-align: center; margin-top: 10px; font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase;">Incluye abono + canchas realizadas</div>
+            </div>
 
-        <div id="canchas-list">Cargando canchas...</div>
+            <div class="plan-card" style="text-align: left; padding: 22px;">
+                <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px;">💳 Detalle de consumo pendiente</h3>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                    <span style="color:var(--text)">Abono Mensual</span><span id="det-abono" style="font-weight:800">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                    <span style="color:var(--text)" id="det-turnos-texto">Canchas (0 × $0)</span><span id="det-turnos-total" style="font-weight:800">$0</span>
+                </div>
+                
+                <button class="btn-dash" style="background:#f2f2f7; color:var(--text); margin-top:10px; border:1px solid #ddd; width:100%;" onclick="abrirDetalle()">📋 VER DETALLE DE MOVIMIENTOS</button>
 
-        <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
-        <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido o cuenta suspendida.</p>
+                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 5px;">
+                    <span>Límite Total:</span><span id="det-limite">$0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 900; color: var(--success);" id="caja-disponible">
+                    <span>Disponible:</span><span id="det-disponible">$0</span>
+                </div>
+            </div>
 
-        <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #eee;">
-            <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
-            <a href="https://wa.me/5491166463800" style="background:#ff9500; color:white; text-decoration:none; padding:12px 25px; border-radius:50px; font-weight:900; font-size:13px; display:inline-block; margin-top:10px;">💬 ¿DUDAS? ESCRIBIME</a>
+            <div class="plan-card" id="card-plan">
+                <h3 style="margin: 0 0 15px 0; font-size: 15px; color: var(--sub); text-transform: uppercase; font-weight: 900; letter-spacing: 1px; text-align: left;">👉 ABONO MENSUAL</h3>
+                <span id="plan-status" style="font-weight:900; font-size:22px; display:block; margin-bottom: 5px; text-align: left;">Analizando...</span>
+                <span id="plan-days" style="font-weight:800; font-size:16px; display:block; margin-bottom: 5px; text-align: left;">-</span>
+                <span id="plan-desc" style="font-size:13px; color:var(--sub); display:block; margin-bottom: 20px; font-weight: 600; text-align: left;">El abono te habilita el uso del sistema durante 30 días</span>
+                <a id="btn-plan-action" href="https://wa.me/5491166463800?text=Hola,%20necesito%20renovar%20mi%20plan%20en%20PadelApp" target="_blank" style="display:inline-block; padding:16px 20px; border-radius:16px; text-decoration:none; font-weight:900; font-size:14px; background:var(--primary); color:white; width: 100%; box-sizing: border-box; text-align: center;">RENOVAR AHORA</a>
+                <p style="font-size: 10px; color: #bbb; margin: 15px 0 0 0; font-weight: 800; text-transform: uppercase; text-align: center;">El abono no depende del mes calendario</p>
+            </div>
+
+            <button onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)" style="width:100%; padding:18px; border-radius:18px; background:var(--primary); color:white; border:none; font-weight:900; margin-bottom:20px; cursor:pointer">🔗 COPIAR LINK CARTELERA</button>
+
+            <div id="canchas-list">Cargando canchas...</div>
+
+            <button id="btn-add-cancha" onclick="abrirNuevaCancha()" style="width:100%; padding:20px; border-radius:20px; background:#000; color:white; border:none; font-weight:900; margin-top:10px; cursor:pointer">➕ AGREGAR NUEVA CANCHA</button>
+            <p id="msg-locked" style="display:none; color:red; font-size:11px; font-weight:800; text-align:center; margin-top:10px;">Límite excedido o cuenta suspendida.</p>
+
+            <div style="text-align:center; margin-top:50px; padding:20px; border-top:1px solid #eee;">
+                <p style="font-size:10px; font-weight:800; color:#ccc;">DESARROLLADO POR MARIANO BLUMENFELD</p>
+                <a href="https://wa.me/5491166463800" style="background:#ff9500; color:white; text-decoration:none; padding:12px 25px; border-radius:50px; font-weight:900; font-size:13px; display:inline-block; margin-top:10px;">💬 ¿DUDAS? ESCRIBIME</a>
+            </div>
         </div>
     </div>
 
     <div id="modal-detalle" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight: 900;">📋 Mis Movimientos</h2>
-            
             <div style="display:flex; gap:10px; margin-top:15px; margin-bottom: 15px; background: #f2f2f7; padding: 5px; border-radius: 14px;">
                 <button id="tab-pend" class="btn-dash" style="flex:1; margin-top:0; border:none; background: var(--primary); color: white;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
                 <button id="tab-pag" class="btn-dash" style="flex:1; margin-top:0; border:none; background: transparent; color: var(--sub);" onclick="cambiarTab('pagado')">HISTORIAL</button>
             </div>
-
             <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 10px;"></div>
             <button class="btn-dash" onclick="cerrarModals()" style="background:#000; color:white; margin-top:20px">CERRAR DETALLE</button>
         </div>
@@ -111,9 +131,51 @@
     window.defaultData = { owner: "", celu: "", alias: "" };
     window.movimientos = []; 
     let currentMovsData = [];
+    let isInitialized = false;
 
-    // Ahora la función de cálculos es de 10 líneas, gracias al Core en app-config.js
+    // 🔒 SISTEMA DE AUTENTICACIÓN
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            if(!isInitialized) {
+                init();
+                isInitialized = true;
+            }
+        } else {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('app-content').style.display = 'none';
+            isInitialized = false;
+        }
+    });
+
+    function iniciarSesion() {
+        const e = document.getElementById('log-email').value;
+        const p = document.getElementById('log-pass').value;
+        document.getElementById('log-error').style.display = 'none';
+        auth.signInWithEmailAndPassword(e, p).catch(err => {
+            document.getElementById('log-error').style.display = 'block';
+            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
+        });
+    }
+
+    function cerrarSesion() { 
+        auth.signOut().then(() => {
+            window.location.href = 'index.html';
+        });
+    }
+
+    function formatFec(f) {
+        if(!f) return '--';
+        const [y, m, d] = f.split('-');
+        return `${d}-${m}-${y}`;
+    }
+
     function calculateFinancials() {
+        if (!window.PadelSaaS || Object.keys(cuentaInfo).length === 0) return; 
+
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
@@ -169,7 +231,7 @@
         } else {
             filtrados.forEach(m => {
                 const dateObj = new Date(m.fecha);
-                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                const dStr = (window.PadelSaaS ? PadelSaaS.fmtFecha(m.fecha) : '') + ' a las ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 
                 lista.innerHTML += `
                     <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee; align-items:center;">
@@ -190,7 +252,7 @@
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${PadelSaaS.fmtFecha(new Date(data.fecha+'T12:00:00').getTime())}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
@@ -233,7 +295,7 @@
             const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
             list.innerHTML += `<div class="cancha-card">
                 <div style="display:flex;justify-content:space-between"><b>🎾 ${d.organiza}</b> <span class="tag-cat">${d.categorias}</span></div>
-                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${PadelSaaS.fmtFecha(new Date(d.fecha+'T12:00:00').getTime())} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                <div style="font-size:12px; color:var(--sub); margin-top:5px">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
                 <div style="font-size:12px; color:var(--sub)">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
                     <button class="btn-dash" style="background:#f2f2f7" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
@@ -341,7 +403,7 @@
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
     window.borrarP = function(idx) { if(!confirm("¿Borrar?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
-    init();
+    
 </script>
 </body>
 </html>

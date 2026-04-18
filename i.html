@@ -19,7 +19,6 @@
         
         .main-wrapper { flex: 1; display: flex; align-items: center; width: 100%; max-width: 420px; }
         
-        /* 🔥 CARD ELEVATED */
         .card-elevated { background: white; border-radius: 24px; padding: 35px 25px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box; display: none; }
         
         .title { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 20px; line-height: 1.2; letter-spacing: -0.5px;}
@@ -27,12 +26,10 @@
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 10px; }
         .info-row:last-child { margin-bottom: 0; }
         
-        /* 🔥 INPUTS iOS */
         .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--gray-2); margin-bottom: 12px; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box; font-weight: 600; transition: border-color 0.2s;}
         .input-std::placeholder { color: var(--gray-3); }
         .input-std:focus { border-color: #007AFF; }
         
-        /* 🔥 CTAs DOMINANTES */
         .btn-join { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); position: relative; letter-spacing: 0.5px;}
         .btn-join:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
         
@@ -41,14 +38,12 @@
         .loading .loader { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ÉXITO */
         .success-enter { animation: modalIn 400ms var(--ease-out) forwards; }
         @keyframes modalIn { 0% { transform: translateY(20px) scale(0.95); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         
         .check-icon { font-size: 35px; color: white; background: #34C759; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; transform: scale(0.5); opacity: 0; animation: popCheck 400ms 150ms var(--ease-out) forwards; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
         @keyframes popCheck { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 🔥 PAYMENT BOX NEUTRO Y MONTO PROTAGONISTA */
         .payment-box { background: var(--gray-1); border: 1px solid #EFEFF4; border-radius: 20px; padding: 20px; margin: 24px 0; }
         .monto { font-size: 32px; font-weight: 800; margin: 5px 0 20px 0; color: var(--text-main); letter-spacing: -1px; }
         
@@ -59,8 +54,23 @@
         .btn-green { background: var(--green-grad); box-shadow: 0 8px 20px rgba(52,199,89,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast);}
         .btn-green:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(52,199,89,0.2);}
         
+        /* 🔥 BOTONES DE ESTADO (YA ANOTADO) */
+        .btn-gray { background: var(--gray-2); color: var(--text-main); border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast); }
+        .btn-gray:active { transform: scale(0.96); background: var(--gray-3); }
+        
+        .btn-danger-outline { background: rgba(255,59,48,0.1); color: #FF3B30; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast); }
+        .btn-danger-outline:active { transform: scale(0.96); background: rgba(255,59,48,0.2); }
+
         .link-back { margin-top: 20px; font-size: 13px; color: var(--text-sub); font-weight: 700; text-decoration: none; display: inline-block; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;}
         #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
+
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
+        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.3px; }
+        .footer-subtitle { font-size: 16px; font-weight: 900; color: #FF9F0A; margin: 0 0 20px 0; letter-spacing: -0.3px; }
+        .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
+        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
     </style>
 </head>
 <body>
@@ -70,7 +80,7 @@
     <div class="main-wrapper">
         <div class="card-elevated" id="main-card">
             
-            <div id="form-screen">
+            <div id="form-screen" style="display:none;">
                 <div class="title" id="t-nombre">--</div>
                 <div class="info-box">
                     <div class="info-row">📅 <span id="t-fec">--</span></div>
@@ -90,10 +100,21 @@
                 <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">VOLVER A LA CARTELERA</a></div>
             </div>
 
+            <div id="already-screen" style="display:none; text-align:center;">
+                <div class="check-icon" style="background:var(--blue-grad); box-shadow: 0 8px 20px rgba(0,122,255,0.25); animation-delay: 0ms;">👤</div>
+                <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">¡Ya estás anotado!</h2>
+                <p style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 25px 0;">Tu lugar en esta cancha está confirmado.</p>
+                
+                <button onclick="mostrarPagoDesdeAlready()" class="btn-gray">Ver datos de pago</button>
+                <button onclick="handleCancel(this)" class="btn-danger-outline" id="btn-cancel">Darme de baja</button>
+                
+                <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a></div>
+            </div>
+
             <div id="success-screen" style="display:none; text-align:center;">
-                <div class="check-icon">✓</div>
-                <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">Inscripción exitosa</h2>
-                <p style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 20px 0;">Tu lugar está pre-reservado.</p>
+                <div class="check-icon" id="success-check">✓</div>
+                <h2 id="success-title" style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">Inscripción exitosa</h2>
+                <p id="success-sub" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 20px 0;">Tu lugar está pre-reservado.</p>
                 
                 <div class="payment-box">
                     <p style="font-size:12px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 5px 0;">Confirmá tu lugar con el pago</p>
@@ -110,23 +131,37 @@
         </div>
     </div>
 
+    <div class="footer-pro" id="footer-pro" style="display:none;">
+        <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
+        <hr class="footer-divider">
+        <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
+        <p class="footer-subtitle">Pasala a piloto automático.</p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+    </div>
+
 <script>
     const id = new URLSearchParams(window.location.search).get('id');
     const org = new URLSearchParams(window.location.search).get('org');
     let eventData = {}; 
+    let playerLocalData = null;
 
     if(!id || !org) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
+        // 🔥 MAGIA: Buscamos la ficha en el celular
+        const saved = localStorage.getItem('padelapp_cancha_' + id);
+        if (saved) { playerLocalData = JSON.parse(saved); }
+
         db.ref(`eventos/${id}`).once('value', snap => {
             eventData = snap.val();
             if(!eventData) { document.getElementById('loading-init').innerText = "El evento ya no está disponible."; return; }
             
             document.getElementById('loading-init').style.display = 'none';
             document.getElementById('main-card').style.display = 'block';
-
+            document.getElementById('footer-pro').style.display = 'block';
             document.getElementById('main-card').style.animation = "modalIn 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards";
 
+            // Llenar datos visuales
             const diasList = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
             const fObj = new Date(eventData.fecha + 'T12:00:00');
             const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
@@ -140,9 +175,29 @@
             
             document.getElementById('s-importe-final').innerText = PadelUtils.fmtDinero(eventData.valor);
             document.getElementById('s-alias-final').innerText = eventData.alias || 'Consultar al organizador';
+
+            // 🔥 INTELIGENCIA: ¿Está guardado en local? Vamos a ver si Wini no lo borró.
+            if (playerLocalData) {
+                const list = eventData.inscriptos || [];
+                const isStillInDB = list.some(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
+                
+                if (isStillInDB) {
+                    // Sigue vivo, le mostramos la pantalla de "Ya anotado"
+                    document.getElementById('already-screen').style.display = 'block';
+                } else {
+                    // Wini lo borró a mano, le reseteamos la memoria y mostramos el form
+                    localStorage.removeItem('padelapp_cancha_' + id);
+                    playerLocalData = null;
+                    document.getElementById('form-screen').style.display = 'block';
+                }
+            } else {
+                // Nuevo jugador, mostrar form normal
+                document.getElementById('form-screen').style.display = 'block';
+            }
         });
     }
 
+    // 🚀 UNIRSE (Y GUARDAR EN MEMORIA)
     function handleJoin(btnElement) {
         const name = document.getElementById('p-name').value.trim();
         const celu = document.getElementById('p-celu').value.trim();
@@ -153,23 +208,80 @@
 
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             const list = s.val() || [];
+            
+            // Bloqueo Anti-Doble-Clic real
+            if (list.some(p => p.celular === celu)) {
+                alert("Este WhatsApp ya está anotado en la cancha.");
+                btnElement.classList.remove("loading"); btnElement.disabled = false; return;
+            }
+
             if (list.length >= (eventData.cupo || 99)) {
                 alert("Lo sentimos, la cancha ya está llena.");
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
+
             list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
+                // 🔥 GUARDAMOS LA FICHITA INVISIBLE EN EL TELÉFONO
+                localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu }));
+                
                 setTimeout(() => {
                     document.getElementById('form-screen').style.display = 'none';
+                    document.getElementById('success-title').innerText = "Inscripción exitosa";
+                    document.getElementById('success-sub').innerText = "Tu lugar está pre-reservado.";
+                    document.getElementById('success-check').style.animation = "none"; 
+                    setTimeout(()=> document.getElementById('success-check').style.animation = "popCheck 400ms 150ms var(--ease-out) forwards", 10);
+                    
                     const successScreen = document.getElementById('success-screen');
                     successScreen.style.display = 'block';
                     successScreen.classList.add('success-enter');
+                    
                     if (navigator.vibrate) navigator.vibrate(30);
                     setTimeout(() => { document.querySelector(".btn-green")?.scrollIntoView({ behavior: "smooth", block: "center" }); }, 500);
                 }, 600);
             });
         });
+    }
+
+    // 🚀 DARSE DE BAJA (ELIMINA DE FIREBASE Y DE LA MEMORIA)
+    function handleCancel(btnElement) {
+        if(!confirm("¿Estás seguro de que querés liberar tu lugar en la cancha?")) return;
+        
+        btnElement.innerText = "PROCESANDO...";
+        btnElement.disabled = true;
+
+        db.ref(`eventos/${id}/inscriptos`).once('value', s => {
+            let list = s.val() || [];
+            // Buscamos cuál de todos es el jugador exacto
+            const index = list.findIndex(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
+            
+            if (index > -1) {
+                list.splice(index, 1); // Lo borramos de la lista
+                db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
+                    localStorage.removeItem('padelapp_cancha_' + id); // Borramos la memoria
+                    alert("✅ Te diste de baja correctamente.");
+                    window.location.href = 'v.html?org=' + org; // Lo mandamos de vuelta a la cartelera
+                });
+            } else {
+                // Por si hubo un cruce raro de datos
+                localStorage.removeItem('padelapp_cancha_' + id);
+                window.location.reload();
+            }
+        });
+    }
+
+    // 🚀 MOSTRAR PAGO SI YA ESTABA ANOTADO
+    function mostrarPagoDesdeAlready() {
+        document.getElementById('already-screen').style.display = 'none';
+        
+        document.getElementById('success-title').innerText = "Datos de Pago";
+        document.getElementById('success-sub').innerText = "Realizá el pago para confirmar tu lugar.";
+        document.getElementById('success-check').style.display = 'none'; // Ocultamos el tilde verde porque no es una inscripción nueva
+        
+        const successScreen = document.getElementById('success-screen');
+        successScreen.style.display = 'block';
+        successScreen.classList.add('success-enter');
     }
 
     function copiarAlias(btnElement) {
@@ -187,9 +299,10 @@
     }
 
     function notificarWa() {
-        const celOrg = eventData.celuOrganizador; const nombrePlayer = document.getElementById('p-name').value.trim();
+        const celOrg = eventData.celuOrganizador; 
+        const nombrePlayer = document.getElementById('p-name').value.trim() || (playerLocalData ? playerLocalData.nombre : "");
         if (!celOrg) return alert("El organizador no configuró un número.");
-        const texto = `¡Hola! Me anoté a la cancha "${eventData.organiza}". Soy ${nombrePlayer}. Te envío el comprobante del pago:`;
+        const texto = `¡Hola! Estoy anotado en la cancha "${eventData.organiza}". Soy ${nombrePlayer}. Te envío el comprobante del pago:`;
         window.open(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 </script>

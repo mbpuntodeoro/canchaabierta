@@ -3,35 +3,76 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartelera - PadelApp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=2"></script>
+    <script src="app-config.js?v=9"></script>
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; }
-        header { background: #fff; padding: 25px; text-align: center; border-bottom: 1px solid #e5e5e7; }
-        .container { max-width: 500px; margin: auto; padding: 20px 15px; }
-        .event-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
-        .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; margin-left: 8px; }
-        .info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--sub); margin-top: 10px; font-weight: 600; }
-        .btn-join { background: var(--primary); color: white; text-decoration: none; display: block; text-align: center; padding: 18px; border-radius: 18px; font-weight: 900; margin-top: 20px; text-transform: uppercase; }
-        .footer-personal { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #eee; }
-        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; }
-        .suspendido-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 30px; text-align: center; margin-top: 20px;}
-        .suspendido-box h2 { color: var(--danger); font-weight: 900; margin: 0 0 10px 0; text-transform: uppercase;}
-        .suspendido-box p { color: #888; font-weight: 600; font-size: 14px; margin: 0; }
+        /* 🎨 VARIABLES GLOBALES (Mismo ADN que el Dashboard) */
+        :root {
+            --bg-main: #F2F2F7;
+            --bg-card: #FFFFFF;
+            --text-primary: #111111;
+            --text-secondary: #8E8E93;
+            --blue: #007AFF;
+            --green: #34C759;
+            --orange: #FF9F0A;
+            --red: #FF3B30;
+            --border: #E5E5EA;
+            
+            --anim-fast: 150ms;
+            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ✍️ BASE Y TIPOGRAFÍA */
+        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
+        header { background: var(--bg-card); padding: 25px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 10; }
+        .h1 { margin: 0; font-weight: 900; font-size: 24px; letter-spacing: -0.5px; text-transform: uppercase; }
+        .container { max-width: 500px; margin: auto; padding: 24px 16px; }
+
+        /* 🃏 CARDS Y JERARQUÍA */
+        .card { background: var(--bg-card); border-radius: 24px; padding: 24px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); transition: transform var(--anim-fast) var(--ease-out); border: 1px solid rgba(0,0,0,0.02); }
+        .card:active { transform: scale(0.98); }
+        
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .item-title { font-size: 18px; font-weight: 900; text-transform: uppercase; color: var(--text-primary); margin: 0; line-height: 1.2; }
+        
+        .badge-cat { font-size: 10px; color: var(--blue); background: #eef6ff; padding: 6px 12px; border-radius: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
+        
+        .item-meta { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+        .item-price { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 16px; }
+
+        /* 🔘 BOTONES iOS */
+        .btn-primary { background: var(--blue); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; width: 100%; transition: all var(--anim-fast) var(--ease-out); box-sizing: border-box; font-family: inherit; margin-top: 16px; letter-spacing: 0.5px; }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
+        .btn-primary.success-state { background: var(--green); transform: scale(0.96); }
+
+        /* 🌊 ANIMACIONES */
+        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide 220ms var(--ease-out) forwards; }
+        @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
+
+        /* HELPERS */
+        .footer-personal { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .btn-orange { background: var(--orange); color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 800; font-size: 12px; display: inline-block; margin-top: 10px; text-transform: uppercase; transition: transform var(--anim-fast); }
+        .btn-orange:active { transform: scale(0.96); }
+        
+        .suspendido-box { background: rgba(255,59,48,0.05); border: 2px solid rgba(255,59,48,0.15); border-radius: 20px; padding: 24px; text-align: center; margin-top: 20px;}
+        .suspendido-box h2 { color: var(--red); font-weight: 900; margin: 0 0 8px 0; text-transform: uppercase; font-size: 16px;}
+        .suspendido-box p { color: var(--text-secondary); font-weight: 600; font-size: 13px; margin: 0; }
     </style>
 </head>
 <body>
-    <header><h1 id="hub-name" style="margin:0; font-weight:900">Cargando Cartelera...</h1></header>
+    <header><h1 id="hub-name" class="h1">Cargando...</h1></header>
+    
     <div class="container">
         <div id="lista-eventos"></div>
-        <div class="footer-personal">
-            <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
+        
+        <div class="footer-personal fade-in" style="animation-delay: 300ms;">
+            <p style="font-size:10px; font-weight:800; color:var(--text-secondary); letter-spacing:1px; margin:0 0 10px 0;">DESARROLLADO POR MARIANO BLUMENFELD</p>
             <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
         </div>
     </div>
+
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
 
@@ -43,13 +84,14 @@
             
             document.getElementById('hub-name').innerText = cuentaInfo.nombreOrg?.toUpperCase() || orgId.toUpperCase();
             
+            // Verificamos si está bloqueado por falta de pago
             const res = PadelSaaS.analizarCuenta(cuentaInfo, movimientos);
             const isBlocked = res ? res.isBlocked : false;
 
             const list = document.getElementById('lista-eventos');
             
             if (isBlocked) {
-                list.innerHTML = `<div class="suspendido-box"><h2>🚫 Canchas no disponibles</h2><p>Los turnos de este organizador se encuentran temporalmente suspendidos.</p></div>`;
+                list.innerHTML = `<div class="suspendido-box fade-in"><h2>🚫 Canchas no disponibles</h2><p>Los turnos de este organizador se encuentran temporalmente suspendidos.</p></div>`;
                 return; 
             }
 
@@ -62,6 +104,7 @@
                     if(eSnap.exists()) {
                         const d = eSnap.val();
                         
+                        // Lógica de 90 mins para evitar que queden colgadas
                         let horaFinReal = d.horaFin;
                         if (!horaFinReal && d.hora) {
                             const [h, m] = d.hora.split(':');
@@ -84,31 +127,58 @@
                 list.innerHTML = "";
                 
                 if(canchasData.length === 0) {
-                    list.innerHTML = `<div style="text-align:center; padding: 40px 20px; color: var(--sub); font-weight: 800;">No hay turnos programados por el momento.</div>`;
+                    list.innerHTML = `<div class="fade-in" style="text-align:center; padding: 40px 20px; color: var(--text-secondary); font-weight: 800; font-size: 14px;">No hay turnos programados por el momento.</div>`;
                 }
 
                 const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-                canchasData.forEach(d => {
+                canchasData.forEach((d, index) => {
                     const fObj = new Date(d.fecha + 'T12:00:00');
                     const fechaTxt = `${diasSemana[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
+                    
+                    const delay = index * 80; // Cascada visual
 
-                    list.innerHTML += `<div class="event-card">
-                        <div style="display:flex;align-items:center;justify-content:space-between;">
-                            <h3 style="margin:0;font-size:18px;font-weight:900;text-transform:uppercase">🎾 ${d.organiza}</h3>
+                    list.innerHTML += `
+                    <div class="card fade-in" style="animation-delay: ${delay}ms;">
+                        <div class="item-header">
+                            <h3 class="item-title">🎾 ${d.organiza}</h3>
+                            <span class="badge-cat">${d.categorias || 'TODAS'}</span>
                         </div>
-                        <div style="margin-top: 5px;"><span class="tag-cat" style="margin-left:0;">${d.categorias || 'TODAS LAS CATEGORÍAS'}</span></div>
                         
-                        <div class="info-row" style="margin-top:15px;">📅 ${fechaTxt} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
-                        <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                        <div class="info-row">👤 Organiza: ${d.nombreOrganizador || 'No especificado'}</div>
+                        <div class="item-meta">📅 ${fechaTxt} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
+                        <div class="item-meta">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                        <div class="item-meta">👤 Organiza: ${d.nombreOrganizador || 'No especificado'}</div>
                         
-                        <div class="info-row" style="font-size: 16px; color: var(--text); font-weight: 900; margin-top: 15px;">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
-                        <a href="i.html?id=${d.id}&org=${orgId}" class="btn-join">ANOTARME</a>
+                        <div class="item-price">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
+                        
+                        <button class="btn-primary" onclick="abrirInscripcion(this, '${d.id}')">ANOTARME</button>
                     </div>`;
                 });
             });
         });
+    }
+
+    // 🚀 LA MAGIA DE LA MICROINTERACCIÓN
+    window.abrirInscripcion = function(btnElement, eventoId) {
+        // Prevenimos doble click
+        if(btnElement.disabled) return;
+        btnElement.disabled = true;
+
+        // Activamos el estado "Success" visualmente
+        btnElement.classList.add('success-state');
+        btnElement.innerHTML = '⏳ ABRIENDO...';
+
+        // Redirigimos después de la animación (350ms)
+        setTimeout(() => {
+            window.location.href = `i.html?id=${eventoId}&org=${orgId}`;
+            
+            // Por si el usuario vuelve atrás con el navegador, reseteamos el botón
+            setTimeout(() => {
+                btnElement.classList.remove('success-state');
+                btnElement.innerHTML = 'ANOTARME';
+                btnElement.disabled = false;
+            }, 500);
+        }, 350);
     }
 </script>
 </body>

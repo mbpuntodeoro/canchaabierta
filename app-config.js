@@ -65,16 +65,21 @@ const PadelSaaS = {
         });
 
         const limiteTotal = cuenta.limiteCredito || 0;
-        const vencimientoAbono = cuenta.vencimientoAbono || ahora;
         
-        // 🔥 LA MAGIA: Si estaba en trial, pero la fecha ya pasó, se acabó el trial.
+        // 🔥 CORRECCIÓN: Le damos gracia hasta las 23:59:59 del día marcado
+        const fechaVencObj = new Date(cuenta.vencimientoAbono || ahora);
+        fechaVencObj.setHours(23, 59, 59, 999); 
+        const vencimientoReal = fechaVencObj.getTime();
+        
         let enTrial = cuenta.enTrial === true;
-        if (enTrial && ahora > vencimientoAbono) {
+        // La regla automática de expiración: si la fecha ya pasó (ayer), apagamos el trial
+        if (enTrial && ahora > vencimientoReal) {
             enTrial = false;
         }
 
         const disponible = Math.max(0, limiteTotal - deudaCanchas);
-        const bloqueadoAbono = ahora > vencimientoAbono;
+        
+        const bloqueadoAbono = ahora > vencimientoReal; 
         const bloqueadoLimite = enTrial ? false : (deudaCanchas > limiteTotal);
         const bloqueadoAdmin = cuenta.cuentaSuspendida === true;
 
@@ -88,7 +93,8 @@ const PadelSaaS = {
         return {
             deudaCanchas, deudaAbono, cantTurnosPendientes,
             consumoBonificado, cantTurnosBonificados,
-            limiteTotal, disponible, vencimientoAbono,
+            limiteTotal, disponible, 
+            vencimientoAbono: cuenta.vencimientoAbono || ahora, 
             isBlocked, msgLocked, bloqueadoAbono, bloqueadoLimite, enTrial
         };
     },

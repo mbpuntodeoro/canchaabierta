@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=15"></script>
+    <script src="app-config.js?v=13"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -25,7 +25,6 @@
         .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .text { font-size: 15px; font-weight: 600; }
 
-        /* BOOT SCREEN */
         #boot-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -141,10 +140,8 @@
                 </div>
                 
                 <div class="text-center mt-3">
-                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total">
-                        </div>
-                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;">
-                        </div>
+                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total"></div>
+                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;"></div>
                 </div>
                 
                 <div class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
@@ -331,7 +328,7 @@
                         cerrarSesion();
                     }
                 }).catch(err => {
-                    alert("❌ Error de permisos en Firebase. Revisá las Reglas de Seguridad. Detalle: " + err.message);
+                    alert("❌ Error de permisos en Firebase. Revisá las Reglas de Seguridad.");
                 });
             } else {
                 if(!isInitialized) {
@@ -370,21 +367,29 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
-        // 1. ANIMAMOS DEUDA SIEMPRE
-        animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
-        oldDeuda = res.deudaCanchas;
-
-        // 2. LÓGICA DE TRIAL Y LÍMITES
         const elRestantes = document.getElementById('txt-canchas-restantes');
         
         if (res.enTrial) {
+            // 🔥 LÓGICA DE TRIAL ACTIVA
+            const totalSumaTrial = res.consumoBonificado + res.deudaCanchas;
+            const cantSumaTrial = res.cantTurnosBonificados + res.cantTurnosPendientes;
+
+            animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, totalSumaTrial);
+            oldDeuda = totalSumaTrial;
+
             document.getElementById('txt-disponible').innerText = "ILIMITADO";
-            document.getElementById('txt-consumo-total').innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> <span style="color:var(--blue); font-weight:900; font-size:10px; text-transform:uppercase; margin-left:6px; padding:3px 8px; background:rgba(0,122,255,0.15); border-radius:8px;">BONIFICADO</span>`;
+            document.getElementById('txt-consumo-total').innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(totalSumaTrial)} usados</b> <span class="badge badge-ok" style="background:rgba(52,199,89,0.15); color:var(--green); margin-left:6px;">BONIFICADO</span>`;
             
             elRestantes.innerText = "Canchas ilimitadas durante tu prueba";
-            elRestantes.style.color = "var(--blue)";
+            elRestantes.style.color = "var(--green)";
             elRestantes.style.display = 'block';
+
+            document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${cantSumaTrial || 0} cancha${cantSumaTrial !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(totalSumaTrial)}`;
         } else {
+            // 🔥 LÓGICA NORMAL (PAGANDO)
+            animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
+            oldDeuda = res.deudaCanchas;
+
             animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible);
             oldDisp = res.disponible;
             
@@ -399,10 +404,11 @@
             } else {
                 elRestantes.style.display = 'none';
             }
+
+            document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
         }
 
-        document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
-
+        // BADGES ESTADO
         const badge = document.getElementById('badge-abono');
         const txtVenc = document.getElementById('txt-venc-abono');
         txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
@@ -449,7 +455,7 @@
 
     function abrirDetalle() {
         currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha);
-        cambiarTab('pendiente');
+        cambiarTab('pendiente'); // Esto ahora filtra pendiente o bonificado
         document.getElementById('modal-detalle').style.display = 'flex';
     }
 
@@ -471,15 +477,22 @@
 
         const lista = document.getElementById('lista-movimientos-det');
         lista.innerHTML = "";
-        const filtrados = currentMovsData.filter(m => m.estado === estadoFiltro);
+        
+        // 🔥 MODAL: Si la pestaña es Pendiente, mostramos los que debe o los que le bonificamos.
+        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
 
         if(filtrados.length === 0) {
-            lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos ${estadoFiltro}s.</p>`;
+            lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`;
         } else {
             filtrados.forEach((m, index) => {
                 const dateObj = new Date(m.fecha);
                 const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
                 const delay = index * 50;
+
+                let badgeHtml = '';
+                if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>';
+                else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>';
+                else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
 
                 lista.innerHTML += `
                     <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${delay}ms;">
@@ -489,24 +502,28 @@
                         </div>
                         <div class="text-center">
                             <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>
-                            ${m.estado === 'pendiente' ? '<span class="badge badge-error">PENDIENTE</span>' : '<span class="badge badge-ok">PAGADO</span>'}
+                            ${badgeHtml}
                         </div>
                     </div>`;
             });
         }
     }
 
+    // 🔥 CUANDO UNA CANCHA TERMINA, DECIDIMOS SI ES DEUDA O GRATIS
     function checkAndRollover(id, data) {
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (ahora > eventEnd && data.estado !== 'suspendida') {
             const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            
+            const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
+
             if (data.tipo === 'recurrente') {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora });
+                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
                 db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
             } else if (data.tipo === 'unico' && !data.cobrado) {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: 'pendiente', fecha: ahora });
+                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 db.ref('eventos/' + id).update({ cobrado: true });
             }
         }
@@ -515,9 +532,7 @@
     function init() {
         if(!orgId) return;
 
-        const errorHandler = (err) => {
-            console.error("Error Firebase:", err);
-        };
+        const errorHandler = (err) => { console.error("Error Firebase:", err); };
 
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
@@ -527,7 +542,23 @@
         }, errorHandler);
 
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
-            const movs = s.val() || {}; window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
+            const movs = s.val() || {}; 
+            
+            // 🔥 AUTO-LIMPIEZA: Si lo pasaste a Trial, le convertimos las deudas viejas en Bonificadas
+            if (cuentaInfo.enTrial) {
+                let updates = {};
+                for (let k in movs) {
+                    if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') {
+                        updates[`${k}/estado`] = 'bonificado';
+                    }
+                }
+                if (Object.keys(updates).length > 0) {
+                    db.ref(`facturacion/${orgId}/movimientos`).update(updates);
+                    return; // Frenamos y dejamos que Firebase vuelva a disparar este evento con los datos limpios.
+                }
+            }
+
+            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
             calculateFinancials();
         }, errorHandler);
 

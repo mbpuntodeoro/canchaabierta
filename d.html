@@ -15,9 +15,10 @@
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
         
-        .container { max-width: 550px; margin: auto; padding-bottom: 100px; display: none; }
+        /* 🔥 ACÁ ESTABA EL ERROR: YA LE SAQUÉ EL DISPLAY NONE */
+        .container { max-width: 550px; margin: auto; padding-bottom: 100px; }
         
-        /* 🔥 BLOQUE SAAS OPTIMIZADO */
+        /* BLOQUE SAAS OPTIMIZADO */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
@@ -51,7 +52,7 @@
         </div>
     </div>
 
-    <div id="app-content">
+    <div id="app-content" style="display: none;">
         <div class="container">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
                 <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">Cargando...</h1>
@@ -136,7 +137,7 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('app-content').style.display = 'block'; // ACÁ EL CONTENEDOR SE MUESTRA
             
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Localizando tu club...";
@@ -197,20 +198,18 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
-        // INYECCIÓN DE LOS NUEVOS DATOS UX
         document.getElementById('txt-deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
         document.getElementById('txt-disponible').innerText = PadelUtils.fmtDinero(res.disponible);
         document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
         
         document.getElementById('txt-consumo-total').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
-        document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
+        document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
 
         const badge = document.getElementById('badge-abono');
         const txtVenc = document.getElementById('txt-venc-abono');
         
         txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
         
-        // 🟢🟡🔴 NUEVA LÓGICA DE ESTADOS
         const diasFaltantes = (res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24);
 
         if (res.bloqueadoAbono || res.bloqueadoLimite) {

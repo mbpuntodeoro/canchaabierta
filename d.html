@@ -7,63 +7,35 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=9"></script>
-
+    <script src="app-config.js?v=11"></script>
     <style>
-        /* =========================================
-           🎨 1. VARIABLES GLOBALES (UI KIT)
-           ========================================= */
         :root {
-            --bg-main: #F2F2F7;
-            --bg-card: #FFFFFF;
-            --bg-dark: #1C1C1E;
-            
-            --text-primary: #111111;
-            --text-secondary: #86868B;
-            --text-inverse: #FFFFFF;
-            
-            --blue: #007AFF;
-            --green: #34C759;
-            --orange: #FF9F0A;
-            --red: #FF3B30;
-            
+            --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
+            --text-primary: #111111; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
+            --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
             --border: #E5E5EA;
-            
             --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px; --s6: 32px;
             --r-lg: 24px; --r-md: 16px;
-            
             --anim-fast: 150ms; --anim-normal: 220ms; --anim-slow: 300ms;
             --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        /* =========================================
-           ✍️ 2. TIPOGRAFÍA Y BASE
-           ========================================= */
-        body { font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
         .h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0; }
         .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .text { font-size: 15px; font-weight: 600; }
 
-        /* =========================================
-           🧱 3. LAYOUT & HELPERS
-           ========================================= */
-        .container { max-width: 500px; margin: auto; padding-bottom: 100px; display: none; }
+        .container { max-width: 500px; margin: auto; padding-bottom: 50px; display: none; }
         .flex { display: flex; } .space-between { justify-content: space-between; } .center { align-items: center; }
         .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
         .text-center { text-align: center; }
 
-        /* =========================================
-           🃏 4. CARDS
-           ========================================= */
         .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
         .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { max-width: 350px; width: 100%; box-sizing: border-box; }
 
-        /* =========================================
-           💳 5. BLOQUE FINANCIERO
-           ========================================= */
         .financial { display: flex; gap: var(--s2); margin-top: var(--s3); }
         .metric-box { flex: 1; background: #2C2C2E; border-radius: var(--r-md); padding: var(--s3); text-align: center; }
         .metric-label { font-size: 10px; color: #8E8E93; font-weight: 800; text-transform: uppercase; }
@@ -71,9 +43,6 @@
         
         .sales-box { background: #eef6ff; color: #005bb5; padding: var(--s3); border-radius: var(--r-md); text-align: center; font-weight: 800; font-size: 13px; border: 1.5px dashed #cce4ff; margin-bottom: var(--s4); }
 
-        /* =========================================
-           🔘 6. BOTONES (Físicas iOS)
-           ========================================= */
         .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), opacity var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
         .btn:active { transform: scale(0.96); opacity: 0.9; }
         .btn-primary { background: var(--blue); color: white; }
@@ -81,18 +50,12 @@
         .btn-light { background: var(--bg-main); color: var(--text-primary); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
 
-        /* =========================================
-           🏷️ 7. ESTADOS (Badges)
-           ========================================= */
         .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
         .badge-ok { background: rgba(52,199,89,0.15); color: var(--green); }
         .badge-warning { background: rgba(255,159,10,0.15); color: var(--orange); }
         .badge-error { background: rgba(255,59,48,0.15); color: var(--red); }
         .badge-cat { font-size: 9px; color: var(--blue); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 900; text-transform: uppercase; }
 
-        /* =========================================
-           📋 8. ITEMS (Canchas)
-           ========================================= */
         .item { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); margin-bottom: var(--s2); border: 1px solid var(--border); transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); }
         .item:active { transform: scale(0.98); }
         .item-header { display: flex; justify-content: space-between; align-items: center; }
@@ -100,13 +63,9 @@
         .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 6px; font-weight: 600; }
         .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
 
-        /* =========================================
-           🌊 9. ANIMACIONES
-           ========================================= */
         .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs y Modales */
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600;}
         .input-std:focus { border-color: var(--blue); }
         
@@ -116,10 +75,18 @@
 
         .player-row { background: var(--bg-main); border-radius: 14px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;}
         
-        /* Selectores de días (Píldoras) */
         .day-check { display: none; }
         .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
         .day-check:checked + .day-label { background: var(--blue); color: white; }
+
+        /* 🚀 FOOTER VIRAL LOOP */
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
+        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
+        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
+        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
+        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
     </style>
 </head>
 <body>
@@ -138,7 +105,7 @@
     <div id="app-content">
         <div class="container fade-in" id="main-container">
             
-            <header class="flex space-between center section">
+            <header class="flex space-between center section" style="margin-bottom: 20px;">
                 <h1 id="org-name-disp" class="h1">Cargando...</h1>
                 <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
             </header>
@@ -183,7 +150,7 @@
                 💡 El costo del sistema equivale a menos de 1 jugador por turno.
             </div>
 
-            <div class="section fade-in" style="animation-delay: 100ms;">
+            <div class="section fade-in" style="animation-delay: 100ms; margin-bottom: 20px;">
                 <button class="btn btn-outline" style="margin-bottom: var(--s2);" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
                 <button class="btn btn-primary" onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)">🔗 COPIAR LINK CARTELERA</button>
             </div>
@@ -198,10 +165,14 @@
             <button id="btn-add-cancha" class="btn btn-dark mt-2 fade-in" style="padding: 20px; font-size: 14px; animation-delay: 200ms;" onclick="abrirNuevaCancha()">➕ AGREGAR NUEVA CANCHA</button>
             <p id="msg-locked" style="display:none; color:var(--red); font-size:11px; font-weight:800; text-align:center; margin-top:10px;"></p>
 
-            <div class="text-center mt-3" style="padding: var(--s4); border-top: 1px solid var(--border);">
-                <p class="label" style="letter-spacing: 1px;">DESARROLLADO POR MARIANO BLUMENFELD</p>
-                <a href="https://wa.me/5491166463800" style="background:var(--orange); color:white; text-decoration:none; padding:12px 25px; border-radius:50px; font-weight:800; font-size:12px; display:inline-block; margin-top:10px; transition: transform var(--anim-fast);">💬 ¿DUDAS? ESCRIBIME</a>
+            <div class="footer-pro fade-in" style="animation-delay: 300ms;">
+                <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
+                <hr class="footer-divider">
+                <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
+                <p class="footer-subtitle">Pasala a piloto automático.</p>
+                <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
             </div>
+
         </div>
     </div>
 
@@ -303,11 +274,7 @@
     let currentMovsData = [];
     let isInitialized = false;
 
-    // 🔥 FUNCIÓN MÁGICA DE ANIMACIÓN DE NÚMEROS (iOS Style)
-    // Toma valores puros, los anima y los formatea a pesos en tiempo real
-    let oldDeuda = 0;
-    let oldDisp = 0;
-    let oldTotal = 0;
+    let oldDeuda = 0, oldDisp = 0, oldTotal = 0;
 
     function animateValue(el, start, end, duration = 400) {
         if (start === end) { el.innerText = PadelUtils.fmtDinero(end); return; }
@@ -373,9 +340,7 @@
         });
     }
 
-    function cerrarSesion() { 
-        auth.signOut().then(() => { window.location.href = 'index.html'; }); 
-    }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
 
     function formatFec(f) {
         if(!f) return '--';
@@ -389,7 +354,6 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
-        // 🔥 ANIMAMOS LOS NÚMEROS EN VEZ DE PEGARLOS CRUDOS
         animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
         animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible);
         animateValue(document.getElementById('txt-consumo-total'), oldTotal, res.deudaCanchas);
@@ -419,7 +383,6 @@
         const diasFaltantes = (res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24);
         const porcentajeUso = res.limiteTotal > 0 ? (res.deudaCanchas / res.limiteTotal) : 0;
 
-        // Lógica de Badges (Clases de UI Kit)
         badge.className = "badge"; 
         txtVenc.style.color = ""; 
 
@@ -484,8 +447,6 @@
             filtrados.forEach((m, index) => {
                 const dateObj = new Date(m.fecha);
                 const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                
-                // Efecto cascada en el fade-in
                 const delay = index * 50;
 
                 lista.innerHTML += `
@@ -571,7 +532,6 @@
             const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
-            // UI Kit class 'item'
             const htmlCard = `<div class="item fade-in" style="${esPasada ? 'opacity: 0.6; filter: grayscale(50%);' : ''} animation-delay: ${index * 50}ms;">
                 <div class="item-header">
                     <div class="item-title">🎾 ${d.organiza}</div> 

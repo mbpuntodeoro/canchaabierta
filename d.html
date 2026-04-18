@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=11"></script>
+    <script src="app-config.js?v=12"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -25,6 +25,11 @@
         .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .text { font-size: 15px; font-weight: 600; }
 
+        /* PANTALLA DE ARRANQUE (BOOT SCREEN) */
+        #boot-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .container { max-width: 500px; margin: auto; padding-bottom: 50px; display: none; }
         .flex { display: flex; } .space-between { justify-content: space-between; } .center { align-items: center; }
         .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
@@ -33,7 +38,7 @@
         .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
         .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
+        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { max-width: 350px; width: 100%; box-sizing: border-box; }
 
         .financial { display: flex; gap: var(--s2); margin-top: var(--s3); }
@@ -79,7 +84,6 @@
         .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
         .day-check:checked + .day-label { background: var(--blue); color: white; }
 
-        /* 🚀 FOOTER VIRAL LOOP */
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
         .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
         .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
@@ -90,6 +94,11 @@
     </style>
 </head>
 <body>
+
+    <div id="boot-screen">
+        <div class="spinner"></div>
+        <h2 class="h1" style="font-size: 20px; color: var(--text-secondary);">Verificando sesión...</h2>
+    </div>
 
     <div id="login-screen">
         <div class="card login-card fade-in">
@@ -106,7 +115,7 @@
         <div class="container fade-in" id="main-container">
             
             <header class="flex space-between center section" style="margin-bottom: 20px;">
-                <h1 id="org-name-disp" class="h1">Cargando...</h1>
+                <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
                 <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
             </header>
 
@@ -293,19 +302,28 @@
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
+        // MATAMOS EL BOOT SCREEN SIEMPRE
+        document.getElementById('boot-screen').style.display = 'none';
+
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-container').style.display = 'block'; 
             
             if (!orgId) {
-                document.getElementById('org-name-disp').innerText = "Localizando tu club...";
-                db.ref('facturacion').once('value', snap => {
+                document.getElementById('org-name-disp').innerText = "Buscando datos...";
+                
+                // DETECTOR DE ERRORES AL BUSCAR EL CLUB
+                db.ref('facturacion').once('value').then(snap => {
                     let foundOrg = null;
                     const data = snap.val() || {};
+                    const emailLimpio = user.email.trim().toLowerCase();
+
                     for (let id in data) {
-                        if (data[id].cuenta && data[id].cuenta.emailOrganizador === user.email) {
-                            foundOrg = id;
-                            break;
+                        if (data[id].cuenta && data[id].cuenta.emailOrganizador) {
+                            if (data[id].cuenta.emailOrganizador.trim().toLowerCase() === emailLimpio) {
+                                foundOrg = id;
+                                break;
+                            }
                         }
                     }
                     if (foundOrg) {
@@ -313,9 +331,11 @@
                         window.history.replaceState(null, null, `?org=${orgId}`);
                         if(!isInitialized) { init(); isInitialized = true; }
                     } else {
-                        alert("⚠️ Tu usuario no tiene un club asignado en la base de datos.");
+                        alert("⚠️ Tu usuario ("+emailLimpio+") no tiene un club asignado en la base de datos.");
                         cerrarSesion();
                     }
+                }).catch(err => {
+                    alert("❌ Error de permisos en Firebase. Revisá las Reglas de Seguridad. Detalle: " + err.message);
                 });
             } else {
                 if(!isInitialized) {
@@ -324,6 +344,7 @@
                 }
             }
         } else {
+            // SI NO ESTÁ LOGUEADO, MOSTRAMOS EL FORMULARIO
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-container').style.display = 'none';
             isInitialized = false;
@@ -482,25 +503,34 @@
 
     function init() {
         if(!orgId) return;
+
+        // DETECTOR DE ERRORES GENERAL
+        const errorHandler = (err) => {
+            alert("❌ Error de lectura en Firebase: " + err.message);
+            console.error(err);
+        };
+
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
             window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
             calculateFinancials();
-        });
+        }, errorHandler);
+
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {}; window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
             calculateFinancials();
-        });
+        }, errorHandler);
+
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             ids.forEach(id => {
                 db.ref('eventos/'+id).on('value', evS => {
                     const d = evS.val(); if(!d) return;
                     checkAndRollover(id, d); courtData[id] = { id, ...d }; renderizarCanchas();
-                });
+                }, errorHandler);
             });
-        });
+        }, errorHandler);
     }
 
     function renderizarCanchas() {

@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js"></script>
+    <script src="app-config.js?v=14"></script>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --danger: #ff3b30; --warning: #ff9500; --success: #34c759; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
@@ -135,10 +135,9 @@
                 const f = fSnap.val() || {}, movs = mSnap.val() || {}, res = PadelSaaS.analizarCuenta(f, movs);
                 if (!res) continue;
                 
-                // Mostrar si es Trial o si está bloqueado/activo
                 let tag = "";
                 if (f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
-                else if (f.enTrial) tag = `<span class="tag-status" style="background:#eef6ff; color:var(--primary);">Trial</span>`;
+                else if (res.enTrial) tag = `<span class="tag-status" style="background:#eef6ff; color:var(--primary);">Trial</span>`;
                 else if (res.isBlocked) tag = `<span class="tag-status st-vencido">Vencido</span>`;
                 else tag = `<span class="tag-status st-activo">Activo</span>`;
                 
@@ -179,22 +178,26 @@
         alert("Canchas saldadas.");
     }
 
-    // --- ACCIÓN 2: COBRAR ABONO ---
+    // --- ACCIÓN 2: COBRAR ABONO Y CERRAR TRIAL ---
     async function cobrarAbono(id, montoAbono) {
-        if(!confirm(`¿Registrar pago de Abono de ${PadelUtils.fmtDinero(montoAbono)}?\n\nEsto extenderá el acceso 30 días.`)) return;
+        if(!confirm(`¿Registrar pago de Abono de ${PadelUtils.fmtDinero(montoAbono)}?\n\nEsto extenderá el acceso 30 días y el cliente pasará a modo ACTIVO (Fin del Trial).`)) return;
         const ahora = Date.now();
         const refMovs = db.ref(`facturacion/${id}/movimientos`);
         const refCuenta = db.ref(`facturacion/${id}/cuenta`);
         
-        // Generar el ticket de Abono pagado
         await refMovs.push({ tipo: 'abono', descripcion: `Abono Mensual (Software)`, monto: montoAbono, estado: 'pagado', fecha: ahora, fechaPago: ahora });
         
-        // Extender vencimiento
         const snapC = await refCuenta.once('value');
         const cuenta = snapC.val() || {};
         const nv = Math.max(ahora, (cuenta.vencimientoAbono || ahora)) + (30 * 86400000);
-        await refCuenta.update({ vencimientoAbono: nv });
-        alert("Abono cobrado y tiempo extendido.");
+        
+        // 🔥 ACTUALIZA VENCIMIENTO Y APAGA EL TRIAL
+        await refCuenta.update({ 
+            vencimientoAbono: nv,
+            enTrial: false 
+        });
+        
+        alert("Abono cobrado. El cliente pasó a modo ACTIVO oficialmente.");
     }
 
     // --- FUNCIONES SOPORTE ---
@@ -208,7 +211,7 @@
             await secondaryApp.auth().signOut();
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             
-            // CREA LA CUENTA DIRECTAMENTE EN TRIAL
+            // 🔥 CREA LA CUENTA DIRECTAMENTE EN TRIAL
             await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false, enTrial: true });
             alert("Club y Usuario creados.");
         } catch(e) { alert("Error: " + e.message); }
@@ -254,7 +257,6 @@
             document.getElementById('mod-limite').value = f.limiteCredito || 50000; 
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             
-            // Setear Visual del Trial
             const isTrial = f.enTrial || false;
             document.getElementById('mod-trial-switch').checked = isTrial;
             actualizarTrial(isTrial);
@@ -281,7 +283,7 @@
             limiteCredito: parseFloat(document.getElementById('mod-limite').value), 
             vencimientoAbono: currentVencimiento, 
             cuentaSuspendida: document.getElementById('mod-susp').checked,
-            enTrial: document.getElementById('mod-trial-switch').checked // Guarda el estado del trial
+            enTrial: document.getElementById('mod-trial-switch').checked
         }; 
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada."); cerrarModals(); }); 
     }

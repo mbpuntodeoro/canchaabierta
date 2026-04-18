@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=8"></script>
+    <script src="app-config.js?v=9"></script>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
@@ -15,16 +15,17 @@
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
         
-        /* 🔥 ACÁ ESTABA EL ERROR: YA LE SAQUÉ EL DISPLAY NONE */
         .container { max-width: 550px; margin: auto; padding-bottom: 100px; }
         
-        /* BLOQUE SAAS OPTIMIZADO */
+        /* 🔥 BLOQUE SAAS UX PRO */
         .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box b { font-size: 16px; font-weight: 900; display: block; margin-top: 4px;}
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800;}
-        .sales-phrase { text-align:center; font-size:11px; font-weight:800; color:var(--sub); margin-top:12px; margin-bottom:20px; text-transform:uppercase; letter-spacing:0.5px; }
+        
+        /* LA VENTA SILENCIOSA DESTACADA */
+        .sales-box { background: #eef6ff; color: #005bb5; padding: 15px; border-radius: 16px; text-align: center; margin: 15px 0 25px 0; font-weight: 800; font-size: 13px; border: 1.5px dashed #cce4ff; }
         
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); transition: 0.3s; }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
@@ -73,15 +74,20 @@
                     <div class="fin-box"><span>Límite Disponible</span><b id="txt-disponible">$0</b></div>
                 </div>
                 
-                <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #ccc; font-weight: 600;">Total consumido: <b id="txt-consumo-total" style="color:white;">$0</b> de <span id="txt-limite-total">$0</span></div>
+                <div style="text-align: center; margin-top: 18px; font-size: 13px; color: #ccc; font-weight: 600;">
+                    <b id="txt-consumo-total" style="color:white; font-size: 16px;">$0 usados</b> de <span id="txt-limite-total">$0</span>
+                    <div id="txt-canchas-restantes" style="color: var(--success); font-size: 11px; font-weight: 800; margin-top: 8px; text-transform: uppercase;">Podés crear aprox. -- canchas más</div>
+                </div>
                 
                 <div style="margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px;">
-                    <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">DETALLE DEL CONSUMO PENDIENTE:</div>
+                    <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">RESUMEN DE USO:</div>
                     <div style="font-size: 13px; color: #fff; font-weight: 600;" id="txt-detalle-canchas">Incluye: • 0 canchas &rarr; $0</div>
                 </div>
             </div>
             
-            <p class="sales-phrase">💡 Esto equivale a menos de 1 jugador por turno</p>
+            <div class="sales-box">
+                💡 El costo del sistema equivale a menos de 1 jugador por turno.
+            </div>
 
             <button class="btn-dash" style="background:#fff; color:var(--text); margin-bottom:20px; border:1px solid #ddd; width:100%; padding:18px;" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
 
@@ -137,7 +143,7 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block'; // ACÁ EL CONTENEDOR SE MUESTRA
+            document.getElementById('app-content').style.display = 'block';
             
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Localizando tu club...";
@@ -198,26 +204,47 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
+        // VALORES BÁSICOS
         document.getElementById('txt-deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
         document.getElementById('txt-disponible').innerText = PadelUtils.fmtDinero(res.disponible);
         document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
         
-        document.getElementById('txt-consumo-total').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
+        // UX PRO: ESCANEO Y CANCHAS RESTANTES
+        document.getElementById('txt-consumo-total').innerText = PadelUtils.fmtDinero(res.deudaCanchas) + " usados";
+        
+        const costoCancha = cuentaInfo.costoPorCancha || 0;
+        const elRestantes = document.getElementById('txt-canchas-restantes');
+        if (costoCancha > 0) {
+            const restantes = Math.floor(res.disponible / costoCancha);
+            elRestantes.innerText = `👉 Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
+            elRestantes.style.display = 'block';
+        } else {
+            elRestantes.style.display = 'none';
+        }
+
+        // UX PRO: RESUMEN HUMANIZADO
         document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
 
+        // UX PRO: SEMÁNTICA DE ESTADOS 🟢🟡🔴
         const badge = document.getElementById('badge-abono');
         const txtVenc = document.getElementById('txt-venc-abono');
-        
         txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
         
         const diasFaltantes = (res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24);
+        const porcentajeUso = res.limiteTotal > 0 ? (res.deudaCanchas / res.limiteTotal) : 0;
 
-        if (res.bloqueadoAbono || res.bloqueadoLimite) {
-            badge.innerText = res.bloqueadoLimite ? "CON SALDO PENDIENTE" : "VENCIDO";
+        if (res.bloqueadoAbono) {
+            badge.innerText = "ABONO VENCIDO";
             badge.style.background = "var(--danger)";
             txtVenc.style.color = "var(--danger)";
+        } else if (res.bloqueadoLimite) {
+            badge.innerText = "LÍMITE ALCANZADO";
+            badge.style.background = "var(--danger)";
+        } else if (porcentajeUso >= 0.8) {
+            badge.innerText = "CERCA DEL LÍMITE";
+            badge.style.background = "var(--warning)";
         } else if (diasFaltantes <= 5) {
-            badge.innerText = "POR VENCER";
+            badge.innerText = "ABONO POR VENCER";
             badge.style.background = "var(--warning)";
             txtVenc.style.color = "var(--warning)";
         } else {

@@ -50,7 +50,7 @@ const PadelSaaS = {
 
         let deudaCanchas = 0;
         let deudaAbono = 0;
-        let cantTurnosPendientes = 0; // 🔥 NUEVO: Cuenta cuántas canchas debe
+        let cantTurnosPendientes = 0;
 
         movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
@@ -58,17 +58,22 @@ const PadelSaaS = {
                     deudaAbono += (m.monto || 0);
                 } else {
                     deudaCanchas += (m.monto || 0);
-                    cantTurnosPendientes++; // Sumamos al contador
+                    cantTurnosPendientes++;
                 }
             }
         });
 
         const limiteTotal = cuenta.limiteCredito || 0;
         const vencimientoAbono = cuenta.vencimientoAbono || ahora;
+        
+        // 🔥 Detectamos si está en trial
+        const enTrial = cuenta.enTrial === true;
+
         const disponible = Math.max(0, limiteTotal - deudaCanchas);
 
         const bloqueadoAbono = ahora > vencimientoAbono;
-        const bloqueadoLimite = deudaCanchas > limiteTotal;
+        // 🔥 Si está en trial, NUNCA se bloquea por límite
+        const bloqueadoLimite = enTrial ? false : (deudaCanchas > limiteTotal);
         const bloqueadoAdmin = cuenta.cuentaSuspendida === true;
 
         const isBlocked = bloqueadoAbono || bloqueadoLimite || bloqueadoAdmin;
@@ -81,14 +86,15 @@ const PadelSaaS = {
         return {
             deudaCanchas,
             deudaAbono,
-            cantTurnosPendientes, // 🔥 Enviamos el dato al Dashboard
+            cantTurnosPendientes,
             limiteTotal,
             disponible,
             vencimientoAbono,
             isBlocked,
             msgLocked,
             bloqueadoAbono,
-            bloqueadoLimite
+            bloqueadoLimite,
+            enTrial // Pasamos el dato al Dashboard
         };
     },
     fmtFecha: function(ms) {

@@ -63,7 +63,55 @@
         </div>
     </div>
 
-    <div id="modal-edit" class="modal"><div class="modal-content"><h2 style="margin-top:0">⚙️ Parámetros</h2><input type="hidden" id="edit-id"><label>Nombre</label><input id="mod-nom" class="input-std"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Responsable</label><input id="mod-con" class="input-std"></div><div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div></div><label>Email de Acceso</label><div style="display:flex; gap:10px; margin-bottom:12px;"><input id="mod-email-disp" class="input-std" style="margin-bottom:0;"><button onclick="enviarPassReset()" style="background:black; color:white; border:none; padding:0 15px; border-radius:12px; font-size:10px; font-weight:900; cursor:pointer;">RESETEAR CLAVE</button></div><label>Alias Cobros</label><input id="mod-ali" class="input-std"><hr><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px"><div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div><div><label>Costo Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div></div><label>Límite Canchas ($)</label><input id="mod-limite" type="number" class="input-std"><hr><div style="display:flex; gap:8px; align-items:center;"><input id="mod-trial-days" class="input-std" type="number" placeholder="Días..." style="margin-bottom:0; flex:1"><button onclick="sumarDiasVencimiento()" style="background:var(--primary); color:white; border:none; padding:12px; border-radius:12px; font-weight:900; cursor:pointer;">SUMAR</button></div><p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center;"></p><div style="background:#fff2f2; padding:15px; border-radius:18px; margin:15px 0; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb"><b style="color:var(--danger); font-size:11px">CUENTA SUSPENDIDA MANUALMENTE</b><input type="checkbox" id="mod-susp" style="transform:scale(1.5)"></div><button onclick="guardarPerfil()" style="background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:15px; font-weight:900; cursor:pointer;">GUARDAR</button><button onclick="cerrarModals()" style="background:#eee; color:#333; border:none; padding:12px; width:100%; border-radius:15px; margin-top:10px; cursor:pointer;">CANCELAR</button></div></div>
+    <div id="modal-edit" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0">⚙️ Parámetros</h2>
+            <input type="hidden" id="edit-id">
+            <label>Nombre</label><input id="mod-nom" class="input-std">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div><label>Responsable</label><input id="mod-con" class="input-std"></div>
+                <div><label>WhatsApp</label><input id="mod-cel" class="input-std"></div>
+            </div>
+            <label>Email de Acceso</label>
+            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                <input id="mod-email-disp" class="input-std" style="margin-bottom:0;">
+                <button onclick="enviarPassReset()" style="background:black; color:white; border:none; padding:0 15px; border-radius:12px; font-size:10px; font-weight:900; cursor:pointer;">RESETEAR CLAVE</button>
+            </div>
+            <label>Alias Cobros</label><input id="mod-ali" class="input-std">
+            <hr>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div>
+                <div><label>Costo Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
+            </div>
+            <label>Límite Canchas ($)</label><input id="mod-limite" type="number" class="input-std">
+            <hr>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input id="mod-trial-days" class="input-std" type="number" placeholder="Días..." style="margin-bottom:0; flex:1">
+                <button onclick="sumarDiasVencimiento()" style="background:var(--primary); color:white; border:none; padding:12px; border-radius:12px; font-weight:900; cursor:pointer;">SUMAR</button>
+            </div>
+            <p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center;"></p>
+            
+            <div style="background: #f8f9fb; padding: 15px; border-radius: 16px; border: 1px solid #eee; margin: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="display: block; font-size: 13px; color: var(--text);">Modo Trial (Prueba Gratuita)</strong>
+                    <span style="font-size: 10px; color: var(--sub); text-transform: uppercase; font-weight: 800;">Otorga consumo ilimitado y bonificado.</span>
+                </div>
+                <label style="position: relative; display: inline-block; width: 44px; height: 24px; margin: 0;">
+                    <input type="checkbox" id="mod-trial-switch" style="opacity: 0; width: 0; height: 0;" onchange="actualizarTrial(this.checked)">
+                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 34px;" id="slider-trial"></span>
+                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="knob-trial"></span>
+                </label>
+            </div>
+
+            <div style="background:#fff2f2; padding:15px; border-radius:16px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
+                <b style="color:var(--danger); font-size:12px;">CUENTA SUSPENDIDA MANUALMENTE</b>
+                <input type="checkbox" id="mod-susp" style="transform:scale(1.5)">
+            </div>
+
+            <button onclick="guardarPerfil()" style="background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:15px; font-weight:900; cursor:pointer;">GUARDAR CAMBIOS</button>
+            <button onclick="cerrarModals()" style="background:#eee; color:#333; border:none; padding:12px; width:100%; border-radius:15px; margin-top:10px; cursor:pointer;">CANCELAR</button>
+        </div>
+    </div>
 
     <div id="modal-detalle" class="modal"><div class="modal-content"><h2 style="margin-top:0">📋 Movimientos</h2><div style="display:flex; gap:10px; margin-bottom:15px; background:#f2f2f7; padding:5px; border-radius:14px;"><button id="tab-pend" style="flex:1; padding:10px; border:none; border-radius:10px; font-weight:800; cursor:pointer;" onclick="cambiarTab('pendiente')">PENDIENTES</button><button id="tab-pag" style="flex:1; padding:10px; border:none; border-radius:10px; font-weight:800; cursor:pointer;" onclick="cambiarTab('pagado')">HISTORIAL</button></div><div id="lista-movimientos-det" style="max-height:50vh; overflow-y:auto;"></div><button onclick="cerrarModals()" style="background:black; color:white; border:none; padding:15px; width:100%; border-radius:15px; font-weight:900; margin-top:20px; cursor:pointer;">CERRAR</button></div></div>
 
@@ -86,7 +134,13 @@
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value'), mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
                 const f = fSnap.val() || {}, movs = mSnap.val() || {}, res = PadelSaaS.analizarCuenta(f, movs);
                 if (!res) continue;
-                let tag = f.cuentaSuspendida ? `<span class="tag-status st-vencido">Suspendido</span>` : (res.isBlocked ? `<span class="tag-status st-vencido">Vencido</span>` : `<span class="tag-status st-activo">Activo</span>`);
+                
+                // Mostrar si es Trial o si está bloqueado/activo
+                let tag = "";
+                if (f.cuentaSuspendida) tag = `<span class="tag-status st-vencido">Suspendido</span>`;
+                else if (f.enTrial) tag = `<span class="tag-status" style="background:#eef6ff; color:var(--primary);">Trial</span>`;
+                else if (res.isBlocked) tag = `<span class="tag-status st-vencido">Vencido</span>`;
+                else tag = `<span class="tag-status st-activo">Activo</span>`;
                 
                 container.innerHTML += `<div class="hub-item" id="item-${id}">
                     <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')"><span>${f.nombreOrg || id} ${tag}</span><span style="color:#ccc; font-size:11px">GESTIONAR ▾</span></div>
@@ -153,12 +207,15 @@
             await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
             await secondaryApp.auth().signOut();
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-            await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false });
+            
+            // CREA LA CUENTA DIRECTAMENTE EN TRIAL
+            await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false, enTrial: true });
             alert("Club y Usuario creados.");
         } catch(e) { alert("Error: " + e.message); }
     }
 
     function abrirDetalle(id) { db.ref(`facturacion/${id}/movimientos`).once('value', s => { currentMovsData = Object.values(s.val() || {}).sort((a,b)=>b.fecha-a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display='flex'; }); }
+    
     function cambiarTab(est) {
         document.getElementById('tab-pend').style.background = est === 'pendiente' ? 'var(--primary)' : 'transparent';
         document.getElementById('tab-pend').style.color = est === 'pendiente' ? 'white' : 'var(--sub)';
@@ -171,10 +228,38 @@
         });
     }
 
+    function actualizarTrial(isTrial) {
+        const slider = document.getElementById('slider-trial');
+        const knob = document.getElementById('knob-trial');
+        if(isTrial) {
+            slider.style.backgroundColor = "var(--success)";
+            knob.style.transform = "translateX(20px)";
+        } else {
+            slider.style.backgroundColor = "#ccc";
+            knob.style.transform = "translateX(0)";
+        }
+    }
+
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
-            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 50000; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
+            document.getElementById('edit-id').value = id; 
+            document.getElementById('mod-nom').value = f.nombreOrg || ""; 
+            document.getElementById('mod-con').value = f.nombreContacto || ""; 
+            document.getElementById('mod-cel').value = f.celularContacto || ""; 
+            document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
+            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
+            document.getElementById('mod-abono').value = f.abonoMensual || 0; 
+            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 50000; 
+            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            
+            // Setear Visual del Trial
+            const isTrial = f.enTrial || false;
+            document.getElementById('mod-trial-switch').checked = isTrial;
+            actualizarTrial(isTrial);
+
+            document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
@@ -182,7 +267,25 @@
     function enviarPassReset() { auth.sendPasswordResetEmail(document.getElementById('mod-email-disp').value).then(()=>alert("Mail enviado")).catch(e=>alert(e.message)); }
     function sumarDiasVencimiento() { const d = parseInt(document.getElementById('mod-trial-days').value) || 0; currentVencimiento += (d * 86400000); document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento); }
     function forzarVencimientoHoy() { currentVencimiento = Date.now(); document.getElementById('txt-venc-actual').innerText = "Vence hoy"; }
-    function guardarPerfil() { const id = document.getElementById('edit-id').value; const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, aliasPredeterminado: document.getElementById('mod-ali').value, abonoMensual: parseFloat(document.getElementById('mod-abono').value), costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value), limiteCredito: parseFloat(document.getElementById('mod-limite').value), vencimientoAbono: currentVencimiento, cuentaSuspendida: document.getElementById('mod-susp').checked }; db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Guardado"); cerrarModals(); }); }
+    
+    function guardarPerfil() { 
+        const id = document.getElementById('edit-id').value; 
+        const upd = { 
+            nombreOrg: document.getElementById('mod-nom').value, 
+            nombreContacto: document.getElementById('mod-con').value, 
+            celularContacto: document.getElementById('mod-cel').value, 
+            emailOrganizador: document.getElementById('mod-email-disp').value, 
+            aliasPredeterminado: document.getElementById('mod-ali').value, 
+            abonoMensual: parseFloat(document.getElementById('mod-abono').value), 
+            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value), 
+            limiteCredito: parseFloat(document.getElementById('mod-limite').value), 
+            vencimientoAbono: currentVencimiento, 
+            cuentaSuspendida: document.getElementById('mod-susp').checked,
+            enTrial: document.getElementById('mod-trial-switch').checked // Guarda el estado del trial
+        }; 
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("Configuración guardada."); cerrarModals(); }); 
+    }
+    
     function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 </script>
 </body>

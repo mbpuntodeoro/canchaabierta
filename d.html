@@ -7,9 +7,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=16"></script>
+    <script src="app-config.js?v=18"></script>
     <style>
-        /* 🔥 MISMAS VARIABLES EXACTAS DEL ECOSISTEMA PREMIUM */
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
             --text-primary: #1C1C1E; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
@@ -36,7 +35,6 @@
         .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
         .text-center { text-align: center; }
 
-        /* 🔥 CARDS CON ELEVACIÓN DEL SISTEMA */
         .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02);}
         .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         
@@ -50,7 +48,6 @@
         
         .sales-box { background: #eef6ff; color: #005bb5; padding: var(--s3); border-radius: var(--r-md); text-align: center; font-weight: 800; font-size: 13px; border: 1.5px dashed #cce4ff; margin-bottom: var(--s4); }
 
-        /* 🔥 BOTONES CON GRADIENTES Y SOMBRAS */
         .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
         .btn:active { transform: scale(0.96); }
         
@@ -77,8 +74,7 @@
         .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
 
-        /* 🔥 INPUTS ESTILO APP */
-        .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
+        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
         .input-std::placeholder { color: var(--gray-3); }
         .input-std:focus { border-color: var(--blue); }
         
@@ -166,7 +162,7 @@
 
             <div class="section fade-in" style="animation-delay: 100ms; margin-bottom: 20px;">
                 <button class="btn btn-outline" style="margin-bottom: var(--s2);" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
-                <button class="btn btn-primary" onclick="PadelUtils.copiarLink('https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId)">🔗 COPIAR LINK CARTELERA</button>
+                <button class="btn btn-primary" onclick="copiarMiLink()">🔗 COPIAR LINK CARTELERA</button>
             </div>
 
             <div id="canchas-list" class="section">Cargando canchas...</div>
@@ -371,6 +367,13 @@
         return `${d}-${m}-${y}`;
     }
 
+    // 🔥 LA FUNCIÓN MÁGICA DEL BOTÓN COPIAR
+    window.copiarMiLink = function() {
+        const linkLargo = 'https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId;
+        const linkFinal = cuentaInfo.linkCorto ? cuentaInfo.linkCorto : linkLargo;
+        PadelUtils.copiarLink(linkFinal);
+    };
+
     function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
@@ -388,9 +391,7 @@
         badge.className = "badge"; 
         
         if (res.enTrial) {
-            // LÓGICA DE TRIAL
             lblVencimiento.innerHTML = `Tu prueba vence el <b id="txt-venc-abono" style="color:white">${fechaStr}</b>`;
-            
             badge.innerText = "TRIAL GRATUITO";
             badge.style.background = "rgba(0,122,255,0.15)";
             badge.style.color = "var(--blue)";
@@ -419,7 +420,6 @@
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${cantSumaTrial || 0} cancha${cantSumaTrial !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(totalSumaTrial)}`;
         
         } else {
-            // LÓGICA NORMAL (ACTIVO)
             lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
             txtDiasTrial.style.display = 'none';
             const txtVenc = document.getElementById('txt-venc-abono');

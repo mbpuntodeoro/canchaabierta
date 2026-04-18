@@ -6,11 +6,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=11"></script>
+    <script src="app-config.js?v=15"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF;
-            --text-primary: #111111; --text-secondary: #8E8E93;
+            --text-primary: #1C1C1E; --text-secondary: #8E8E93;
             --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
             --border: #E5E5EA;
             --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -21,20 +21,23 @@
         .h1 { margin: 0; font-weight: 900; font-size: 24px; letter-spacing: -0.5px; text-transform: uppercase; }
         .container { max-width: 500px; margin: auto; padding: 24px 16px; }
 
-        .card { background: var(--bg-card); border-radius: 24px; padding: 24px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); transition: transform var(--anim-fast) var(--ease-out); border: 1px solid rgba(0,0,0,0.02); }
+        /* 🔥 CARDS MÁS LIMPIAS Y CON ELEVACIÓN */
+        .card { background: var(--bg-card); border-radius: 24px; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform var(--anim-fast) var(--ease-out); border: 1px solid rgba(0,0,0,0.02); }
         .card:active { transform: scale(0.98); }
         
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .item-title { font-size: 18px; font-weight: 900; text-transform: uppercase; color: var(--text-primary); margin: 0; line-height: 1.2; }
         
-        .badge-cat { font-size: 10px; color: var(--blue); background: #eef6ff; padding: 6px 12px; border-radius: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
+        .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
         
-        .item-meta { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-        .item-price { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 16px; }
+        /* 🔥 FOCO: METADATA SUAVE, PRECIO GIGANTE */
+        .item-meta { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+        .item-price { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 16px; letter-spacing: -0.5px;}
 
-        .btn-primary { background: var(--blue); color: white; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 14px; text-transform: uppercase; cursor: pointer; width: 100%; transition: all var(--anim-fast) var(--ease-out); box-sizing: border-box; font-family: inherit; margin-top: 16px; letter-spacing: 0.5px; }
-        .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
-        .btn-primary.success-state { background: var(--green); transform: scale(0.96); }
+        /* 🔥 BOTÓN APPLE 100% DESEABLE */
+        .btn-primary { background: linear-gradient(180deg, #0A84FF, #007AFF); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; border: none; height: 52px; border-radius: 16px; font-weight: 800; font-size: 15px; text-transform: uppercase; cursor: pointer; width: 100%; transition: all var(--anim-fast) var(--ease-out); box-sizing: border-box; font-family: inherit; margin-top: 16px; letter-spacing: 0.5px; }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.9; box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
+        .btn-primary.success-state { background: linear-gradient(180deg, #34C759, #30B350); box-shadow: 0 6px 14px rgba(52,199,89,0.25); transform: scale(0.96); }
 
         .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide 220ms var(--ease-out) forwards; }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
@@ -43,7 +46,6 @@
         .suspendido-box h2 { color: var(--red); font-weight: 900; margin: 0 0 8px 0; text-transform: uppercase; font-size: 16px;}
         .suspendido-box p { color: var(--text-secondary); font-weight: 600; font-size: 13px; margin: 0; }
 
-        /* 🚀 FOOTER VIRAL LOOP */
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
         .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
         .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
@@ -97,17 +99,12 @@
                     const eSnap = await db.ref('eventos/'+id).once('value');
                     if(eSnap.exists()) {
                         const d = eSnap.val();
-                        
-                        let horaFinReal = d.horaFin;
-                        if (!horaFinReal && d.hora) {
+                        let horaFinReal = d.horaFin || '23:59';
+                        if (!d.horaFin && d.hora) {
                             const [h, m] = d.hora.split(':');
-                            const dateObj = new Date();
-                            dateObj.setHours(parseInt(h), parseInt(m) + 90);
+                            const dateObj = new Date(); dateObj.setHours(parseInt(h), parseInt(m) + 90);
                             horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-                        } else if (!horaFinReal) {
-                            horaFinReal = '23:59';
                         }
-
                         const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
                         
                         if(Date.now() < finEvento && d.estado !== 'suspendida') {
@@ -119,16 +116,13 @@
                 canchasData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
                 list.innerHTML = "";
                 
-                if(canchasData.length === 0) {
-                    list.innerHTML = `<div class="fade-in" style="text-align:center; padding: 40px 20px; color: var(--text-secondary); font-weight: 800; font-size: 14px;">No hay turnos programados por el momento.</div>`;
-                }
+                if(canchasData.length === 0) { list.innerHTML = `<div class="fade-in" style="text-align:center; padding: 40px 20px; color: var(--text-secondary); font-weight: 800; font-size: 14px;">No hay turnos programados por el momento.</div>`; }
 
                 const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
                 canchasData.forEach((d, index) => {
                     const fObj = new Date(d.fecha + 'T12:00:00');
                     const fechaTxt = `${diasSemana[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
-                    
                     const delay = index * 80;
 
                     list.innerHTML += `
@@ -140,7 +134,7 @@
                         
                         <div class="item-meta">📅 ${fechaTxt} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
                         <div class="item-meta">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                        <div class="item-meta">👤 Organiza: ${d.nombreOrganizador || 'No especificado'}</div>
+                        <div class="item-meta">👤 Organiza: ${d.nombreOrganizador || 'Admin'}</div>
                         
                         <div class="item-price">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
                         
@@ -154,7 +148,6 @@
     window.abrirInscripcion = function(btnElement, eventoId) {
         if(btnElement.disabled) return;
         btnElement.disabled = true;
-
         btnElement.classList.add('success-state');
         btnElement.innerHTML = '⏳ ABRIENDO...';
 

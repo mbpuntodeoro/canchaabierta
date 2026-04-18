@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=7"></script>
+    <script src="app-config.js?v=8"></script>
     <style>
         :root { --primary: #007aff; --bg: #f8f9fb; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; --success: #34c759; --warning: #ff9500; --danger: #ff3b30; --shadow: 0 10px 30px rgba(0,0,0,0.06); }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
@@ -15,15 +15,15 @@
         #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .login-card { background: white; padding: 40px; border-radius: 30px; box-shadow: var(--shadow); width: 100%; max-width: 350px; text-align: center; box-sizing: border-box; }
         
-        /* ACÁ ESTABA EL ERROR: LE SAQUÉ EL DISPLAY: NONE */
-        .container { max-width: 550px; margin: auto; padding-bottom: 100px; }
+        .container { max-width: 550px; margin: auto; padding-bottom: 100px; display: none; }
         
-        /* TARJETA FINANCIERA NUEVA */
-        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; margin-bottom: 15px; box-shadow: var(--shadow); }
+        /* 🔥 BLOQUE SAAS OPTIMIZADO */
+        .hero { background: #1d1d1f; color: white; padding: 25px; border-radius: 28px; box-shadow: var(--shadow); }
         .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .fin-box { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 18px; text-align: center; }
         .fin-box b { font-size: 16px; font-weight: 900; display: block; margin-top: 4px;}
         .fin-box span { font-size: 9px; text-transform: uppercase; color: #aaa; font-weight: 800;}
+        .sales-phrase { text-align:center; font-size:11px; font-weight:800; color:var(--sub); margin-top:12px; margin-bottom:20px; text-transform:uppercase; letter-spacing:0.5px; }
         
         .cancha-card { background: white; padding: 22px; border-radius: 28px; border: 1.5px solid #f2f2f7; margin-bottom: 12px; box-shadow: var(--shadow); transition: 0.3s; }
         .tag-cat { font-size: 10px; color: var(--primary); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; }
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <div id="app-content" style="display: none;">
+    <div id="app-content">
         <div class="container">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
                 <h1 id="org-name-disp" style="margin:0; font-weight:900; letter-spacing:-1.5px">Cargando...</h1>
@@ -66,13 +66,21 @@
                 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
                 
-                <div style="font-size:12px; font-weight:800; color:#aaa; text-transform:uppercase; margin-bottom:15px;">CRÉDITO DE CANCHAS</div>
+                <div style="font-size:12px; font-weight:800; color:#aaa; text-transform:uppercase; margin-bottom:15px;">CONSUMO DE CANCHAS</div>
                 <div class="fin-grid" style="margin-top:0;">
-                    <div class="fin-box"><span>Deuda Canchas</span><b id="txt-deuda-canchas">$0</b></div>
+                    <div class="fin-box"><span>Canchas Consumidas</span><b id="txt-deuda-canchas">$0</b></div>
                     <div class="fin-box"><span>Límite Disponible</span><b id="txt-disponible">$0</b></div>
                 </div>
-                <div style="text-align: center; margin-top: 12px; font-size: 9px; color: #888; font-weight: 800; text-transform: uppercase;">Límite total asignado: <span id="txt-limite-total">$0</span></div>
+                
+                <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #ccc; font-weight: 600;">Total consumido: <b id="txt-consumo-total" style="color:white;">$0</b> de <span id="txt-limite-total">$0</span></div>
+                
+                <div style="margin-top: 15px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px;">
+                    <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">DETALLE DEL CONSUMO PENDIENTE:</div>
+                    <div style="font-size: 13px; color: #fff; font-weight: 600;" id="txt-detalle-canchas">Incluye: • 0 canchas &rarr; $0</div>
+                </div>
             </div>
+            
+            <p class="sales-phrase">💡 Esto equivale a menos de 1 jugador por turno</p>
 
             <button class="btn-dash" style="background:#fff; color:var(--text); margin-bottom:20px; border:1px solid #ddd; width:100%; padding:18px;" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
 
@@ -189,19 +197,30 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
+        // INYECCIÓN DE LOS NUEVOS DATOS UX
         document.getElementById('txt-deuda-canchas').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
         document.getElementById('txt-disponible').innerText = PadelUtils.fmtDinero(res.disponible);
         document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
         
+        document.getElementById('txt-consumo-total').innerText = PadelUtils.fmtDinero(res.deudaCanchas);
+        document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
+
         const badge = document.getElementById('badge-abono');
         const txtVenc = document.getElementById('txt-venc-abono');
         
         txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
         
-        if (res.bloqueadoAbono) {
-            badge.innerText = "VENCIDO";
+        // 🟢🟡🔴 NUEVA LÓGICA DE ESTADOS
+        const diasFaltantes = (res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24);
+
+        if (res.bloqueadoAbono || res.bloqueadoLimite) {
+            badge.innerText = res.bloqueadoLimite ? "CON SALDO PENDIENTE" : "VENCIDO";
             badge.style.background = "var(--danger)";
             txtVenc.style.color = "var(--danger)";
+        } else if (diasFaltantes <= 5) {
+            badge.innerText = "POR VENCER";
+            badge.style.background = "var(--warning)";
+            txtVenc.style.color = "var(--warning)";
         } else {
             badge.innerText = "AL DÍA";
             badge.style.background = "var(--success)";

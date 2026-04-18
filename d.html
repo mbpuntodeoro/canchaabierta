@@ -9,15 +9,17 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js?v=16"></script>
     <style>
+        /* 🔥 MISMAS VARIABLES EXACTAS DEL ECOSISTEMA PREMIUM */
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
-            --text-primary: #111111; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
+            --text-primary: #1C1C1E; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
             --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
-            --border: #E5E5EA;
-            --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px; --s6: 32px;
+            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
+            --green-grad: linear-gradient(180deg, #34C759, #30B350);
+            --border: #E5E5EA; --gray-1: #F9F9FB; --gray-2: #E5E5EA;
+            --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
             --r-lg: 24px; --r-md: 16px;
-            --anim-fast: 150ms; --anim-normal: 220ms; --anim-slow: 300ms;
-            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+            --anim-fast: 150ms; --anim-normal: 220ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
@@ -34,7 +36,8 @@
         .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
         .text-center { text-align: center; }
 
-        .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
+        /* 🔥 CARDS CON ELEVACIÓN DEL SISTEMA */
+        .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02);}
         .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         
         #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
@@ -47,10 +50,14 @@
         
         .sales-box { background: #eef6ff; color: #005bb5; padding: var(--s3); border-radius: var(--r-md); text-align: center; font-weight: 800; font-size: 13px; border: 1.5px dashed #cce4ff; margin-bottom: var(--s4); }
 
-        .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), opacity var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
-        .btn:active { transform: scale(0.96); opacity: 0.9; }
-        .btn-primary { background: var(--blue); color: white; }
-        .btn-dark { background: var(--text-primary); color: white; }
+        /* 🔥 BOTONES CON GRADIENTES Y SOMBRAS */
+        .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
+        .btn:active { transform: scale(0.96); }
+        
+        .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
+        .btn-primary:active { box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
+        
+        .btn-dark { background: #111; color: white; }
         .btn-light { background: var(--bg-main); color: var(--text-primary); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
 
@@ -58,19 +65,21 @@
         .badge-ok { background: rgba(52,199,89,0.15); color: var(--green); }
         .badge-warning { background: rgba(255,159,10,0.15); color: var(--orange); }
         .badge-error { background: rgba(255,59,48,0.15); color: var(--red); }
-        .badge-cat { font-size: 9px; color: var(--blue); background: #eef6ff; padding: 4px 10px; border-radius: 8px; font-weight: 900; text-transform: uppercase; }
+        .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
 
-        .item { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); margin-bottom: var(--s2); border: 1px solid var(--border); transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); }
+        .item { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); margin-bottom: var(--s2); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.02); transition: transform var(--anim-fast) var(--ease-out); }
         .item:active { transform: scale(0.98); }
-        .item-header { display: flex; justify-content: space-between; align-items: center; }
-        .item-title { font-weight: 900; font-size: 17px; }
-        .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 6px; font-weight: 600; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
+        .item-title { font-weight: 900; font-size: 18px; text-transform: uppercase; margin: 0; line-height: 1.2;}
+        .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
         .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
 
         .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
 
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600;}
+        /* 🔥 INPUTS ESTILO APP */
+        .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
+        .input-std::placeholder { color: var(--gray-3); }
         .input-std:focus { border-color: var(--blue); }
         
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: var(--s3); }
@@ -265,7 +274,7 @@
             <h2 class="h1" style="margin-bottom: var(--s1); font-size: 22px;">🚫 Suspender Evento</h2>
             <p class="text" style="margin-bottom: var(--s1);">Esta acción no genera cargos de sistema.</p>
             <p class="label" style="margin-bottom: var(--s4);">¿Qué desea hacer con esta cancha?</p>
-            <button class="btn btn-primary mt-2" style="background: var(--green);" onclick="confirmarSuspension(true)">REPROGRAMAR PARA LA SEMANA QUE VIENE</button>
+            <button class="btn btn-primary mt-2" style="background: var(--green-grad);" onclick="confirmarSuspension(true)">REPROGRAMAR PARA LA SEMANA QUE VIENE</button>
             <button class="btn mt-2" style="background: var(--red); color:white;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button>
             <button class="btn btn-light mt-2" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
         </div>
@@ -379,7 +388,7 @@
         badge.className = "badge"; 
         
         if (res.enTrial) {
-            // 🔥 LÓGICA DE TRIAL ACTIVA (Títulos y Textos)
+            // LÓGICA DE TRIAL
             lblVencimiento.innerHTML = `Tu prueba vence el <b id="txt-venc-abono" style="color:white">${fechaStr}</b>`;
             
             badge.innerText = "TRIAL GRATUITO";
@@ -394,7 +403,6 @@
                 txtDiasTrial.style.display = 'block';
             }
 
-            // Consumos Bonificados
             const totalSumaTrial = res.consumoBonificado + res.deudaCanchas;
             const cantSumaTrial = res.cantTurnosBonificados + res.cantTurnosPendientes;
 
@@ -411,10 +419,10 @@
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${cantSumaTrial || 0} cancha${cantSumaTrial !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(totalSumaTrial)}`;
         
         } else {
-            // 🔥 LÓGICA NORMAL (PAGANDO)
+            // LÓGICA NORMAL (ACTIVO)
             lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
             txtDiasTrial.style.display = 'none';
-            const txtVenc = document.getElementById('txt-venc-abono'); // Re-capturamos porque el innerHTML lo pisa
+            const txtVenc = document.getElementById('txt-venc-abono');
 
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
             oldDeuda = res.deudaCanchas;
@@ -436,7 +444,6 @@
 
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
 
-            // Estados Normales
             const porcentajeUso = res.limiteTotal > 0 ? (res.deudaCanchas / res.limiteTotal) : 0;
 
             if (res.bloqueadoAbono) {
@@ -471,7 +478,7 @@
 
     function abrirDetalle() {
         currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha);
-        cambiarTab('pendiente'); // Esto ahora filtra pendiente o bonificado
+        cambiarTab('pendiente');
         document.getElementById('modal-detalle').style.display = 'flex';
     }
 
@@ -494,7 +501,6 @@
         const lista = document.getElementById('lista-movimientos-det');
         lista.innerHTML = "";
         
-        // 🔥 MODAL: Si la pestaña es Pendiente, mostramos los que debe o los que le bonificamos.
         const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
 
         if(filtrados.length === 0) {
@@ -525,7 +531,6 @@
         }
     }
 
-    // 🔥 CUANDO UNA CANCHA TERMINA, DECIDIMOS SI ES DEUDA O GRATIS
     function checkAndRollover(id, data) {
         const ahora = Date.now();
         const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
@@ -560,7 +565,6 @@
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {}; 
             
-            // 🔥 AUTO-LIMPIEZA: Si lo pasaste a Trial, le convertimos las deudas viejas en Bonificadas
             if (cuentaInfo.enTrial) {
                 let updates = {};
                 for (let k in movs) {
@@ -570,7 +574,7 @@
                 }
                 if (Object.keys(updates).length > 0) {
                     db.ref(`facturacion/${orgId}/movimientos`).update(updates);
-                    return; // Frenamos y dejamos que Firebase vuelva a disparar este evento con los datos limpios.
+                    return; 
                 }
             }
 

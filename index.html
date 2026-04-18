@@ -1,40 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PadelApp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PadelApp - Acceso Organizadores</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js?v=12"></script>
+
     <style>
-        :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1d1d1f; --sub: #86868b; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .card { background: white; padding: 40px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); text-align: center; max-width: 400px; width: 100%; box-sizing: border-box; }
-        h1 { font-weight: 900; letter-spacing: -1.5px; margin-bottom: 5px; font-size: 26px; }
-        p { color: var(--sub); font-size: 14px; margin-bottom: 30px; font-weight: 600; }
-        .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; margin-bottom: 15px; font-size: 16px; outline: none; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
-        .btn-login { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-weight: 900; cursor: pointer; font-size: 17px; margin-top: 10px; }
-        .footer-personal { text-align: center; margin-top: 40px; width: 100%; }
-        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; }
+        /* UI KIT BASE */
+        :root {
+            --bg-main: #F2F2F7; --bg-card: #FFFFFF;
+            --text-primary: #111111; --text-secondary: #8E8E93;
+            --blue: #007AFF; --red: #FF3B30; --border: #E5E5EA;
+            --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body { 
+            font-family: 'Outfit', -apple-system, sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-primary); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .card { 
+            background: var(--bg-card); 
+            border-radius: 24px; 
+            padding: 40px 30px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06); 
+            width: 100%; 
+            max-width: 360px; 
+            box-sizing: border-box; 
+            text-align: center; 
+        }
+
+        .h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0 0 5px 0; }
+        .subtitle { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin: 0 0 25px 0; }
+
+        .input-std { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 1.5px solid var(--border); 
+            margin-bottom: 12px; 
+            outline: none; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 15px; 
+            font-weight: 600;
+            transition: border-color 0.2s;
+        }
+        .input-std:focus { border-color: var(--blue); }
+
+        .btn-dark { 
+            background: var(--text-primary); 
+            color: white; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 16px; 
+            font-weight: 800; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 10px;
+            transition: transform var(--anim-fast) var(--ease-out), opacity var(--anim-fast); 
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        .btn-dark:active { transform: scale(0.96); opacity: 0.9; }
+
+        /* Animaciones y Loader */
+        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide 400ms var(--ease-out) forwards; }
+        @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
+
+        .loader { display: none; width: 18px; height: 18px; border: 2.5px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: auto; }
+        .loading .btn-text { display: none; }
+        .loading .loader { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-msg { color: var(--red); font-size: 12px; font-weight: 800; margin-top: 15px; display: none; }
+
+        /* Loader global de página completa */
+        #page-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; inset: 0; background: var(--bg-main); z-index: 100; }
+        .spinner-dark { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Organización de<br>Canchas Abiertas</h1>
-        <p>Ingresá a tu panel de control</p>
-        <input type="text" id="user" class="input-std" placeholder="Usuario / ID Club">
-        <input type="password" id="pass" class="input-std" placeholder="Contraseña">
-        <button class="btn-login" onclick="login()">INGRESAR AL PANEL</button>
+
+    <div id="page-loader">
+        <div class="spinner-dark"></div>
+        <div style="font-weight: 700; font-size: 14px; color: var(--text-secondary);">Verificando acceso...</div>
     </div>
-    <div class="footer-personal">
-        <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px; margin-bottom: 5px;">DESARROLLADO POR MARIANO BLUMENFELD</p>
-        <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
+
+    <div class="card fade-in" id="login-box" style="display: none;">
+        <h1 class="h1">PadelApp</h1>
+        <p class="subtitle">Acceso Organizador</p>
+        
+        <input id="email" type="email" class="input-std" placeholder="Correo electrónico">
+        <input id="pass" type="password" class="input-std" placeholder="Contraseña">
+        
+        <button class="btn-dark" id="btn-login" onclick="iniciarSesion()">
+            <span class="btn-text">INGRESAR</span>
+            <span class="loader"></span>
+        </button>
+        
+        <p id="error-msg" class="error-msg">Usuario o contraseña incorrectos.</p>
     </div>
+
 <script>
-    function login() {
-        const u = document.getElementById('user').value.trim();
-        if(!u) return alert("Ingresá tu usuario");
-        window.location.href = "d.html?org=" + u;
+    const auth = firebase.auth();
+
+    // 1. OBSERVADOR DE SESIÓN INICIAL (El auto-pase mágico)
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // Ya está logueado: Lo mandamos directo al dashboard sin mostrar el formulario
+            window.location.href = 'd.html';
+        } else {
+            // No está logueado: Ocultamos el loader y mostramos el formulario
+            document.getElementById('page-loader').style.display = 'none';
+            document.getElementById('login-box').style.display = 'block';
+        }
+    });
+
+    // 2. FUNCIÓN DE LOGIN MANUAL CON PROMESA
+    function iniciarSesion() {
+        const email = document.getElementById('email').value.trim();
+        const pass = document.getElementById('pass').value.trim();
+        const btn = document.getElementById('btn-login');
+        const errorMsg = document.getElementById('error-msg');
+
+        if(!email || !pass) return alert("Por favor completá los datos.");
+
+        // Ocultamos error previo y mostramos loader en el botón
+        errorMsg.style.display = 'none';
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        // Promesa de Firebase: Hacemos el pedido al servidor
+        auth.signInWithEmailAndPassword(email, pass)
+        .then((userCredential) => {
+            // ✅ ÉXITO: Firebase validó la clave. Recién ahora viajamos.
+            window.location.href = 'd.html';
+        })
+        .catch((error) => {
+            // ❌ ERROR: Contraseña mal o usuario no existe
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = "Credenciales incorrectas o usuario no registrado.";
+            console.error("Error Auth:", error);
+        });
     }
-    document.addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+
+    // Permitir login con la tecla Enter
+    document.getElementById('pass').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') { iniciarSesion(); }
+    });
 </script>
 </body>
 </html>

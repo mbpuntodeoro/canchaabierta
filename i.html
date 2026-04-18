@@ -6,138 +6,125 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=6"></script>
+    <script src="app-config.js?v=9"></script>
     <style>
-        :root { --primary: #007aff; --danger: #ff3b30; }
-        body { font-family: 'Outfit', sans-serif; background: #f2f2f7; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #1d1d1f; }
-        .card { background: white; border-radius: 30px; padding: 35px 30px; max-width: 400px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box;}
-        .title { font-size: 24px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 25px; line-height: 1.2; }
-        .info-box { background: #f8f9fb; border-radius: 20px; padding: 20px; margin-bottom: 25px; border: 1px solid #f2f2f7; }
-        .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 12px; }
-        .input-std { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid #eee; margin-bottom: 12px; font-family: inherit; font-size: 15px; outline: none; box-sizing: border-box; }
-        .btn-join { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 900; font-size: 15px; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        
-        /* CAJA DE ADVERTENCIA REPARADA */
-        .warning-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 22px; padding: 20px; margin: 20px 0; text-align: center; }
-        .warning-text { color: #1d1d1f; font-weight: 700; font-size: 14px; margin-bottom: 15px; line-height: 1.4; display: block; }
-        .amount-text { display: block; font-size: 18px; font-weight: 900; color: var(--danger); margin-bottom: 15px; }
-        
-        /* ALIAS BOX */
-        .alias-container { display: flex; align-items: center; background: white; border: 1.5px solid #ffdbdb; border-radius: 14px; overflow: hidden; margin-top: 5px; }
-        .alias-data { flex: 1; padding: 12px; text-align: center; font-size: 16px; font-weight: 900; color: #1d1d1f; }
-        .btn-copy { background: #ffdbdb; border: none; padding: 12px 15px; color: var(--danger); font-weight: 800; font-size: 11px; cursor: pointer; text-transform: uppercase; }
-
-        #loading { text-align: center; font-weight: 800; color: #888; }
+        :root { --primary: #007aff; --bg: #f2f2f7; --text: #1d1d1f; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; flex-direction: column; align-items: center; margin: 0; min-height: 100vh;}
+        .card { background: white; padding: 35px; border-radius: 35px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); text-align: center; max-width: 450px; width: 100%; box-sizing: border-box; display: none;}
+        .info-box { background: #f8f9fb; padding: 25px; border-radius: 20px; margin: 20px 0; text-align: left; font-size: 15px; border: 1px solid #eee; line-height: 1.6;}
+        .input-std { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f2f2f7; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; box-sizing: border-box; font-family: inherit;}
+        .btn-pay { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 22px; font-weight: 900; cursor: pointer; font-size: 17px; text-transform: uppercase;}
+        .payment-box { background: #fff2f2; border: 2px solid #ffdbdb; border-radius: 24px; padding: 25px; margin-top: 25px; }
+        .footer-personal { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 450px;}
+        .btn-orange { background: #ff9500; color: white; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-weight: 900; font-size: 13px; display: inline-block; margin-top: 10px; }
+        #loading { font-weight: 800; color: #888; text-align: center; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <div id="loading">Cargando datos...</div>
+<div id="loading">Cargando datos del evento...</div>
 
-    <div class="card" id="main-card" style="display:none;">
-        
-        <div id="form-screen">
-            <div class="title" id="t-nombre">--</div>
-            <div class="info-box">
-                <div class="info-row">📅 FECHA: <span id="t-fec">--</span></div>
-                <div class="info-row">🕒 HORARIO: <span id="t-hs">--</span></div>
-                <div class="info-row">📍 LUGAR: <span id="t-lug">--</span></div>
-                <div class="info-row">👤 ORGANIZA: <span id="t-org">--</span></div>
-                <div class="info-row" style="margin-top: 15px;">💰 VALOR: <b id="t-val" style="color:#1d1d1f; font-size:16px;">$0</b></div>
-            </div>
-            <input type="text" id="p-name" class="input-std" placeholder="Tu Nombre y Apellido">
-            <input type="tel" id="p-celu" class="input-std" placeholder="Tu WhatsApp">
-            <button onclick="anotarse()" class="btn-join" id="btn-submit">CONFIRMAR MI LUGAR</button>
-        </div>
-
-        <div id="success-screen" style="display:none; text-align:center;">
-            <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-            <h2 style="margin-top:0; font-weight:900; text-transform:uppercase; letter-spacing:-0.5px;">¡Solicitud Recibida!</h2>
-            
-            <div class="warning-box">
-                <span class="warning-text">Para asegurar tu lugar realiza la transferencia o contactate con el organizador para coordinar otra forma de pago.</span>
-                
-                <span style="font-size: 10px; font-weight: 800; color: #aaa; text-transform: uppercase;">Importe a transferir:</span>
-                <span class="amount-text" id="s-importe-final">$0</span>
-                
-                <span style="font-size: 10px; font-weight: 800; color: #aaa; text-transform: uppercase; display: block; margin-bottom: 5px;">ALIAS:</span>
-                <div class="alias-container">
-                    <div class="alias-data" id="s-alias-final">--</div>
-                    <button class="btn-copy" onclick="copiarAlias()">Copiar</button>
-                </div>
-            </div>
-
-            <button onclick="notificarWa()" class="btn-join" style="background:#25D366; color:white; margin-top:0;">📲 ENVIAR COMPROBANTE</button>
-            <button onclick="window.location.href='v.html?org='+org" class="btn-join" style="background:#eef6ff; color:var(--primary); margin-top:10px; font-size: 12px;">VOLVER A LA CARTELERA</button>
-        </div>
+<div class="card" id="main-card">
+    <h1 id="t-org" style="margin-top:0; font-weight: 900; text-transform: uppercase;">...</h1>
+    
+    <div class="info-box">
+        <p style="margin: 0 0 8px 0;">📅 FECHA: <b id="t-fec">--</b></p>
+        <p style="margin: 0 0 8px 0;">🕒 HORARIO: <b id="t-hor">--</b></p>
+        <p style="margin: 0 0 8px 0;">📍 LUGAR: <b id="t-lug">--</b></p>
+        <p style="margin: 0 0 8px 0;">👤 ORGANIZA: <b id="t-owner">--</b></p>
+        <p style="margin: 0 0 15px 0;">🏷️ CATEGORÍA: <b id="t-cat">--</b></p>
+        <p style="margin: 0; font-size: 18px;">💰 VALOR: <b id="t-val">$0</b></p>
     </div>
+    
+    <input id="p-nom" class="input-std" placeholder="Tu Nombre">
+    <input id="p-tel" type="tel" class="input-std" placeholder="Tu WhatsApp">
+    
+    <button class="btn-pay" onclick="registrar()" id="btn-submit">ANOTARME</button>
+    <button onclick="volverCartelera()" style="width:100%; background:none; border:none; color:#888; font-weight:800; margin-top:15px; cursor:pointer; font-size:12px; text-transform:uppercase;">VOLVER A LA CARTELERA</button>
+</div>
+
+<div class="footer-personal">
+    <p style="font-size:10px; font-weight:800; color:#ccc; letter-spacing:1px">DESARROLLADO POR MARIANO BLUMENFELD</p>
+    <a href="https://wa.me/5491166463800" class="btn-orange">💬 ¿DUDAS? ESCRIBIME</a>
+</div>
 
 <script>
-    const id = new URLSearchParams(window.location.search).get('id');
+    const eid = new URLSearchParams(window.location.search).get('id');
     const org = new URLSearchParams(window.location.search).get('org');
-    let eventData = {}; 
-
-    if(!id || !org) {
-        document.getElementById('loading').innerText = "Enlace incompleto.";
-    } else {
-        db.ref(`eventos/${id}`).once('value', snap => {
-            eventData = snap.val();
-            if(!eventData) { document.getElementById('loading').innerText = "El evento ya no está disponible."; return; }
+    let ev = null;
+    
+    if(eid) {
+        db.ref('eventos/'+eid).once('value', s => {
+            ev = s.val();
+            if(!ev) {
+                document.getElementById('loading').innerText = "Este evento ya no está disponible.";
+                return;
+            }
             
+            // Oculta el loading y muestra tu tarjeta dorada
             document.getElementById('loading').style.display = 'none';
             document.getElementById('main-card').style.display = 'block';
 
-            const diasList = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            const fObj = new Date(eventData.fecha + 'T12:00:00');
-            const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
-
-            document.getElementById('t-nombre').innerText = eventData.organiza;
-            document.getElementById('t-fec').innerText = fechaTxt;
-            document.getElementById('t-hs').innerText = eventData.hora + ' a ' + (eventData.horaFin || '--') + ' hs';
-            document.getElementById('t-lug').innerText = eventData.lugar || '--';
-            document.getElementById('t-org').innerText = eventData.nombreOrganizador || '--';
-            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(eventData.valor);
-            
-            // Datos para la pantalla de éxito
-            document.getElementById('s-importe-final').innerText = PadelUtils.fmtDinero(eventData.valor);
-            document.getElementById('s-alias-final').innerText = eventData.alias || 'CONSULTAR AL DUEÑO';
+            document.getElementById('t-org').innerText = ev.organiza;
+            document.getElementById('t-fec').innerText = PadelUtils.fmtFechaFull(ev.fecha);
+            document.getElementById('t-hor').innerText = ev.hora + ' a ' + (ev.horaFin || '--') + ' hs';
+            document.getElementById('t-lug').innerText = ev.lugar || 'Sede a confirmar';
+            document.getElementById('t-owner').innerText = ev.nombreOrganizador || 'Admin';
+            document.getElementById('t-cat').innerText = ev.categorias || 'General';
+            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(ev.valor);
         });
+    } else {
+        document.getElementById('loading').innerText = "Link de inscripción inválido.";
     }
 
-    function anotarse() {
-        const name = document.getElementById('p-name').value.trim();
-        const celu = document.getElementById('p-celu').value.trim();
-        if(!name || !celu) return alert("Por favor, ingresá tu nombre y WhatsApp.");
+    function volverCartelera() {
+        if(org) window.location.href = `v.html?org=${org}`;
+        else window.history.back();
+    }
+
+    function registrar() {
+        const n = document.getElementById('p-nom').value.trim();
+        const t = document.getElementById('p-tel').value.trim();
+        if(!n || !t) return alert("Por favor, completá tu nombre y WhatsApp.");
         
         document.getElementById('btn-submit').disabled = true;
         document.getElementById('btn-submit').innerText = "PROCESANDO...";
 
-        db.ref(`eventos/${id}/inscriptos`).once('value', s => {
-            const list = s.val() || [];
-            list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
-            db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                document.getElementById('form-screen').style.display = 'none';
-                document.getElementById('success-screen').style.display = 'block';
+        db.ref('eventos/'+eid+'/inscriptos').once('value', s => {
+            const ins = s.val() || [];
+            if(ins.length >= ev.cupo) {
+                alert("Lo sentimos, la cancha ya está llena.");
+                document.getElementById('btn-submit').disabled = false;
+                document.getElementById('btn-submit').innerText = "ANOTARME";
+                return;
+            }
+            
+            ins.push({ nombre: n, telefono: t, estado: 'pendiente' });
+            
+            db.ref('eventos/'+eid+'/inscriptos').set(ins).then(() => {
+                document.getElementById('main-card').innerHTML = `
+                    <div style="font-size:60px; margin-bottom:10px">✅</div>
+                    <h2 style="font-weight:900; margin-bottom:5px">¡Inscripción Exitosa!</h2>
+                    <p style="color:#888; font-weight:600; margin-bottom:20px">Tu lugar está pre-reservado.</p>
+                    
+                    <div class="payment-box">
+                        <b style="color:#ff3b30; font-size:12px; display:block; margin-bottom:15px; text-transform:uppercase; letter-spacing:0.5px; line-height:1.4;">PARA ASEGURAR TU LUGAR, TRANSFERÍ EL MONTO TOTAL Y ENVIÁ EL COMPROBANTE O CONTACTATE CON EL ORGANIZADOR PARA COORDINAR OTRA FORMA DE PAGO.</b>
+                        
+                        <p style="font-size:14px; color:#555; margin-bottom:5px; font-weight:800;">MONTO A TRANSFERIR:</p>
+                        <h2 style="margin:0 0 15px 0; font-weight:900; color:#1d1d1f; font-size:28px;">${PadelUtils.fmtDinero(ev.valor)}</h2>
+                        
+                        <p style="font-size:13px; color:#555; margin-bottom:5px; font-weight:800;">ALIAS:</p>
+                        <h2 style="margin:0 0 15px 0; font-weight:900; color:var(--primary); font-size:22px; word-break: break-all;">${ev.alias || 'Consultar'}</h2>
+                        
+                        <button onclick="PadelUtils.copiarLink('${ev.alias || ''}')" style="padding:12px 25px; border-radius:15px; border:1.5px solid #ddd; background:white; cursor:pointer; font-family:inherit; font-weight:800; font-size:12px; text-transform:uppercase;">📋 COPIAR ALIAS</button>
+                    </div>
+                    
+                    <a href="https://wa.me/${ev.celuOrganizador}?text=${encodeURIComponent('Hola! Soy ' + n + ', te envío el comprobante por la cancha de ' + ev.organiza + ' del ' + PadelUtils.fmtFechaCorta(ev.fecha))}" style="display:block; background:#25D366; color:white; padding:20px; border-radius:22px; margin-top:20px; text-decoration:none; font-weight:900; font-size:16px; text-transform:uppercase;">💬 ENVIAR COMPROBANTE</a>
+                    <button onclick="volverCartelera()" style="width:100%; background:none; border:none; color:#888; font-weight:800; margin-top:20px; cursor:pointer; font-size:12px; text-transform:uppercase;">VOLVER A LA CARTELERA</button>
+                `;
                 window.scrollTo(0,0);
             });
         });
-    }
-
-    function copiarAlias() {
-        const alias = document.getElementById('s-alias-final').innerText;
-        if(alias === 'CONSULTAR AL DUEÑO') return;
-        navigator.clipboard.writeText(alias).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            btn.innerText = "¡COPIADO!";
-            setTimeout(() => { btn.innerText = "COPIAR"; }, 2000);
-        });
-    }
-
-    function notificarWa() {
-        const celOrg = eventData.celuOrganizador;
-        const nombrePlayer = document.getElementById('p-name').value.trim();
-        const texto = `¡Hola! Me anoté a la cancha "${eventData.organiza}". Soy ${nombrePlayer}. Te envío el comprobante de transferencia:`;
-        window.open(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 </script>
 </body>

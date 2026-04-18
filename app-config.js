@@ -51,8 +51,6 @@ const PadelSaaS = {
         let deudaCanchas = 0;
         let deudaAbono = 0;
         let cantTurnosPendientes = 0;
-        
-        // 🔥 NUEVO: Contadores de Bonificación
         let consumoBonificado = 0;
         let cantTurnosBonificados = 0;
 
@@ -68,7 +66,12 @@ const PadelSaaS = {
 
         const limiteTotal = cuenta.limiteCredito || 0;
         const vencimientoAbono = cuenta.vencimientoAbono || ahora;
-        const enTrial = cuenta.enTrial === true;
+        
+        // 🔥 LA MAGIA: Si estaba en trial, pero la fecha ya pasó, se acabó el trial.
+        let enTrial = cuenta.enTrial === true;
+        if (enTrial && ahora > vencimientoAbono) {
+            enTrial = false;
+        }
 
         const disponible = Math.max(0, limiteTotal - deudaCanchas);
         const bloqueadoAbono = ahora > vencimientoAbono;
@@ -79,12 +82,12 @@ const PadelSaaS = {
         
         let msgLocked = "";
         if (bloqueadoAdmin) msgLocked = "Cuenta suspendida por administración.";
-        else if (bloqueadoAbono) msgLocked = "Abono mensual vencido. Por favor, regularice su plan.";
+        else if (bloqueadoAbono) msgLocked = "Abono mensual vencido o Trial finalizado. Regularice su plan.";
         else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido. Salde su consumo de canchas.";
 
         return {
             deudaCanchas, deudaAbono, cantTurnosPendientes,
-            consumoBonificado, cantTurnosBonificados, // Pasamos el reporte bonificado
+            consumoBonificado, cantTurnosBonificados,
             limiteTotal, disponible, vencimientoAbono,
             isBlocked, msgLocked, bloqueadoAbono, bloqueadoLimite, enTrial
         };

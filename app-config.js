@@ -28,8 +28,6 @@ const PadelUtils = {
         date.setDate(date.getDate() + 7);
         return date.toISOString().split('T')[0];
     },
-    
-    // 🔥 ESTAS SON LAS FUNCIONES QUE LE FALTABAN A TU i.html
     fmtFechaFull: (f) => {
         if(!f) return '--';
         const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -52,11 +50,16 @@ const PadelSaaS = {
 
         let deudaCanchas = 0;
         let deudaAbono = 0;
+        let cantTurnosPendientes = 0; // 🔥 NUEVO: Cuenta cuántas canchas debe
 
         movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
-                if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
-                else deudaCanchas += (m.monto || 0);
+                if (m.tipo === 'abono') {
+                    deudaAbono += (m.monto || 0);
+                } else {
+                    deudaCanchas += (m.monto || 0);
+                    cantTurnosPendientes++; // Sumamos al contador
+                }
             }
         });
 
@@ -73,17 +76,19 @@ const PadelSaaS = {
         let msgLocked = "";
         if (bloqueadoAdmin) msgLocked = "Cuenta suspendida por administración.";
         else if (bloqueadoAbono) msgLocked = "Abono mensual vencido. Por favor, regularice su plan.";
-        else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido. Salde su deuda de canchas.";
+        else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido. Salde su consumo de canchas.";
 
         return {
             deudaCanchas,
             deudaAbono,
+            cantTurnosPendientes, // 🔥 Enviamos el dato al Dashboard
             limiteTotal,
             disponible,
             vencimientoAbono,
             isBlocked,
             msgLocked,
-            bloqueadoAbono
+            bloqueadoAbono,
+            bloqueadoLimite
         };
     },
     fmtFecha: function(ms) {

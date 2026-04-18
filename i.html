@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=15"></script>
+    <script src="app-config.js?v=16"></script>
     <style>
         :root { 
             --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; --gray-3: #C7C7CC;
@@ -54,7 +54,7 @@
         .btn-green { background: var(--green-grad); box-shadow: 0 8px 20px rgba(52,199,89,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast);}
         .btn-green:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(52,199,89,0.2);}
         
-        /* 🔥 BOTONES DE ESTADO (YA ANOTADO) */
+        /* BOTONES DE ESTADO (YA ANOTADO) */
         .btn-gray { background: var(--gray-2); color: var(--text-main); border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast); }
         .btn-gray:active { transform: scale(0.96); background: var(--gray-3); }
         
@@ -176,22 +176,22 @@
             document.getElementById('s-importe-final').innerText = PadelUtils.fmtDinero(eventData.valor);
             document.getElementById('s-alias-final').innerText = eventData.alias || 'Consultar al organizador';
 
-            // 🔥 INTELIGENCIA: ¿Está guardado en local? Vamos a ver si Wini no lo borró.
+            // 🔥 INTELIGENCIA: ¿Sigue este jugador anotado de verdad en Firebase?
             if (playerLocalData) {
                 const list = eventData.inscriptos || [];
                 const isStillInDB = list.some(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
                 
                 if (isStillInDB) {
-                    // Sigue vivo, le mostramos la pantalla de "Ya anotado"
+                    // Sigue vivo (Ya anotado)
                     document.getElementById('already-screen').style.display = 'block';
                 } else {
-                    // Wini lo borró a mano, le reseteamos la memoria y mostramos el form
+                    // Wini lo borró a mano o la cancha se reprogramó. Le limpiamos la memoria al teléfono.
                     localStorage.removeItem('padelapp_cancha_' + id);
                     playerLocalData = null;
                     document.getElementById('form-screen').style.display = 'block';
                 }
             } else {
-                // Nuevo jugador, mostrar form normal
+                // Nuevo jugador
                 document.getElementById('form-screen').style.display = 'block';
             }
         });
@@ -209,7 +209,7 @@
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             const list = s.val() || [];
             
-            // Bloqueo Anti-Doble-Clic real
+            // Anti-Doble-Clic 
             if (list.some(p => p.celular === celu)) {
                 alert("Este WhatsApp ya está anotado en la cancha.");
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
@@ -223,7 +223,7 @@
             list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                // 🔥 GUARDAMOS LA FICHITA INVISIBLE EN EL TELÉFONO
+                // 🔥 GUARDAMOS LA FICHITA EN EL CELU
                 localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu }));
                 
                 setTimeout(() => {
@@ -244,7 +244,7 @@
         });
     }
 
-    // 🚀 DARSE DE BAJA (ELIMINA DE FIREBASE Y DE LA MEMORIA)
+    // 🚀 DARSE DE BAJA (ELIMINA DE DB, MEMORIA Y AVISA POR WA)
     function handleCancel(btnElement) {
         if(!confirm("¿Estás seguro de que querés liberar tu lugar en la cancha?")) return;
         
@@ -253,18 +253,29 @@
 
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             let list = s.val() || [];
-            // Buscamos cuál de todos es el jugador exacto
             const index = list.findIndex(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
             
             if (index > -1) {
-                list.splice(index, 1); // Lo borramos de la lista
+                list.splice(index, 1); 
                 db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                    localStorage.removeItem('padelapp_cancha_' + id); // Borramos la memoria
-                    alert("✅ Te diste de baja correctamente.");
-                    window.location.href = 'v.html?org=' + org; // Lo mandamos de vuelta a la cartelera
+                    // Borramos la memoria local
+                    localStorage.removeItem('padelapp_cancha_' + id); 
+                    
+                    // Avisamos al organizador si tiene celular cargado
+                    const celOrg = eventData.celuOrganizador;
+                    const nombrePlayer = playerLocalData.nombre;
+                    const nombreCancha = eventData.organiza;
+                    
+                    if (celOrg) {
+                        const texto = `Hola! Te aviso que me acabo de dar de baja de la cancha "${nombreCancha}". Soy ${nombrePlayer}. Ya liberé el cupo en el sistema para que se pueda anotar otro.`;
+                        alert("✅ Te diste de baja correctamente.\n\nPresioná ACEPTAR para enviarle un aviso automático al organizador por WhatsApp.");
+                        window.location.replace(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`);
+                    } else {
+                        alert("✅ Te diste de baja correctamente.");
+                        window.location.replace('v.html?org=' + org);
+                    }
                 });
             } else {
-                // Por si hubo un cruce raro de datos
                 localStorage.removeItem('padelapp_cancha_' + id);
                 window.location.reload();
             }
@@ -277,7 +288,7 @@
         
         document.getElementById('success-title').innerText = "Datos de Pago";
         document.getElementById('success-sub').innerText = "Realizá el pago para confirmar tu lugar.";
-        document.getElementById('success-check').style.display = 'none'; // Ocultamos el tilde verde porque no es una inscripción nueva
+        document.getElementById('success-check').style.display = 'none';
         
         const successScreen = document.getElementById('success-screen');
         successScreen.style.display = 'block';

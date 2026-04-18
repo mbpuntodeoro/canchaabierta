@@ -46,7 +46,7 @@
         .fin-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #E5E5EA; }
         .fin-lbl { font-size: 11px; color: var(--sub); font-weight: 800; }
         
-        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast); color: white;}
+        .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast); color: white; box-sizing: border-box;}
         .btn-green { background: var(--green-grad); box-shadow: 0 4px 10px rgba(52,199,89,0.2); }
         .btn-blue { background: var(--blue-grad); box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
         .btn-black { background: #111; color: white; width: 100%; padding: 15px; margin-top: 10px;}
@@ -123,6 +123,10 @@
                 <input id="mod-email-disp" class="input-std" style="margin-bottom:0;"><button onclick="enviarPassReset()" class="btn-action btn-black" style="margin-top:0; width:auto; padding:0 15px; font-size:10px;">RESETEAR</button>
             </div>
             <label>Alias Cobros</label><input id="mod-ali" class="input-std">
+            
+            <label>Link Acortado (Cartelera)</label>
+            <input id="mod-link-corto" class="input-std" placeholder="Ej: bit.ly/cancha-wini">
+
             <hr style="border:0; border-top:1px dashed #E5E5EA; margin: 15px 0;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div>
@@ -180,15 +184,12 @@
                 const res = PadelSaaS.analizarCuenta(f, mSnap.val() || {});
                 if (!res) continue;
 
-                // Solo sumamos a las métricas si NO está archivado
                 if (!f.archivado) {
                     if (!f.cuentaSuspendida && !res.isBlocked) sumActivos++;
                     if (res.deudaCanchas > 0) { sumRiesgo++; sumDeuda += res.deudaCanchas; }
                 }
 
-                // Filtrado visual
                 if (f.archivado && !mostrarArchivados) continue;
-
                 hubsArray.push({ id, f, res });
             }
 
@@ -216,6 +217,9 @@
                 
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
                 
+                // 🔥 EL LINK REAL (Corto si existe, largo si no)
+                const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
+
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}" style="${f.archivado ? 'opacity:0.6' : ''}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
@@ -232,9 +236,12 @@
                                 <button class="btn-action btn-blue" onclick="cobrarAbono('${id}', ${f.abonoMensual})">RENOVAR</button>
                             </div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top: 15px;">
-                                <button class="btn-action btn-gray" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
-                                <a href="d.html?org=${id}" target="_blank" class="btn-action btn-black" style="text-align:center; text-decoration:none; box-sizing:border-box;">DASHBOARD</a>
+                                <button class="btn-action btn-gray" style="margin-top:0;" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
+                                <a href="d.html?org=${id}" target="_blank" class="btn-action btn-black" style="text-align:center; text-decoration:none; margin-top:0; box-sizing:border-box;">DASHBOARD</a>
                             </div>
+                            
+                            <button class="btn-action" style="background: rgba(0,122,255,0.1); color: var(--primary); width: 100%; margin-top: 10px;" onclick="PadelUtils.copiarLink('${linkFinal}')">🔗 COPIAR LINK CARTELERA</button>
+                            
                             <button class="btn-archive" onclick="alternarArchivo('${id}', ${f.archivado || false})">${f.archivado ? 'RESTAURAR CLUB' : 'ARCHIVAR CLUB (OCULTAR)'}</button>
                         </div>
                     </div>`;
@@ -283,6 +290,7 @@
             celularContacto: document.getElementById('mod-cel').value, 
             emailOrganizador: document.getElementById('mod-email-disp').value, 
             aliasPredeterminado: document.getElementById('mod-ali').value, 
+            linkCorto: document.getElementById('mod-link-corto').value.trim(), // 🔥 GUARDAMOS EL LINK CORTO
             abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
             costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
             limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
@@ -301,7 +309,17 @@
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
-            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 0; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            document.getElementById('edit-id').value = id; 
+            document.getElementById('mod-nom').value = f.nombreOrg || ""; 
+            document.getElementById('mod-con').value = f.nombreContacto || ""; 
+            document.getElementById('mod-cel').value = f.celularContacto || ""; 
+            document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
+            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
+            document.getElementById('mod-link-corto').value = f.linkCorto || ""; // 🔥 CARGAMOS EL LINK CORTO
+            document.getElementById('mod-abono').value = f.abonoMensual || 0; 
+            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 0; 
+            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';

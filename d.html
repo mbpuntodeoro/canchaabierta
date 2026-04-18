@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=13"></script>
+    <script src="app-config.js?v=16"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -120,9 +120,10 @@
 
             <div class="card-dark section fade-in">
                 <div class="flex space-between center">
-                    <div style="font-size: 14px; font-weight: 600;">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
+                    <div style="font-size: 14px; font-weight: 600;" id="lbl-vencimiento">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
                     <div id="badge-abono" class="badge badge-ok">AL DÍA</div>
                 </div>
+                <div id="txt-dias-trial" style="font-size: 12px; color: var(--blue); font-weight: 800; margin-top: 4px; display: none;">Te quedan -- días de prueba gratuita</div>
                 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
                 
@@ -367,10 +368,33 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
+        const lblVencimiento = document.getElementById('lbl-vencimiento');
+        const txtDiasTrial = document.getElementById('txt-dias-trial');
         const elRestantes = document.getElementById('txt-canchas-restantes');
+        const badge = document.getElementById('badge-abono');
+        
+        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono);
+        const diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
+        
+        badge.className = "badge"; 
         
         if (res.enTrial) {
-            // 🔥 LÓGICA DE TRIAL ACTIVA
+            // 🔥 LÓGICA DE TRIAL ACTIVA (Títulos y Textos)
+            lblVencimiento.innerHTML = `Tu prueba vence el <b id="txt-venc-abono" style="color:white">${fechaStr}</b>`;
+            
+            badge.innerText = "TRIAL GRATUITO";
+            badge.style.background = "rgba(0,122,255,0.15)";
+            badge.style.color = "var(--blue)";
+            
+            if (diasFaltantes > 0) {
+                txtDiasTrial.innerText = `⏳ Te quedan ${diasFaltantes} día${diasFaltantes !== 1 ? 's' : ''} de prueba gratuita`;
+                txtDiasTrial.style.display = 'block';
+            } else {
+                txtDiasTrial.innerText = `⏳ Tu prueba finaliza hoy`;
+                txtDiasTrial.style.display = 'block';
+            }
+
+            // Consumos Bonificados
             const totalSumaTrial = res.consumoBonificado + res.deudaCanchas;
             const cantSumaTrial = res.cantTurnosBonificados + res.cantTurnosPendientes;
 
@@ -385,8 +409,13 @@
             elRestantes.style.display = 'block';
 
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${cantSumaTrial || 0} cancha${cantSumaTrial !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(totalSumaTrial)}`;
+        
         } else {
             // 🔥 LÓGICA NORMAL (PAGANDO)
+            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
+            txtDiasTrial.style.display = 'none';
+            const txtVenc = document.getElementById('txt-venc-abono'); // Re-capturamos porque el innerHTML lo pisa
+
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
             oldDeuda = res.deudaCanchas;
 
@@ -406,42 +435,29 @@
             }
 
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
-        }
 
-        // BADGES ESTADO
-        const badge = document.getElementById('badge-abono');
-        const txtVenc = document.getElementById('txt-venc-abono');
-        txtVenc.innerText = PadelSaaS.fmtFecha(res.vencimientoAbono);
-        
-        const diasFaltantes = (res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24);
-        const porcentajeUso = res.limiteTotal > 0 ? (res.deudaCanchas / res.limiteTotal) : 0;
+            // Estados Normales
+            const porcentajeUso = res.limiteTotal > 0 ? (res.deudaCanchas / res.limiteTotal) : 0;
 
-        badge.className = "badge"; 
-        txtVenc.style.color = ""; 
-
-        if (res.enTrial) {
-            badge.innerText = "TRIAL GRATUITO";
-            badge.style.background = "rgba(0,122,255,0.15)";
-            badge.style.color = "var(--blue)";
-            txtVenc.style.color = "white";
-        } else if (res.bloqueadoAbono) {
-            badge.innerText = "ABONO VENCIDO";
-            badge.classList.add('badge-error');
-            txtVenc.style.color = "var(--red)";
-        } else if (res.bloqueadoLimite) {
-            badge.innerText = "LÍMITE ALCANZADO";
-            badge.classList.add('badge-error');
-        } else if (porcentajeUso >= 0.8) {
-            badge.innerText = "CERCA DEL LÍMITE";
-            badge.classList.add('badge-warning');
-        } else if (diasFaltantes <= 5) {
-            badge.innerText = "ABONO POR VENCER";
-            badge.classList.add('badge-warning');
-            txtVenc.style.color = "var(--orange)";
-        } else {
-            badge.innerText = "AL DÍA";
-            badge.classList.add('badge-ok');
-            txtVenc.style.color = "var(--green)";
+            if (res.bloqueadoAbono) {
+                badge.innerText = "ABONO VENCIDO";
+                badge.classList.add('badge-error');
+                txtVenc.style.color = "var(--red)";
+            } else if (res.bloqueadoLimite) {
+                badge.innerText = "LÍMITE ALCANZADO";
+                badge.classList.add('badge-error');
+            } else if (porcentajeUso >= 0.8) {
+                badge.innerText = "CERCA DEL LÍMITE";
+                badge.classList.add('badge-warning');
+            } else if (diasFaltantes <= 5) {
+                badge.innerText = "ABONO POR VENCER";
+                badge.classList.add('badge-warning');
+                txtVenc.style.color = "var(--orange)";
+            } else {
+                badge.innerText = "AL DÍA";
+                badge.classList.add('badge-ok');
+                txtVenc.style.color = "var(--green)";
+            }
         }
 
         isAccountBlocked = res.isBlocked;

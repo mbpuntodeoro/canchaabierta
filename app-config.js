@@ -18,7 +18,7 @@ const db = firebase.database();
 // 2. UTILIDADES Y MOTOR FINANCIERO
 const PadelUtils = {
     fmtDinero: (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val || 0),
-    copiarLink: (url) => { navigator.clipboard.writeText(url).then(() => alert("¡Link copiado!")); },
+    copiarLink: (url) => { navigator.clipboard.writeText(url).then(() => alert("¡Copiado al portapapeles!")); },
     puedeSuspender: (fecha, hora) => {
         const ahora = new Date(); const evento = new Date(fecha + 'T' + hora);
         return ((evento - ahora) / 3600000) > 2; 
@@ -27,6 +27,20 @@ const PadelUtils = {
         const date = new Date(fechaActual + 'T12:00:00');
         date.setDate(date.getDate() + 7);
         return date.toISOString().split('T')[0];
+    },
+    
+    // 🔥 ESTAS SON LAS FUNCIONES QUE LE FALTABAN A TU i.html
+    fmtFechaFull: (f) => {
+        if(!f) return '--';
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const m = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const d = new Date(f + 'T12:00:00');
+        return `${dias[d.getDay()]} ${d.getDate()} de ${m[d.getMonth()]}`;
+    },
+    fmtFechaCorta: (f) => {
+        if(!f) return '--';
+        const d = new Date(f + 'T12:00:00');
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 };
 

@@ -6,62 +6,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=11"></script>
+    <script src="app-config.js?v=15"></script>
     <style>
         :root { 
-            --primary: #007aff; --green: #34C759; --orange: #FF9F0A;
-            --bg-main: #F2F2F7; --text-main: #111111; --text-sub: #6B7280; --border: #E5E5EA;
+            --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; --gray-3: #C7C7CC;
+            --text-main: #1C1C1E; --text-sub: #8E8E93; 
+            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
+            --green-grad: linear-gradient(180deg, #34C759, #30B350);
             --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
         body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
         
         .main-wrapper { flex: 1; display: flex; align-items: center; width: 100%; max-width: 420px; }
         
-        .card { background: white; border-radius: 28px; padding: 35px 25px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.06); box-sizing: border-box; display: none; }
+        /* 🔥 CARD ELEVATED */
+        .card-elevated { background: white; border-radius: 24px; padding: 35px 25px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box; display: none; }
         
         .title { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 20px; line-height: 1.2; letter-spacing: -0.5px;}
-        .info-box { background: #F9FAFB; padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #E5E7EB; }
+        .info-box { background: var(--gray-1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid var(--gray-2); }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 10px; }
         .info-row:last-child { margin-bottom: 0; }
-        .input-std { width: 100%; padding: 18px; border-radius: 16px; border: 1.5px solid #E5E7EB; margin-bottom: 12px; font-family: inherit; font-size: 15px; outline: none; box-sizing: border-box; font-weight: 600; transition: border-color 0.2s;}
-        .input-std:focus { border-color: var(--primary); }
         
-        .btn-join { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: transform var(--anim-fast) var(--ease-out), opacity var(--anim-fast); position: relative; letter-spacing: 0.5px;}
-        .btn-join:active { transform: scale(0.96); opacity: 0.9; }
+        /* 🔥 INPUTS iOS */
+        .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--gray-2); margin-bottom: 12px; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box; font-weight: 600; transition: border-color 0.2s;}
+        .input-std::placeholder { color: var(--gray-3); }
+        .input-std:focus { border-color: #007AFF; }
+        
+        /* 🔥 CTAs DOMINANTES */
+        .btn-join { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); position: relative; letter-spacing: 0.5px;}
+        .btn-join:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
         
         .loader { display: none; width: 18px; height: 18px; border: 2.5px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: auto; }
         .loading .btn-text { display: none; }
         .loading .loader { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* ÉXITO */
         .success-enter { animation: modalIn 400ms var(--ease-out) forwards; }
         @keyframes modalIn { 0% { transform: translateY(20px) scale(0.95); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         
-        .check-icon { font-size: 35px; color: white; background: var(--green); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; transform: scale(0.5); opacity: 0; animation: popCheck 400ms 150ms var(--ease-out) forwards; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
+        .check-icon { font-size: 35px; color: white; background: #34C759; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; transform: scale(0.5); opacity: 0; animation: popCheck 400ms 150ms var(--ease-out) forwards; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
         @keyframes popCheck { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        .payment-box { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 20px; padding: 24px; margin: 24px 0; }
-        .monto { font-size: 38px; font-weight: 900; margin: 5px 0 20px 0; color: var(--text-main); letter-spacing: -1px; }
+        /* 🔥 PAYMENT BOX NEUTRO Y MONTO PROTAGONISTA */
+        .payment-box { background: var(--gray-1); border: 1px solid #EFEFF4; border-radius: 20px; padding: 20px; margin: 24px 0; }
+        .monto { font-size: 32px; font-weight: 800; margin: 5px 0 20px 0; color: var(--text-main); letter-spacing: -1px; }
         
-        .alias-box { background: #E5E7EB; padding: 14px; border-radius: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; font-size: 16px; word-break: break-all; letter-spacing: 0.5px;}
-        .btn-copy { background: white; border: 1px solid #D1D5DB; color: var(--text-main); font-weight: 700; padding: 12px 20px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast) var(--ease-out); box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-        .btn-copy:active { transform: scale(0.95); background: #F9FAFB;}
+        .alias-box { background: var(--gray-2); padding: 14px; border-radius: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; font-size: 16px; word-break: break-all; letter-spacing: 0.5px;}
+        .btn-copy { background: white; border: 1px solid var(--gray-3); color: var(--text-main); font-weight: 700; padding: 12px 20px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast) var(--ease-out); box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .btn-copy:active { transform: scale(0.95); background: var(--gray-1);}
 
-        .btn-green { background: var(--green); color: white; border: none; padding: 18px; border-radius: 18px; width: 100%; font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-shadow: 0 4px 15px rgba(52,199,89,0.2);}
-        .btn-green:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(52,199,89,0.2);}
+        .btn-green { background: var(--green-grad); box-shadow: 0 8px 20px rgba(52,199,89,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast);}
+        .btn-green:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(52,199,89,0.2);}
         
         .link-back { margin-top: 20px; font-size: 13px; color: var(--text-sub); font-weight: 700; text-decoration: none; display: inline-block; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;}
-
         #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
-
-        /* 🚀 FOOTER VIRAL LOOP */
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
     </style>
 </head>
 <body>
@@ -69,17 +68,16 @@
     <div id="loading-init">Preparando cancha...</div>
 
     <div class="main-wrapper">
-        <div class="card" id="main-card">
+        <div class="card-elevated" id="main-card">
             
             <div id="form-screen">
                 <div class="title" id="t-nombre">--</div>
-                
                 <div class="info-box">
                     <div class="info-row">📅 <span id="t-fec">--</span></div>
                     <div class="info-row">🕒 <span id="t-hs">--</span></div>
                     <div class="info-row">📍 <span id="t-lug">--</span></div>
                     <div class="info-row">👤 <span id="t-org">--</span></div>
-                    <div class="info-row" style="margin-top: 15px; font-size: 18px; font-weight: 900; color:var(--text-main);">💰 <span id="t-val">$0</span></div>
+                    <div class="info-row" style="margin-top: 15px; font-size: 22px; font-weight: 900; color:var(--text-main);">💰 <span id="t-val">$0</span></div>
                 </div>
 
                 <input type="text" id="p-name" class="input-std" placeholder="Tu Nombre y Apellido">
@@ -89,14 +87,10 @@
                     <span class="btn-text">CONFIRMAR MI LUGAR</span>
                     <span class="loader"></span>
                 </button>
-                
-                <div style="text-align: center;">
-                    <a onclick="window.location.href='v.html?org='+org" class="link-back">VOLVER A LA CARTELERA</a>
-                </div>
+                <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">VOLVER A LA CARTELERA</a></div>
             </div>
 
             <div id="success-screen" style="display:none; text-align:center;">
-                
                 <div class="check-icon">✓</div>
                 <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">Inscripción exitosa</h2>
                 <p style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 20px 0;">Tu lugar está pre-reservado.</p>
@@ -104,31 +98,16 @@
                 <div class="payment-box">
                     <p style="font-size:12px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 5px 0;">Confirmá tu lugar con el pago</p>
                     <div class="monto" id="s-importe-final">$0</div>
-                    
                     <p style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 8px 0;">ALIAS / CBU</p>
                     <div class="alias-box" id="s-alias-final">--</div>
-                    
                     <button class="btn-copy" onclick="copiarAlias(this)">📋 Copiar alias</button>
                 </div>
 
                 <button onclick="notificarWa()" class="btn-green">💬 Enviar comprobante</button>
-                
                 <p style="font-size:11px; color:#9CA3AF; font-weight:600; margin:15px 0 5px 0;">Tu lugar se confirma al recibir el pago.</p>
-                
-                <div style="text-align: center;">
-                    <a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a>
-                </div>
+                <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a></div>
             </div>
-
         </div>
-    </div>
-
-    <div class="footer-pro" id="footer-pro" style="display:none;">
-        <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
-        <hr class="footer-divider">
-        <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
-        <p class="footer-subtitle">Pasala a piloto automático.</p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
     </div>
 
 <script>
@@ -145,7 +124,6 @@
             
             document.getElementById('loading-init').style.display = 'none';
             document.getElementById('main-card').style.display = 'block';
-            document.getElementById('footer-pro').style.display = 'block';
 
             document.getElementById('main-card').style.animation = "modalIn 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards";
 
@@ -175,14 +153,10 @@
 
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             const list = s.val() || [];
-            
             if (list.length >= (eventData.cupo || 99)) {
                 alert("Lo sentimos, la cancha ya está llena.");
-                btnElement.classList.remove("loading");
-                btnElement.disabled = false;
-                return;
+                btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
-
             list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
@@ -190,15 +164,9 @@
                     document.getElementById('form-screen').style.display = 'none';
                     const successScreen = document.getElementById('success-screen');
                     successScreen.style.display = 'block';
-                    
                     successScreen.classList.add('success-enter');
-
-                    if (navigator.vibrate) { navigator.vibrate(30); }
-
-                    setTimeout(() => {
-                        document.querySelector(".btn-green")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }, 500);
-
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    setTimeout(() => { document.querySelector(".btn-green")?.scrollIntoView({ behavior: "smooth", block: "center" }); }, 500);
                 }, 600);
             });
         });
@@ -207,26 +175,19 @@
     function copiarAlias(btnElement) {
         const alias = document.getElementById('s-alias-final').innerText;
         if(alias === 'Consultar al organizador') return;
-        
         navigator.clipboard.writeText(alias).then(() => {
             const originalText = btnElement.innerText;
             btnElement.innerText = "¡COPIADO!";
-            btnElement.style.background = "var(--green)";
-            btnElement.style.color = "white";
-            btnElement.style.border = "none";
-            
+            btnElement.style.background = "#34C759"; btnElement.style.color = "white"; btnElement.style.border = "none";
             setTimeout(() => { 
                 btnElement.innerText = originalText; 
-                btnElement.style.background = "white";
-                btnElement.style.color = "var(--text-main)";
-                btnElement.style.border = "1px solid #D1D5DB";
+                btnElement.style.background = "white"; btnElement.style.color = "var(--text-main)"; btnElement.style.border = "1px solid var(--gray-3)";
             }, 2000);
         });
     }
 
     function notificarWa() {
-        const celOrg = eventData.celuOrganizador;
-        const nombrePlayer = document.getElementById('p-name').value.trim();
+        const celOrg = eventData.celuOrganizador; const nombrePlayer = document.getElementById('p-name').value.trim();
         if (!celOrg) return alert("El organizador no configuró un número.");
         const texto = `¡Hola! Me anoté a la cancha "${eventData.organiza}". Soy ${nombrePlayer}. Te envío el comprobante del pago:`;
         window.open(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');

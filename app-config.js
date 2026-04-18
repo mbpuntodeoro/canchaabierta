@@ -51,28 +51,27 @@ const PadelSaaS = {
         let deudaCanchas = 0;
         let deudaAbono = 0;
         let cantTurnosPendientes = 0;
+        
+        // 🔥 NUEVO: Contadores de Bonificación
+        let consumoBonificado = 0;
+        let cantTurnosBonificados = 0;
 
         movimientos.forEach(m => {
             if (m.estado === 'pendiente') {
-                if (m.tipo === 'abono') {
-                    deudaAbono += (m.monto || 0);
-                } else {
-                    deudaCanchas += (m.monto || 0);
-                    cantTurnosPendientes++;
-                }
+                if (m.tipo === 'abono') deudaAbono += (m.monto || 0);
+                else { deudaCanchas += (m.monto || 0); cantTurnosPendientes++; }
+            } else if (m.estado === 'bonificado') {
+                consumoBonificado += (m.monto || 0);
+                cantTurnosBonificados++;
             }
         });
 
         const limiteTotal = cuenta.limiteCredito || 0;
         const vencimientoAbono = cuenta.vencimientoAbono || ahora;
-        
-        // 🔥 Detectamos si está en trial
         const enTrial = cuenta.enTrial === true;
 
         const disponible = Math.max(0, limiteTotal - deudaCanchas);
-
         const bloqueadoAbono = ahora > vencimientoAbono;
-        // 🔥 Si está en trial, NUNCA se bloquea por límite
         const bloqueadoLimite = enTrial ? false : (deudaCanchas > limiteTotal);
         const bloqueadoAdmin = cuenta.cuentaSuspendida === true;
 
@@ -84,17 +83,10 @@ const PadelSaaS = {
         else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido. Salde su consumo de canchas.";
 
         return {
-            deudaCanchas,
-            deudaAbono,
-            cantTurnosPendientes,
-            limiteTotal,
-            disponible,
-            vencimientoAbono,
-            isBlocked,
-            msgLocked,
-            bloqueadoAbono,
-            bloqueadoLimite,
-            enTrial // Pasamos el dato al Dashboard
+            deudaCanchas, deudaAbono, cantTurnosPendientes,
+            consumoBonificado, cantTurnosBonificados, // Pasamos el reporte bonificado
+            limiteTotal, disponible, vencimientoAbono,
+            isBlocked, msgLocked, bloqueadoAbono, bloqueadoLimite, enTrial
         };
     },
     fmtFecha: function(ms) {

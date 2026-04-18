@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=12"></script>
+    <script src="app-config.js?v=15"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -25,7 +25,7 @@
         .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .text { font-size: 15px; font-weight: 600; }
 
-        /* PANTALLA DE ARRANQUE (BOOT SCREEN) */
+        /* BOOT SCREEN */
         #boot-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
         .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -141,12 +141,10 @@
                 </div>
                 
                 <div class="text-center mt-3">
-                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;">
-                        <b id="txt-consumo-total" style="color:white; font-size: 16px;">$0</b> de <span id="txt-limite-total">$0</span>
-                    </div>
+                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total">
+                        </div>
                     <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;">
-                        Podés crear aprox. -- canchas más
-                    </div>
+                        </div>
                 </div>
                 
                 <div class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
@@ -302,7 +300,6 @@
     const auth = firebase.auth();
 
     auth.onAuthStateChanged(user => {
-        // MATAMOS EL BOOT SCREEN SIEMPRE
         document.getElementById('boot-screen').style.display = 'none';
 
         if (user) {
@@ -312,7 +309,6 @@
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Buscando datos...";
                 
-                // DETECTOR DE ERRORES AL BUSCAR EL CLUB
                 db.ref('facturacion').once('value').then(snap => {
                     let foundOrg = null;
                     const data = snap.val() || {};
@@ -344,7 +340,6 @@
                 }
             }
         } else {
-            // SI NO ESTÁ LOGUEADO, MOSTRAMOS EL FORMULARIO
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-container').style.display = 'none';
             isInitialized = false;
@@ -375,24 +370,35 @@
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
+        // 1. ANIMAMOS DEUDA SIEMPRE
         animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
-        animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible);
-        animateValue(document.getElementById('txt-consumo-total'), oldTotal, res.deudaCanchas);
-        
         oldDeuda = res.deudaCanchas;
-        oldDisp = res.disponible;
-        oldTotal = res.deudaCanchas;
 
-        document.getElementById('txt-limite-total').innerText = PadelUtils.fmtDinero(res.limiteTotal);
-        
-        const costoCancha = cuentaInfo.costoPorCancha || 0;
+        // 2. LÓGICA DE TRIAL Y LÍMITES
         const elRestantes = document.getElementById('txt-canchas-restantes');
-        if (costoCancha > 0) {
-            const restantes = Math.floor(res.disponible / costoCancha);
-            elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
+        
+        if (res.enTrial) {
+            document.getElementById('txt-disponible').innerText = "ILIMITADO";
+            document.getElementById('txt-consumo-total').innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> <span style="color:var(--blue); font-weight:900; font-size:10px; text-transform:uppercase; margin-left:6px; padding:3px 8px; background:rgba(0,122,255,0.15); border-radius:8px;">BONIFICADO</span>`;
+            
+            elRestantes.innerText = "Canchas ilimitadas durante tu prueba";
+            elRestantes.style.color = "var(--blue)";
             elRestantes.style.display = 'block';
         } else {
-            elRestantes.style.display = 'none';
+            animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible);
+            oldDisp = res.disponible;
+            
+            document.getElementById('txt-consumo-total').innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(res.limiteTotal)}</span>`;
+
+            const costoCancha = cuentaInfo.costoPorCancha || 0;
+            if (costoCancha > 0) {
+                const restantes = Math.floor(res.disponible / costoCancha);
+                elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
+                elRestantes.style.color = "var(--green)";
+                elRestantes.style.display = 'block';
+            } else {
+                elRestantes.style.display = 'none';
+            }
         }
 
         document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
@@ -407,7 +413,12 @@
         badge.className = "badge"; 
         txtVenc.style.color = ""; 
 
-        if (res.bloqueadoAbono) {
+        if (res.enTrial) {
+            badge.innerText = "TRIAL GRATUITO";
+            badge.style.background = "rgba(0,122,255,0.15)";
+            badge.style.color = "var(--blue)";
+            txtVenc.style.color = "white";
+        } else if (res.bloqueadoAbono) {
             badge.innerText = "ABONO VENCIDO";
             badge.classList.add('badge-error');
             txtVenc.style.color = "var(--red)";
@@ -504,10 +515,8 @@
     function init() {
         if(!orgId) return;
 
-        // DETECTOR DE ERRORES GENERAL
         const errorHandler = (err) => {
-            alert("❌ Error de lectura en Firebase: " + err.message);
-            console.error(err);
+            console.error("Error Firebase:", err);
         };
 
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 

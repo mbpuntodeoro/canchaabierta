@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=15"></script>
+    <script src="app-config.js?v=18"></script>
     <style>
         :root { 
             --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; 
@@ -21,19 +21,15 @@
         header { background: #111; color: white; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index: 100;}
         .container { max-width: 850px; margin: 30px auto; padding: 0 20px; }
         
-        /* 🔥 RESUMEN FINANCIERO SUPERIOR */
         .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .summary-box { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: center; }
         .sum-val { font-size: 24px; font-weight: 900; margin-top: 5px; color: var(--text); }
         .sum-lbl { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: 0.5px;}
 
-        /* 🔥 FORMULARIO COMPACTO (DETAILS) */
         details.new-org { background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid #E5E5EA;}
         details.new-org summary { padding: 20px; font-weight: 800; cursor: pointer; outline: none; list-style: none; font-size: 15px; color: var(--primary);}
-        details.new-org summary::-webkit-details-marker { display: none; }
         .form-inner { padding: 0 20px 20px 20px; }
 
-        /* 🔥 LISTA DE ORGANIZADORES - JERARQUÍA PRO */
         .hub-item { background: white; border-radius: 20px; margin-bottom: 12px; border: 1px solid #E5E5EA; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; transition: transform var(--anim-fast);}
         .hub-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .hub-name { font-weight: 900; font-size: 16px; }
@@ -45,23 +41,24 @@
         .st-warn { background: rgba(255,159,10,0.1); color: var(--warning); }
         .st-danger { background: rgba(255,59,48,0.1); color: var(--danger); }
         .st-trial { background: rgba(0,122,255,0.1); color: var(--primary); }
+        .st-archived { background: #eee; color: #666; }
 
         .fin-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #E5E5EA; }
-        .fin-row:last-child { border-bottom: none; }
         .fin-lbl { font-size: 11px; color: var(--sub); font-weight: 800; }
         
-        /* 🔥 BOTONES SISTEMA */
         .btn-action { border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast); color: white;}
-        .btn-action:active { transform: scale(0.95); }
         .btn-green { background: var(--green-grad); box-shadow: 0 4px 10px rgba(52,199,89,0.2); }
         .btn-blue { background: var(--blue-grad); box-shadow: 0 4px 10px rgba(0,122,255,0.2); }
         .btn-black { background: #111; color: white; width: 100%; padding: 15px; margin-top: 10px;}
         .btn-gray { background: #F2F2F7; color: var(--text); width: 100%; padding: 15px; margin-top: 10px;}
+        .btn-archive { background: transparent; border: 1.5px solid #ddd; color: #999; width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; font-weight: 800; font-size: 10px;}
 
         .input-std { width: 100%; padding: 15px; border-radius: 14px; background: #F2F2F7; border: 1px solid #E5E5EA; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; font-weight: 600;}
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.15);}
         label { display: block; font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin: 12px 0 5px 5px; }
+
+        .archive-toggle { text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; color: var(--sub); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;}
     </style>
 </head>
 <body>
@@ -82,20 +79,10 @@
         </header>
 
         <div class="container">
-            
             <div class="summary-grid">
-                <div class="summary-box">
-                    <div class="sum-lbl">Total a Cobrar</div>
-                    <div class="sum-val" style="color: var(--danger);" id="sum-deuda">$0</div>
-                </div>
-                <div class="summary-box">
-                    <div class="sum-lbl">Clubes Activos</div>
-                    <div class="sum-val" id="sum-activos">0</div>
-                </div>
-                <div class="summary-box">
-                    <div class="sum-lbl">Con Deuda</div>
-                    <div class="sum-val" id="sum-riesgo">0</div>
-                </div>
+                <div class="summary-box"><div class="sum-lbl">Total a Cobrar</div><div class="sum-val" style="color: var(--danger);" id="sum-deuda">$0</div></div>
+                <div class="summary-box"><div class="sum-lbl">Clubes Activos</div><div class="sum-val" id="sum-activos">0</div></div>
+                <div class="summary-box"><div class="sum-lbl">Con Deuda</div><div class="sum-val" id="sum-riesgo">0</div></div>
             </div>
 
             <details class="new-org">
@@ -114,6 +101,11 @@
             </details>
 
             <div id="lista-clubes">Cargando métricas...</div>
+
+            <div class="archive-toggle" onclick="toggleArchivados()">
+                <input type="checkbox" id="chk-show-archived" style="pointer-events: none;"> 
+                <span>Mostrar clubes archivados</span>
+            </div>
         </div>
     </div>
 
@@ -128,8 +120,7 @@
             </div>
             <label>Email de Acceso</label>
             <div style="display:flex; gap:10px; margin-bottom:12px;">
-                <input id="mod-email-disp" class="input-std" style="margin-bottom:0;">
-                <button onclick="enviarPassReset()" class="btn-action btn-black" style="margin-top:0; width:auto; padding:0 15px; font-size:10px;">RESETEAR</button>
+                <input id="mod-email-disp" class="input-std" style="margin-bottom:0;"><button onclick="enviarPassReset()" class="btn-action btn-black" style="margin-top:0; width:auto; padding:0 15px; font-size:10px;">RESETEAR</button>
             </div>
             <label>Alias Cobros</label><input id="mod-ali" class="input-std">
             <hr style="border:0; border-top:1px dashed #E5E5EA; margin: 15px 0;">
@@ -140,15 +131,14 @@
             <label>Límite Canchas ($)</label><input id="mod-limite" type="number" class="input-std">
             
             <div style="background: #F9F9FB; padding: 15px; border-radius: 16px; border: 1px solid #EFEFF4; margin: 15px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div><strong style="font-size:13px;">Modo Trial</strong><br><span style="font-size:10px; color:var(--sub);">Consumo ilimitado</span></div>
                     <label style="position: relative; display: inline-block; width: 44px; height: 24px; margin:0;"><input type="checkbox" id="mod-trial-switch" style="opacity: 0; width: 0; height: 0;" onchange="actualizarTrial(this.checked)"><span style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .3s; border-radius: 34px;" id="slider-trial"></span><span style="position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="knob-trial"></span></label>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; margin-top: 10px;">
-                    <input id="mod-trial-days" class="input-std" type="number" placeholder="Días extra..." style="margin-bottom:0; flex:1; padding: 10px;">
-                    <button onclick="sumarDiasVencimiento()" class="btn-action btn-blue" style="padding:10px 15px;">SUMAR</button>
+                    <input id="mod-trial-days" class="input-std" type="number" placeholder="Días extra..." style="margin-bottom:0; flex:1; padding: 10px;"><button onclick="sumarDiasVencimiento()" class="btn-action btn-blue" style="padding:10px 15px;">SUMAR</button>
                 </div>
-                <p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center; margin: 10px 0 0 0;"></p>
+                <p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center; margin-top: 10px;"></p>
             </div>
 
             <div style="background:#fff2f2; padding:15px; border-radius:16px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffdbdb">
@@ -161,27 +151,27 @@
         </div>
     </div>
 
-    <div id="modal-detalle" class="modal"><div class="modal-content"><h2 style="margin-top:0">📋 Movimientos</h2><div style="display:flex; gap:10px; margin-bottom:15px; background:#f2f2f7; padding:5px; border-radius:14px;"><button id="tab-pend" style="flex:1; padding:10px; border:none; border-radius:10px; font-weight:800; cursor:pointer;" onclick="cambiarTab('pendiente')">PENDIENTES</button><button id="tab-pag" style="flex:1; padding:10px; border:none; border-radius:10px; font-weight:800; cursor:pointer;" onclick="cambiarTab('pagado')">HISTORIAL</button></div><div id="lista-movimientos-det" style="max-height:50vh; overflow-y:auto;"></div><button onclick="cerrarModals()" class="btn-action btn-black" style="margin-top:20px;">CERRAR</button></div></div>
-
 <script>
     const auth = firebase.auth();
-    let isInitialized = false, currentVencimiento = 0, currentMovsData = [];
+    let isInitialized = false, currentVencimiento = 0, mostrarArchivados = false;
 
     auth.onAuthStateChanged(user => {
         if (user) { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; if(!isInitialized) { render(); isInitialized = true; } }
         else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-content').style.display = 'none'; isInitialized = false; }
     });
 
-    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Error")); }
+    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Error de login")); }
 
-    // 🔥 RENDERIZADO INTELIGENTE Y ORDENADO
+    function toggleArchivados() {
+        mostrarArchivados = !mostrarArchivados;
+        document.getElementById('chk-show-archived').checked = mostrarArchivados;
+        render();
+    }
+
     function render() {
         db.ref('hubs').on('value', async (snap) => {
-            const hubs = snap.val() || {};
-            const container = document.getElementById('lista-clubes');
-            
-            let hubsArray = [];
-            let sumDeuda = 0, sumActivos = 0, sumRiesgo = 0;
+            const hubs = snap.val() || {}, container = document.getElementById('lista-clubes');
+            let hubsArray = [], sumDeuda = 0, sumActivos = 0, sumRiesgo = 0;
 
             for (let id in hubs) {
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
@@ -190,47 +180,44 @@
                 const res = PadelSaaS.analizarCuenta(f, mSnap.val() || {});
                 if (!res) continue;
 
-                hubsArray.push({ id, f, res });
-
-                if (!f.cuentaSuspendida && !res.isBlocked) sumActivos++;
-                if (res.deudaCanchas > 0) {
-                    sumRiesgo++;
-                    sumDeuda += res.deudaCanchas;
+                // Solo sumamos a las métricas si NO está archivado
+                if (!f.archivado) {
+                    if (!f.cuentaSuspendida && !res.isBlocked) sumActivos++;
+                    if (res.deudaCanchas > 0) { sumRiesgo++; sumDeuda += res.deudaCanchas; }
                 }
+
+                // Filtrado visual
+                if (f.archivado && !mostrarArchivados) continue;
+
+                hubsArray.push({ id, f, res });
             }
 
-            // Llenar resumen arriba
             document.getElementById('sum-deuda').innerText = PadelUtils.fmtDinero(sumDeuda);
             document.getElementById('sum-activos').innerText = sumActivos;
             document.getElementById('sum-riesgo').innerText = sumRiesgo;
 
-            // 🔥 ORDEN MÁGICO: Deuda > Activos > Trial
             hubsArray.sort((a, b) => {
+                if (a.f.archivado && !b.f.archivado) return 1;
+                if (!a.f.archivado && b.f.archivado) return -1;
                 if (a.res.deudaCanchas > 0 && b.res.deudaCanchas === 0) return -1;
-                if (a.res.deudaCanchas === 0 && b.res.deudaCanchas > 0) return 1;
-                if (!a.res.enTrial && b.res.enTrial) return -1;
-                if (a.res.enTrial && !b.res.enTrial) return 1;
                 return 0;
             });
 
             container.innerHTML = "";
-            
             hubsArray.forEach(data => {
                 const {id, f, res} = data;
-                
-                // Sistema de Tags
                 let tag = "";
-                if (f.cuentaSuspendida) tag = `<span class="tag-status st-danger">Suspendido</span>`;
+                if (f.archivado) tag = `<span class="tag-status st-archived">Archivado</span>`;
+                else if (f.cuentaSuspendida) tag = `<span class="tag-status st-danger">Suspendido</span>`;
                 else if (res.enTrial) tag = `<span class="tag-status st-trial">Trial</span>`;
                 else if (res.isBlocked) tag = `<span class="tag-status st-danger">Vencido</span>`;
                 else if (res.deudaCanchas > 0) tag = `<span class="tag-status st-warn">Deuda</span>`;
                 else tag = `<span class="tag-status st-ok">Activo</span>`;
                 
-                // Botón Cobrar Inteligente
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
                 
                 container.innerHTML += `
-                    <div class="hub-item" id="item-${id}">
+                    <div class="hub-item" id="item-${id}" style="${f.archivado ? 'opacity:0.6' : ''}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
                             <span class="hub-name">${f.nombreOrg || id} ${tag}</span>
                             <span style="color:var(--sub); font-size:11px">GESTIONAR ▾</span>
@@ -240,16 +227,15 @@
                                 <div><span class="fin-lbl">DEUDA CANCHAS</span><br><b style="color:var(--danger); font-size:18px;">${PadelUtils.fmtDinero(res.deudaCanchas)}</b></div>
                                 ${btnCanchas}
                             </div>
-                            
                             <div class="fin-row">
                                 <div><span class="fin-lbl">ABONO MENSUAL</span><br><b style="color:var(--success); font-size:16px;">${PadelUtils.fmtDinero(f.abonoMensual)}</b></div>
                                 <button class="btn-action btn-blue" onclick="cobrarAbono('${id}', ${f.abonoMensual})">RENOVAR</button>
                             </div>
-                            
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top: 15px;">
                                 <button class="btn-action btn-gray" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-action btn-black" style="text-align:center; text-decoration:none; box-sizing:border-box;">DASHBOARD</a>
                             </div>
+                            <button class="btn-archive" onclick="alternarArchivo('${id}', ${f.archivado || false})">${f.archivado ? 'RESTAURAR CLUB' : 'ARCHIVAR CLUB (OCULTAR)'}</button>
                         </div>
                     </div>`;
             });
@@ -261,39 +247,50 @@
         const refMovs = db.ref(`facturacion/${id}/movimientos`), snap = await refMovs.once('value');
         const movs = snap.val() || {}, updates = {}, ahora = Date.now();
         for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') { updates[`${k}/estado`] = 'pagado'; updates[`${k}/fechaPago`] = ahora; } }
-        if(Object.keys(updates).length > 0) await refMovs.update(updates);
+        if(Object.keys(updates).length > 0) { await refMovs.update(updates); alert("✅ Canchas saldadas."); }
     }
 
     async function cobrarAbono(id, monto) {
-        if(!confirm(`¿Registrar renovación por ${PadelUtils.fmtDinero(monto)}?\nEl cliente pasará a modo ACTIVO (Fin de Trial).`)) return;
+        if(!confirm(`¿Registrar renovación por ${PadelUtils.fmtDinero(monto)}?\nEl cliente pasará a modo ACTIVO.`)) return;
         const ahora = Date.now(), refMovs = db.ref(`facturacion/${id}/movimientos`), refC = db.ref(`facturacion/${id}/cuenta`);
         await refMovs.push({ tipo: 'abono', descripcion: `Abono Mensual`, monto: monto, estado: 'pagado', fecha: ahora, fechaPago: ahora });
         const snapC = await refC.once('value'), cuenta = snapC.val() || {};
         const nv = Math.max(ahora, (cuenta.vencimientoAbono || ahora)) + (30 * 86400000);
         await refC.update({ vencimientoAbono: nv, enTrial: false });
+        alert("✅ Abono cobrado y Trial finalizado.");
     }
 
-    async function crearHub() {
-        const id = document.getElementById('new-id').value.trim().toLowerCase(), nom = document.getElementById('new-name').value.trim(), email = document.getElementById('new-email').value.trim(), pass = document.getElementById('new-pass').value.trim(), trial = parseInt(document.getElementById('new-trial').value) || 0;
-        if(!id || !nom || !email || !pass) return alert("Faltan datos");
-        try {
-            const config = firebase.app().options; let secApp;
-            try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
-            await secApp.auth().createUserWithEmailAndPassword(email, pass); await secApp.auth().signOut();
-            await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-            await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false, enTrial: true });
-            document.querySelector('.new-org').removeAttribute('open');
-        } catch(e) { alert("Error: " + e.message); }
+    async function alternarArchivo(id, actual) {
+        const msg = actual ? "¿Restaurar este club a la lista activa?" : "¿Archivar este club? Se ocultará de la lista y no sumará a los totales.";
+        if(!confirm(msg)) return;
+        await db.ref(`facturacion/${id}/cuenta/archivado`).set(!actual);
+        alert(actual ? "Club restaurado." : "Club archivado.");
     }
 
-    function cambiarTab(est) {
-        document.getElementById('tab-pend').style.background = est === 'pendiente' ? 'var(--blue)' : 'transparent';
-        document.getElementById('tab-pend').style.color = est === 'pendiente' ? 'white' : 'var(--sub)';
-        document.getElementById('tab-pag').style.background = est === 'pagado' ? 'var(--blue)' : 'transparent';
-        document.getElementById('tab-pag').style.color = est === 'pagado' ? 'white' : 'var(--sub)';
-        const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
-        const filtrados = currentMovsData.filter(m => m.estado === est);
-        filtrados.forEach(m => { lista.innerHTML += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #eee; font-size:13px;"><div><strong>${m.descripcion}</strong><br><small style="color:#999">${PadelSaaS.fmtFecha(m.fecha)}</small></div><div style="text-align:right"><b>${PadelUtils.fmtDinero(m.monto)}</b><br><span style="font-size:9px; font-weight:900; color:${est==='pendiente'?'var(--danger)':'var(--success)'}">${est.toUpperCase()}</span></div></div>`; });
+    function sumarDiasVencimiento() { 
+        const d = parseInt(document.getElementById('mod-trial-days').value) || 0; 
+        if(d === 0) return alert("Ingresá días.");
+        currentVencimiento += (d * 86400000); 
+        document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento); 
+        document.getElementById('mod-trial-days').value = "";
+    }
+    
+    function guardarPerfil() { 
+        const id = document.getElementById('edit-id').value; 
+        const upd = { 
+            nombreOrg: document.getElementById('mod-nom').value, 
+            nombreContacto: document.getElementById('mod-con').value, 
+            celularContacto: document.getElementById('mod-cel').value, 
+            emailOrganizador: document.getElementById('mod-email-disp').value, 
+            aliasPredeterminado: document.getElementById('mod-ali').value, 
+            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
+            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
+            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
+            vencimientoAbono: currentVencimiento, 
+            cuentaSuspendida: document.getElementById('mod-susp').checked,
+            enTrial: document.getElementById('mod-trial-switch').checked
+        }; 
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados correctamente."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
     }
 
     function actualizarTrial(isT) {
@@ -304,22 +301,28 @@
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
-            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 50000; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 0; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
-    function enviarPassReset() { auth.sendPasswordResetEmail(document.getElementById('mod-email-disp').value).then(()=>alert("Mail enviado")).catch(e=>alert(e.message)); }
-    function sumarDiasVencimiento() { const d = parseInt(document.getElementById('mod-trial-days').value) || 0; currentVencimiento += (d * 86400000); document.getElementById('txt-venc-actual').innerText = "Nuevo Venc: " + PadelSaaS.fmtFecha(currentVencimiento); }
-    
-    function guardarPerfil() { 
-        const id = document.getElementById('edit-id').value; 
-        const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, aliasPredeterminado: document.getElementById('mod-ali').value, abonoMensual: parseFloat(document.getElementById('mod-abono').value), costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value), limiteCredito: parseFloat(document.getElementById('mod-limite').value), vencimientoAbono: currentVencimiento, cuentaSuspendida: document.getElementById('mod-susp').checked, enTrial: document.getElementById('mod-trial-switch').checked }; 
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => cerrarModals()); 
+    async function crearHub() {
+        const id = document.getElementById('new-id').value.trim().toLowerCase(), nom = document.getElementById('new-name').value.trim(), email = document.getElementById('new-email').value.trim(), pass = document.getElementById('new-pass').value.trim(), trial = parseInt(document.getElementById('new-trial').value) || 0;
+        if(!id || !nom || !email || !pass) return alert("Faltan datos");
+        try {
+            const config = firebase.app().options; let secApp;
+            try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
+            await secApp.auth().createUserWithEmailAndPassword(email, pass); await secApp.auth().signOut();
+            await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
+            await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false, enTrial: true, archivado: false });
+            alert("✅ Club creado con éxito.");
+            document.querySelector('.new-org').removeAttribute('open');
+        } catch(e) { alert("Error: " + e.message); }
     }
-    
+
+    function enviarPassReset() { auth.sendPasswordResetEmail(document.getElementById('mod-email-disp').value).then(()=>alert("Mail enviado")).catch(e=>alert(e.message)); }
     function cerrarModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 </script>
 </body>

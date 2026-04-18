@@ -21,7 +21,6 @@
         .h1 { margin: 0; font-weight: 900; font-size: 24px; letter-spacing: -0.5px; text-transform: uppercase; }
         .container { max-width: 500px; margin: auto; padding: 24px 16px; }
 
-        /* 🔥 CARDS MÁS LIMPIAS Y CON ELEVACIÓN */
         .card { background: var(--bg-card); border-radius: 24px; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform var(--anim-fast) var(--ease-out); border: 1px solid rgba(0,0,0,0.02); }
         .card:active { transform: scale(0.98); }
         
@@ -30,11 +29,9 @@
         
         .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
         
-        /* 🔥 FOCO: METADATA SUAVE, PRECIO GIGANTE */
         .item-meta { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
         .item-price { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 16px; letter-spacing: -0.5px;}
 
-        /* 🔥 BOTÓN APPLE 100% DESEABLE */
         .btn-primary { background: linear-gradient(180deg, #0A84FF, #007AFF); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; border: none; height: 52px; border-radius: 16px; font-weight: 800; font-size: 15px; text-transform: uppercase; cursor: pointer; width: 100%; transition: all var(--anim-fast) var(--ease-out); box-sizing: border-box; font-family: inherit; margin-top: 16px; letter-spacing: 0.5px; }
         .btn-primary:active { transform: scale(0.96); opacity: 0.9; box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
         .btn-primary.success-state { background: linear-gradient(180deg, #34C759, #30B350); box-shadow: 0 6px 14px rgba(52,199,89,0.25); transform: scale(0.96); }
@@ -138,7 +135,7 @@
                         
                         <div class="item-price">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
                         
-                        <button class="btn-primary" onclick="abrirInscripcion(this, '${d.id}')">ANOTARME</button>
+                        <button class="btn-primary" onclick="abrirInscripcion(this, '${d.id}')">INGRESAR</button>
                     </div>`;
                 });
             });
@@ -155,7 +152,7 @@
             window.location.href = `i.html?id=${eventoId}&org=${orgId}`;
             setTimeout(() => {
                 btnElement.classList.remove('success-state');
-                btnElement.innerHTML = 'ANOTARME';
+                btnElement.innerHTML = 'INGRESAR';
                 btnElement.disabled = false;
             }, 500);
         }, 350);

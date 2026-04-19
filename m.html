@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=18"></script>
+    <script src="app-config.js?v=19"></script>
     <style>
         :root { 
             --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; 
@@ -52,6 +52,7 @@
         .btn-black { background: #111; color: white; width: 100%; padding: 15px; margin-top: 10px;}
         .btn-gray { background: #F2F2F7; color: var(--text); width: 100%; padding: 15px; margin-top: 10px;}
         .btn-archive { background: transparent; border: 1.5px solid #ddd; color: #999; width: 100%; padding: 10px; margin-top: 10px; border-radius: 12px; font-weight: 800; font-size: 10px;}
+        .btn-danger-lite { background: rgba(255,59,48,0.1); color: var(--danger); width: 100%; padding: 10px; margin-top: 5px; border-radius: 12px; font-weight: 800; font-size: 10px; border:none; cursor:pointer;}
 
         .input-std { width: 100%; padding: 15px; border-radius: 14px; background: #F2F2F7; border: 1px solid #E5E5EA; margin-bottom: 12px; font-family: inherit; box-sizing: border-box; outline: none; font-weight: 600;}
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
@@ -123,7 +124,6 @@
                 <input id="mod-email-disp" class="input-std" style="margin-bottom:0;"><button onclick="enviarPassReset()" class="btn-action btn-black" style="margin-top:0; width:auto; padding:0 15px; font-size:10px;">RESETEAR</button>
             </div>
             <label>Alias Cobros</label><input id="mod-ali" class="input-std">
-            
             <label>Link Acortado (Cartelera)</label>
             <input id="mod-link-corto" class="input-std" placeholder="Ej: bit.ly/cancha-wini">
 
@@ -216,8 +216,6 @@
                 else tag = `<span class="tag-status st-ok">Activo</span>`;
                 
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
-                
-                // 🔥 EL LINK REAL (Corto si existe, largo si no)
                 const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
 
                 container.innerHTML += `
@@ -239,14 +237,35 @@
                                 <button class="btn-action btn-gray" style="margin-top:0;" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-action btn-black" style="text-align:center; text-decoration:none; margin-top:0; box-sizing:border-box;">DASHBOARD</a>
                             </div>
-                            
                             <button class="btn-action" style="background: rgba(0,122,255,0.1); color: var(--primary); width: 100%; margin-top: 10px;" onclick="PadelUtils.copiarLink('${linkFinal}')">🔗 COPIAR LINK CARTELERA</button>
-                            
                             <button class="btn-archive" onclick="alternarArchivo('${id}', ${f.archivado || false})">${f.archivado ? 'RESTAURAR CLUB' : 'ARCHIVAR CLUB (OCULTAR)'}</button>
+                            
+                            <button class="btn-danger-lite" onclick="eliminarClub('${id}')">🗑️ ELIMINAR PERMANENTEMENTE</button>
                         </div>
                     </div>`;
             });
         });
+    }
+
+    // 🔥 FUNCIÓN DE ELIMINACIÓN DEFINITIVA
+    async function eliminarClub(id) {
+        if(!confirm("⚠️ ATENCIÓN: Estás por eliminar el club '" + id + "' y toda su facturación permanentemente.\n\nEsta acción NO se puede deshacer. ¿Continuar?")) return;
+        if(!confirm("🚨 ¿Estás REALMENTE seguro? Se borrarán canchas, inscriptos, deudas e historial de pagos. No habrá forma de recuperarlo.")) return;
+
+        // 1. Obtener canchas para limpiarlas también
+        const snapH = await db.ref('hubs/' + id).once('value');
+        const canchas = snapH.val()?.canchas || [];
+        
+        // 2. Borrar eventos asociados
+        for(let cid of canchas) {
+            await db.ref('eventos/' + cid).remove();
+        }
+        
+        // 3. Borrar el hub y la facturacion
+        await db.ref('hubs/' + id).remove();
+        await db.ref('facturacion/' + id).remove();
+        
+        alert("✅ El organizador '" + id + "' ha sido eliminado por completo.");
     }
 
     async function saldarCanchas(id, deuda) {
@@ -284,20 +303,7 @@
     
     function guardarPerfil() { 
         const id = document.getElementById('edit-id').value; 
-        const upd = { 
-            nombreOrg: document.getElementById('mod-nom').value, 
-            nombreContacto: document.getElementById('mod-con').value, 
-            celularContacto: document.getElementById('mod-cel').value, 
-            emailOrganizador: document.getElementById('mod-email-disp').value, 
-            aliasPredeterminado: document.getElementById('mod-ali').value, 
-            linkCorto: document.getElementById('mod-link-corto').value.trim(), // 🔥 GUARDAMOS EL LINK CORTO
-            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
-            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
-            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
-            vencimientoAbono: currentVencimiento, 
-            cuentaSuspendida: document.getElementById('mod-susp').checked,
-            enTrial: document.getElementById('mod-trial-switch').checked
-        }; 
+        const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, aliasPredeterminado: document.getElementById('mod-ali').value, linkCorto: document.getElementById('mod-link-corto').value.trim(), abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, vencimientoAbono: currentVencimiento, cuentaSuspendida: document.getElementById('mod-susp').checked, enTrial: document.getElementById('mod-trial-switch').checked }; 
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados correctamente."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
     }
 
@@ -309,17 +315,7 @@
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
-            document.getElementById('edit-id').value = id; 
-            document.getElementById('mod-nom').value = f.nombreOrg || ""; 
-            document.getElementById('mod-con').value = f.nombreContacto || ""; 
-            document.getElementById('mod-cel').value = f.celularContacto || ""; 
-            document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
-            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
-            document.getElementById('mod-link-corto').value = f.linkCorto || ""; // 🔥 CARGAMOS EL LINK CORTO
-            document.getElementById('mod-abono').value = f.abonoMensual || 0; 
-            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; 
-            document.getElementById('mod-limite').value = f.limiteCredito || 0; 
-            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-link-corto').value = f.linkCorto || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 0; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';

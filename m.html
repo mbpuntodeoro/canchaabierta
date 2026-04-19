@@ -86,6 +86,24 @@
                 <div class="summary-box"><div class="sum-lbl">Con Deuda</div><div class="sum-val" id="sum-riesgo">0</div></div>
             </div>
 
+            <details class="new-org" style="border-color: var(--warning);">
+                <summary style="color: var(--warning);">💰 Actualización Masiva de Precios</summary>
+                <div class="form-inner">
+                    <p style="font-size: 12px; color: var(--sub); margin-top:0;">Aplica a todos los clubes <b>excepto</b> a los Miembros Fundadores (que mantienen precio congelado).</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>Nuevo Abono ($)</label>
+                            <input id="bulk-abono" type="number" class="input-std" placeholder="Ej: 45000">
+                        </div>
+                        <div>
+                            <label>Nuevo Costo Extra ($)</label>
+                            <input id="bulk-extra" type="number" class="input-std" placeholder="Ej: 6000">
+                        </div>
+                    </div>
+                    <button onclick="actualizarPreciosMasivos()" class="btn-action" style="background:var(--warning); color:white; width:100%">APLICAR NUEVOS PRECIOS A REGULARES</button>
+                </div>
+            </details>
+
             <details class="new-org">
                 <summary>+ Añadir Nuevo Organizador</summary>
                 <div class="form-inner">
@@ -257,7 +275,44 @@
         });
     }
 
-    // 🔥 CREADOR DE MENSAJES CRM (Product-Led Growth)
+    // 🔥 ACTUALIZACIÓN MASIVA DE PRECIOS
+    async function actualizarPreciosMasivos() {
+        const nuevoAbono = parseFloat(document.getElementById('bulk-abono').value);
+        const nuevoExtra = parseFloat(document.getElementById('bulk-extra').value);
+        
+        if (!nuevoAbono || !nuevoExtra) return alert("Por favor, ingresá el Nuevo Abono y el Nuevo Costo Extra.");
+        
+        if (!confirm(`⚠️ ATENCIÓN: Vas a cambiar el precio a TODOS los organizadores Regulares (no fundadores) a:\n\n- Abono: $${nuevoAbono}\n- Extra: $${nuevoExtra}\n\nLos Miembros Fundadores mantendrán su precio actual.\n\n¿Estás seguro de aplicar este aumento?`)) return;
+
+        try {
+            const snap = await db.ref('facturacion').once('value');
+            const data = snap.val() || {};
+            let actualizados = 0;
+            let updates = {};
+            
+            for (let id in data) {
+                const cuenta = data[id].cuenta || {};
+                // Actualiza SOLO si no tiene la tilde de fundador y no está archivado
+                if (!cuenta.esFundador && !cuenta.archivado) {
+                    updates[`facturacion/${id}/cuenta/abonoMensual`] = nuevoAbono;
+                    updates[`facturacion/${id}/cuenta/costoPorCancha`] = nuevoExtra;
+                    actualizados++;
+                }
+            }
+            
+            if (actualizados > 0) {
+                await db.ref().update(updates);
+                alert(`✅ Aumento aplicado con éxito a ${actualizados} clubes regulares.`);
+                document.getElementById('bulk-abono').value = '';
+                document.getElementById('bulk-extra').value = '';
+            } else {
+                alert("No se encontraron clubes regulares activos para actualizar. Todos son fundadores o están archivados.");
+            }
+        } catch(e) {
+            alert("Error al actualizar precios: " + e.message);
+        }
+    }
+
     async function enviarMensajeCRM(id, nombre, celular) {
         if (!celular) return alert("⚠️ El organizador no tiene un número de WhatsApp configurado.");
         
@@ -284,13 +339,69 @@
             } else if (totalCanchas === 1) {
                 msg = `Bien ahí ${nombre}, ya tenés tu primera cancha creada! 👌\n\nAhora compartí el link en tu grupo de WhatsApp. No anotes a nadie manualmente. Los jugadores se inscriben solos y vos ves todo ordenado.\nCuando empiece a llenarse, vas a entender el cambio.`;
             } else {
-                msg = `Resumen rápido de lo que ya hiciste:\n👉 Organizaste ${totalCanchas} canchas\n👉 Gestionaste ~${totalJugadores} jugadores\n👉 Moviste aprox ${PadelUtils.fmtDinero(totalDinero)}\n👉 Sin caos de WhatsApp ni errores de cupos\n\nEsto es lo que hace la diferencia. A partir de la próxima cancha pasás a plan pago. Seguís con el precio de Miembro Fundador ($29.000). Decime y te lo activo.`;
+                msg = `Resumen rápido de lo que ya hiciste:\n👉 Organizaste ${totalCanchas} canchas\n👉 Gestionaste ~${totalJugadores} jugadores\n👉 Moviste aprox ${PadelUtils.fmtDinero(totalDinero)}\n👉 Sin caos de WhatsApp ni errores de cupos\n\nEsto es lo que hace la diferencia. A partir de la próxima cancha pasás a plan pago. Seguís con el precio congelado. Decime y te lo activo.`;
             }
 
             window.open(`https://wa.me/${celular.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
         } catch (error) {
             alert("Error al calcular estadísticas: " + error.message);
         }
+    }
+
+    async function crearHub() {
+        const id = document.getElementById('new-id').value.trim().toLowerCase();
+        const nom = document.getElementById('new-name').value.trim();
+        const email = document.getElementById('new-email').value.trim();
+        const pass = document.getElementById('new-pass').value.trim();
+        if(!id || !nom || !email || !pass) return alert("Faltan datos para crear el club.");
+        
+        try {
+            const snapFact = await db.ref('facturacion').once('value');
+            const facturacion = snapFact.val() || {};
+            let fundadoresActuales = 0;
+
+            for (let key in facturacion) {
+                const cuenta = facturacion[key].cuenta;
+                if (cuenta && cuenta.esFundador === true && !cuenta.archivado) fundadoresActuales++;
+            }
+
+            const hayCupoFundador = fundadoresActuales < 10;
+            const abonoInicial = hayCupoFundador ? 29000 : 39000;
+            const costoExtra = 5000;
+            const limiteCreditoBase = 40000; // 8 canchas de $5000
+            
+            const config = firebase.app().options; let secApp;
+            try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
+            await secApp.auth().createUserWithEmailAndPassword(email, pass); 
+            await secApp.auth().signOut();
+            
+            await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
+            
+            await db.ref(`facturacion/${id}/cuenta`).set({ 
+                nombreOrg: nom, 
+                emailOrganizador: email, 
+                vencimientoAbono: Date.now() + (15 * 86400000), 
+                abonoMensual: abonoInicial, 
+                costoPorCancha: costoExtra, 
+                limiteCredito: limiteCreditoBase, 
+                limiteCanchasTrial: 2, 
+                esFundador: hayCupoFundador, 
+                cuentaSuspendida: false, 
+                enTrial: true, 
+                archivado: false 
+            });
+            
+            if (hayCupoFundador) {
+                alert(`✅ Club creado con éxito.\n⭐ Ocupa el cupo de Fundador ${fundadoresActuales + 1}/10.\nPrecio asignado: $29.000/mes.`);
+            } else {
+                alert(`✅ Club creado con éxito.\nCupo de fundadores lleno (10/10).\nModo Regular asignado: $39.000/mes.`);
+            }
+            
+            document.querySelector('.new-org').removeAttribute('open');
+            document.getElementById('new-id').value = ""; document.getElementById('new-name').value = "";
+            document.getElementById('new-email').value = ""; document.getElementById('new-pass').value = "";
+            
+        } catch(e) { alert("Error: " + e.message); }
     }
 
     async function eliminarClub(id) {
@@ -349,8 +460,8 @@
             abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
             costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
             limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
-            limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, // 🔥 LÍMITE DE CANCHAS TRIAL
-            esFundador: document.getElementById('mod-founder').checked, // 🔥 FUNDADOR
+            limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, 
+            esFundador: document.getElementById('mod-founder').checked, 
             vencimientoAbono: currentVencimiento, 
             cuentaSuspendida: document.getElementById('mod-susp').checked, 
             enTrial: document.getElementById('mod-trial-switch').checked 
@@ -373,9 +484,9 @@
             document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
             document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
             document.getElementById('mod-link-corto').value = f.linkCorto || ""; 
-            document.getElementById('mod-abono').value = f.abonoMensual || 0; 
-            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; 
-            document.getElementById('mod-limite').value = f.limiteCredito || 0; 
+            document.getElementById('mod-abono').value = f.abonoMensual || f.abonoMensual === 0 ? f.abonoMensual : 39000; 
+            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 5000; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 40000; 
             document.getElementById('mod-trial-limit').value = f.limiteCanchasTrial || 2; 
             document.getElementById('mod-founder').checked = f.esFundador || false; 
             document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
@@ -383,34 +494,6 @@
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
-    }
-
-    // 🔥 DEFAULTS $29.000 / $5.000 / 15 DÍAS
-    async function crearHub() {
-        const id = document.getElementById('new-id').value.trim().toLowerCase(), nom = document.getElementById('new-name').value.trim(), email = document.getElementById('new-email').value.trim(), pass = document.getElementById('new-pass').value.trim();
-        if(!id || !nom || !email || !pass) return alert("Faltan datos");
-        try {
-            const config = firebase.app().options; let secApp;
-            try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
-            await secApp.auth().createUserWithEmailAndPassword(email, pass); await secApp.auth().signOut();
-            await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-            
-            await db.ref(`facturacion/${id}/cuenta`).set({ 
-                nombreOrg: nom, 
-                emailOrganizador: email, 
-                vencimientoAbono: Date.now() + (15 * 86400000), // 🔥 15 días por defecto
-                abonoMensual: 29000, 
-                costoPorCancha: 5000, 
-                limiteCredito: 40000, // 8 canchas
-                limiteCanchasTrial: 2,
-                esFundador: true, // 🔥 Estatus por defecto
-                cuentaSuspendida: false, 
-                enTrial: true, 
-                archivado: false 
-            });
-            alert("✅ Club creado con éxito. Modo: Fundador ($29k/mes).");
-            document.querySelector('.new-org').removeAttribute('open');
-        } catch(e) { alert("Error: " + e.message); }
     }
 
     function enviarPassReset() { auth.sendPasswordResetEmail(document.getElementById('mod-email-disp').value).then(()=>alert("Mail enviado")).catch(e=>alert(e.message)); }

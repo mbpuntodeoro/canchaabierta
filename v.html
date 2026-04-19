@@ -2,160 +2,167 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera - PadelApp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <title>Cartelera de Canchas - PadelApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=15"></script>
+    <script src="app-config.js?v=21"></script>
     <style>
-        :root {
-            --bg-main: #F2F2F7; --bg-card: #FFFFFF;
-            --text-primary: #1C1C1E; --text-secondary: #8E8E93;
-            --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
-            --border: #E5E5EA;
+        :root { 
+            --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; 
+            --text-main: #1C1C1E; --text-sub: #8E8E93; 
+            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
+            --green-grad: linear-gradient(180deg, #34C759, #30B350);
             --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
-        header { background: var(--bg-card); padding: 25px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 10; }
-        .h1 { margin: 0; font-weight: 900; font-size: 24px; letter-spacing: -0.5px; text-transform: uppercase; }
-        .container { max-width: 500px; margin: auto; padding: 24px 16px; }
-
-        .card { background: var(--bg-card); border-radius: 24px; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform var(--anim-fast) var(--ease-out); border: 1px solid rgba(0,0,0,0.02); }
-        .card:active { transform: scale(0.98); }
+        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
         
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .item-title { font-size: 18px; font-weight: 900; text-transform: uppercase; color: var(--text-primary); margin: 0; line-height: 1.2; }
+        .header-box { text-align: center; margin-bottom: 25px; width: 100%; max-width: 500px; animation: modalIn 400ms var(--ease-out) forwards; }
+        .h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 0 0 5px 0; text-transform: uppercase; }
         
-        .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
+        /* ETIQUETA VIP PARA JUGADORES */
+        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 8px; border: 1px solid #ffeeba; margin-top: 5px; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); text-transform: uppercase;}
+
+        .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
         
-        .item-meta { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
-        .item-price { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-top: 16px; letter-spacing: -0.5px;}
-
-        .btn-primary { background: linear-gradient(180deg, #0A84FF, #007AFF); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; border: none; height: 52px; border-radius: 16px; font-weight: 800; font-size: 15px; text-transform: uppercase; cursor: pointer; width: 100%; transition: all var(--anim-fast) var(--ease-out); box-sizing: border-box; font-family: inherit; margin-top: 16px; letter-spacing: 0.5px; }
-        .btn-primary:active { transform: scale(0.96); opacity: 0.9; box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
-        .btn-primary.success-state { background: linear-gradient(180deg, #34C759, #30B350); box-shadow: 0 6px 14px rgba(52,199,89,0.25); transform: scale(0.96); }
-
-        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide 220ms var(--ease-out) forwards; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); text-decoration: none; color: inherit; display: block; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards; }
+        .card:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px dashed var(--gray-2); padding-bottom: 12px;}
+        .card-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; line-height: 1.2; flex: 1; padding-right: 10px;}
+        .badge-cat { font-size: 10px; color: #007AFF; background: rgba(0,122,255,0.1); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+        
+        .info-row { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
+        
+        .btn-join { background: var(--blue-grad); box-shadow: 0 4px 12px rgba(0,122,255,0.2); color: white; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 15px; text-align: center; }
+        .btn-full { background: var(--gray-2); color: var(--text-sub); box-shadow: none; pointer-events: none;}
+        
+        @keyframes modalIn { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
 
-        .suspendido-box { background: rgba(255,59,48,0.05); border: 2px solid rgba(255,59,48,0.15); border-radius: 20px; padding: 24px; text-align: center; margin-top: 20px;}
-        .suspendido-box h2 { color: var(--red); font-weight: 900; margin: 0 0 8px 0; text-transform: uppercase; font-size: 16px;}
-        .suspendido-box p { color: var(--text-secondary); font-weight: 600; font-size: 13px; margin: 0; }
+        #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
+        .no-courts { text-align: center; font-weight: 700; color: var(--text-sub); background: white; padding: 30px; border-radius: 20px; font-size: 15px; }
 
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <header><h1 id="hub-name" class="h1">Cargando...</h1></header>
-    
-    <div class="container">
-        <div id="lista-eventos"></div>
-        
-        <div class="footer-pro fade-in" style="animation-delay: 300ms;">
-            <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
-            <hr class="footer-divider">
-            <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
-            <p class="footer-subtitle">Pasala a piloto automático.</p>
-            <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+
+    <div id="loading-init">Buscando canchas disponibles...</div>
+
+    <div class="header-box" id="header-box" style="display:none;">
+        <h1 class="h1" id="t-org-name">Cartelera</h1>
+        <div id="badge-fundador-container" style="display: none;">
+            <span class="badge-fundador">⭐ ORGANIZADOR OFICIAL</span>
         </div>
+    </div>
+
+    <div class="court-list" id="court-list"></div>
+
+    <div class="footer-pro" id="footer-pro" style="display:none;">
+        <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
+        <p style="font-size:12px; font-weight:700; color:#444;">La forma más simple de organizar tu cancha abierta de pádel.</p>
     </div>
 
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
+    
+    if(!orgId) {
+        document.getElementById('loading-init').innerText = "Enlace incompleto.";
+    } else {
+        // Cargar datos del club (para nombre y etiqueta VIP)
+        db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
+            const cuenta = snap.val() || {};
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Canchas Disponibles";
+            
+            // Si es fundador, le mostramos la chapa a los jugadores
+            if (cuenta.esFundador && !cuenta.archivado) {
+                document.getElementById('badge-fundador-container').style.display = 'block';
+            }
+            
+            document.getElementById('header-box').style.display = 'block';
+            document.getElementById('footer-pro').style.display = 'block';
+        });
 
-    if(orgId) {
-        db.ref(`facturacion/${orgId}`).on('value', snapF => {
-            const dataF = snapF.val() || {};
-            const cuentaInfo = dataF.cuenta || {};
-            const movimientos = dataF.movimientos || {};
-            
-            document.getElementById('hub-name').innerText = cuentaInfo.nombreOrg?.toUpperCase() || orgId.toUpperCase();
-            
-            const res = PadelSaaS.analizarCuenta(cuentaInfo, movimientos);
-            const isBlocked = res ? res.isBlocked : false;
+        // Cargar canchas disponibles
+        db.ref('hubs/' + orgId).on('value', async (snap) => {
+            const hubData = snap.val();
+            const listContainer = document.getElementById('court-list');
+            document.getElementById('loading-init').style.display = 'none';
 
-            const list = document.getElementById('lista-eventos');
-            
-            if (isBlocked) {
-                list.innerHTML = `<div class="suspendido-box fade-in"><h2>🚫 Canchas no disponibles</h2><p>Los turnos de este organizador se encuentran temporalmente suspendidos.</p></div>`;
-                return; 
+            if (!hubData || !hubData.canchas || hubData.canchas.length === 0) {
+                listContainer.innerHTML = "<div class='no-courts'>No hay canchas publicadas en este momento.<br><br>🎾 Volvé a consultar más tarde.</div>";
+                return;
             }
 
-            db.ref('hubs/'+orgId).once('value', async snapH => {
-                const ids = snapH.val()?.canchas || [];
-                let canchasData = [];
-                
-                for(let id of ids){
-                    const eSnap = await db.ref('eventos/'+id).once('value');
-                    if(eSnap.exists()) {
-                        const d = eSnap.val();
-                        let horaFinReal = d.horaFin || '23:59';
-                        if (!d.horaFin && d.hora) {
-                            const [h, m] = d.hora.split(':');
-                            const dateObj = new Date(); dateObj.setHours(parseInt(h), parseInt(m) + 90);
-                            horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-                        }
-                        const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-                        
-                        if(Date.now() < finEvento && d.estado !== 'suspendida') {
-                            canchasData.push({ id, horaFinCalculada: horaFinReal, ...d });
-                        }
-                    }
+            let htmlAcumulado = "";
+            let canchasActivas = 0;
+            const ahora = Date.now();
+            const diasList = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
+            const snapshots = await Promise.all(promesas);
+            
+            let eventos = [];
+            snapshots.forEach(s => {
+                if (s.exists()) {
+                    eventos.push({ id: s.key, ...s.val() });
                 }
-                
-                canchasData.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-                list.innerHTML = "";
-                
-                if(canchasData.length === 0) { list.innerHTML = `<div class="fade-in" style="text-align:center; padding: 40px 20px; color: var(--text-secondary); font-weight: 800; font-size: 14px;">No hay turnos programados por el momento.</div>`; }
-
-                const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-                canchasData.forEach((d, index) => {
-                    const fObj = new Date(d.fecha + 'T12:00:00');
-                    const fechaTxt = `${diasSemana[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
-                    const delay = index * 80;
-
-                    list.innerHTML += `
-                    <div class="card fade-in" style="animation-delay: ${delay}ms;">
-                        <div class="item-header">
-                            <h3 class="item-title">🎾 ${d.organiza}</h3>
-                            <span class="badge-cat">${d.categorias || 'TODAS'}</span>
-                        </div>
-                        
-                        <div class="item-meta">📅 ${fechaTxt} | 🕒 ${d.hora} a ${d.horaFinCalculada} hs</div>
-                        <div class="item-meta">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                        <div class="item-meta">👤 Organiza: ${d.nombreOrganizador || 'Admin'}</div>
-                        
-                        <div class="item-price">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
-                        
-                        <button class="btn-primary" onclick="abrirInscripcion(this, '${d.id}')">INGRESAR</button>
-                    </div>`;
-                });
             });
+
+            // Ordenar por fecha y hora
+            eventos.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+
+            eventos.forEach((d, index) => {
+                let horaFinReal = d.horaFin;
+                if (!horaFinReal && d.hora) {
+                    const [h, m] = d.hora.split(':');
+                    const dateObj = new Date();
+                    dateObj.setHours(parseInt(h), parseInt(m) + 90);
+                    horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                } else if (!horaFinReal) { horaFinReal = '23:59'; }
+                
+                const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+                
+                // Solo mostramos las que NO pasaron
+                if (ahora <= finEvento || d.tipo === 'recurrente') {
+                    canchasActivas++;
+                    const ocupados = (d.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
+                    const libres = Math.max(0, (d.cupo || 99) - ocupados);
+                    const fObj = new Date(d.fecha + 'T12:00:00');
+                    const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
+                    
+                    let btnHtml = "";
+                    if (libres > 0) {
+                        btnHtml = `<div class="btn-join">ANOTARME (${libres} lugares)</div>`;
+                    } else {
+                        btnHtml = `<div class="btn-join btn-full">CANCHA LLENA</div>`;
+                    }
+
+                    htmlAcumulado += `
+                        <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 50}ms;">
+                            <div class="card-header">
+                                <h3 class="card-title">${d.organiza}</h3>
+                                <span class="badge-cat">${d.categorias || 'Mixto'}</span>
+                            </div>
+                            <div class="info-row">📅 ${fechaTxt}</div>
+                            <div class="info-row">🕒 ${d.hora} hs</div>
+                            <div class="info-row" style="color:var(--text-main); font-size:16px; margin-top:10px;">
+                                💰 <b>${PadelUtils.fmtDinero(d.valor)}</b> <small style="font-size:11px; color:var(--text-sub);">/ persona</small>
+                            </div>
+                            ${btnHtml}
+                        </a>
+                    `;
+                }
+            });
+
+            if (canchasActivas === 0) {
+                listContainer.innerHTML = "<div class='no-courts'>No hay canchas activas en este momento.<br><br>🎾 Volvé a consultar más tarde.</div>";
+            } else {
+                listContainer.innerHTML = htmlAcumulado;
+            }
         });
-    }
-
-    window.abrirInscripcion = function(btnElement, eventoId) {
-        if(btnElement.disabled) return;
-        btnElement.disabled = true;
-        btnElement.classList.add('success-state');
-        btnElement.innerHTML = '⏳ ABRIENDO...';
-
-        setTimeout(() => {
-            window.location.href = `i.html?id=${eventoId}&org=${orgId}`;
-            setTimeout(() => {
-                btnElement.classList.remove('success-state');
-                btnElement.innerHTML = 'INGRESAR';
-                btnElement.disabled = false;
-            }, 500);
-        }, 350);
     }
 </script>
 </body>

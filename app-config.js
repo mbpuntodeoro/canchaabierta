@@ -64,38 +64,49 @@ const PadelSaaS = {
             }
         });
 
-        const limiteTotal = cuenta.limiteCredito || 0;
-        
-        // 🔥 CORRECCIÓN: Le damos gracia hasta las 23:59:59 del día marcado
-        const fechaVencObj = new Date(cuenta.vencimientoAbono || ahora);
+        // --- LÓGICA DE TRIAL INTELIGENTE (15 días o 2 canchas) ---
+        let enTrial = cuenta.enTrial === true;
+        const vencimientoAbono = cuenta.vencimientoAbono || ahora;
+        const fechaVencObj = new Date(vencimientoAbono);
         fechaVencObj.setHours(23, 59, 59, 999); 
         const vencimientoReal = fechaVencObj.getTime();
         
-        let enTrial = cuenta.enTrial === true;
-        // La regla automática de expiración: si la fecha ya pasó (ayer), apagamos el trial
-        if (enTrial && ahora > vencimientoReal) {
-            enTrial = false;
+        const canchasUsadasEnPrueba = cantTurnosBonificados + cantTurnosPendientes;
+        const limiteCanchasTrial = cuenta.limiteCanchasTrial || 2;
+        
+        // Modo Marketing: Si el trial dura más de 30 días, ignoramos el límite de 2 canchas
+        const esTrialLargo = (vencimientoReal - ahora) > (30 * 86400000);
+
+        if (enTrial) {
+            if (ahora > vencimientoReal) {
+                enTrial = false;
+            } else if (!esTrialLargo && canchasUsadasEnPrueba >= limiteCanchasTrial) {
+                enTrial = false;
+            }
         }
 
-        const disponible = Math.max(0, limiteTotal - deudaCanchas);
+        // --- CÁLCULO DE DISPONIBLE (Esquema $29k / 8 canchas / $5k extra) ---
+        // Si no es trial, el límite de crédito debería ser suficiente para cubrir extras
+        const limiteCreditoBase = cuenta.limiteCredito || 50000;
+        const disponible = enTrial ? 999999 : Math.max(0, limiteCreditoBase - deudaCanchas);
         
         const bloqueadoAbono = ahora > vencimientoReal; 
-        const bloqueadoLimite = enTrial ? false : (deudaCanchas > limiteTotal);
+        const bloqueadoLimite = enTrial ? false : (deudaCanchas > limiteCreditoBase);
         const bloqueadoAdmin = cuenta.cuentaSuspendida === true;
 
-        const isBlocked = bloqueadoAbono || bloqueadoLimite || bloqueadoAdmin;
+        const isBlocked = !enTrial && (bloqueadoAbono || bloqueadoLimite || bloqueadoAdmin);
         
         let msgLocked = "";
         if (bloqueadoAdmin) msgLocked = "Cuenta suspendida por administración.";
-        else if (bloqueadoAbono) msgLocked = "Abono mensual vencido o Trial finalizado. Regularice su plan.";
-        else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido. Salde su consumo de canchas.";
+        else if (bloqueadoAbono) msgLocked = "Abono mensual vencido. Regularice su plan para continuar.";
+        else if (bloqueadoLimite) msgLocked = "Límite de crédito excedido.";
 
         return {
             deudaCanchas, deudaAbono, cantTurnosPendientes,
             consumoBonificado, cantTurnosBonificados,
-            limiteTotal, disponible, 
-            vencimientoAbono: cuenta.vencimientoAbono || ahora, 
-            isBlocked, msgLocked, bloqueadoAbono, bloqueadoLimite, enTrial
+            canchasUsadasEnPrueba, limiteCanchasTrial, esTrialLargo,
+            disponible, vencimientoAbono,
+            isBlocked, msgLocked, enTrial
         };
     },
     fmtFecha: function(ms) {

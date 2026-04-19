@@ -383,9 +383,9 @@
             document.getElementById('badge-client-fundador').style.display = 'none';
         }
 
-        // 🔥 AVISO DE AUMENTO
+        // 🔥 ESCUDO VIP
         const avisoAumento = document.getElementById('aviso-aumento');
-        if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual) {
+        if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
             avisoAumento.style.display = 'block';
             avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
         } else {
@@ -584,16 +584,20 @@
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             
-            // 🔥 MAGIA LAZY EVALUATION (Se auto-actualiza si la fecha ya llegó)
+            // 🔥 MAGIA LAZY EVALUATION (Se auto-actualiza si la fecha ya llegó, ignora Fundadores)
             if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
-                db.ref(`facturacion/${orgId}/cuenta`).update({
-                    abonoMensual: cuentaInfo.proximoAbonoMensual,
-                    costoPorCancha: cuentaInfo.proximoCostoPorCancha,
-                    proximoAbonoMensual: null,
-                    proximoCostoPorCancha: null,
-                    fechaAplicacionPrecios: null
-                });
-                return; // El return hace que el listener se vuelva a ejecutar limpio
+                if (!cuentaInfo.esFundador) {
+                    db.ref(`facturacion/${orgId}/cuenta`).update({
+                        abonoMensual: cuentaInfo.proximoAbonoMensual,
+                        costoPorCancha: cuentaInfo.proximoCostoPorCancha,
+                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
+                    });
+                } else {
+                    db.ref(`facturacion/${orgId}/cuenta`).update({
+                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
+                    });
+                }
+                return; // Cortamos acá, el listener se vuelve a llamar solo
             }
 
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;

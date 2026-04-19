@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=18"></script>
+    <script src="app-config.js?v=20"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -311,7 +311,6 @@
             
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Buscando datos...";
-                
                 db.ref('facturacion').once('value').then(snap => {
                     let foundOrg = null;
                     const data = snap.val() || {};
@@ -333,14 +332,9 @@
                         alert("⚠️ Tu usuario ("+emailLimpio+") no tiene un club asignado en la base de datos.");
                         cerrarSesion();
                     }
-                }).catch(err => {
-                    alert("❌ Error de permisos en Firebase. Revisá las Reglas de Seguridad.");
-                });
+                }).catch(err => alert("❌ Error de permisos en Firebase."));
             } else {
-                if(!isInitialized) {
-                    init();
-                    isInitialized = true;
-                }
+                if(!isInitialized) { init(); isInitialized = true; }
             }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
@@ -367,7 +361,6 @@
         return `${d}-${m}-${y}`;
     }
 
-    // 🔥 LA FUNCIÓN MÁGICA DEL BOTÓN COPIAR
     window.copiarMiLink = function() {
         const linkLargo = 'https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId;
         const linkFinal = cuentaInfo.linkCorto ? cuentaInfo.linkCorto : linkLargo;
@@ -552,7 +545,6 @@
 
     function init() {
         if(!orgId) return;
-
         const errorHandler = (err) => { console.error("Error Firebase:", err); };
 
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
@@ -564,7 +556,6 @@
 
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {}; 
-            
             if (cuentaInfo.enTrial) {
                 let updates = {};
                 for (let k in movs) {
@@ -577,7 +568,6 @@
                     return; 
                 }
             }
-
             window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
             calculateFinancials();
         }, errorHandler);
@@ -608,7 +598,10 @@
         const ahora = Date.now();
 
         sorted.forEach((d, index) => {
-            const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').length;
+            // 🔥 Sumamos los lugares ocupados por reservas grupales
+            const conf = (d.inscriptos || [])
+                .filter(p => p.estado !== 'pendiente')
+                .reduce((acc, p) => acc + (p.cantidad || 1), 0);
             
             let horaFinReal = d.horaFin;
             if (!horaFinReal && d.hora) {
@@ -705,7 +698,6 @@
         
         const btnS = document.getElementById('btn-suspender');
         btnS.style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'block' : 'none';
-        
         document.getElementById('btn-borrar-cancha').style.display = 'block';
 
         validarRecurrencia();
@@ -763,26 +755,49 @@
         } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
     }
 
+    // 🔥 MODAL DE JUGADORES (Soporta Reservas Grupales)
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
+        
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
-            const ins = d.inscriptos || [], order = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 }, sorted = [...ins].sort((a,b) => (order[a.estado] || 99) - (order[b.estado] || 99));
-            const confCount = ins.filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha').length, pendCount = ins.filter(p => p.estado === 'pendiente').length;
-            document.getElementById('st-total').innerText = d.cupo; document.getElementById('st-pag').innerText = confCount; document.getElementById('st-pen').innerText = pendCount; document.getElementById('st-lib').innerText = Math.max(0, d.cupo - ins.length);
+            const ins = d.inscriptos || [];
+            
+            // Lógica Inteligente: Sumamos las cantidades (p.cantidad)
+            const totalAnotados = ins.reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const confirmados = ins.filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha')
+                                  .reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const pendientes = ins.filter(p => p.estado === 'pendiente')
+                                  .reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            
+            document.getElementById('st-total').innerText = d.cupo; 
+            document.getElementById('st-pag').innerText = confirmados; 
+            document.getElementById('st-pen').innerText = pendientes; 
+            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - totalAnotados);
+            
             const list = document.getElementById('players-list'); list.innerHTML = "";
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
-            sorted.forEach((p) => {
-                const oIdx = ins.indexOf(p), label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
-                list.innerHTML += `<div class="player-row"><span class="player-name">${p.nombre}</span><button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${oIdx})">${label}</button><button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${oIdx})">✕</button></div>`;
+            
+            ins.forEach((p, idx) => {
+                const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
+                const cant = p.cantidad || 1;
+                
+                // Muestra "+X" si el jugador anotó a varios
+                const nombreDisplay = cant > 1 ? `${p.nombre} <b style="color:var(--blue)">+${cant-1}</b>` : p.nombre;
+                
+                list.innerHTML += `<div class="player-row">
+                    <span class="player-name">${nombreDisplay}</span>
+                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${idx})">${label}</button>
+                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${idx})">✕</button>
+                </div>`;
             });
             document.getElementById('modal-players').style.display = 'flex';
         });
     };
 
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
-    window.borrarP = function(idx) { if(!confirm("¿Borrar?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
+    window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador y liberar su/s lugar/es?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
     
 </script>

@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=20"></script>
+    <script src="app-config.js?v=21"></script>
     <style>
         :root { 
             --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; --gray-3: #C7C7CC;
@@ -127,6 +127,7 @@
                 <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">¡Ya estás anotado!</h2>
                 <p id="txt-already-desc" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 25px 0;">Tu lugar está confirmado.</p>
                 
+                <button onclick="mostrarFormularioNuevo()" class="btn-black-admin">➕ Anotar a otra persona</button>
                 <button onclick="mostrarPagoDesdeAlready()" class="btn-gray">Ver datos de pago</button>
                 <button onclick="handleCancel(this)" class="btn-danger-outline" id="btn-cancel">Darme de baja</button>
                 
@@ -140,18 +141,16 @@
                 
                 <div class="payment-box">
                     <p style="font-size:12px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 5px 0;">Confirmá tu lugar con el pago</p>
-                    
                     <div class="monto" id="s-total-final">$0</div>
                     <div class="monto-detalle" id="s-detalle-final">--</div>
-
                     <p style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 8px 0;">ALIAS / CBU</p>
                     <div class="alias-box" id="s-alias-final">--</div>
                     <button class="btn-copy" onclick="copiarAlias(this)">📋 Copiar alias</button>
                 </div>
 
-                <button id="btn-anotar-otro" style="display:none;" class="btn-black-admin" onclick="window.location.reload()">➕ Anotar a otro jugador</button>
-
+                <button onclick="mostrarFormularioNuevo()" class="btn-black-admin">➕ Anotar a otra persona</button>
                 <button onclick="notificarWa()" class="btn-green">💬 Enviar comprobante</button>
+                
                 <p style="font-size:11px; color:#9CA3AF; font-weight:600; margin:15px 0 5px 0;">El lugar se confirma al recibir el pago.</p>
                 <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a></div>
             </div>
@@ -170,7 +169,7 @@
     const id = new URLSearchParams(window.location.search).get('id');
     const org = new URLSearchParams(window.location.search).get('org');
     
-    // 🔥 DETECTOR MODO ADMIN (Pase VIP)
+    // Modo Admin Bypass (sigue funcionando por si entrás desde el panel)
     const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
 
     let eventData = {}; 
@@ -203,15 +202,11 @@
             document.getElementById('t-val-single').innerText = PadelUtils.fmtDinero(eventData.valor);
             document.getElementById('s-alias-final').innerText = eventData.alias || 'Consultar al organizador';
 
-            // Actualiza precio por si el default es 1
             actualizarPrecioEnVivo();
 
             if (isAdmin) {
-                // Modo Dios
                 document.getElementById('form-screen').style.display = 'block';
-                document.getElementById('btn-anotar-otro').style.display = 'block';
             } else if (playerLocalData) {
-                // Revisa DB
                 const list = eventData.inscriptos || [];
                 const pInfo = list.find(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
                 
@@ -230,7 +225,6 @@
         });
     }
 
-    // 🔥 CALCULA PRECIO X CANTIDAD
     function actualizarPrecioEnVivo() {
         const cant = parseInt(document.getElementById('p-cant').value) || 1;
         const valorUnitario = eventData.valor || 0;
@@ -241,7 +235,21 @@
         document.getElementById('s-detalle-final').innerText = `${cant} persona${cant > 1 ? 's' : ''} a ${PadelUtils.fmtDinero(valorUnitario)} c/u`;
     }
 
-    // 🚀 UNIRSE Y VALIDAR CUPOS REALES
+    // 🔥 FUNCIÓN PARA LIMPIAR Y VOLVER A ANOTAR (Sin que te bloquee)
+    function mostrarFormularioNuevo() {
+        document.getElementById('already-screen').style.display = 'none';
+        document.getElementById('success-screen').style.display = 'none';
+        document.getElementById('form-screen').style.display = 'block';
+        
+        // Mantenemos el teléfono por comodidad, pero borramos el nombre
+        document.getElementById('p-name').value = '';
+        document.getElementById('p-cant').value = '1';
+        actualizarPrecioEnVivo();
+        
+        // Hacemos scroll arriba suavemente
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function handleJoin(btnElement) {
         const name = document.getElementById('p-name').value.trim();
         const celu = document.getElementById('p-celu').value.trim();
@@ -255,12 +263,14 @@
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             const list = s.val() || [];
             
-            if (list.some(p => p.celular === celu)) {
-                alert("Este WhatsApp ya está anotado en la cancha.");
+            // 🔥 FILTRO INTELIGENTE: Te bloquea solo si repites Teléfono Y Nombre.
+            // Si pones mismo teléfono pero nombre distinto, pasa sin drama.
+            const nameLower = name.toLowerCase();
+            if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === nameLower)) {
+                alert("Este jugador ya está anotado con este número de WhatsApp.");
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
 
-            // 🔥 Sumamos los ocupados reales (contando si alguien reservó doble)
             const ocupados = list.reduce((acc, p) => acc + (p.cantidad || 1), 0);
             const cupoTotal = eventData.cupo || 99;
 
@@ -270,7 +280,6 @@
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
 
-            // Agregamos el campo "cantidad" a la base de datos
             list.push({ nombre: name, celular: celu, cantidad: cant, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
@@ -289,6 +298,9 @@
                     successScreen.style.display = 'block';
                     successScreen.classList.add('success-enter');
                     
+                    btnElement.classList.remove("loading"); 
+                    btnElement.disabled = false;
+                    
                     if (navigator.vibrate) navigator.vibrate(30);
                     setTimeout(() => { document.querySelector(".btn-green")?.scrollIntoView({ behavior: "smooth", block: "center" }); }, 500);
                 }, 600);
@@ -296,7 +308,6 @@
         });
     }
 
-    // 🚀 DARSE DE BAJA
     function handleCancel(btnElement) {
         if(!confirm("¿Estás seguro de que querés liberar tus lugares en la cancha?")) return;
         
@@ -336,7 +347,6 @@
     function mostrarPagoDesdeAlready() {
         document.getElementById('already-screen').style.display = 'none';
         
-        // Actualizamos precio por las dudas
         actualizarPrecioEnVivo();
 
         document.getElementById('success-title').innerText = "Datos de Pago";

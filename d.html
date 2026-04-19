@@ -119,7 +119,10 @@
         <div class="container fade-in" id="main-container">
             
             <header class="flex space-between center section" style="margin-bottom: 20px;">
-                <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
+                <div>
+                    <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
+                    <span id="badge-client-fundador" style="display:none; background:#fff9e6; color:#856404; font-size:10px; font-weight:900; padding:4px 8px; border-radius:6px; border:1px solid #ffeeba; margin-top:6px; letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">⭐ MIEMBRO FUNDADOR</span>
+                </div>
                 <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
             </header>
 
@@ -370,6 +373,13 @@
     function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
+        // 🔥 Mostrar ETIQUETA FUNDADOR si corresponde
+        if (cuentaInfo.esFundador) {
+            document.getElementById('badge-client-fundador').style.display = 'inline-block';
+        } else {
+            document.getElementById('badge-client-fundador').style.display = 'none';
+        }
+
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
         if (!res) return;
 
@@ -390,7 +400,7 @@
             badge.style.background = "rgba(0,122,255,0.2)";
             badge.style.color = "var(--blue)";
             
-            let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${diasFaltantes} día${diasFaltantes !== 1 ? 's' : ''}`;
+            let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
             if (!res.esTrialLargo) {
                 const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba;
                 textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`;
@@ -398,7 +408,7 @@
             txtDiasTrial.innerText = textoTrial;
             txtDiasTrial.style.display = 'block';
 
-            // 🔥 PANEL DE IMPACTO (CRM)
+            // PANEL DE IMPACTO (CRM)
             let totalJugadores = 0;
             let totalDinero = 0;
             Object.values(courtData).forEach(c => {
@@ -582,7 +592,7 @@
 
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
-            courtData = {}; // Clear before loading new
+            courtData = {}; 
             if (ids.length === 0) renderizarCanchas();
             ids.forEach(id => {
                 db.ref('eventos/'+id).on('value', evS => {
@@ -599,7 +609,6 @@
     }
 
     function renderizarCanchas() {
-        // Recalculate impact on every render if trial
         if(cuentaInfo.enTrial) calculateFinancials();
 
         const listActivas = document.getElementById('canchas-list');
@@ -756,7 +765,6 @@
         } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
     }
 
-    // 🔥 JUGADORES Y CONTEO GRUPAL
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);

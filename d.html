@@ -801,6 +801,7 @@
         } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
     }
 
+    // 🔥 FUNCIÓN DE JUGADORES ACTUALIZADA CON ORDENAMIENTO (Pagado > Cancha > Pendiente)
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
@@ -809,6 +810,7 @@
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
             
+            // Cálculos
             const totalAnotados = ins.reduce((acc, p) => acc + (p.cantidad || 1), 0);
             const pagados = ins.filter(p => p.estado === 'pagado').reduce((acc, p) => acc + (p.cantidad || 1), 0);
             const enCancha = ins.filter(p => p.estado === 'paga-en-la-cancha').reduce((acc, p) => acc + (p.cantidad || 1), 0);
@@ -821,18 +823,25 @@
             document.getElementById('st-enc').innerText = enCancha;
             document.getElementById('st-pen').innerText = pendientes; 
             
+            // PRIORIDAD DE ORDENAMIENTO: Verde (1) > Naranja (2) > Rojo (3)
+            const prioridades = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
+            
+            // Creamos una lista con su índice original para no romper Firebase
+            const listaOrdenada = ins.map((p, idx) => ({ ...p, originalIndex: idx }))
+                                     .sort((a, b) => prioridades[a.estado] - prioridades[b.estado]);
+
             const list = document.getElementById('players-list'); list.innerHTML = "";
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
             
-            ins.forEach((p, idx) => {
+            listaOrdenada.forEach((p) => {
                 const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
                 const cant = p.cantidad || 1;
                 const nombreDisplay = cant > 1 ? `${p.nombre} <b style="color:var(--blue)">+${cant-1}</b>` : p.nombre;
                 
                 list.innerHTML += `<div class="player-row">
                     <span class="player-name">${nombreDisplay}</span>
-                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${idx})">${label}</button>
-                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${idx})">✕</button>
+                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${p.originalIndex})">${label}</button>
+                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${p.originalIndex})">✕</button>
                 </div>`;
             });
             document.getElementById('modal-players').style.display = 'flex';

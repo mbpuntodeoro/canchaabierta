@@ -126,6 +126,10 @@
                 <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
             </header>
 
+            <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;">
+                ⚠️ A partir del 1/X tu abono se actualizará.
+            </div>
+
             <div class="card-dark section fade-in">
                 <div class="flex space-between center">
                     <div style="font-size: 14px; font-weight: 600;" id="lbl-vencimiento">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
@@ -373,11 +377,19 @@
     function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
-        // 🔥 Mostrar ETIQUETA FUNDADOR si corresponde
         if (cuentaInfo.esFundador) {
             document.getElementById('badge-client-fundador').style.display = 'inline-block';
         } else {
             document.getElementById('badge-client-fundador').style.display = 'none';
+        }
+
+        // 🔥 AVISO DE AUMENTO
+        const avisoAumento = document.getElementById('aviso-aumento');
+        if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual) {
+            avisoAumento.style.display = 'block';
+            avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
+        } else {
+            avisoAumento.style.display = 'none';
         }
 
         const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
@@ -408,7 +420,6 @@
             txtDiasTrial.innerText = textoTrial;
             txtDiasTrial.style.display = 'block';
 
-            // PANEL DE IMPACTO (CRM)
             let totalJugadores = 0;
             let totalDinero = 0;
             Object.values(courtData).forEach(c => {
@@ -572,6 +583,19 @@
 
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
+            
+            // 🔥 MAGIA LAZY EVALUATION (Se auto-actualiza si la fecha ya llegó)
+            if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
+                db.ref(`facturacion/${orgId}/cuenta`).update({
+                    abonoMensual: cuentaInfo.proximoAbonoMensual,
+                    costoPorCancha: cuentaInfo.proximoCostoPorCancha,
+                    proximoAbonoMensual: null,
+                    proximoCostoPorCancha: null,
+                    fechaAplicacionPrecios: null
+                });
+                return; // El return hace que el listener se vuelva a ejecutar limpio
+            }
+
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
             window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
             calculateFinancials();

@@ -87,9 +87,9 @@
             </div>
 
             <details class="new-org" style="border-color: var(--warning);">
-                <summary style="color: var(--warning);">💰 Actualización Masiva de Precios</summary>
+                <summary style="color: var(--warning);">💰 Programar Aumento Masivo</summary>
                 <div class="form-inner">
-                    <p style="font-size: 12px; color: var(--sub); margin-top:0;">Aplica a todos los clubes <b>excepto</b> a los Miembros Fundadores (que mantienen precio congelado).</p>
+                    <p style="font-size: 12px; color: var(--sub); margin-top:0;">El aumento entrará en vigencia automáticamente <b>el primer día del próximo mes</b>. Aplica a todos los clubes <b>excepto</b> Miembros Fundadores.</p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
                             <label>Nuevo Abono ($)</label>
@@ -100,7 +100,7 @@
                             <input id="bulk-extra" type="number" class="input-std" placeholder="Ej: 6000">
                         </div>
                     </div>
-                    <button onclick="actualizarPreciosMasivos()" class="btn-action" style="background:var(--warning); color:white; width:100%">APLICAR NUEVOS PRECIOS A REGULARES</button>
+                    <button onclick="actualizarPreciosMasivos()" class="btn-action" style="background:var(--warning); color:white; width:100%">PROGRAMAR AUMENTO PARA REGULARES</button>
                 </div>
             </details>
 
@@ -150,6 +150,11 @@
             <input id="mod-link-corto" class="input-std" placeholder="Ej: bit.ly/cancha-wini">
 
             <hr style="border:0; border-top:1px dashed #E5E5EA; margin: 15px 0;">
+            
+            <div id="msg-aumento-edit" style="display:none; background:rgba(255,159,10,0.1); padding:10px; border-radius:12px; margin-bottom:15px;">
+                <span style="color:var(--warning); font-size:11px; font-weight:800;" id="txt-aumento-programado">⚠️ Tiene un aumento programado.</span>
+            </div>
+
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div>
                 <div><label>Costo Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
@@ -204,7 +209,23 @@
             for (let id in hubs) {
                 const fSnap = await db.ref(`facturacion/${id}/cuenta`).once('value');
                 const mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
-                const f = fSnap.val() || {};
+                let f = fSnap.val() || {};
+                
+                // 🔥 MAGIA LAZY EVALUATION: Si hay aumento programado y la fecha ya pasó, actualizamos
+                if (f.fechaAplicacionPrecios && Date.now() >= f.fechaAplicacionPrecios) {
+                    await db.ref(`facturacion/${id}/cuenta`).update({
+                        abonoMensual: f.proximoAbonoMensual,
+                        costoPorCancha: f.proximoCostoPorCancha,
+                        proximoAbonoMensual: null,
+                        proximoCostoPorCancha: null,
+                        fechaAplicacionPrecios: null
+                    });
+                    // Actualizamos objeto local para renderizar bien ahora mismo
+                    f.abonoMensual = f.proximoAbonoMensual;
+                    f.costoPorCancha = f.proximoCostoPorCancha;
+                    delete f.fechaAplicacionPrecios;
+                }
+
                 const res = PadelSaaS.analizarCuenta(f, mSnap.val() || {});
                 if (!res) continue;
 
@@ -244,6 +265,11 @@
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
                 const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
 
+                let htmlAumento = "";
+                if (f.fechaAplicacionPrecios) {
+                    htmlAumento = `<div style="font-size:10px; color:var(--warning); font-weight:800; margin-top:5px;">⚠️ Aumento programado a ${PadelUtils.fmtDinero(f.proximoAbonoMensual)}</div>`;
+                }
+
                 container.innerHTML += `
                     <div class="hub-item" id="item-${id}" style="${f.archivado ? 'opacity:0.6' : ''}">
                         <div class="hub-header" onclick="document.getElementById('item-${id}').classList.toggle('active')">
@@ -256,7 +282,11 @@
                                 ${btnCanchas}
                             </div>
                             <div class="fin-row">
-                                <div><span class="fin-lbl">ABONO MENSUAL</span><br><b style="color:var(--success); font-size:16px;">${PadelUtils.fmtDinero(f.abonoMensual)}</b></div>
+                                <div>
+                                    <span class="fin-lbl">ABONO MENSUAL</span><br>
+                                    <b style="color:var(--success); font-size:16px;">${PadelUtils.fmtDinero(f.abonoMensual)}</b>
+                                    ${htmlAumento}
+                                </div>
                                 <button class="btn-action btn-blue" onclick="cobrarAbono('${id}', ${f.abonoMensual})">RENOVAR</button>
                             </div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top: 15px;">
@@ -275,14 +305,23 @@
         });
     }
 
-    // 🔥 ACTUALIZACIÓN MASIVA DE PRECIOS
+    // 🔥 PROGRAMACIÓN DE AUMENTO MASIVO (Lazy Evaluation)
     async function actualizarPreciosMasivos() {
         const nuevoAbono = parseFloat(document.getElementById('bulk-abono').value);
         const nuevoExtra = parseFloat(document.getElementById('bulk-extra').value);
         
         if (!nuevoAbono || !nuevoExtra) return alert("Por favor, ingresá el Nuevo Abono y el Nuevo Costo Extra.");
         
-        if (!confirm(`⚠️ ATENCIÓN: Vas a cambiar el precio a TODOS los organizadores Regulares (no fundadores) a:\n\n- Abono: $${nuevoAbono}\n- Extra: $${nuevoExtra}\n\nLos Miembros Fundadores mantendrán su precio actual.\n\n¿Estás seguro de aplicar este aumento?`)) return;
+        // Calculamos el primer día del MES QUE VIENE
+        const hoy = new Date();
+        let añoProx = hoy.getFullYear();
+        let mesProx = hoy.getMonth() + 1; // getMonth() es 0-11
+        if (mesProx > 11) { mesProx = 0; añoProx++; }
+        
+        const fechaAplicacion = new Date(añoProx, mesProx, 1, 0, 0, 0).getTime();
+        const fechaTxt = PadelSaaS.fmtFecha(fechaAplicacion);
+
+        if (!confirm(`⚠️ ATENCIÓN: Vas a programar un aumento para TODOS los organizadores Regulares (no fundadores).\n\n- Nuevo Abono: $${nuevoAbono}\n- Nuevo Extra: $${nuevoExtra}\n\nEste aumento NO aplicará hoy. Entrará en vigencia automáticamente a partir del ${fechaTxt} (primer día del mes que viene).\n\n¿Estás seguro de programarlo?`)) return;
 
         try {
             const snap = await db.ref('facturacion').once('value');
@@ -292,47 +331,42 @@
             
             for (let id in data) {
                 const cuenta = data[id].cuenta || {};
-                // Actualiza SOLO si no tiene la tilde de fundador y no está archivado
+                // Actualiza SOLO si NO es fundador y NO está archivado
                 if (!cuenta.esFundador && !cuenta.archivado) {
-                    updates[`facturacion/${id}/cuenta/abonoMensual`] = nuevoAbono;
-                    updates[`facturacion/${id}/cuenta/costoPorCancha`] = nuevoExtra;
+                    updates[`facturacion/${id}/cuenta/proximoAbonoMensual`] = nuevoAbono;
+                    updates[`facturacion/${id}/cuenta/proximoCostoPorCancha`] = nuevoExtra;
+                    updates[`facturacion/${id}/cuenta/fechaAplicacionPrecios`] = fechaAplicacion;
                     actualizados++;
                 }
             }
             
             if (actualizados > 0) {
                 await db.ref().update(updates);
-                alert(`✅ Aumento aplicado con éxito a ${actualizados} clubes regulares.`);
+                alert(`✅ Aumento programado con éxito para ${actualizados} clubes.\nSe aplicará el ${fechaTxt}.`);
                 document.getElementById('bulk-abono').value = '';
                 document.getElementById('bulk-extra').value = '';
             } else {
-                alert("No se encontraron clubes regulares activos para actualizar. Todos son fundadores o están archivados.");
+                alert("No se encontraron clubes regulares activos. (Son todos fundadores o están archivados).");
             }
         } catch(e) {
-            alert("Error al actualizar precios: " + e.message);
+            alert("Error al programar precios: " + e.message);
         }
     }
 
     async function enviarMensajeCRM(id, nombre, celular) {
         if (!celular) return alert("⚠️ El organizador no tiene un número de WhatsApp configurado.");
-        
         try {
             const snapH = await db.ref('hubs/' + id + '/canchas').once('value');
             const canchasIds = snapH.val() || [];
             let totalCanchas = canchasIds.length;
-            let totalJugadores = 0;
-            let totalDinero = 0;
-
+            let totalJugadores = 0, totalDinero = 0;
             for (let cid of canchasIds) {
-                const sEv = await db.ref('eventos/' + cid).once('value');
-                const ev = sEv.val();
+                const sEv = await db.ref('eventos/' + cid).once('value'), ev = sEv.val();
                 if (ev) {
                     const cant = (ev.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
-                    totalJugadores += cant;
-                    totalDinero += (cant * (ev.valor || 0));
+                    totalJugadores += cant; totalDinero += (cant * (ev.valor || 0));
                 }
             }
-
             let msg = "";
             if (totalCanchas === 0) {
                 msg = `¡Hola ${nombre}! Ya tenés todo listo para organizar sin vueltas.\n👉 Usá tu link para crear tu primera cancha.\n\nTip rápido: no la sobrepienses. Cargá los datos y compartí el link.\nSi en esta primera cancha no sentís que te simplifica la vida, no es para vos!`;
@@ -341,11 +375,8 @@
             } else {
                 msg = `Resumen rápido de lo que ya hiciste:\n👉 Organizaste ${totalCanchas} canchas\n👉 Gestionaste ~${totalJugadores} jugadores\n👉 Moviste aprox ${PadelUtils.fmtDinero(totalDinero)}\n👉 Sin caos de WhatsApp ni errores de cupos\n\nEsto es lo que hace la diferencia. A partir de la próxima cancha pasás a plan pago. Seguís con el precio congelado. Decime y te lo activo.`;
             }
-
             window.open(`https://wa.me/${celular.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-        } catch (error) {
-            alert("Error al calcular estadísticas: " + error.message);
-        }
+        } catch (error) { alert("Error: " + error.message); }
     }
 
     async function crearHub() {
@@ -354,7 +385,6 @@
         const email = document.getElementById('new-email').value.trim();
         const pass = document.getElementById('new-pass').value.trim();
         if(!id || !nom || !email || !pass) return alert("Faltan datos para crear el club.");
-        
         try {
             const snapFact = await db.ref('facturacion').once('value');
             const facturacion = snapFact.val() || {};
@@ -368,7 +398,7 @@
             const hayCupoFundador = fundadoresActuales < 10;
             const abonoInicial = hayCupoFundador ? 29000 : 39000;
             const costoExtra = 5000;
-            const limiteCreditoBase = 40000; // 8 canchas de $5000
+            const limiteCreditoBase = 40000; 
             
             const config = firebase.app().options; let secApp;
             try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
@@ -378,41 +408,27 @@
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             
             await db.ref(`facturacion/${id}/cuenta`).set({ 
-                nombreOrg: nom, 
-                emailOrganizador: email, 
-                vencimientoAbono: Date.now() + (15 * 86400000), 
-                abonoMensual: abonoInicial, 
-                costoPorCancha: costoExtra, 
-                limiteCredito: limiteCreditoBase, 
-                limiteCanchasTrial: 2, 
-                esFundador: hayCupoFundador, 
-                cuentaSuspendida: false, 
-                enTrial: true, 
-                archivado: false 
+                nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (15 * 86400000), 
+                abonoMensual: abonoInicial, costoPorCancha: costoExtra, limiteCredito: limiteCreditoBase, 
+                limiteCanchasTrial: 2, esFundador: hayCupoFundador, cuentaSuspendida: false, 
+                enTrial: true, archivado: false 
             });
             
-            if (hayCupoFundador) {
-                alert(`✅ Club creado con éxito.\n⭐ Ocupa el cupo de Fundador ${fundadoresActuales + 1}/10.\nPrecio asignado: $29.000/mes.`);
-            } else {
-                alert(`✅ Club creado con éxito.\nCupo de fundadores lleno (10/10).\nModo Regular asignado: $39.000/mes.`);
-            }
+            if (hayCupoFundador) alert(`✅ Club creado.\n⭐ Ocupa el cupo de Fundador ${fundadoresActuales + 1}/10.\nPrecio asignado: $29.000/mes.`);
+            else alert(`✅ Club creado.\nCupo de fundadores lleno (10/10).\nModo Regular asignado: $39.000/mes.`);
             
             document.querySelector('.new-org').removeAttribute('open');
             document.getElementById('new-id').value = ""; document.getElementById('new-name').value = "";
             document.getElementById('new-email').value = ""; document.getElementById('new-pass').value = "";
-            
         } catch(e) { alert("Error: " + e.message); }
     }
 
     async function eliminarClub(id) {
-        if(!confirm("⚠️ ATENCIÓN: Estás por eliminar el club '" + id + "' permanentemente.\n\nEsta acción NO se puede deshacer. ¿Continuar?")) return;
-        if(!confirm("🚨 ¿Estás REALMENTE seguro? Se borrarán canchas, inscriptos, deudas e historial de pagos.")) return;
-        const snapH = await db.ref('hubs/' + id).once('value');
-        const canchas = snapH.val()?.canchas || [];
-        for(let cid of canchas) { await db.ref('eventos/' + cid).remove(); }
-        await db.ref('hubs/' + id).remove();
-        await db.ref('facturacion/' + id).remove();
-        alert("✅ El organizador '" + id + "' ha sido eliminado por completo.");
+        if(!confirm("⚠️ ATENCIÓN: Estás por eliminar permanentemente. ¿Continuar?")) return;
+        const snapH = await db.ref('hubs/' + id).once('value'), canchas = snapH.val()?.canchas || [];
+        for(let cid of canchas) await db.ref('eventos/' + cid).remove();
+        await db.ref('hubs/' + id).remove(); await db.ref('facturacion/' + id).remove();
+        alert("✅ Eliminado por completo.");
     }
 
     async function saldarCanchas(id, deuda) {
@@ -434,10 +450,8 @@
     }
 
     async function alternarArchivo(id, actual) {
-        const msg = actual ? "¿Restaurar este club a la lista activa?" : "¿Archivar este club? Se ocultará de la lista y no sumará a los totales.";
-        if(!confirm(msg)) return;
-        await db.ref(`facturacion/${id}/cuenta/archivado`).set(!actual);
-        alert(actual ? "Club restaurado." : "Club archivado.");
+        if(!confirm(actual ? "¿Restaurar este club?" : "¿Archivar este club?")) return;
+        await db.ref(`facturacion/${id}/cuenta/archivado`).set(!actual); alert(actual ? "Restaurado." : "Archivado.");
     }
 
     function sumarDiasVencimiento() { 
@@ -451,22 +465,15 @@
     function guardarPerfil() { 
         const id = document.getElementById('edit-id').value; 
         const upd = { 
-            nombreOrg: document.getElementById('mod-nom').value, 
-            nombreContacto: document.getElementById('mod-con').value, 
-            celularContacto: document.getElementById('mod-cel').value, 
-            emailOrganizador: document.getElementById('mod-email-disp').value, 
-            aliasPredeterminado: document.getElementById('mod-ali').value, 
-            linkCorto: document.getElementById('mod-link-corto').value.trim(), 
-            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
-            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
-            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
-            limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, 
-            esFundador: document.getElementById('mod-founder').checked, 
-            vencimientoAbono: currentVencimiento, 
-            cuentaSuspendida: document.getElementById('mod-susp').checked, 
-            enTrial: document.getElementById('mod-trial-switch').checked 
+            nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, 
+            celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, 
+            aliasPredeterminado: document.getElementById('mod-ali').value, linkCorto: document.getElementById('mod-link-corto').value.trim(), 
+            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
+            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, 
+            esFundador: document.getElementById('mod-founder').checked, vencimientoAbono: currentVencimiento, 
+            cuentaSuspendida: document.getElementById('mod-susp').checked, enTrial: document.getElementById('mod-trial-switch').checked 
         }; 
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados correctamente."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
+        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
     }
 
     function actualizarTrial(isT) {
@@ -478,19 +485,21 @@
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
             document.getElementById('edit-id').value = id; 
-            document.getElementById('mod-nom').value = f.nombreOrg || ""; 
-            document.getElementById('mod-con').value = f.nombreContacto || ""; 
-            document.getElementById('mod-cel').value = f.celularContacto || ""; 
-            document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
-            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
-            document.getElementById('mod-link-corto').value = f.linkCorto || ""; 
-            document.getElementById('mod-abono').value = f.abonoMensual || f.abonoMensual === 0 ? f.abonoMensual : 39000; 
-            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 5000; 
-            document.getElementById('mod-limite').value = f.limiteCredito || 40000; 
-            document.getElementById('mod-trial-limit').value = f.limiteCanchasTrial || 2; 
-            document.getElementById('mod-founder').checked = f.esFundador || false; 
-            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; 
+            document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
+            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-link-corto').value = f.linkCorto || ""; 
+            document.getElementById('mod-abono').value = f.abonoMensual || 39000; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 5000; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 40000; document.getElementById('mod-trial-limit').value = f.limiteCanchasTrial || 2; 
+            document.getElementById('mod-founder').checked = f.esFundador || false; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
+            
+            // Si tiene aumento programado, mostrar aviso
+            const msgAumento = document.getElementById('msg-aumento-edit');
+            if (f.fechaAplicacionPrecios) {
+                msgAumento.style.display = 'block';
+                document.getElementById('txt-aumento-programado').innerText = `⚠️ Aumento programado a $${f.proximoAbonoMensual} a partir del ${PadelSaaS.fmtFecha(f.fechaAplicacionPrecios)}`;
+            } else { msgAumento.style.display = 'none'; }
+
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });

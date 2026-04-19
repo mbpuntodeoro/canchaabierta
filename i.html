@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=19"></script>
+    <script src="app-config.js?v=20"></script>
     <style>
         :root { 
             --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; --gray-3: #C7C7CC;
@@ -27,6 +27,7 @@
         .info-row:last-child { margin-bottom: 0; }
         
         .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--gray-2); margin-bottom: 12px; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box; font-weight: 600; transition: border-color 0.2s;}
+        select.input-std { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238E8E93' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; cursor: pointer; }
         .input-std::placeholder { color: var(--gray-3); }
         .input-std:focus { border-color: #007AFF; }
         
@@ -44,8 +45,9 @@
         .check-icon { font-size: 35px; color: white; background: #34C759; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; transform: scale(0.5); opacity: 0; animation: popCheck 400ms 150ms var(--ease-out) forwards; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
         @keyframes popCheck { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        .payment-box { background: var(--gray-1); border: 1px solid #EFEFF4; border-radius: 20px; padding: 20px; margin: 24px 0; }
-        .monto { font-size: 32px; font-weight: 800; margin: 5px 0 20px 0; color: var(--text-main); letter-spacing: -1px; }
+        .payment-box { background: var(--gray-1); border: 1px solid #EFEFF4; border-radius: 20px; padding: 20px; margin: 24px 0; text-align: center;}
+        .monto { font-size: 32px; font-weight: 800; margin: 5px 0 10px 0; color: var(--text-main); letter-spacing: -1px; }
+        .monto-detalle { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-bottom: 20px;}
         
         .alias-box { background: var(--gray-2); padding: 14px; border-radius: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; font-size: 16px; word-break: break-all; letter-spacing: 0.5px;}
         .btn-copy { background: white; border: 1px solid var(--gray-3); color: var(--text-main); font-weight: 700; padding: 12px 20px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer; transition: transform var(--anim-fast) var(--ease-out); box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
@@ -57,7 +59,6 @@
         .btn-black-admin { background: #1C1C1E; color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast);}
         .btn-black-admin:active { transform: scale(0.96); }
         
-        /* BOTONES DE ESTADO (YA ANOTADO) */
         .btn-gray { background: var(--gray-2); color: var(--text-main); border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast); }
         .btn-gray:active { transform: scale(0.96); background: var(--gray-3); }
         
@@ -65,6 +66,7 @@
         .btn-danger-outline:active { transform: scale(0.96); background: rgba(255,59,48,0.2); }
 
         .link-back { margin-top: 20px; font-size: 13px; color: var(--text-sub); font-weight: 700; text-decoration: none; display: inline-block; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;}
+        label { display: block; font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 0 0 6px 5px; }
         #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
 
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
@@ -90,11 +92,28 @@
                     <div class="info-row">🕒 <span id="t-hs">--</span></div>
                     <div class="info-row">📍 <span id="t-lug">--</span></div>
                     <div class="info-row">👤 <span id="t-org">--</span></div>
-                    <div class="info-row" style="margin-top: 15px; font-size: 22px; font-weight: 900; color:var(--text-main);">💰 <span id="t-val">$0</span></div>
+                    <div class="info-row" style="margin-top: 15px; font-size: 20px; font-weight: 900; color:var(--text-main);">💰 <span id="t-val-single">--</span> <small style="font-size: 10px; color:var(--text-sub);">C/U</small></div>
                 </div>
 
-                <input type="text" id="p-name" class="input-std" placeholder="Tu Nombre y Apellido">
-                <input type="tel" id="p-celu" class="input-std" placeholder="Tu WhatsApp">
+                <label>Tu Nombre y Apellido</label>
+                <input type="text" id="p-name" class="input-std" placeholder="Ej: Julieta Lopez">
+                
+                <label>Tu WhatsApp</label>
+                <input type="tel" id="p-celu" class="input-std" placeholder="Ej: 1122334455">
+                
+                <label>¿Cuántos lugares necesitás?</label>
+                <select id="p-cant" class="input-std" onchange="actualizarPrecioEnVivo()">
+                    <option value="1">Sólo yo (1 lugar)</option>
+                    <option value="2">2 lugares</option>
+                    <option value="3">3 lugares</option>
+                    <option value="4">4 lugares</option>
+                    <option value="5">5 lugares</option>
+                </select>
+
+                <div id="box-total-preview" style="background: #F2F2F7; padding: 15px; border-radius: 14px; text-align: center; margin-bottom: 15px;">
+                    <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Total a transferir</div>
+                    <div id="t-total-calc" style="font-size: 24px; font-weight: 900; color: var(--text-main);">$0</div>
+                </div>
                 
                 <button onclick="handleJoin(this)" class="btn-join" id="btn-submit">
                     <span class="btn-text">CONFIRMAR MI LUGAR</span>
@@ -106,7 +125,7 @@
             <div id="already-screen" style="display:none; text-align:center;">
                 <div class="check-icon" style="background:var(--blue-grad); box-shadow: 0 8px 20px rgba(0,122,255,0.25); animation-delay: 0ms;">👤</div>
                 <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">¡Ya estás anotado!</h2>
-                <p style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 25px 0;">Tu lugar en esta cancha está confirmado.</p>
+                <p id="txt-already-desc" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 25px 0;">Tu lugar está confirmado.</p>
                 
                 <button onclick="mostrarPagoDesdeAlready()" class="btn-gray">Ver datos de pago</button>
                 <button onclick="handleCancel(this)" class="btn-danger-outline" id="btn-cancel">Darme de baja</button>
@@ -117,11 +136,14 @@
             <div id="success-screen" style="display:none; text-align:center;">
                 <div class="check-icon" id="success-check">✓</div>
                 <h2 id="success-title" style="margin:0 0 5px 0; font-weight:900; font-size:24px; letter-spacing:-0.5px;">Inscripción exitosa</h2>
-                <p id="success-sub" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 20px 0;">Tu lugar está pre-reservado.</p>
+                <p id="success-sub" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 20px 0;">Tus lugares están pre-reservados.</p>
                 
                 <div class="payment-box">
                     <p style="font-size:12px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 5px 0;">Confirmá tu lugar con el pago</p>
-                    <div class="monto" id="s-importe-final">$0</div>
+                    
+                    <div class="monto" id="s-total-final">$0</div>
+                    <div class="monto-detalle" id="s-detalle-final">--</div>
+
                     <p style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin:0 0 8px 0;">ALIAS / CBU</p>
                     <div class="alias-box" id="s-alias-final">--</div>
                     <button class="btn-copy" onclick="copiarAlias(this)">📋 Copiar alias</button>
@@ -130,7 +152,7 @@
                 <button id="btn-anotar-otro" style="display:none;" class="btn-black-admin" onclick="window.location.reload()">➕ Anotar a otro jugador</button>
 
                 <button onclick="notificarWa()" class="btn-green">💬 Enviar comprobante</button>
-                <p style="font-size:11px; color:#9CA3AF; font-weight:600; margin:15px 0 5px 0;">Tu lugar se confirma al recibir el pago.</p>
+                <p style="font-size:11px; color:#9CA3AF; font-weight:600; margin:15px 0 5px 0;">El lugar se confirma al recibir el pago.</p>
                 <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a></div>
             </div>
         </div>
@@ -169,7 +191,6 @@
             document.getElementById('footer-pro').style.display = 'block';
             document.getElementById('main-card').style.animation = "modalIn 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards";
 
-            // Llenar datos visuales
             const diasList = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
             const fObj = new Date(eventData.fecha + 'T12:00:00');
             const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
@@ -179,22 +200,24 @@
             document.getElementById('t-hs').innerText = eventData.hora + ' a ' + (eventData.horaFin || '--') + ' hs';
             document.getElementById('t-lug').innerText = eventData.lugar || 'Sede a confirmar';
             document.getElementById('t-org').innerText = eventData.nombreOrganizador || 'Admin';
-            document.getElementById('t-val').innerText = PadelUtils.fmtDinero(eventData.valor);
-            
-            document.getElementById('s-importe-final').innerText = PadelUtils.fmtDinero(eventData.valor);
+            document.getElementById('t-val-single').innerText = PadelUtils.fmtDinero(eventData.valor);
             document.getElementById('s-alias-final').innerText = eventData.alias || 'Consultar al organizador';
 
-            // 🔥 INTELIGENCIA ADMIN VS JUGADOR NORMAL
+            // Actualiza precio por si el default es 1
+            actualizarPrecioEnVivo();
+
             if (isAdmin) {
-                // Si es Admin, siempre ve el form para anotar a otro y ve el botón extra de "Anotar a otro" al final
+                // Modo Dios
                 document.getElementById('form-screen').style.display = 'block';
                 document.getElementById('btn-anotar-otro').style.display = 'block';
             } else if (playerLocalData) {
-                // Si es jugador normal, revisa si está en DB
+                // Revisa DB
                 const list = eventData.inscriptos || [];
-                const isStillInDB = list.some(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
+                const pInfo = list.find(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
                 
-                if (isStillInDB) {
+                if (pInfo) {
+                    const cant = pInfo.cantidad || 1;
+                    document.getElementById('txt-already-desc').innerText = `Tenés ${cant} lugar${cant > 1 ? 'es' : ''} en esta cancha.`;
                     document.getElementById('already-screen').style.display = 'block';
                 } else {
                     localStorage.removeItem('padelapp_cancha_' + id);
@@ -207,10 +230,23 @@
         });
     }
 
-    // 🚀 UNIRSE (Y GUARDAR EN MEMORIA SI NO ES ADMIN)
+    // 🔥 CALCULA PRECIO X CANTIDAD
+    function actualizarPrecioEnVivo() {
+        const cant = parseInt(document.getElementById('p-cant').value) || 1;
+        const valorUnitario = eventData.valor || 0;
+        const total = cant * valorUnitario;
+        
+        document.getElementById('t-total-calc').innerText = PadelUtils.fmtDinero(total);
+        document.getElementById('s-total-final').innerText = PadelUtils.fmtDinero(total);
+        document.getElementById('s-detalle-final').innerText = `${cant} persona${cant > 1 ? 's' : ''} a ${PadelUtils.fmtDinero(valorUnitario)} c/u`;
+    }
+
+    // 🚀 UNIRSE Y VALIDAR CUPOS REALES
     function handleJoin(btnElement) {
         const name = document.getElementById('p-name').value.trim();
         const celu = document.getElementById('p-celu').value.trim();
+        const cant = parseInt(document.getElementById('p-cant').value) || 1;
+
         if(!name || !celu) return alert("Por favor, ingresá tu nombre y WhatsApp para continuar.");
         
         btnElement.classList.add("loading");
@@ -224,23 +260,28 @@
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
 
-            if (list.length >= (eventData.cupo || 99)) {
-                alert("Lo sentimos, la cancha ya está llena.");
+            // 🔥 Sumamos los ocupados reales (contando si alguien reservó doble)
+            const ocupados = list.reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const cupoTotal = eventData.cupo || 99;
+
+            if (ocupados + cant > cupoTotal) {
+                const libres = Math.max(0, cupoTotal - ocupados);
+                alert(`Lo sentimos, no hay suficientes lugares. Solo quedan ${libres} lugares disponibles.`);
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
             }
 
-            list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
+            // Agregamos el campo "cantidad" a la base de datos
+            list.push({ nombre: name, celular: celu, cantidad: cant, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                // 🔥 SI ES ADMIN, NO LE GUARDAMOS LA MEMORIA PARA QUE PUEDA SEGUIR ANOTANDO
                 if (!isAdmin) {
-                    localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu }));
+                    localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
                 }
                 
                 setTimeout(() => {
                     document.getElementById('form-screen').style.display = 'none';
                     document.getElementById('success-title').innerText = "Inscripción exitosa";
-                    document.getElementById('success-sub').innerText = "Tu lugar está pre-reservado.";
+                    document.getElementById('success-sub').innerText = `Tus ${cant} lugares están pre-reservados.`;
                     document.getElementById('success-check').style.animation = "none"; 
                     setTimeout(()=> document.getElementById('success-check').style.animation = "popCheck 400ms 150ms var(--ease-out) forwards", 10);
                     
@@ -255,9 +296,9 @@
         });
     }
 
-    // 🚀 DARSE DE BAJA (CON AVISO POR WA)
+    // 🚀 DARSE DE BAJA
     function handleCancel(btnElement) {
-        if(!confirm("¿Estás seguro de que querés liberar tu lugar en la cancha?")) return;
+        if(!confirm("¿Estás seguro de que querés liberar tus lugares en la cancha?")) return;
         
         btnElement.innerText = "PROCESANDO...";
         btnElement.disabled = true;
@@ -267,6 +308,7 @@
             const index = list.findIndex(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
             
             if (index > -1) {
+                const cantLiberada = list[index].cantidad || 1;
                 list.splice(index, 1); 
                 db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
                     localStorage.removeItem('padelapp_cancha_' + id); 
@@ -276,8 +318,8 @@
                     const nombreCancha = eventData.organiza;
                     
                     if (celOrg) {
-                        const texto = `Hola! Te aviso que me acabo de dar de baja de la cancha "${nombreCancha}". Soy ${nombrePlayer}. Ya liberé el cupo en el sistema para que se pueda anotar otro.`;
-                        alert("✅ Te diste de baja correctamente.\n\nPresioná ACEPTAR para enviarle un aviso automático al organizador por WhatsApp.");
+                        const texto = `Hola! Te aviso que me acabo de dar de baja de la cancha "${nombreCancha}". Soy ${nombrePlayer}. Ya liberé los ${cantLiberada} lugares en el sistema.`;
+                        alert("✅ Te diste de baja correctamente.\n\nPresioná ACEPTAR para avisarle al organizador por WhatsApp.");
                         window.location.replace(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`);
                     } else {
                         alert("✅ Te diste de baja correctamente.");
@@ -294,8 +336,11 @@
     function mostrarPagoDesdeAlready() {
         document.getElementById('already-screen').style.display = 'none';
         
+        // Actualizamos precio por las dudas
+        actualizarPrecioEnVivo();
+
         document.getElementById('success-title').innerText = "Datos de Pago";
-        document.getElementById('success-sub').innerText = "Realizá el pago para confirmar tu lugar.";
+        document.getElementById('success-sub').innerText = "Realizá el pago para confirmar tus lugares.";
         document.getElementById('success-check').style.display = 'none';
         
         const successScreen = document.getElementById('success-screen');
@@ -319,9 +364,11 @@
 
     function notificarWa() {
         const celOrg = eventData.celuOrganizador; 
-        const nombrePlayer = document.getElementById('p-name').value.trim() || (playerLocalData ? playerLocalData.nombre : "");
+        const name = document.getElementById('p-name').value.trim() || (playerLocalData ? playerLocalData.nombre : "Alguien");
+        const cant = parseInt(document.getElementById('p-cant').value) || (playerLocalData ? playerLocalData.cantidad : 1);
+        
         if (!celOrg) return alert("El organizador no configuró un número.");
-        const texto = `¡Hola! Estoy anotado en la cancha "${eventData.organiza}". Soy ${nombrePlayer}. Te envío el comprobante del pago:`;
+        const texto = `¡Hola! Me anoté a la cancha "${eventData.organiza}" para ${cant} persona/s. Soy ${name}. Te envío el comprobante del pago:`;
         window.open(`https://wa.me/${celOrg.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 </script>

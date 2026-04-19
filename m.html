@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=19"></script>
+    <script src="app-config.js?v=21"></script>
     <style>
         :root { 
             --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; 
@@ -32,11 +32,11 @@
 
         .hub-item { background: white; border-radius: 20px; margin-bottom: 12px; border: 1px solid #E5E5EA; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; transition: transform var(--anim-fast);}
         .hub-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .hub-name { font-weight: 900; font-size: 16px; }
+        .hub-name { font-weight: 900; font-size: 16px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;}
         .hub-content { padding: 0 20px 20px 20px; display: none; border-top: 1px solid #F9F9FB; background: #FAFAFC; }
         .hub-item.active .hub-content { display: block; }
         
-        .tag-status { font-size: 10px; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; margin-left: 10px; font-weight: 800; letter-spacing: 0.5px;}
+        .tag-status { font-size: 10px; padding: 4px 10px; border-radius: 8px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;}
         .st-ok { background: rgba(52,199,89,0.1); color: var(--success); }
         .st-warn { background: rgba(255,159,10,0.1); color: var(--warning); }
         .st-danger { background: rgba(255,59,48,0.1); color: var(--danger); }
@@ -95,8 +95,6 @@
                         <input id="new-email" type="email" class="input-std" placeholder="Email">
                         <input id="new-pass" type="text" class="input-std" placeholder="Clave">
                     </div>
-                    <label>Días de prueba inicial</label>
-                    <input id="new-trial" type="number" class="input-std" value="7">
                     <button onclick="crearHub()" class="btn-action btn-blue" style="width:100%">CREAR CLUB</button>
                 </div>
             </details>
@@ -114,6 +112,12 @@
         <div class="modal-content">
             <h2 style="margin-top:0; font-weight:900;">⚙️ Parámetros</h2>
             <input type="hidden" id="edit-id">
+            
+            <div style="background:#fff9e6; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #ffeeba; margin-bottom:15px;">
+                <b style="color:#856404; font-size:11px;">⭐ STATUS: MIEMBRO FUNDADOR</b>
+                <input type="checkbox" id="mod-founder" style="transform:scale(1.3)">
+            </div>
+
             <label>Nombre</label><input id="mod-nom" class="input-std">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
                 <div><label>Responsable</label><input id="mod-con" class="input-std"></div>
@@ -132,14 +136,16 @@
                 <div><label>Abono ($)</label><input id="mod-abono" type="number" class="input-std"></div>
                 <div><label>Costo Cancha ($)</label><input id="mod-costo-cancha" type="number" class="input-std"></div>
             </div>
-            <label>Límite Canchas ($)</label><input id="mod-limite" type="number" class="input-std">
+            <label>Límite Canchas Libres ($)</label><input id="mod-limite" type="number" class="input-std">
             
             <div style="background: #F9F9FB; padding: 15px; border-radius: 16px; border: 1px solid #EFEFF4; margin: 15px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><strong style="font-size:13px;">Modo Trial</strong><br><span style="font-size:10px; color:var(--sub);">Consumo ilimitado</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                    <div><strong style="font-size:13px;">Modo Trial</strong><br><span style="font-size:10px; color:var(--sub);">Prueba gratuita</span></div>
                     <label style="position: relative; display: inline-block; width: 44px; height: 24px; margin:0;"><input type="checkbox" id="mod-trial-switch" style="opacity: 0; width: 0; height: 0;" onchange="actualizarTrial(this.checked)"><span style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .3s; border-radius: 34px;" id="slider-trial"></span><span style="position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="knob-trial"></span></label>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center; margin-top: 10px;">
+                <label>Límite de Canchas Gratis</label>
+                <input id="mod-trial-limit" type="number" class="input-std" placeholder="Ej: 2">
+                <div style="display:flex; gap:8px; align-items:center; margin-top: 5px;">
                     <input id="mod-trial-days" class="input-std" type="number" placeholder="Días extra..." style="margin-bottom:0; flex:1; padding: 10px;"><button onclick="sumarDiasVencimiento()" class="btn-action btn-blue" style="padding:10px 15px;">SUMAR</button>
                 </div>
                 <p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center; margin-top: 10px;"></p>
@@ -208,13 +214,15 @@
             hubsArray.forEach(data => {
                 const {id, f, res} = data;
                 let tag = "";
-                if (f.archivado) tag = `<span class="tag-status st-archived">Archivado</span>`;
-                else if (f.cuentaSuspendida) tag = `<span class="tag-status st-danger">Suspendido</span>`;
-                else if (res.enTrial) tag = `<span class="tag-status st-trial">Trial</span>`;
-                else if (res.isBlocked) tag = `<span class="tag-status st-danger">Vencido</span>`;
-                else if (res.deudaCanchas > 0) tag = `<span class="tag-status st-warn">Deuda</span>`;
-                else tag = `<span class="tag-status st-ok">Activo</span>`;
+                if (f.archivado) tag += `<span class="tag-status st-archived">Archivado</span>`;
+                else if (f.cuentaSuspendida) tag += `<span class="tag-status st-danger">Suspendido</span>`;
+                else if (res.enTrial) tag += `<span class="tag-status st-trial">Trial</span>`;
+                else if (res.isBlocked) tag += `<span class="tag-status st-danger">Vencido</span>`;
+                else if (res.deudaCanchas > 0) tag += `<span class="tag-status st-warn">Deuda</span>`;
+                else tag += `<span class="tag-status st-ok">Activo</span>`;
                 
+                if (f.esFundador && !f.archivado) tag += `<span class="tag-status" style="background:#fff9e6; color:#856404; border:1px solid #ffeeba; margin-left:5px;">⭐ Fundador</span>`;
+
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
                 const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
 
@@ -237,9 +245,11 @@
                                 <button class="btn-action btn-gray" style="margin-top:0;" onclick="abrirPerfil('${id}')">⚙️ PARÁMETROS</button>
                                 <a href="d.html?org=${id}" target="_blank" class="btn-action btn-black" style="text-align:center; text-decoration:none; margin-top:0; box-sizing:border-box;">DASHBOARD</a>
                             </div>
+                            
+                            <button class="btn-action" style="background: #25D366; color: white; width: 100%; margin-top: 10px;" onclick="enviarMensajeCRM('${id}', '${f.nombreOrg || id}', '${f.celularContacto || ''}')">💬 ENVIAR MENSAJE CRM A ORGANIZADOR</button>
+                            
                             <button class="btn-action" style="background: rgba(0,122,255,0.1); color: var(--primary); width: 100%; margin-top: 10px;" onclick="PadelUtils.copiarLink('${linkFinal}')">🔗 COPIAR LINK CARTELERA</button>
                             <button class="btn-archive" onclick="alternarArchivo('${id}', ${f.archivado || false})">${f.archivado ? 'RESTAURAR CLUB' : 'ARCHIVAR CLUB (OCULTAR)'}</button>
-                            
                             <button class="btn-danger-lite" onclick="eliminarClub('${id}')">🗑️ ELIMINAR PERMANENTEMENTE</button>
                         </div>
                     </div>`;
@@ -247,24 +257,50 @@
         });
     }
 
-    // 🔥 FUNCIÓN DE ELIMINACIÓN DEFINITIVA
-    async function eliminarClub(id) {
-        if(!confirm("⚠️ ATENCIÓN: Estás por eliminar el club '" + id + "' y toda su facturación permanentemente.\n\nEsta acción NO se puede deshacer. ¿Continuar?")) return;
-        if(!confirm("🚨 ¿Estás REALMENTE seguro? Se borrarán canchas, inscriptos, deudas e historial de pagos. No habrá forma de recuperarlo.")) return;
+    // 🔥 CREADOR DE MENSAJES CRM (Product-Led Growth)
+    async function enviarMensajeCRM(id, nombre, celular) {
+        if (!celular) return alert("⚠️ El organizador no tiene un número de WhatsApp configurado.");
+        
+        try {
+            const snapH = await db.ref('hubs/' + id + '/canchas').once('value');
+            const canchasIds = snapH.val() || [];
+            let totalCanchas = canchasIds.length;
+            let totalJugadores = 0;
+            let totalDinero = 0;
 
-        // 1. Obtener canchas para limpiarlas también
+            for (let cid of canchasIds) {
+                const sEv = await db.ref('eventos/' + cid).once('value');
+                const ev = sEv.val();
+                if (ev) {
+                    const cant = (ev.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
+                    totalJugadores += cant;
+                    totalDinero += (cant * (ev.valor || 0));
+                }
+            }
+
+            let msg = "";
+            if (totalCanchas === 0) {
+                msg = `¡Hola ${nombre}! Ya tenés todo listo para organizar sin vueltas.\n👉 Usá tu link para crear tu primera cancha.\n\nTip rápido: no la sobrepienses. Cargá los datos y compartí el link.\nSi en esta primera cancha no sentís que te simplifica la vida, no es para vos!`;
+            } else if (totalCanchas === 1) {
+                msg = `Bien ahí ${nombre}, ya tenés tu primera cancha creada! 👌\n\nAhora compartí el link en tu grupo de WhatsApp. No anotes a nadie manualmente. Los jugadores se inscriben solos y vos ves todo ordenado.\nCuando empiece a llenarse, vas a entender el cambio.`;
+            } else {
+                msg = `Resumen rápido de lo que ya hiciste:\n👉 Organizaste ${totalCanchas} canchas\n👉 Gestionaste ~${totalJugadores} jugadores\n👉 Moviste aprox ${PadelUtils.fmtDinero(totalDinero)}\n👉 Sin caos de WhatsApp ni errores de cupos\n\nEsto es lo que hace la diferencia. A partir de la próxima cancha pasás a plan pago. Seguís con el precio de Miembro Fundador ($29.000). Decime y te lo activo.`;
+            }
+
+            window.open(`https://wa.me/${celular.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+        } catch (error) {
+            alert("Error al calcular estadísticas: " + error.message);
+        }
+    }
+
+    async function eliminarClub(id) {
+        if(!confirm("⚠️ ATENCIÓN: Estás por eliminar el club '" + id + "' permanentemente.\n\nEsta acción NO se puede deshacer. ¿Continuar?")) return;
+        if(!confirm("🚨 ¿Estás REALMENTE seguro? Se borrarán canchas, inscriptos, deudas e historial de pagos.")) return;
         const snapH = await db.ref('hubs/' + id).once('value');
         const canchas = snapH.val()?.canchas || [];
-        
-        // 2. Borrar eventos asociados
-        for(let cid of canchas) {
-            await db.ref('eventos/' + cid).remove();
-        }
-        
-        // 3. Borrar el hub y la facturacion
+        for(let cid of canchas) { await db.ref('eventos/' + cid).remove(); }
         await db.ref('hubs/' + id).remove();
         await db.ref('facturacion/' + id).remove();
-        
         alert("✅ El organizador '" + id + "' ha sido eliminado por completo.");
     }
 
@@ -303,7 +339,22 @@
     
     function guardarPerfil() { 
         const id = document.getElementById('edit-id').value; 
-        const upd = { nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, aliasPredeterminado: document.getElementById('mod-ali').value, linkCorto: document.getElementById('mod-link-corto').value.trim(), abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, vencimientoAbono: currentVencimiento, cuentaSuspendida: document.getElementById('mod-susp').checked, enTrial: document.getElementById('mod-trial-switch').checked }; 
+        const upd = { 
+            nombreOrg: document.getElementById('mod-nom').value, 
+            nombreContacto: document.getElementById('mod-con').value, 
+            celularContacto: document.getElementById('mod-cel').value, 
+            emailOrganizador: document.getElementById('mod-email-disp').value, 
+            aliasPredeterminado: document.getElementById('mod-ali').value, 
+            linkCorto: document.getElementById('mod-link-corto').value.trim(), 
+            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, 
+            costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
+            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, 
+            limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, // 🔥 LÍMITE DE CANCHAS TRIAL
+            esFundador: document.getElementById('mod-founder').checked, // 🔥 FUNDADOR
+            vencimientoAbono: currentVencimiento, 
+            cuentaSuspendida: document.getElementById('mod-susp').checked, 
+            enTrial: document.getElementById('mod-trial-switch').checked 
+        }; 
         db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados correctamente."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
     }
 
@@ -315,23 +366,49 @@
     function abrirPerfil(id) {
         db.ref(`facturacion/${id}/cuenta`).once('value', s => {
             const f = s.val() || {}; currentVencimiento = f.vencimientoAbono || Date.now();
-            document.getElementById('edit-id').value = id; document.getElementById('mod-nom').value = f.nombreOrg || ""; document.getElementById('mod-con').value = f.nombreContacto || ""; document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-link-corto').value = f.linkCorto || ""; document.getElementById('mod-abono').value = f.abonoMensual || 0; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; document.getElementById('mod-limite').value = f.limiteCredito || 0; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
+            document.getElementById('edit-id').value = id; 
+            document.getElementById('mod-nom').value = f.nombreOrg || ""; 
+            document.getElementById('mod-con').value = f.nombreContacto || ""; 
+            document.getElementById('mod-cel').value = f.celularContacto || ""; 
+            document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
+            document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; 
+            document.getElementById('mod-link-corto').value = f.linkCorto || ""; 
+            document.getElementById('mod-abono').value = f.abonoMensual || 0; 
+            document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 0; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 0; 
+            document.getElementById('mod-trial-limit').value = f.limiteCanchasTrial || 2; 
+            document.getElementById('mod-founder').checked = f.esFundador || false; 
+            document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             document.getElementById('txt-venc-actual').innerText = "Vence: " + PadelSaaS.fmtFecha(currentVencimiento);
             document.getElementById('modal-edit').style.display = 'flex';
         });
     }
 
+    // 🔥 DEFAULTS $29.000 / $5.000 / 15 DÍAS
     async function crearHub() {
-        const id = document.getElementById('new-id').value.trim().toLowerCase(), nom = document.getElementById('new-name').value.trim(), email = document.getElementById('new-email').value.trim(), pass = document.getElementById('new-pass').value.trim(), trial = parseInt(document.getElementById('new-trial').value) || 0;
+        const id = document.getElementById('new-id').value.trim().toLowerCase(), nom = document.getElementById('new-name').value.trim(), email = document.getElementById('new-email').value.trim(), pass = document.getElementById('new-pass').value.trim();
         if(!id || !nom || !email || !pass) return alert("Faltan datos");
         try {
             const config = firebase.app().options; let secApp;
             try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
             await secApp.auth().createUserWithEmailAndPassword(email, pass); await secApp.auth().signOut();
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
-            await db.ref(`facturacion/${id}/cuenta`).set({ nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (trial * 86400000), abonoMensual: 25000, costoPorCancha: 1000, limiteCredito: 50000, cuentaSuspendida: false, enTrial: true, archivado: false });
-            alert("✅ Club creado con éxito.");
+            
+            await db.ref(`facturacion/${id}/cuenta`).set({ 
+                nombreOrg: nom, 
+                emailOrganizador: email, 
+                vencimientoAbono: Date.now() + (15 * 86400000), // 🔥 15 días por defecto
+                abonoMensual: 29000, 
+                costoPorCancha: 5000, 
+                limiteCredito: 40000, // 8 canchas
+                limiteCanchasTrial: 2,
+                esFundador: true, // 🔥 Estatus por defecto
+                cuentaSuspendida: false, 
+                enTrial: true, 
+                archivado: false 
+            });
+            alert("✅ Club creado con éxito. Modo: Fundador ($29k/mes).");
             document.querySelector('.new-org').removeAttribute('open');
         } catch(e) { alert("Error: " + e.message); }
     }

@@ -45,8 +45,6 @@
         .metric-box { flex: 1; background: #2C2C2E; border-radius: var(--r-md); padding: var(--s3); text-align: center; }
         .metric-label { font-size: 10px; color: #8E8E93; font-weight: 800; text-transform: uppercase; }
         .metric-value { font-size: 18px; font-weight: 900; margin-top: 4px; color: var(--text-inverse); }
-        
-        .sales-box { background: #eef6ff; color: #005bb5; padding: var(--s3); border-radius: var(--r-md); text-align: center; font-weight: 800; font-size: 13px; border: 1.5px dashed #cce4ff; margin-bottom: var(--s4); }
 
         .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
         .btn:active { transform: scale(0.96); }
@@ -163,12 +161,8 @@
                     <div style="font-size: 13px; font-weight: 600; color: white;" id="txt-detalle-canchas">Incluye: • 0 canchas &rarr; $0</div>
                 </div>
             </div>
-            
-            <div class="sales-box fade-in" style="animation-delay: 50ms;">
-                💡 El costo del sistema equivale a menos de 1 jugador por turno.
-            </div>
 
-            <div class="section fade-in" style="animation-delay: 100ms; margin-bottom: 20px;">
+            <div class="section fade-in" style="animation-delay: 100ms; margin-top: 20px; margin-bottom: 20px;">
                 <button class="btn btn-outline" style="margin-bottom: var(--s2);" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
                 <button class="btn btn-primary" onclick="copiarMiLink()">🔗 COPIAR LINK CARTELERA</button>
             </div>
@@ -210,12 +204,28 @@
         <div class="modal-content">
             <h2 class="h1 text-center" style="margin-bottom: var(--s3); font-size: 22px;">👥 Jugadores</h2>
             <input type="hidden" id="pl-id">
-            <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 4px;">
-                <div class="metric-box" style="background:var(--bg-main); padding:8px;"><span class="label">CUPO</span><b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:var(--bg-main); padding:8px;"><span class="label">CONF</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:var(--bg-main); padding:8px;"><span class="label">PEND</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:var(--bg-main); padding:8px;"><span class="label">LIBRE</span><b id="st-lib" class="metric-value" style="color:var(--blue); font-size:15px;">0</b></div>
+            
+            <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
+                <div class="metric-box" style="background:var(--bg-main); padding:12px;">
+                    <span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
+                </div>
+                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;">
+                    <span class="label" style="color:var(--blue)">LUGARES LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
+                </div>
             </div>
+
+            <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 6px;">
+                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;">
+                    <span class="label" style="color:var(--green)">PAGADOS</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b>
+                </div>
+                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;">
+                    <span class="label" style="color:var(--orange)">EN CANCHA</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b>
+                </div>
+                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;">
+                    <span class="label" style="color:var(--red)">PEND.</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b>
+                </div>
+            </div>
+
             <div id="players-list"></div>
             <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR</button>
         </div>
@@ -383,7 +393,6 @@
             document.getElementById('badge-client-fundador').style.display = 'none';
         }
 
-        // 🔥 ESCUDO VIP
         const avisoAumento = document.getElementById('aviso-aumento');
         if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
             avisoAumento.style.display = 'block';
@@ -584,7 +593,6 @@
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             
-            // 🔥 MAGIA LAZY EVALUATION (Se auto-actualiza si la fecha ya llegó, ignora Fundadores)
             if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
                 if (!cuentaInfo.esFundador) {
                     db.ref(`facturacion/${orgId}/cuenta`).update({
@@ -597,7 +605,7 @@
                         proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
                     });
                 }
-                return; // Cortamos acá, el listener se vuelve a llamar solo
+                return;
             }
 
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
@@ -802,13 +810,16 @@
             const ins = d.inscriptos || [];
             
             const totalAnotados = ins.reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            const confirmados = ins.filter(p => p.estado === 'pagado' || p.estado === 'paga-en-la-cancha').reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const pagados = ins.filter(p => p.estado === 'pagado').reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const enCancha = ins.filter(p => p.estado === 'paga-en-la-cancha').reduce((acc, p) => acc + (p.cantidad || 1), 0);
             const pendientes = ins.filter(p => p.estado === 'pendiente').reduce((acc, p) => acc + (p.cantidad || 1), 0);
+            const cupoTotal = d.cupo || 0;
             
-            document.getElementById('st-total').innerText = d.cupo; 
-            document.getElementById('st-pag').innerText = confirmados; 
+            document.getElementById('st-total').innerText = cupoTotal; 
+            document.getElementById('st-lib').innerText = Math.max(0, cupoTotal - totalAnotados);
+            document.getElementById('st-pag').innerText = pagados; 
+            document.getElementById('st-enc').innerText = enCancha;
             document.getElementById('st-pen').innerText = pendientes; 
-            document.getElementById('st-lib').innerText = Math.max(0, d.cupo - totalAnotados);
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };

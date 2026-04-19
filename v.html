@@ -43,8 +43,14 @@
         #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
         .no-courts { text-align: center; font-weight: 700; color: var(--text-sub); background: white; padding: 30px; border-radius: 20px; font-size: 15px; }
 
+        /* FOOTER VIRAL DE VENTAS */
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--gray-2); margin: 0 auto 24px; width: 100%; }
+        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.3px; }
+        .footer-subtitle { font-size: 16px; font-weight: 900; color: #FF9F0A; margin: 0 0 20px 0; letter-spacing: -0.3px; }
+        .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
+        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
     </style>
 </head>
 <body>
@@ -62,7 +68,10 @@
 
     <div class="footer-pro" id="footer-pro" style="display:none;">
         <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
-        <p style="font-size:12px; font-weight:700; color:#444;">La forma más simple de organizar tu cancha abierta de pádel.</p>
+        <hr class="footer-divider">
+        <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
+        <p class="footer-subtitle">Pasala a piloto automático.</p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
     </div>
 
 <script>
@@ -133,13 +142,15 @@
                     const fObj = new Date(d.fecha + 'T12:00:00');
                     const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
                     
+                    // 🔥 BOTÓN ACTUALIZADO
                     let btnHtml = "";
                     if (libres > 0) {
-                        btnHtml = `<div class="btn-join">ANOTARME (${libres} lugares)</div>`;
+                        btnHtml = `<div class="btn-join">INGRESAR</div>`;
                     } else {
                         btnHtml = `<div class="btn-join btn-full">CANCHA LLENA</div>`;
                     }
 
+                    // 🔥 INFO ACTUALIZADA (Lugar, Organizador y Horario Completo)
                     htmlAcumulado += `
                         <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 50}ms;">
                             <div class="card-header">
@@ -147,7 +158,9 @@
                                 <span class="badge-cat">${d.categorias || 'Mixto'}</span>
                             </div>
                             <div class="info-row">📅 ${fechaTxt}</div>
-                            <div class="info-row">🕒 ${d.hora} hs</div>
+                            <div class="info-row">🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                            <div class="info-row">👤 ${d.nombreOrganizador || 'Organizador'}</div>
                             <div class="info-row" style="color:var(--text-main); font-size:16px; margin-top:10px;">
                                 💰 <b>${PadelUtils.fmtDinero(d.valor)}</b> <small style="font-size:11px; color:var(--text-sub);">/ persona</small>
                             </div>

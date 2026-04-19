@@ -6,7 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=16"></script>
+    <script src="app-config.js?v=19"></script>
     <style>
         :root { 
             --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; --gray-3: #C7C7CC;
@@ -53,6 +53,9 @@
 
         .btn-green { background: var(--green-grad); box-shadow: 0 8px 20px rgba(52,199,89,0.25); color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast);}
         .btn-green:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(52,199,89,0.2);}
+
+        .btn-black-admin { background: #1C1C1E; color: white; border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast);}
+        .btn-black-admin:active { transform: scale(0.96); }
         
         /* BOTONES DE ESTADO (YA ANOTADO) */
         .btn-gray { background: var(--gray-2); color: var(--text-main); border: none; height: 52px; border-radius: 16px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-bottom: 12px; transition: transform var(--anim-fast); }
@@ -124,6 +127,8 @@
                     <button class="btn-copy" onclick="copiarAlias(this)">📋 Copiar alias</button>
                 </div>
 
+                <button id="btn-anotar-otro" style="display:none;" class="btn-black-admin" onclick="window.location.reload()">➕ Anotar a otro jugador</button>
+
                 <button onclick="notificarWa()" class="btn-green">💬 Enviar comprobante</button>
                 <p style="font-size:11px; color:#9CA3AF; font-weight:600; margin:15px 0 5px 0;">Tu lugar se confirma al recibir el pago.</p>
                 <div style="text-align: center;"><a onclick="window.location.href='v.html?org='+org" class="link-back">Volver a la cartelera</a></div>
@@ -142,13 +147,16 @@
 <script>
     const id = new URLSearchParams(window.location.search).get('id');
     const org = new URLSearchParams(window.location.search).get('org');
+    
+    // 🔥 DETECTOR MODO ADMIN (Pase VIP)
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
+
     let eventData = {}; 
     let playerLocalData = null;
 
     if(!id || !org) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
-        // 🔥 MAGIA: Buscamos la ficha en el celular
         const saved = localStorage.getItem('padelapp_cancha_' + id);
         if (saved) { playerLocalData = JSON.parse(saved); }
 
@@ -176,28 +184,30 @@
             document.getElementById('s-importe-final').innerText = PadelUtils.fmtDinero(eventData.valor);
             document.getElementById('s-alias-final').innerText = eventData.alias || 'Consultar al organizador';
 
-            // 🔥 INTELIGENCIA: ¿Sigue este jugador anotado de verdad en Firebase?
-            if (playerLocalData) {
+            // 🔥 INTELIGENCIA ADMIN VS JUGADOR NORMAL
+            if (isAdmin) {
+                // Si es Admin, siempre ve el form para anotar a otro y ve el botón extra de "Anotar a otro" al final
+                document.getElementById('form-screen').style.display = 'block';
+                document.getElementById('btn-anotar-otro').style.display = 'block';
+            } else if (playerLocalData) {
+                // Si es jugador normal, revisa si está en DB
                 const list = eventData.inscriptos || [];
                 const isStillInDB = list.some(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
                 
                 if (isStillInDB) {
-                    // Sigue vivo (Ya anotado)
                     document.getElementById('already-screen').style.display = 'block';
                 } else {
-                    // Wini lo borró a mano o la cancha se reprogramó. Le limpiamos la memoria al teléfono.
                     localStorage.removeItem('padelapp_cancha_' + id);
                     playerLocalData = null;
                     document.getElementById('form-screen').style.display = 'block';
                 }
             } else {
-                // Nuevo jugador
                 document.getElementById('form-screen').style.display = 'block';
             }
         });
     }
 
-    // 🚀 UNIRSE (Y GUARDAR EN MEMORIA)
+    // 🚀 UNIRSE (Y GUARDAR EN MEMORIA SI NO ES ADMIN)
     function handleJoin(btnElement) {
         const name = document.getElementById('p-name').value.trim();
         const celu = document.getElementById('p-celu').value.trim();
@@ -209,7 +219,6 @@
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             const list = s.val() || [];
             
-            // Anti-Doble-Clic 
             if (list.some(p => p.celular === celu)) {
                 alert("Este WhatsApp ya está anotado en la cancha.");
                 btnElement.classList.remove("loading"); btnElement.disabled = false; return;
@@ -223,8 +232,10 @@
             list.push({ nombre: name, celular: celu, estado: 'pendiente', fecha: Date.now() });
             
             db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                // 🔥 GUARDAMOS LA FICHITA EN EL CELU
-                localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu }));
+                // 🔥 SI ES ADMIN, NO LE GUARDAMOS LA MEMORIA PARA QUE PUEDA SEGUIR ANOTANDO
+                if (!isAdmin) {
+                    localStorage.setItem('padelapp_cancha_' + id, JSON.stringify({ nombre: name, celular: celu }));
+                }
                 
                 setTimeout(() => {
                     document.getElementById('form-screen').style.display = 'none';
@@ -244,7 +255,7 @@
         });
     }
 
-    // 🚀 DARSE DE BAJA (ELIMINA DE DB, MEMORIA Y AVISA POR WA)
+    // 🚀 DARSE DE BAJA (CON AVISO POR WA)
     function handleCancel(btnElement) {
         if(!confirm("¿Estás seguro de que querés liberar tu lugar en la cancha?")) return;
         
@@ -258,10 +269,8 @@
             if (index > -1) {
                 list.splice(index, 1); 
                 db.ref(`eventos/${id}/inscriptos`).set(list).then(() => {
-                    // Borramos la memoria local
                     localStorage.removeItem('padelapp_cancha_' + id); 
                     
-                    // Avisamos al organizador si tiene celular cargado
                     const celOrg = eventData.celuOrganizador;
                     const nombrePlayer = playerLocalData.nombre;
                     const nombreCancha = eventData.organiza;
@@ -282,7 +291,6 @@
         });
     }
 
-    // 🚀 MOSTRAR PAGO SI YA ESTABA ANOTADO
     function mostrarPagoDesdeAlready() {
         document.getElementById('already-screen').style.display = 'none';
         

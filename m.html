@@ -211,19 +211,22 @@
                 const mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
                 let f = fSnap.val() || {};
                 
-                // 🔥 MAGIA LAZY EVALUATION: Si hay aumento programado y la fecha ya pasó, actualizamos
+                // 🔥 MAGIA LAZY EVALUATION (Con protección para Fundadores)
                 if (f.fechaAplicacionPrecios && Date.now() >= f.fechaAplicacionPrecios) {
-                    await db.ref(`facturacion/${id}/cuenta`).update({
-                        abonoMensual: f.proximoAbonoMensual,
-                        costoPorCancha: f.proximoCostoPorCancha,
-                        proximoAbonoMensual: null,
-                        proximoCostoPorCancha: null,
-                        fechaAplicacionPrecios: null
-                    });
-                    // Actualizamos objeto local para renderizar bien ahora mismo
-                    f.abonoMensual = f.proximoAbonoMensual;
-                    f.costoPorCancha = f.proximoCostoPorCancha;
-                    delete f.fechaAplicacionPrecios;
+                    if (!f.esFundador) {
+                        await db.ref(`facturacion/${id}/cuenta`).update({
+                            abonoMensual: f.proximoAbonoMensual,
+                            costoPorCancha: f.proximoCostoPorCancha,
+                            proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
+                        });
+                        f.abonoMensual = f.proximoAbonoMensual;
+                        f.costoPorCancha = f.proximoCostoPorCancha;
+                    } else {
+                        await db.ref(`facturacion/${id}/cuenta`).update({
+                            proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
+                        });
+                    }
+                    delete f.fechaAplicacionPrecios; delete f.proximoAbonoMensual; delete f.proximoCostoPorCancha;
                 }
 
                 const res = PadelSaaS.analizarCuenta(f, mSnap.val() || {});
@@ -266,7 +269,8 @@
                 const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
 
                 let htmlAumento = "";
-                if (f.fechaAplicacionPrecios) {
+                // 🔥 ESCUDO VIP: Ocultamos el mensaje de aumento en la lista principal del Hub si es Fundador
+                if (f.fechaAplicacionPrecios && !f.esFundador) {
                     htmlAumento = `<div style="font-size:10px; color:var(--warning); font-weight:800; margin-top:5px;">⚠️ Aumento programado a ${PadelUtils.fmtDinero(f.proximoAbonoMensual)}</div>`;
                 }
 
@@ -493,9 +497,9 @@
             document.getElementById('mod-founder').checked = f.esFundador || false; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             
-            // Si tiene aumento programado, mostrar aviso
+            // 🔥 ESCUDO VIP: Ocultamos el mensaje de aumento en el Modal de Parámetros si es Fundador
             const msgAumento = document.getElementById('msg-aumento-edit');
-            if (f.fechaAplicacionPrecios) {
+            if (f.fechaAplicacionPrecios && !f.esFundador) {
                 msgAumento.style.display = 'block';
                 document.getElementById('txt-aumento-programado').innerText = `⚠️ Aumento programado a $${f.proximoAbonoMensual} a partir del ${PadelSaaS.fmtFecha(f.fechaAplicacionPrecios)}`;
             } else { msgAumento.style.display = 'none'; }

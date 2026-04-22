@@ -370,16 +370,18 @@ window.abrirJugadores = function(id) {
 
     const ref = db.ref('eventos/' + id);
 
-    if (currentPlayerRef) {
+    // 🔴 apagar listener anterior
+    if (currentPlayerRef && playersListener) {
         currentPlayerRef.off('value', playersListener);
     }
 
-    playersListener = (s) => {
+    currentPlayerRef = ref;
+
+    playersListener = function (s) {
         const d = s.val();
         if (!d) return;
 
         const ins = d.inscriptos || [];
-
         const grupos = agruparPorCelular(ins);
 
         const totalAnotados = calcularOcupados(ins);
@@ -396,7 +398,7 @@ window.abrirJugadores = function(id) {
         document.getElementById('st-pen').innerText = pendientes;
 
         const list = document.getElementById('players-list');
-        let html = "";
+        list.innerHTML = "";
 
         const bgColors = {
             pagado: "var(--green)",
@@ -405,42 +407,35 @@ window.abrirJugadores = function(id) {
         };
 
         grupos.forEach(grupo => {
-            grupo.sort((a, b) =>
-                (a.timestamp || 0) - (b.timestamp || 0)
-            );
-
-            html += `<div class="grupo-reserva">`;
+            let html = `<div class="grupo-reserva">`;
 
             grupo.forEach((p, i) => {
                 const esTitular = i === 0;
-                const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : (p.estado || '').toUpperCase();
 
                 html += `
-                <div class="player-row">
-                    <div class="${esTitular ? 'titular' : 'acompanante'}">
-                        ${esTitular ? p.nombre : '└ ' + p.nombre}
-                        ${esTitular && p.celular ? `<span class="player-cel">📱 ${p.celular}</span>` : ''}
-                    </div>
+                    <div class="player-row">
+                        <div class="${esTitular ? 'titular' : 'acompanante'}">
+                            ${esTitular ? p.nombre : '└ ' + p.nombre}
+                        </div>
 
-                    <button style="width:100px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'};"
+                        <button style="width:100px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'};"
                         onclick="window.togglePago(${p.originalIndex})">
-                        ${label}
-                    </button>
+                            ${p.estado.toUpperCase()}
+                        </button>
 
-                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;"
+                        <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;"
                         onclick="window.borrarP(${p.originalIndex})">✕</button>
-                </div>`;
+                    </div>
+                `;
             });
 
             html += `</div>`;
+            list.innerHTML += html;
         });
-
-        list.innerHTML = html;
 
         document.getElementById('modal-players').style.display = 'flex';
     };
 
-    currentPlayerRef = ref;
     ref.on('value', playersListener);
 };
 

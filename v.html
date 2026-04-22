@@ -15,6 +15,10 @@
             --green-grad: linear-gradient(180deg, #34C759, #30B350);
             --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
+
+        /* FIX 1: Esto evita que cualquier elemento desborde los márgenes de su caja */
+        * { box-sizing: border-box; }
+
         body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
         
         .header-box { text-align: center; margin-bottom: 25px; width: 100%; max-width: 500px; animation: modalIn 400ms var(--ease-out) forwards; }
@@ -25,16 +29,18 @@
 
         .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
         
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); text-decoration: none; color: inherit; display: block; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); text-decoration: none; color: inherit; display: block; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards; overflow: hidden; }
         .card:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px dashed var(--gray-2); padding-bottom: 12px;}
-        .card-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; line-height: 1.2; flex: 1; padding-right: 10px;}
-        .badge-cat { font-size: 10px; color: #007AFF; background: rgba(0,122,255,0.1); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
+        /* FIX 2: Alineación de Cabecera y Categorías */
+        .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 1px dashed var(--gray-2); padding-bottom: 12px;}
+        .card-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; line-height: 1.2; flex: 1; }
+        .badge-cat { font-size: 10px; color: #007AFF; background: rgba(0,122,255,0.1); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin: 0; }
         
         .info-row { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
         
-        .btn-join { background: var(--blue-grad); box-shadow: 0 4px 12px rgba(0,122,255,0.2); color: white; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 15px; text-align: center; }
+        /* FIX 1 (continuación): box-sizing asegura que el padding no engorde el botón */
+        .btn-join { background: var(--blue-grad); box-shadow: 0 4px 12px rgba(0,122,255,0.2); color: white; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 15px; text-align: center; box-sizing: border-box; }
         .btn-full { background: var(--gray-2); color: var(--text-sub); box-shadow: none; pointer-events: none;}
         
         @keyframes modalIn { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -142,7 +148,6 @@
                     const fObj = new Date(d.fecha + 'T12:00:00');
                     const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
                     
-                    // 🔥 BOTÓN ACTUALIZADO
                     let btnHtml = "";
                     if (libres > 0) {
                         btnHtml = `<div class="btn-join">INGRESAR</div>`;
@@ -150,7 +155,6 @@
                         btnHtml = `<div class="btn-join btn-full">CANCHA LLENA</div>`;
                     }
 
-                    // 🔥 INFO ACTUALIZADA (Lugar, Organizador y Horario Completo)
                     htmlAcumulado += `
                         <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 50}ms;">
                             <div class="card-header">

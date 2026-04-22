@@ -904,11 +904,12 @@
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
-            const ins = d.inscriptos || [];
-            console.log("INSCRIPTOS:", ins);
+         const ins = d.inscriptos || [];
+console.log("INSCRIPTOS:", ins);
+
+const grupos = agruparPorCelular(ins);
+
 console.log("GRUPOS AGRUPADOS:", grupos);
-            const grupos = agruparPorCelular(ins);
-            console.log("GRUPOS:", grupos);
 
 console.log("INSCRIPTOS:", ins);
 console.log("GRUPOS:", grupos); // 👈 mejor así

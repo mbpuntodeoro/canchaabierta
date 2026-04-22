@@ -3,69 +3,142 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartelera - PadelApp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js?v=21"></script>
     <style>
         :root { 
-            --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; 
-            --text-main: #1C1C1E; --text-sub: #8E8E93; 
-            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
-            --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-            --cat-color: #6A0DAD; --cat-bg: rgba(106, 13, 173, 0.1);
+            --bg-main: #FFFFFF; 
+            --text-main: #1C1C1E; 
+            --text-sub: #8E8E93; 
+            --border-color: #EEEEEE;
+            --orange: #FF9F0A;
+            --red: #FF3B30;
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
         
-        .header-box { text-align: center; margin-bottom: 20px; width: 100%; max-width: 500px; }
-        .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; }
-        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px; text-transform: uppercase;}
-
-        .date-header { 
-            width: 100%; max-width: 500px; 
-            padding: 25px 0 10px 10px; 
-            font-size: 12px; font-weight: 900; 
-            color: var(--text-sub); text-transform: uppercase; 
-            letter-spacing: 1px; display: flex; align-items: center;
-        }
-        .date-header::after { content: ""; flex: 1; height: 1px; background: var(--gray-2); margin-left: 15px; }
-
-        .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
-        
-        .card { 
-            background: white; border-radius: 18px; padding: 15px; 
-            display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01);
-            text-decoration: none; color: inherit; transition: transform 0.2s;
-            opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards;
-        }
-        .card:active { transform: scale(0.98); }
-
-        .card-left { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-right: 10px;}
-        .time-row { font-size: 17px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
-        .place-row { font-size: 13px; font-weight: 600; color: var(--text-sub); }
-
-        .card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 100px; }
-        .badge-cat { 
-            font-size: 9px; color: var(--cat-color); background: var(--cat-bg); 
-            padding: 4px 10px; border-radius: 7px; font-weight: 800; text-transform: uppercase; 
+        body { 
+            font-family: 'Outfit', -apple-system, sans-serif; 
+            background: var(--bg-main); 
+            margin: 0; 
+            padding: 0 20px 40px 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .btn-join { 
-            background: var(--blue-grad); color: white; border: none; 
-            padding: 10px 18px; border-radius: 10px; font-weight: 800; 
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; text-align: center;
-        }
-        .btn-full { background: var(--gray-2); color: var(--text-sub); pointer-events: none; box-shadow: none; }
+        .header-box { text-align: center; margin: 30px 0 10px 0; width: 100%; max-width: 500px; }
+        .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
+        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px; text-transform: uppercase;}
 
-        @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
+        /* --- 🎨 EL NUEVO DISEÑO COMPACTO --- */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .day-title {
+            font-size: 13px;
+            color: #888;
+            font-weight: 700;
+            margin: 24px 0 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-item {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: background 0.15s;
+            min-height: 52px; /* Touch target optimizado */
+        }
+
+        .event-item:active {
+            background: #F5F5F5;
+        }
+
+        .event-top {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .time {
+            min-width: 85px; /* Fijo para que la categoría quede alineada */
+        }
+
+        .category {
+            color: #555;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1; /* Ocupa el espacio disponible */
+        }
+
+        .price {
+            margin-left: auto;
+            font-weight: 700;
+        }
+
+        .event-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #777;
+            margin-top: 4px;
+            font-weight: 400;
+            align-items: center;
+        }
+
+        .location {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .arrow {
+            font-size: 18px;
+            color: #BBBBBB;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* ESTADO LLENO */
+        .event-item.is-full {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        
+        .event-item.is-full .arrow {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--red);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         #loading-init { margin-top: 50px; font-weight: 800; color: var(--text-sub); }
 
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 420px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--gray-2); margin-bottom: 20px; }
-        .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 15px; border-radius: 15px; font-weight: 800; font-size: 14px; display: block; box-shadow: 0 4px 12px rgba(255,159,10,0.2); }
+        /* FOOTER DE VENTAS (Minimalista para no ensuciar la lista) */
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0; width: 100%; max-width: 420px; }
+        .footer-divider { border: 0; border-top: 1px dashed var(--border-color); margin-bottom: 20px; }
+        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 14px; display: block; }
     </style>
 </head>
 <body>
@@ -79,17 +152,25 @@
         </div>
     </div>
 
-    <div class="court-list" id="court-list"></div>
+    <div id="court-list-container" style="width: 100%; display: flex; justify-content: center;"></div>
 
     <div class="footer-pro" id="footer-pro" style="display:none;">
         <hr class="footer-divider">
-        <p style="font-size:13px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Querés automatizar tu cancha?</p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha 🎾</a>
+        <p style="font-size:12px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Tu cancha es un caos de mensajes?</p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, pasame a piloto automático 🎾</a>
     </div>
 
 <script>
     const orgId = new URLSearchParams(window.location.search).get('org');
     
+    // Función para formatear el separador de días (Ej: Sábado 11 de Abril)
+    function formatearDia(fechaStr) {
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()} de ${meses[f.getMonth()]}`;
+    }
+
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
@@ -102,7 +183,7 @@
         });
 
         db.ref('hubs/' + orgId).on('value', async (snap) => {
-            const listContainer = document.getElementById('court-list');
+            const listContainer = document.getElementById('court-list-container');
             document.getElementById('loading-init').style.display = 'none';
             const hubData = snap.val();
 
@@ -116,13 +197,14 @@
             let eventos = [];
             snapshots.forEach(s => { if(s.exists()) eventos.push({ id: s.key, ...s.val() }); });
 
+            // Ordenamos por fecha y hora
             eventos.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
-            let htmlAcumulado = "";
+            let htmlAcumulado = "<div class='event-list'>";
             let lastDate = "";
-            const diasList = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+            let canchasActivas = 0;
 
-            eventos.forEach((d, index) => {
+            eventos.forEach((d) => {
                 const ahora = Date.now();
                 let horaFinReal = d.horaFin;
                 
@@ -135,43 +217,51 @@
 
                 let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
                 
-                // 🔥 SOLUCIÓN MEDIANOCHE: Si hora fin es menor a hora inicio, sumamos 24hs
+                // SOLUCIÓN MEDIANOCHE
                 if (horaFinReal && d.hora && horaFinReal < d.hora) {
                     finEvento += 86400000;
                 }
 
+                // Si la cancha NO pasó, la mostramos
                 if (ahora <= finEvento || d.tipo === 'recurrente') {
+                    canchasActivas++;
+                    
+                    // Separador de Día
                     if (d.fecha !== lastDate) {
-                        const fObj = new Date(d.fecha + 'T12:00:00');
-                        const fechaHeader = `${diasList[fObj.getDay()]} ${fObj.getDate()}/${fObj.getMonth()+1}`;
-                        htmlAcumulado += `<div class="date-header">${fechaHeader}</div>`;
+                        htmlAcumulado += `<div class="day-title">${formatearDia(d.fecha)}</div>`;
                         lastDate = d.fecha;
                     }
 
                     const ocupados = (d.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
                     const libres = Math.max(0, (d.cupo || 0) - ocupados);
+                    const isFull = libres <= 0;
                     
-                    const btnHtml = libres > 0 
-                        ? `<div class="btn-join">INGRESAR</div>` 
-                        : `<div class="btn-join btn-full">LLENO</div>`;
+                    const arrowHtml = isFull ? "LLENO" : "→";
+                    const classItem = isFull ? "event-item is-full" : "event-item";
+                    const timeStr = `${d.hora}–${d.horaFin || '--'}`;
 
                     htmlAcumulado += `
-                        <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 30}ms;">
-                            <div class="card-left">
-                                <div class="time-row">🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                                <div class="place-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                                <div style="font-size:13px; font-weight:800; color:var(--text-main); margin-top:2px;">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
+                        <a href="i.html?id=${d.id}&org=${orgId}" class="${classItem}">
+                            <div class="event-top">
+                                <span class="time">${timeStr}</span>
+                                <span class="category">${d.categorias || 'Todas'}</span>
+                                <span class="price">${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
-                            <div class="card-right">
-                                <span class="badge-cat">${d.categorias || 'Mixto'}</span>
-                                ${btnHtml}
+                            <div class="event-bottom">
+                                <span class="location">${d.lugar || 'Sede a confirmar'}</span>
+                                <span class="arrow">${arrowHtml}</span>
                             </div>
                         </a>
                     `;
                 }
             });
+            htmlAcumulado += "</div>";
 
-            listContainer.innerHTML = htmlAcumulado || "<div style='text-align:center; color:var(--text-sub); font-weight:700; padding:40px;'>No hay canchas disponibles.</div>";
+            if (canchasActivas === 0) {
+                listContainer.innerHTML = "<div style='text-align:center; color:var(--text-sub); font-weight:700; padding:40px;'>No hay canchas activas en este momento.<br><br>🎾 Volvé a consultar más tarde.</div>";
+            } else {
+                listContainer.innerHTML = htmlAcumulado;
+            }
         });
     }
 </script>

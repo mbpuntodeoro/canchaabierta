@@ -285,7 +285,7 @@
             <label>Sede</label><input id="ed-lug" class="input-std">
             <label>🏷️ Categoría</label><input id="ed-cat" class="input-std">
             
-            <div class="flex" style="gap:10px">
+            <div class="flex" e="gap:10px">
                 <div style="flex:1"><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
                 <div style="flex:1"><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
             </div>
@@ -689,66 +689,103 @@
         }, errorHandler);
     }
 
-    function renderizarCanchas() {
-        if(cuentaInfo.enTrial) calculateFinancials();
+  function renderizarCanchas() {
+    if(cuentaInfo.enTrial) calculateFinancials();
 
-        const listActivas = document.getElementById('canchas-list');
-        const listPasadas = document.getElementById('canchas-pasadas-list');
-        const btnPasadas = document.getElementById('btn-toggle-pasadas');
-        
-        const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        
-        listActivas.innerHTML = "";
-        listPasadas.innerHTML = "";
-        
-        let countActivas = 0;
-        let countPasadas = 0;
-        const ahora = Date.now();
+    const listActivas = document.getElementById('canchas-list');
+    const listPasadas = document.getElementById('canchas-pasadas-list');
+    const btnPasadas = document.getElementById('btn-toggle-pasadas');
+    
+    const prioridadEstado = { ok: 1, warning: 2, error: 3 };
 
-        sorted.forEach((d, index) => {
-            const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
-            const conf = calcularOcupados(listaConfirmados);
-            
-            let horaFinReal = d.horaFin;
-            if (!horaFinReal && d.hora) {
-                const [h, m] = d.hora.split(':');
-                const dateObj = new Date();
-                dateObj.setHours(parseInt(h), parseInt(m) + 90);
-                horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-            } else if (!horaFinReal) {
-                horaFinReal = '23:59';
-            }
-            let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-            
-            if (horaFinReal && d.hora && horaFinReal < d.hora) {
-                finEvento += 86400000;
-            }
-            const esPasada = ahora > finEvento && d.tipo === 'unico'; 
-            
-            const htmlCard = `<div class="item fade-in" style="${esPasada ? 'opacity: 0.6; filter: grayscale(50%);' : ''} animation-delay: ${index * 50}ms;">
-                <div class="item-header">
-                    <div class="item-title">🎾 ${d.organiza}</div> 
-                    <span class="badge-cat" style="${esPasada ? 'background:rgba(255,59,48,0.1); color:var(--red);' : ''}">${esPasada ? 'FINALIZADO' : d.categorias}</span>
-                </div>
-                <div class="item-meta">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                <div class="item-meta" style="color:var(--text-primary);">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
-                
-                <div class="item-actions">
-                    <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                    <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                </div>
-                <button class="btn mt-2" style="background: rgba(0,122,255,0.1); color: var(--blue); box-shadow: none;" onclick="window.open('v.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">➕ ANOTAR JUGADOR MANUALMENTE</button>
-                </div>`;
+    const sorted = Object.values(courtData)
+        .map(c => ({
+            ...c,
+            estadoVisual: calcularEstadoCancha(c.inscriptos)
+        }))
+        .sort((a, b) => {
+            const pA = prioridadEstado[a.estadoVisual];
+            const pB = prioridadEstado[b.estadoVisual];
 
-            if (esPasada) { listPasadas.innerHTML += htmlCard; countPasadas++; } 
-            else { listActivas.innerHTML += htmlCard; countActivas++; }
+            if (pA !== pB) return pA - pB;
+
+            return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora);
         });
 
-        if (countActivas === 0) listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas programadas.</div>";
+    listActivas.innerHTML = "";
+    listPasadas.innerHTML = "";
+    
+    let countActivas = 0;
+    let countPasadas = 0;
+    const ahora = Date.now();
+
+    const estadoLabel = {
+        ok: "🟢 Todo pago",
+        warning: "🟡 Falta cobrar",
+        error: "🔴 Nadie pagó"
+    };
+
+    sorted.forEach((d, index) => {
+        const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
+        const conf = calcularOcupados(listaConfirmados);
         
-        if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER INFO DE CANCHAS ANTERIORES (${countPasadas})`; } 
-        else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
+        let horaFinReal = d.horaFin || '23:59';
+        let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+
+        const esPasada = ahora > finEvento && d.tipo === 'unico'; 
+        
+        const htmlCard = `
+        <div class="item fade-in estado-${d.estadoVisual}" style="${esPasada ? 'opacity:0.6;filter:grayscale(50%);' : ''}">
+            
+            <div class="item-header">
+                <div class="item-title">🎾 ${d.organiza}</div> 
+                <span class="badge-cat">${d.categorias || ''}</span>
+            </div>
+
+            <div class="item-meta">
+                📅 ${formatFec(d.fecha)} | 🕒 ${d.hora}
+            </div>
+
+            <div class="item-meta">
+                👥 ${conf} / ${d.cupo} Confirmados
+            </div>
+
+            <div class="item-meta" style="font-weight:800;">
+                ${estadoLabel[d.estadoVisual]}
+            </div>
+
+            <div class="item-actions">
+                <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
+                <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
+            </div>
+
+            <button class="btn mt-2"
+                style="background: rgba(0,122,255,0.1); color: var(--blue);"
+                onclick="window.open('v.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">
+                ➕ ANOTAR JUGADOR
+            </button>
+
+        </div>`;
+
+        if (esPasada) {
+            listPasadas.innerHTML += htmlCard;
+            countPasadas++;
+        } else {
+            listActivas.innerHTML += htmlCard;
+            countActivas++;
+        }
+    });
+
+    if (countActivas === 0)
+        listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas.</div>";
+
+    if (countPasadas > 0) {
+        btnPasadas.style.display = 'block';
+    } else {
+        btnPasadas.style.display = 'none';
+        listPasadas.style.display = 'none';
     }
+}
 
     function togglePasadas() {
         const list = document.getElementById('canchas-pasadas-list');
@@ -908,6 +945,40 @@
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
     window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
+function calcularEstadoCancha(inscriptos) {
+    if (!inscriptos || inscriptos.length === 0) return "error";
+
+    let total = 0, pagados = 0, parcial = false;
+
+    inscriptos.forEach(p => {
+        const cant = p.cantidad || 1;
+        total += cant;
+
+        if (p.estado === "pagado") pagados += cant;
+        if (p.estado === "paga-en-la-cancha") parcial = true;
+    });
+
+    if (pagados === total) return "ok";
+    if (pagados > 0 || parcial) return "warning";
+    return "error";
+}    
 </script>
+<style>
+/* --- ESTADOS VISUALES DE CANCHA --- */
+.item.estado-ok {
+    border-left: 6px solid var(--green);
+    background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent);
+}
+
+.item.estado-warning {
+    border-left: 6px solid var(--orange);
+    background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent);
+}
+
+.item.estado-error {
+    border-left: 6px solid var(--red);
+    background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent);
+}
+</style>    
 </body>
 </html>

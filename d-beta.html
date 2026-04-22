@@ -335,15 +335,15 @@
     }
 
     // 🔥 FUNCIÓN DE AGRUPACIÓN POR CELULAR
-    function agruparPorCelular(list) {
-        const grupos = {};
-        list.forEach((p, idx) => {
-            const key = p.celular || 'sin-celular';
-            if (!grupos[key]) grupos[key] = [];
-            grupos[key].push({ ...p, originalIndex: idx });
-        });
-        return Object.values(grupos);
-    }
+   function agruparPorCelular(list) {
+    const grupos = {};
+    list.forEach((p, idx) => {
+        const key = p.celular ? p.celular.replace(/\D/g, '') : `sin-celular-${idx}`;
+        if (!grupos[key]) grupos[key] = [];
+        grupos[key].push({ ...p, originalIndex: idx });
+    });
+    return Object.values(grupos);
+}
 
     function animateValue(el, start, end, duration = 400) {
         if (start === end) { el.innerText = PadelUtils.fmtDinero(end); return; }
@@ -897,7 +897,9 @@
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
+            console.log("INSCRIPTOS RAW:", ins);
             const grupos = agruparPorCelular(ins);
+            console.log("GRUPOS:", grupos);
 
 console.log("INSCRIPTOS:", ins);
 console.log("GRUPOS:", grupos); // 👈 mejor así
@@ -916,7 +918,8 @@ console.log("GRUPOS:", grupos); // 👈 mejor así
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
             console.log("INSCRIPTOS:", ins); // 👈 ACÁ
-            const grupos = agruparPorCelular(ins);
+           const grupos = agruparPorCelular(ins);
+console.log("GRUPOS:", grupos);
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
 
             grupos.forEach(grupo => {

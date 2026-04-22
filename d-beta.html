@@ -48,7 +48,6 @@
 
         .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
         .btn:active { transform: scale(0.96); }
-        
         .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
         .btn-primary:active { box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
         .btn-dark { background: #111; color: white; }
@@ -78,19 +77,7 @@
         .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
         @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .day-check { display: none; }
-        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
-        .day-check:checked + .day-label { background: var(--blue); color: white; }
-
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
-
-        /* --- 🔥 SISTEMA COLAPSABLE Y SWIPE (iOS FEEL) --- */
+        /* --- 🔥 ESTILOS SISTEMA COLAPSABLE Y SWIPE --- */
         .player-group { background: white; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--gray-2); overflow: hidden; transition: transform 0.1s ease; }
         .player-group:active { transform: scale(0.99); }
         .player-group.estado-ok { border-left: 5px solid var(--green); background: rgba(52,199,89,0.06); }
@@ -112,9 +99,13 @@
         .player-name-box .extra-tag { color: var(--blue); font-weight: 800; font-size: 13px; }
         .player-phone-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
         .player-actions-box { display: flex; align-items: center; gap: 10px; }
+        
         .player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease; }
         .player-group.open .player-children-box { max-height: 1000px; opacity: 1; }
         .child-name-text { font-size: 14px; font-weight: 500; color: #555; }
+
+        .chevron { font-size: 11px; color: #888; transition: transform 0.2s ease; margin-left: 4px; }
+        .player-group.open .chevron { transform: rotate(180deg); }
 
         .badge-status-btn { padding: 6px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; min-width: 85px; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease;}
         .badge-status-btn:active { transform: scale(0.95); }
@@ -126,6 +117,17 @@
         .item.estado-ok { border-left: 6px solid var(--green); background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent); }
         .item.estado-warning { border-left: 6px solid var(--orange); background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent); }
         .item.estado-error { border-left: 6px solid var(--red); background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent); }
+
+        .day-check { display: none; }
+        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
+        .day-check:checked + .day-label { background: var(--blue); color: white; }
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
+        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
+        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
+        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
+        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
     </style>
 </head>
 <body>
@@ -148,7 +150,6 @@
 
     <div id="app-content">
         <div class="container fade-in" id="main-container">
-            
             <header class="flex space-between center section" style="margin-bottom: 20px;">
                 <div>
                     <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
@@ -213,7 +214,7 @@
                 <hr class="footer-divider">
                 <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
                 <p class="footer-subtitle">Pasala a piloto automático.</p>
-                <a href="https://wa.me/5491166463800" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+                <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
             </div>
         </div>
     </div>
@@ -449,8 +450,8 @@
         });
     }
 
-    function cerrarSesion() { auth.signOut().then(() => { window.location.reload(); }); }
-    function formatFec(f) { if(!f) return '--'; const [y, m, d] = f.split('-'); return `${d}-${m}-${y}`; }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
+
     window.copiarMiLink = function() {
         const linkLargo = `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`;
         const linkFinal = cuentaInfo.linkCorto ? cuentaInfo.linkCorto : linkLargo;
@@ -585,8 +586,7 @@
         } else {
             lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
             txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
-            const txtVenc = document.getElementById('txt-venc-abono');
-
+            
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
             animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
             
@@ -606,15 +606,15 @@
             const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
 
             if (res.bloqueadoAbono) {
-                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); txtVenc.style.color = "var(--red)";
+                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); document.getElementById('txt-venc-abono').style.color = "var(--red)";
             } else if (res.bloqueadoLimite) {
                 badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error');
             } else if (porcentajeUso >= 0.8) {
                 badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning');
             } else if (diasFaltantes <= 5) {
-                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); txtVenc.style.color = "var(--orange)";
+                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); document.getElementById('txt-venc-abono').style.color = "var(--orange)";
             } else {
-                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); txtVenc.style.color = "var(--green)";
+                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); document.getElementById('txt-venc-abono').style.color = "var(--green)";
             }
         }
 
@@ -699,52 +699,35 @@
         let countActivas = 0, countPasadas = 0; const ahora = Date.now();
 
         sorted.forEach((d) => {
-          // --- NUEVOS CÁLCULOS SEPARADOS ---
+            const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
+            const conf = calcularOcupados(listaConfirmados);
+            
             const totalAnotados = calcularOcupados(d.inscriptos);
             const pagados = calcularOcupados((d.inscriptos || []).filter(p => p.estado === 'pagado'));
-            const confirmados = calcularOcupados((d.inscriptos || []).filter(p => p.estado !== 'pendiente'));
-            const pendientes = totalAnotados - confirmados;
             const faltanPagar = totalAnotados - pagados;
 
-            // 1. LÍNEA DE OCUPACIÓN (Asistencia)
             let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo} Anotados</b>`;
-            if (pendientes > 0) {
-                textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${pendientes} pendientes)</span>`;
+            if ((totalAnotados - conf) > 0) {
+                textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`;
             }
 
-            // 2. LÍNEA DE FINANZAS (Plata)
             let textoEstado = "";
-            if (totalAnotados === 0) { 
-                textoEstado = "⚪ Sin inscriptos"; 
-            } 
-            else if (pagados === totalAnotados) { 
-                textoEstado = "🟢 Todo pagado"; 
-            } 
-            else if (pagados === 0) { 
-                textoEstado = `🔴 Nadie pagó (${faltanPagar} a cobrar)`; 
-            } 
-            else { 
-                textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; 
-            }
+            if (totalAnotados === 0) { textoEstado = "⚪ Sin inscriptos"; } 
+            else if (pagados === totalAnotados) { textoEstado = "🟢 Todo pagado"; } 
+            else if (pagados === 0) { textoEstado = `🔴 Nadie pagó (${faltanPagar} a cobrar)`; } 
+            else { textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; }
 
             let horaFinReal = d.horaFin || '23:59'; 
             let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
             if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
-            // 3. RENDER DE LA TARJETA
             const htmlCard = `
                 <div class="item fade-in estado-${d.estadoVisual}" style="${esPasada ? 'opacity:0.6;filter:grayscale(50%);' : ''}">
-                    <div class="item-header">
-                        <div class="item-title">🎾 ${d.organiza}</div>
-                        <span class="badge-cat">${d.categorias || ''}</span>
-                    </div>
-                    
+                    <div class="item-header"><div class="item-title">🎾 ${d.organiza}</div><span class="badge-cat">${d.categorias || ''}</span></div>
                     <div class="item-meta" style="margin-bottom: 6px;">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora}</div>
-                    
                     <div class="item-meta" style="font-size: 14px;">${textoOcupacion}</div>
                     <div class="item-meta" style="font-weight:800; font-size: 13px; margin-top:2px;">${textoEstado}</div>
-                    
                     <div class="item-actions">
                         <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
                         <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
@@ -752,6 +735,12 @@
                     <button class="btn mt-2" style="background: rgba(0,122,255,0.1); color: var(--blue);" onclick="window.open('v.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">➕ ANOTAR JUGADOR</button>
                 </div>
             `;
+            if (esPasada) { listPasadas.innerHTML += htmlCard; countPasadas++; } else { listActivas.innerHTML += htmlCard; countActivas++; }
+        });
+
+        if (countActivas === 0) listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas.</div>";
+        if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER CANCHAS ANTERIORES (${countPasadas})`; } else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
+    }
 
     function togglePasadas() {
         const list = document.getElementById('canchas-pasadas-list'), btn = document.getElementById('btn-toggle-pasadas');
@@ -827,7 +816,11 @@
     // --- 🔥 RENDER JUGADORES AGRUPADOS COLAPSABLES ---
     window.handleGroupClick = function(el) {
         if(hasSwiped) { hasSwiped = false; return; }
-        el.closest('.player-group').classList.toggle('open');
+        const group = el.closest('.player-group');
+        // Solo abre si hay acompañantes o si es una reserva vieja (+X)
+        if(group.querySelector('.player-children-box').innerHTML.trim() !== '') {
+            group.classList.toggle('open');
+        }
     };
 
     window.abrirJugadores = function(id) {
@@ -853,7 +846,8 @@
                 grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
                 
                 const t = grupo[0]; const invitados = grupo.slice(1);
-                const labelExtra = invitados.length > 0 ? `<span class="extra-tag">+${invitados.length}</span>` : (t.cantidad > 1 ? `<span class="extra-tag">+${t.cantidad-1}</span>` : '');
+                const hasChildren = invitados.length > 0 || t.cantidad > 1;
+                const labelExtra = hasChildren ? `<span class="extra-tag">+${invitados.length || (t.cantidad - 1)}</span> <span class="chevron">▼</span>` : '';
                 
                 const estadoGrupo = obtenerEstadoGrupo(grupo);
                 let claseEstado = 'estado-mixto';
@@ -874,20 +868,30 @@
                         </div>
                         <div class="player-children-box">
                 `;
-                invitados.forEach(inv => {
-                    htmlGrupo += `
-                        <div class="swipe-container" data-idx="${inv.originalIndex}">
-                            <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
-                            <div class="swipe-content player-child-row">
-                                <div class="child-name-text">↳ ${inv.nombre}</div>
-                                <div class="player-actions-box">
-                                    <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                    <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+
+                if (invitados.length > 0) {
+                    invitados.forEach(inv => {
+                        htmlGrupo += `
+                            <div class="swipe-container" data-idx="${inv.originalIndex}">
+                                <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
+                                <div class="swipe-content player-child-row">
+                                    <div class="child-name-text">↳ ${inv.nombre}</div>
+                                    <div class="player-actions-box">
+                                        <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
+                                        <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+                                    </div>
                                 </div>
                             </div>
+                        `;
+                    });
+                } else if (t.cantidad > 1) {
+                    htmlGrupo += `
+                        <div class="player-child-row" style="justify-content: center; color: var(--text-secondary); font-size: 12px; font-style: italic;">
+                            Reserva agrupada (formato anterior)
                         </div>
                     `;
-                });
+                }
+
                 htmlGrupo += `</div></div>`; list.innerHTML += htmlGrupo;
             });
             if (ins.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";

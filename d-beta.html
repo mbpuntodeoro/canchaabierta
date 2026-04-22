@@ -897,6 +897,10 @@
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
+            const grupos = agruparPorCelular(ins);
+
+console.log("INSCRIPTOS:", ins);
+console.log("GRUPOS:", grupos); // 👈 mejor así
             
             const totalAnotados = calcularOcupados(ins);
             const pagados = calcularOcupados(ins.filter(p => p.estado === 'pagado'));

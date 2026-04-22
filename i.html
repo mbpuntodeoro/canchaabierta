@@ -21,10 +21,7 @@
         .main-wrapper { flex: 1; display: flex; align-items: center; width: 100%; max-width: 420px; }
         .card-elevated { background: white; border-radius: 24px; padding: 35px 25px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box; display: none; }
         
-        /* Ajuste de título para que conviva bien con la etiqueta de categoría */
         .title { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 8px; line-height: 1.2; letter-spacing: -0.5px;}
-        
-        /* 🔥 ETIQUETA DE CATEGORÍA VIOLETA */
         .badge-cat { font-size: 10px; color: #6A0DAD; background: rgba(106, 13, 173, 0.12); padding: 5px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; white-space: nowrap; display: inline-block; margin-bottom: 20px; letter-spacing: 0.5px;}
 
         .info-box { background: var(--gray-1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid var(--gray-2); }
@@ -90,8 +87,17 @@
                     <div class="info-row" style="margin-top: 15px; font-size: 20px; font-weight: 900; color:var(--text-main);">💰 <span id="t-val-single">--</span> <small style="font-size: 10px; color:var(--text-sub);">C/U</small></div>
                 </div>
 
-                <label>Tu Nombre y Apellido</label>
-                <input type="text" id="p-name" class="input-std" placeholder="Ej: Julieta Lopez">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Nombre</label>
+                        <input type="text" id="p-nombre" class="input-std" placeholder="Ej: Julieta">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Apellido</label>
+                        <input type="text" id="p-apellido" class="input-std" placeholder="Ej: Lopez">
+                    </div>
+                </div>
+                
                 <label>Tu WhatsApp</label>
                 <input type="tel" id="p-celu" class="input-std" placeholder="Ej: 1122334455">
                 <label>¿Cuántos lugares necesitás?</label>
@@ -104,7 +110,7 @@
                 </select>
 
                 <div style="background: #F2F2F7; padding: 15px; border-radius: 14px; text-align: center; margin-bottom: 15px;">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Total</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Total a pagar</div>
                     <div id="t-total-calc" style="font-size: 24px; font-weight: 900; color: var(--text-main);">$0</div>
                 </div>
                 
@@ -185,10 +191,7 @@
             document.getElementById('footer-pro').style.display = 'block';
 
             document.getElementById('t-nombre').innerText = eventData.organiza;
-            
-            // 🔥 INYECTAR LA CATEGORÍA AQUÍ
             document.getElementById('t-cat').innerText = eventData.categorias || 'Todas las categorías';
-            
             document.getElementById('t-fec').innerText = PadelSaaS.fmtFecha(new Date(eventData.fecha + 'T12:00:00').getTime());
             document.getElementById('t-hs').innerText = eventData.hora + ' a ' + (eventData.horaFin || '--') + ' hs';
             document.getElementById('t-lug').innerText = eventData.lugar || 'Sede a confirmar';
@@ -223,11 +226,15 @@
     }
 
     function handleJoin(btn) {
-        const name = document.getElementById('p-name').value.trim();
+        // 🔥 TOMAMOS NOMBRE Y APELLIDO Y LOS UNIMOS ANTES DE ENVIAR
+        const nombreInput = document.getElementById('p-nombre').value.trim();
+        const apellidoInput = document.getElementById('p-apellido').value.trim();
+        const name = (nombreInput + " " + apellidoInput).trim();
+        
         const celu = document.getElementById('p-celu').value.trim();
         const cant = parseInt(document.getElementById('p-cant').value) || 1;
 
-        if(!name || !celu) return alert("Faltan datos");
+        if(!nombreInput || !apellidoInput || !celu) return alert("Faltan datos. Por favor completá nombre, apellido y celular.");
         btn.classList.add("loading"); btn.disabled = true;
 
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
@@ -254,7 +261,6 @@
         });
     }
 
-    // 🔥 LÓGICA DEL SELECTOR DE PAGO
     function elegirTransferencia() {
         document.getElementById('payment-selector').style.display = 'none';
         document.getElementById('success-sub').innerText = 'Realizá la transferencia para confirmar:';
@@ -266,7 +272,6 @@
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + id));
         if(!local) return;
 
-        // Actualizamos Firebase de Pendiente a Paga-en-la-cancha
         db.ref(`eventos/${id}/inscriptos`).once('value', s => {
             let list = s.val() || [];
             const idx = list.findIndex(p => p.nombre === local.nombre && p.celular === local.celular);
@@ -300,7 +305,8 @@
         document.getElementById('already-screen').style.display = 'none';
         document.getElementById('success-screen').style.display = 'none';
         document.getElementById('form-screen').style.display = 'block';
-        document.getElementById('p-name').value = '';
+        document.getElementById('p-nombre').value = '';
+        document.getElementById('p-apellido').value = '';
         actualizarPrecioEnVivo();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }

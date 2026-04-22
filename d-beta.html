@@ -240,17 +240,26 @@
             
             <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
                 <div class="metric-box" style="background:var(--bg-main); padding:12px;">
-                    <span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
+                    <span class="label">CUPO TOTAL</span>&nbsp;&nbsp;<b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
                 </div>
                 <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;">
-                    <span class="label" style="color:var(--blue)">LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
+                    <span class="label" style="color:var(--blue)">LIBRES</span>&nbsp;&nbsp;<b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
                 </div>
             </div>
 
-            <div class="flex" style="gap: 8px; margin-bottom:15px; background:var(--gray-1); padding:10px; border-radius:12px; border:1px solid var(--gray-2);">
-                <div style="flex:1; text-align:center;"><div class="label">PAG</div><b id="st-pag" style="color:var(--green); font-size:16px;">0</b></div>
-                <div style="flex:1; text-align:center; border-left:1px solid #ddd; border-right:1px solid #ddd;"><div class="label">ENC</div><b id="st-enc" style="color:var(--orange); font-size:16px;">0</b></div>
-                <div style="flex:1; text-align:center;"><div class="label">PEN</div><b id="st-pen" style="color:var(--red); font-size:16px;">0</b></div>
+            <div class="flex" style="gap: 5px; margin-bottom:15px; background:var(--gray-1); padding:10px; border-radius:12px; border:1px solid var(--gray-2);">
+                <div style="flex:1; text-align:center;">
+                    <div class="label" style="font-size:9px;">Pagaron</div>
+                    <b id="st-pag" style="color:var(--green); font-size:16px;">0</b>
+                </div>
+                <div style="flex:1; text-align:center; border-left:1px solid #ddd; border-right:1px solid #ddd;">
+                    <div class="label" style="font-size:9px;">En cancha</div>
+                    <b id="st-enc" style="color:var(--orange); font-size:16px;">0</b>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div class="label" style="font-size:9px;">Pendientes</div>
+                    <b id="st-pen" style="color:var(--red); font-size:16px;">0</b>
+                </div>
             </div>
 
             <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">
@@ -598,14 +607,18 @@
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
-            const d = s.val(); if(!d) return;
-            const ins = d.inscriptos || [];
-            
-            document.getElementById('st-total').innerText = d.cupo || 0; 
-            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
-            document.getElementById('st-pag').innerText = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
-            document.getElementById('st-enc').innerText = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
-            document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
+           // Dentro de playersListener...
+    const d = s.val(); if(!d) return;
+    const ins = d.inscriptos || [];
+    
+    // Actualización de los contadores del encabezado
+    document.getElementById('st-total').innerText = d.cupo || 0; 
+    document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
+    
+    // Actualización de los estados (Pagaron, En cancha, Pendientes)
+    document.getElementById('st-pag').innerText = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
+    document.getElementById('st-enc').innerText = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
+    document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente'));
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
             let grupos = agruparPorCelular(ins);

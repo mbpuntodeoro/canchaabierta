@@ -29,7 +29,7 @@
             overflow: hidden; 
         }
 
-        /* --- SPA --- */
+        /* --- SPA NAVEGACIÓN --- */
         .app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
 
         .view {
@@ -43,7 +43,7 @@
         .view.active { transform: translateX(0); opacity: 1; z-index: 2; }
         .view.exit-left { transform: translateX(-30%); opacity: 0; pointer-events: none;}
 
-        /* --- CARTELERA --- */
+        /* --- ESTILOS LISTA (M2) --- */
         .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
         .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
         .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px;}
@@ -63,8 +63,7 @@
         .line-1 { font-size: 16px; font-weight: 700; display: flex; align-items: center; }
         .line-2 { display: flex; justify-content: space-between; margin-top: 2px; font-size: 14px; align-items: center;}
         
-        .label-cat { color: #999; font-size: 13px;}
-        .value-cat { font-weight: 600; margin-left: 4px; color: #555; }
+        .category { font-weight: 600; color: #555; font-size: 13px; }
         .price { font-weight: 700; min-width: 80px; text-align: right; }
 
         .line-3 { display: flex; justify-content: space-between; margin-top: 4px; font-size: 13px; color: #777; align-items: center; }
@@ -77,7 +76,7 @@
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         #loading-init { text-align: center; margin-top: 50px; font-weight: 800; color: var(--text-sub); }
 
-        /* --- INSCRIPCIÓN --- */
+        /* --- ESTILOS DETALLE (M3) --- */
         .top-bar { 
             display: flex; align-items: center; padding: 15px 20px; 
             border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.9); 
@@ -98,8 +97,17 @@
         .input-std:focus { border-color: var(--blue); }
         label { display: block; font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 0 0 6px 5px; }
 
-        .btn-action { height: 52px; border-radius: 14px; width: 100%; font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; transition: transform var(--anim-fast); border: none; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        .btn-action:active { transform: scale(0.96); }
+        /* 🔥 UX: ANIMACIÓN SUAVE PANTALLAS INTERNAS */
+        #form-screen, #success-screen, #already-screen { 
+            animation: fadeSlide 0.25s ease; 
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 🔥 UX: MICROINTERACCIÓN BOTONES */
+        .btn-action { height: 52px; border-radius: 14px; width: 100%; font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; transition: transform 0.1s ease, box-shadow 0.15s ease; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-action:active { transform: scale(0.96); box-shadow: 0 3px 8px rgba(0,122,255,0.2) !important; }
+        
         .btn-join { background: var(--blue-grad); color: white; margin-top: 10px; box-shadow: 0 6px 14px rgba(0,122,255,0.25); }
         
         .payment-choice-btn { margin-bottom: 12px; }
@@ -124,6 +132,7 @@
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 500px; margin: 40px auto 0;}
         .footer-divider { border: 0; border-top: 1px dashed var(--border-color); margin-bottom: 20px; }
         .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 14px; display: block; }
+        .dev-credit { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-top: 25px; }
     </style>
 </head>
 <body>
@@ -145,6 +154,7 @@
                 <hr class="footer-divider">
                 <p style="font-size:12px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Tu cancha es un caos de mensajes?</p>
                 <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, pasame a piloto automático 🎾</a>
+                <div class="dev-credit">Desarrollado por Mariano Blumenfeld</div>
             </div>
         </div>
 
@@ -178,21 +188,23 @@
                     </div>
                     
                     <label>Tu WhatsApp</label>
-                    <input type="tel" id="p-celu" class="input-std" placeholder="Ej: 1122334455">
-                    <label>¿Cuántos lugares necesitás?</label>
+                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="p-celu" class="input-std" placeholder="Ej: 1122334455">
+                    
+                    <label>Lugares</label>
                     <select id="p-cant" class="input-std" onchange="M3_actualizarPrecio()">
                         <option value="1">Sólo yo (1 lugar)</option>
                         <option value="2">2 lugares</option>
                         <option value="3">3 lugares</option>
                         <option value="4">4 lugares</option>
+                        <option value="5">5 lugares</option>
                     </select>
 
                     <div style="background: #F9F9FB; padding: 15px; border-radius: 14px; text-align: center; margin-bottom: 15px; border: 1px solid var(--border-color);">
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Total a pagar</div>
-                        <div id="t-total-calc" style="font-size: 24px; font-weight: 900; color: var(--text-main);">$0</div>
+                        <div id="t-total-calc" style="font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px;">$0</div>
                     </div>
                     
-                    <button onclick="M3_handleJoin(this)" class="btn-action btn-join" id="btn-submit"><span class="btn-text">CONFIRMAR MI LUGAR</span><span class="loader"></span></button>
+                    <button onclick="M3_handleJoin(this)" class="btn-action btn-join" id="btn-submit"><span class="btn-text">Anotarme ahora</span><span class="loader"></span></button>
                 </div>
 
                 <div id="already-screen" style="display:none; text-align:center;">
@@ -232,72 +244,64 @@
                         <button onclick="M3_mostrarFormularioNuevo()" class="btn-action btn-black">➕ Anotar a otra persona</button>
                     </div>
                 </div>
+                
+                <div class="dev-credit" style="text-align:center;">Desarrollado por Mariano Blumenfeld</div>
             </div>
         </div>
     </div>
 
 <script>
+    // --- LÓGICA SPA & NAVEGACIÓN ---
     const urlParams = new URLSearchParams(window.location.search);
     const orgId = urlParams.get('org');
     const directEventId = urlParams.get('id');
-    const isAdmin = urlParams.get('admin') === 'true'; // 🔥 CATCH DEL MODO ADMIN
+    const isAdmin = urlParams.get('admin') === 'true';
     
     let dbEvents = []; 
     let currentEventId = directEventId || null;
     let eventData = null;
     let eventListener = null;
 
-    function formatearDia(fechaStr) {
-        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Sept', 'Oct', 'Nov', 'Dic'];
-        const f = new Date(fechaStr + 'T12:00:00');
-        return `${dias[f.getDay()]} ${f.getDate()} de ${meses[f.getMonth()]}`;
-    }
-
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
         M2_cargarCartelera(); 
-        if (directEventId) {
-            openDetail(directEventId, true);
-        }
+        if (directEventId) { openDetail(directEventId, true); }
     }
 
     function openDetail(id, isDirectLoad = false) {
         currentEventId = id;
         const list = document.getElementById('view-list');
         const detail = document.getElementById('view-detail');
-        
         list.classList.add('exit-left');
         detail.classList.add('active');
         detail.scrollTop = 0;
-        
         if(!isDirectLoad) {
-            // Mantenemos los parámetros para no perder el org ni el admin si está presente
             let newUrl = `?org=${orgId}&id=${id}`;
             if(isAdmin) newUrl += `&admin=true`;
             window.history.replaceState(null, '', newUrl);
         }
-        
         M3_cargarInscripcion();
     }
 
     function closeDetail() {
         const list = document.getElementById('view-list');
         const detail = document.getElementById('view-detail');
-        
         list.classList.remove('exit-left');
         detail.classList.remove('active');
-        
         let newUrl = `?org=${orgId}`;
         if(isAdmin) newUrl += `&admin=true`;
         window.history.replaceState(null, '', newUrl);
-        
-        if (eventListener) {
-            db.ref(`eventos/${currentEventId}`).off('value', eventListener);
-            eventListener = null;
-        }
+        if (eventListener) { db.ref(`eventos/${currentEventId}`).off('value', eventListener); eventListener = null; }
         currentEventId = null;
+    }
+
+    // --- MÓDULO 2: CARTELERA ---
+    function formatearDia(fechaStr) {
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Sept', 'Oct', 'Nov', 'Dic'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()} de ${meses[f.getMonth()]}`;
     }
 
     function M2_cargarCartelera() {
@@ -313,22 +317,18 @@
             const listContainer = document.getElementById('court-list-container');
             document.getElementById('loading-init').style.display = 'none';
             const hubData = snap.val();
-
             if (!hubData || !hubData.canchas) {
                 listContainer.innerHTML = "<div style='text-align:center; color:var(--text-sub); font-weight:600; padding:40px;'>No hay canchas publicadas.</div>";
                 return;
             }
-
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
             dbEvents = [];
             snapshots.forEach(s => { if(s.exists()) dbEvents.push({ id: s.key, ...s.val() }); });
-
             dbEvents.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
             let htmlAcumulado = "<div class='event-list'>";
-            let lastDate = "";
-            let canchasActivas = 0;
+            let lastDate = ""; let canchasActivas = 0;
 
             dbEvents.forEach((d, i) => {
                 const ahora = Date.now();
@@ -348,22 +348,18 @@
                         htmlAcumulado += `<div class="day-title">${formatearDia(d.fecha)}</div>`;
                         lastDate = d.fecha;
                     }
-
                     const ocupados = (d.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
                     const libres = Math.max(0, (d.cupo || 0) - ocupados);
                     const isFull = libres <= 0;
-                    
                     const arrowHtml = isFull ? "LLENO" : "→";
                     const classItem = isFull ? "event-item is-full" : "event-item";
                     const delay = Math.min(i * 40, 500);
 
                     htmlAcumulado += `
                         <div class="${classItem}" onclick="openDetail('${d.id}')" style="animation-delay: ${delay}ms;">
-                            <div class="line-1">
-                                <span class="time">${d.hora}–${d.horaFin || '--'}</span>
-                            </div>
+                            <div class="line-1"><span class="time">${d.hora}–${d.horaFin || '--'}</span></div>
                             <div class="line-2">
-                                <span class="category"><span class="label-cat">Categoría:</span><span class="value-cat">${d.categorias || 'Todas'}</span></span>
+                                <span class="category">🎾 Categoría: ${d.categorias || 'Todas'}</span>
                                 <span class="price">${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
                             <div class="line-3">
@@ -375,50 +371,41 @@
                 }
             });
             htmlAcumulado += "</div>";
-
-            if (canchasActivas === 0) {
-                listContainer.innerHTML = "<div style='text-align:center; color:var(--text-sub); font-weight:600; padding:40px;'>No hay canchas activas en este momento.</div>";
-            } else {
-                listContainer.innerHTML = htmlAcumulado;
-            }
+            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; color:var(--text-sub); font-weight:600; padding:40px;'>No hay canchas activas en este momento.</div>" : htmlAcumulado;
         });
     }
 
+    // --- MÓDULO 3: INSCRIPCIÓN ---
     function M3_cargarInscripcion() {
         document.getElementById('form-screen').style.display = 'none';
         document.getElementById('already-screen').style.display = 'none';
         document.getElementById('success-screen').style.display = 'none';
-
         const cachedEvent = dbEvents.find(e => e.id === currentEventId);
         if(cachedEvent) M3_renderData(cachedEvent);
-
         eventListener = db.ref(`eventos/${currentEventId}`).on('value', snap => {
-            eventData = snap.val();
-            if(!eventData) { closeDetail(); return; }
-            
-            M3_renderData(eventData);
-            M3_actualizarPrecio();
-
+            eventData = snap.val(); if(!eventData) { closeDetail(); return; }
+            M3_renderData(eventData); M3_actualizarPrecio();
             const saved = localStorage.getItem('padelapp_cancha_' + currentEventId);
-            const playerLocalData = saved ? JSON.parse(saved) : null;
-
-            // 🔥 FIX MODO ADMIN: Si el organizador entra a anotar manual, saltamos la verificación
+            const pLocal = saved ? JSON.parse(saved) : null;
             if (isAdmin) {
-                document.getElementById('form-screen').style.display = 'block';
-            } else if (playerLocalData && document.getElementById('success-screen').style.display === 'none' && document.getElementById('form-screen').style.display === 'none') {
+                mostrarFormulario();
+            } else if (pLocal && document.getElementById('success-screen').style.display === 'none' && document.getElementById('form-screen').style.display === 'none') {
                 const list = eventData.inscriptos || [];
-                const pInfo = list.find(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
+                const pInfo = list.find(p => p.celular === pLocal.celular && p.nombre === pLocal.nombre);
                 if (pInfo) {
                     document.getElementById('txt-already-desc').innerText = `Tenés ${pInfo.cantidad || 1} lugar/es reservados.`;
                     document.getElementById('already-screen').style.display = 'block';
-                    document.getElementById('form-screen').style.display = 'none';
-                } else {
-                    document.getElementById('form-screen').style.display = 'block';
-                }
-            } else if (!playerLocalData && document.getElementById('success-screen').style.display === 'none') {
-                document.getElementById('form-screen').style.display = 'block';
+                } else { mostrarFormulario(); }
+            } else if (!pLocal && document.getElementById('success-screen').style.display === 'none') {
+                mostrarFormulario();
             }
         });
+    }
+
+    // 🔥 UX: AUTOFOCUS encapsulado
+    function mostrarFormulario() {
+        document.getElementById('form-screen').style.display = 'block';
+        setTimeout(() => { document.getElementById('p-nombre').focus(); }, 200);
     }
 
     function M3_renderData(d) {
@@ -441,36 +428,46 @@
     }
 
     window.M3_handleJoin = function(btn) {
-        const nombreInput = document.getElementById('p-nombre').value.trim();
-        const apellidoInput = document.getElementById('p-apellido').value.trim();
-        const name = (nombreInput + " " + apellidoInput).trim();
+        const nom = document.getElementById('p-nombre').value.trim();
+        const ape = document.getElementById('p-apellido').value.trim();
+        const name = (nom + " " + ape).trim();
         const celu = document.getElementById('p-celu').value.trim();
         const cant = parseInt(document.getElementById('p-cant').value) || 1;
-
-        if(!nombreInput || !apellidoInput || !celu) return alert("Faltan datos. Completá nombre, apellido y celular.");
+        
+        if(!nom || !ape || !celu) return alert("Faltan datos.");
         btn.classList.add("loading"); btn.disabled = true;
-
+        
         db.ref(`eventos/${currentEventId}/inscriptos`).once('value', s => {
             const list = s.val() || [];
             if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) {
-                alert("Ya estás anotado con este nombre y celular.");
-                btn.classList.remove("loading"); btn.disabled = false; return;
+                alert("Ya estás anotado."); btn.classList.remove("loading"); btn.disabled = false; return;
             }
-
             const ocupados = list.reduce((acc, p) => acc + (p.cantidad || 1), 0);
             if (ocupados + cant > (eventData.cupo || 99)) {
-                alert("No quedan suficientes lugares.");
-                btn.classList.remove("loading"); btn.disabled = false; return;
+                alert("No quedan lugares."); btn.classList.remove("loading"); btn.disabled = false; return;
             }
-
+            
             list.push({ nombre: name, celular: celu, cantidad: cant, estado: 'pendiente', fecha: Date.now() });
-
+            
             db.ref(`eventos/${currentEventId}/inscriptos`).set(list).then(() => {
                 localStorage.setItem('padelapp_cancha_' + currentEventId, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
-                document.getElementById('form-screen').style.display = 'none';
-                document.getElementById('success-screen').style.display = 'block';
-                btn.classList.remove("loading"); btn.disabled = false;
-                document.getElementById('view-detail').scrollTop = 0;
+                
+                // 🔥 UX: TRANSICIÓN SUAVE FORM -> SUCCESS
+                const form = document.getElementById('form-screen');
+                const success = document.getElementById('success-screen');
+                
+                form.style.opacity = '0';
+                form.style.transform = 'translateY(-10px)';
+                
+                setTimeout(() => {
+                    form.style.display = 'none';
+                    form.style.opacity = '1'; 
+                    form.style.transform = 'translateY(0)';
+                    
+                    success.style.display = 'block';
+                    btn.classList.remove("loading"); btn.disabled = false;
+                    document.getElementById('view-detail').scrollTop = 0;
+                }, 150);
             });
         });
     }
@@ -484,8 +481,6 @@
 
     window.M3_elegirPagoEnCancha = function() {
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventId));
-        if(!local) return;
-
         db.ref(`eventos/${currentEventId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
             const idx = list.findIndex(p => p.nombre === local.nombre && p.celular === local.celular);
@@ -503,7 +498,7 @@
 
     window.M3_elegirDespues = function() {
         document.getElementById('payment-selector').style.display = 'none';
-        document.getElementById('success-sub').innerText = '¡Perfecto! Recordá que el lugar se confirma al recibir el pago.';
+        document.getElementById('success-sub').innerText = '¡Perfecto! El lugar se confirma al recibir el pago.';
         document.getElementById('btn-anotar-otro-success').style.display = 'block';
     }
 
@@ -518,19 +513,17 @@
     window.M3_mostrarFormularioNuevo = function() {
         document.getElementById('already-screen').style.display = 'none';
         document.getElementById('success-screen').style.display = 'none';
-        document.getElementById('form-screen').style.display = 'block';
-        document.getElementById('p-nombre').value = '';
-        document.getElementById('p-apellido').value = '';
-        M3_actualizarPrecio();
-        document.getElementById('view-detail').scrollTop = 0;
+        mostrarFormulario();
+        document.getElementById('p-nombre').value = ''; document.getElementById('p-apellido').value = '';
+        M3_actualizarPrecio(); document.getElementById('view-detail').scrollTop = 0;
     }
 
     window.M3_handleCancel = function(btn) {
         if(!confirm("¿Darme de baja?")) return;
-        const playerLocalData = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventId));
+        const pLocal = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventId));
         db.ref(`eventos/${currentEventId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
-            const idx = list.findIndex(p => p.celular === playerLocalData.celular && p.nombre === playerLocalData.nombre);
+            const idx = list.findIndex(p => p.celular === pLocal.celular && p.nombre === pLocal.nombre);
             if (idx > -1) {
                 list.splice(idx, 1);
                 db.ref(`eventos/${currentEventId}/inscriptos`).set(list).then(() => {
@@ -553,6 +546,36 @@
         const texto = `¡Hola! Me anoté a "${eventData.organiza}" (${local.cantidad} pers). Soy ${local.nombre}. Adjunto comprobante:`;
         window.open(`https://wa.me/${eventData.celuOrganizador.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
     }
+
+    // 🔥 UX: FLUJO CON ENTER EN LOS INPUTS
+    document.addEventListener("DOMContentLoaded", () => {
+        const inputsFlow = [
+            document.getElementById('p-nombre'),
+            document.getElementById('p-apellido'),
+            document.getElementById('p-celu')
+        ];
+        
+        inputsFlow.forEach((input, i) => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (inputsFlow[i + 1]) {
+                        inputsFlow[i + 1].focus();
+                    } else {
+                        document.getElementById('btn-submit').click();
+                    }
+                }
+            });
+        });
+
+        // 🔥 UX: CAPITALIZACIÓN AUTOMÁTICA
+        function capitalizeInput(e) {
+            const val = e.target.value.trim();
+            if(val) e.target.value = val.charAt(0).toUpperCase() + val.slice(1);
+        }
+        document.getElementById('p-nombre').addEventListener('blur', capitalizeInput);
+        document.getElementById('p-apellido').addEventListener('blur', capitalizeInput);
+    });
 </script>
 </body>
 </html>

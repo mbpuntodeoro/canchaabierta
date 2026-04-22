@@ -110,23 +110,37 @@
         
         .btn-join { background: var(--blue-grad); color: white; margin-top: 10px; box-shadow: 0 6px 14px rgba(0,122,255,0.25); }
         
-        .payment-choice-btn { margin-bottom: 12px; }
-        .btn-pay-transfer { background: var(--blue-grad); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
-        .btn-pay-court { background: var(--orange-grad); color: white; box-shadow: 0 4px 12px rgba(255,159,10,0.2); }
-        .btn-pay-later { background: var(--gray-2); color: var(--text-main); }
         .btn-black { background: #1C1C1E; color: white; margin-bottom: 12px;}
         .btn-gray { background: var(--gray-2); color: var(--text-main); margin-bottom: 12px;}
-        .btn-danger { background: rgba(255,59,48,0.1); color: var(--red); }
+        .btn-danger { background: rgba(255,59,48,0.1); color: var(--red); margin-bottom: 12px;}
         .btn-green { background: var(--green-grad); color: white; margin-top: 10px;}
 
         .check-icon { font-size: 35px; color: white; background: #34C759; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
-        .payment-box { background: var(--gray-1); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; margin: 24px 0; text-align: center; display: none;}
+        
+        /* 🔥 UX: NUEVO ESTILO DE PAGO DIRECTO */
+        .payment-box { 
+            background: var(--gray-1); 
+            border: 2px solid rgba(0,122,255,0.15); 
+            border-radius: 20px; 
+            padding: 20px; 
+            margin: 24px 0; 
+            text-align: center; 
+        }
+        .monto { 
+            font-size: 34px; 
+            font-weight: 900; 
+            letter-spacing: -1px; 
+            color: var(--text-main); 
+            margin: 5px 0 10px 0;
+        }
         .alias-box { background: var(--gray-2); padding: 14px; border-radius: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; font-size: 16px; word-break: break-all;}
         .btn-copy { background: white; border: 1px solid var(--gray-3); color: var(--text-main); font-weight: 700; padding: 12px 20px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer; margin-bottom: 10px;}
 
         .loader { display: none; width: 18px; height: 18px; border: 2.5px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: auto; }
         .loading .btn-text { display: none; } .loading .loader { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .link-back { font-size: 13px; color: var(--text-sub); font-weight: 700; text-decoration: underline; cursor: pointer; text-transform: uppercase; display: inline-block; margin-top: 15px;}
 
         /* FOOTER DE VENTAS */
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 500px; margin: 40px auto 0;}
@@ -212,27 +226,45 @@
                     <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px;">¡Ya estás anotado!</h2>
                     <p id="txt-already-desc" style="color:var(--text-sub); font-weight:600; font-size:15px; margin:0 0 25px 0;">Tu lugar está confirmado.</p>
                     <button onclick="M3_mostrarFormularioNuevo()" class="btn-action btn-black">➕ Anotar a otra persona</button>
-                    <button onclick="M3_mostrarOpcionesPago()" class="btn-action btn-gray">💳 Ver datos de pago</button>
                     <button onclick="M3_handleCancel(this)" class="btn-action btn-danger">Darme de baja</button>
                 </div>
 
                 <div id="success-screen" style="display:none; text-align:center;">
-                    <div class="check-icon">✓</div>
-                    <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px;">¡Lugar reservado!</h2>
-                    <p id="success-sub" style="color:var(--text-sub); font-weight:600; font-size:14px; margin:0 0 25px 0;">¿Cómo vas a abonar tus lugares?</p>
                     
-                    <div id="payment-selector">
-                        <button class="btn-action payment-choice-btn btn-pay-transfer" onclick="M3_elegirTransferencia()">📱 VOY A TRANSFERIR AHORA</button>
-                        <button class="btn-action payment-choice-btn btn-pay-court" onclick="M3_elegirPagoEnCancha()">🎾 PAGARÉ EN LA CANCHA</button>
-                        <button class="btn-action payment-choice-btn btn-pay-later" onclick="M3_elegirDespues()">DECIDIR LUEGO</button>
+                    <div class="check-icon">✓</div>
+                    
+                    <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px;">
+                        ¡Ya estás adentro!
+                    </h2>
+                    
+                    <p style="color:var(--text-sub); font-weight:600; font-size:14px; margin:0 0 20px 0;">
+                        Asegurá tu lugar con la transferencia
+                    </p>
+
+                    <div class="payment-box" style="display:block;" id="transfer-details-box">
+                        <div style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase;">
+                            Total a pagar
+                        </div>
+                        <div class="monto" id="s-total-final">$0</div>
+                        
+                        <div style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin-top:10px;">
+                            Alias / CBU
+                        </div>
+                        <div class="alias-box" id="s-alias-final">--</div>
+                        
+                        <button class="btn-copy" onclick="M3_copiarAlias(this)">
+                            📋 Copiar alias
+                        </button>
+                        
+                        <button onclick="M3_notificarWa('transferencia')" class="btn-action btn-green">
+                            💬 Enviar comprobante
+                        </button>
                     </div>
 
-                    <div class="payment-box" id="transfer-details-box">
-                        <div class="monto" id="s-total-final" style="font-size: 32px; font-weight: 900;">$0</div>
-                        <div style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase; margin-bottom: 8px;">ALIAS / CBU</div>
-                        <div class="alias-box" id="s-alias-final">--</div>
-                        <button class="btn-copy" onclick="M3_copiarAlias(this)">📋 Copiar alias</button>
-                        <button onclick="M3_notificarWa()" class="btn-action btn-green">💬 Enviar comprobante</button>
+                    <div id="btn-pay-cancha-container" style="margin-top:18px;">
+                        <button onclick="M3_elegirPagoEnCancha()" class="btn-action btn-gray">
+                            Prefiero pagar en cancha
+                        </button>
                     </div>
 
                     <div id="court-confirmation-msg" style="display:none; background:rgba(255,159,10,0.1); padding:20px; border-radius:16px; margin:20px 0; border:1px solid var(--orange);">
@@ -240,8 +272,16 @@
                         <span style="font-size:13px; color:#666; display:block; margin-top:5px;">El organizador ya sabe que abonás al llegar.</span>
                     </div>
 
-                    <div id="btn-anotar-otro-success" style="display:none; margin-top:20px;">
-                        <button onclick="M3_mostrarFormularioNuevo()" class="btn-action btn-black">➕ Anotar a otra persona</button>
+                    <div style="margin-top:20px;">
+                        <button onclick="M3_mostrarFormularioNuevo()" class="btn-action btn-black">
+                            ➕ Anotar a otra persona
+                        </button>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <a onclick="closeDetail()" class="link-back">
+                            Volver a la cartelera
+                        </a>
                     </div>
                 </div>
                 
@@ -382,6 +422,7 @@
         document.getElementById('success-screen').style.display = 'none';
         const cachedEvent = dbEvents.find(e => e.id === currentEventId);
         if(cachedEvent) M3_renderData(cachedEvent);
+        
         eventListener = db.ref(`eventos/${currentEventId}`).on('value', snap => {
             eventData = snap.val(); if(!eventData) { closeDetail(); return; }
             M3_renderData(eventData); M3_actualizarPrecio();
@@ -402,7 +443,6 @@
         });
     }
 
-    // 🔥 UX: AUTOFOCUS encapsulado
     function mostrarFormulario() {
         document.getElementById('form-screen').style.display = 'block';
         setTimeout(() => { document.getElementById('p-nombre').focus(); }, 200);
@@ -452,13 +492,17 @@
             db.ref(`eventos/${currentEventId}/inscriptos`).set(list).then(() => {
                 localStorage.setItem('padelapp_cancha_' + currentEventId, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
                 
-                // 🔥 UX: TRANSICIÓN SUAVE FORM -> SUCCESS
                 const form = document.getElementById('form-screen');
                 const success = document.getElementById('success-screen');
                 
                 form.style.opacity = '0';
                 form.style.transform = 'translateY(-10px)';
                 
+                // Reiniciar estado de la pantalla success
+                document.getElementById('transfer-details-box').style.display = 'block';
+                document.getElementById('btn-pay-cancha-container').style.display = 'block';
+                document.getElementById('court-confirmation-msg').style.display = 'none';
+
                 setTimeout(() => {
                     form.style.display = 'none';
                     form.style.opacity = '1'; 
@@ -472,42 +516,28 @@
         });
     }
 
-    window.M3_elegirTransferencia = function() {
-        document.getElementById('payment-selector').style.display = 'none';
-        document.getElementById('success-sub').innerText = 'Realizá la transferencia para confirmar:';
-        document.getElementById('transfer-details-box').style.display = 'block';
-        document.getElementById('btn-anotar-otro-success').style.display = 'block';
-    }
-
     window.M3_elegirPagoEnCancha = function() {
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventId));
+        if(!local) return;
+
         db.ref(`eventos/${currentEventId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
             const idx = list.findIndex(p => p.nombre === local.nombre && p.celular === local.celular);
             if(idx > -1) {
                 list[idx].estado = 'paga-en-la-cancha';
                 db.ref(`eventos/${currentEventId}/inscriptos`).set(list).then(() => {
-                    document.getElementById('payment-selector').style.display = 'none';
-                    document.getElementById('success-sub').style.display = 'none';
+                    // Ocultamos bloque de transferencia y el botón de pagar en cancha
+                    document.getElementById('transfer-details-box').style.display = 'none';
+                    document.getElementById('btn-pay-cancha-container').style.display = 'none';
+                    
+                    // Mostramos confirmación
                     document.getElementById('court-confirmation-msg').style.display = 'block';
-                    document.getElementById('btn-anotar-otro-success').style.display = 'block';
+                    
+                    // 🔥 Lógica: Avisar por WhatsApp que paga en cancha
+                    M3_notificarWa('cancha');
                 });
             }
         });
-    }
-
-    window.M3_elegirDespues = function() {
-        document.getElementById('payment-selector').style.display = 'none';
-        document.getElementById('success-sub').innerText = '¡Perfecto! El lugar se confirma al recibir el pago.';
-        document.getElementById('btn-anotar-otro-success').style.display = 'block';
-    }
-
-    window.M3_mostrarOpcionesPago = function() {
-        document.getElementById('already-screen').style.display = 'none';
-        document.getElementById('success-screen').style.display = 'block';
-        document.getElementById('payment-selector').style.display = 'block';
-        document.getElementById('transfer-details-box').style.display = 'none';
-        document.getElementById('court-confirmation-msg').style.display = 'none';
     }
 
     window.M3_mostrarFormularioNuevo = function() {
@@ -541,13 +571,31 @@
         });
     }
 
-    window.M3_notificarWa = function() {
+    // 🔥 UX: NOTIFICAR WHATSAPP OPTIMIZADO
+    window.M3_notificarWa = function(tipo = "transferencia") {
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventId));
-        const texto = `¡Hola! Me anoté a "${eventData.organiza}" (${local.cantidad} pers). Soy ${local.nombre}. Adjunto comprobante:`;
-        window.open(`https://wa.me/${eventData.celuOrganizador.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(texto)}`, '_blank');
+        if(!local) return;
+
+        const nombre = local.nombre;
+        const cantidad = local.cantidad || 1;
+        const evento = `${eventData.organiza} - ${eventData.hora}`;
+
+        let texto = `ALTA CANCHA ABIERTA\n\n`;
+        texto += `Nombre: ${nombre}\n`;
+        texto += `Personas: ${cantidad}\n`;
+        texto += `Evento: ${evento}\n`;
+
+        if(tipo === "transferencia"){
+            texto += `Pago: Transferencia\n\nAdjunto comprobante`;
+        } else {
+            texto += `Pago: En cancha`;
+        }
+
+        const telefono = eventData.celuOrganizador.replace(/[^0-9]/g, '');
+        window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`, '_blank');
     }
 
-    // 🔥 UX: FLUJO CON ENTER EN LOS INPUTS
+    // UX: ENTER EN LOS INPUTS Y MAYÚSCULAS
     document.addEventListener("DOMContentLoaded", () => {
         const inputsFlow = [
             document.getElementById('p-nombre'),
@@ -568,7 +616,6 @@
             });
         });
 
-        // 🔥 UX: CAPITALIZACIÓN AUTOMÁTICA
         function capitalizeInput(e) {
             const val = e.target.value.trim();
             if(val) e.target.value = val.charAt(0).toUpperCase() + val.slice(1);

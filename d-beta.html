@@ -537,11 +537,31 @@
         const prioridadEstado = { ok: 1, warning: 2, error: 3 };
         const sorted = Object.values(courtData).map(c => ({ ...c, estadoVisual: calcularEstadoCancha(c.inscriptos) })).sort((a, b) => { const pA = prioridadEstado[a.estadoVisual]; const pB = prioridadEstado[b.estadoVisual]; if (pA !== pB) return pA - pB; return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora); });
         listActivas.innerHTML = ""; listPasadas.innerHTML = ""; let countActivas = 0, countPasadas = 0; const ahora = Date.now();
-        const estadoLabel = { ok: "🟢 Todo pago", warning: "🟡 Falta cobrar", error: "🔴 Nadie pagó" };
 
         sorted.forEach((d, index) => {
-            const conf = calcularOcupados((d.inscriptos || []).filter(p => p.estado !== 'pendiente'));
-            let horaFinReal = d.horaFin || '23:59'; let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+            sorted.forEach((d, index) => {
+            // Cálculos para la fila de confirmados (como lo tenías)
+            const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
+            const conf = calcularOcupados(listaConfirmados);
+            
+            // 🔥 NUEVO: Cálculos exactos de dinero para el semáforo
+            const totalAnotados = calcularOcupados(d.inscriptos);
+            const pagados = calcularOcupados((d.inscriptos || []).filter(p => p.estado === 'pagado'));
+            const faltanPagar = totalAnotados - pagados;
+
+            let textoEstado = "";
+            if (totalAnotados === 0) {
+                textoEstado = "⚪ Sin inscriptos";
+            } else if (pagados === totalAnotados) {
+                textoEstado = "🟢 Todo pagado";
+            } else if (pagados === 0) {
+                textoEstado = `🔴 ${totalAnotados} anotados, nadie pagó`;
+            } else {
+                textoEstado = `🟡 Faltan pagar ${faltanPagar} de ${totalAnotados}`;
+            }
+
+            let horaFinReal = d.horaFin || '23:59'; 
+            let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
             const htmlCard = `
@@ -549,7 +569,9 @@
                     <div class="item-header"><div class="item-title">🎾 ${d.organiza}</div><span class="badge-cat">${d.categorias || ''}</span></div>
                     <div class="item-meta">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora}</div>
                     <div class="item-meta">👥 ${conf} / ${d.cupo} Confirmados</div>
-                    <div class="item-meta" style="font-weight:800;">${estadoLabel[d.estadoVisual]}</div>
+                    
+                    <div class="item-meta" style="font-weight:800;">${textoEstado}</div>
+                    
                     <div class="item-actions">
                         <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
                         <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>

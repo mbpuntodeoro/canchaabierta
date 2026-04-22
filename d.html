@@ -573,7 +573,12 @@
 
     function checkAndRollover(id, data) {
         const ahora = Date.now();
-        const eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+        let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+        
+        if (data.horaFin && data.hora && data.horaFin < data.hora) {
+            eventEnd += 86400000; 
+        }
+        
         if (ahora > eventEnd && data.estado !== 'suspendida') {
             const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
             const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
@@ -675,7 +680,11 @@
             } else if (!horaFinReal) {
                 horaFinReal = '23:59';
             }
-            const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+            let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+            
+            if (horaFinReal && d.hora && horaFinReal < d.hora) {
+                finEvento += 86400000;
+            }
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
             const htmlCard = `<div class="item fade-in" style="${esPasada ? 'opacity: 0.6; filter: grayscale(50%);' : ''} animation-delay: ${index * 50}ms;">

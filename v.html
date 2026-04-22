@@ -35,7 +35,9 @@
         /* FIX 2: Alineación de Cabecera y Categorías */
         .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 1px dashed var(--gray-2); padding-bottom: 12px;}
         .card-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; line-height: 1.2; flex: 1; }
-        .badge-cat { font-size: 10px; color: #007AFF; background: rgba(0,122,255,0.1); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin: 0; }
+        
+        /* 🔥 NUEVO COLOR: Violeta oscuro / Púrpura para separar visualmente del botón INGRESAR */
+        .badge-cat { font-size: 10px; color: #6A0DAD; background: rgba(106, 13, 173, 0.12); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin: 0; }
         
         .info-row { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
         
@@ -148,6 +150,7 @@
                     const fObj = new Date(d.fecha + 'T12:00:00');
                     const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
                     
+                    // 🔥 BOTÓN ACTUALIZADO
                     let btnHtml = "";
                     if (libres > 0) {
                         btnHtml = `<div class="btn-join">INGRESAR</div>`;
@@ -155,6 +158,7 @@
                         btnHtml = `<div class="btn-join btn-full">CANCHA LLENA</div>`;
                     }
 
+                    // 🔥 INFO ACTUALIZADA (Lugar, Organizador y Horario Completo)
                     htmlAcumulado += `
                         <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 50}ms;">
                             <div class="card-header">

@@ -17,7 +17,7 @@
             --green-grad: linear-gradient(180deg, #34C759, #30B350);
             --border: #E5E5EA; --gray-1: #F9F9FB; --gray-2: #E5E5EA;
             --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
-            --r-lg: 24px; --r-md: 16px; --anim-fast: 150ms; --anim-normal: 220ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+            --r-lg: 24px; --r-md: 16px; --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
         }
         body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
         .h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0; }
@@ -43,6 +43,7 @@
         .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
         .btn-dark { background: #111; color: white; }
         .btn-light { background: var(--bg-main); color: var(--text-primary); }
+        .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
         .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
         .badge-ok { background: rgba(52,199,89,0.15); color: var(--green); }
         .badge-warning { background: rgba(255,159,10,0.15); color: var(--orange); }
@@ -53,24 +54,15 @@
         .item-title { font-weight: 900; font-size: 18px; text-transform: uppercase; margin: 0; line-height: 1.2;}
         .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
         .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
-        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
+        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide 220ms var(--ease-out) forwards; }
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; }
         .input-std:focus { border-color: var(--blue); }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: var(--s3); }
         .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
         @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .day-check { display: none; }
-        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
-        .day-check:checked + .day-label { background: var(--blue); color: white; }
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        
-        /* ESTILOS SISTEMA COLAPSABLE JUGADORES */
+
+        /* --- 🔥 ESTILOS SISTEMA COLAPSABLE JUGADORES --- */
         .player-group { background: white; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--gray-2); overflow: hidden; transition: transform 0.1s ease; }
         .player-group:active { transform: scale(0.99); }
         .player-main { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
@@ -78,7 +70,7 @@
         .player-name-box .extra-tag { color: var(--blue); font-weight: 800; font-size: 13px; }
         .player-phone-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
         .player-actions-box { display: flex; align-items: center; gap: 10px; }
-        .player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease; background: var(--gray-1); }
+        .player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease; background: var(--gray-1); }
         .player-group.open .player-children-box { max-height: 1000px; opacity: 1; padding-bottom: 8px; }
         .player-child-row { padding: 10px 16px 10px 32px; position: relative; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.03); }
         .player-child-row::before { content: ''; position: absolute; left: 18px; top: 50%; width: 8px; height: 1px; background: #C7C7CC; }
@@ -92,14 +84,21 @@
         .item.estado-ok { border-left: 6px solid var(--green); background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent); }
         .item.estado-warning { border-left: 6px solid var(--orange); background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent); }
         .item.estado-error { border-left: 6px solid var(--red); background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent); }
+
+        .day-check { display: none; }
+        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
+        .day-check:checked + .day-label { background: var(--blue); color: white; }
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
+        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
+        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
+        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
+        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="boot-screen">
-        <div class="spinner"></div>
-        <h2 class="h1" style="font-size: 20px; color: var(--text-secondary);">Verificando sesión...</h2>
-    </div>
+    <div id="boot-screen"><div class="spinner"></div><h2 class="h1" style="font-size: 20px; color: var(--text-secondary);">Verificando sesión...</h2></div>
 
     <div id="login-screen">
         <div class="card login-card fade-in">
@@ -119,7 +118,7 @@
                     <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
                     <span id="badge-client-fundador" style="display:none; background:#fff9e6; color:#856404; font-size:10px; font-weight:900; padding:4px 8px; border-radius:6px; border:1px solid #ffeeba; margin-top:6px;">⭐ MIEMBRO FUNDADOR</span>
                 </div>
-                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer;">SALIR</button>
+                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px;">SALIR</button>
             </header>
 
             <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;"></div>
@@ -140,7 +139,7 @@
                 </div>
                 <div class="text-center mt-3">
                     <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total"></div>
-                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;"></div>
+                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px;"></div>
                 </div>
                 <div id="box-resumen-uso" class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
                     <div class="label" style="margin-bottom: 4px; color: #8E8E93;">RESUMEN DE USO:</div>
@@ -160,7 +159,7 @@
                 <div id="canchas-pasadas-list" style="display:none; margin-top:var(--s2);"></div>
             </div>
 
-            <button id="btn-add-cancha" class="btn btn-dark mt-2 fade-in" style="padding: 20px; font-size: 14px; animation-delay: 200ms;" onclick="abrirNuevaCancha()">➕ AGREGAR NUEVA CANCHA</button>
+            <button id="btn-add-cancha" class="btn btn-dark mt-2 fade-in" style="padding: 20px; font-size: 14px;" onclick="abrirNuevaCancha()">➕ AGREGAR NUEVA CANCHA</button>
             <p id="msg-locked" style="display:none; color:var(--red); font-size:11px; font-weight:800; text-align:center; margin-top:10px;"></p>
 
             <div class="footer-pro fade-in" style="animation-delay: 300ms;">
@@ -168,7 +167,7 @@
                 <hr class="footer-divider">
                 <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
                 <p class="footer-subtitle">Pasala a piloto automático.</p>
-                <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+                <a href="https://wa.me/5491166463800" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
             </div>
         </div>
     </div>
@@ -191,12 +190,12 @@
             <input type="hidden" id="pl-id">
             <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
                 <div class="metric-box" style="background:var(--bg-main); padding:12px;"><span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary);">0</b></div>
-                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;"><span class="label" style="color:var(--blue)">LUGARES LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue);">0</b></div>
+                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;"><span class="label" style="color:var(--blue)">LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue);">0</b></div>
             </div>
             <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 6px;">
-                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;"><span class="label" style="color:var(--green)">PAGADOS</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;"><span class="label" style="color:var(--orange)">EN CANCHA</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;"><span class="label" style="color:var(--red)">PEND.</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b></div>
+                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;"><span class="label" style="color:var(--green)">PAG</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b></div>
+                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;"><span class="label" style="color:var(--orange)">ENC</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b></div>
+                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;"><span class="label" style="color:var(--red)">PEN</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b></div>
             </div>
             <div id="players-list"></div>
             <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR</button>
@@ -209,7 +208,7 @@
             <input type="hidden" id="ed-id">
             <button id="btn-suspender" class="btn" style="background: rgba(255,159,10,0.1); color: var(--orange); margin-bottom: var(--s3); display:none; flex-direction: column; height: auto; padding: 12px; gap:4px;" onclick="abrirModalSuspension()">
                 <span style="font-weight: 900;">🚫 SUSPENDER EVENTO</span>
-                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8; letter-spacing: 0;">Cancelación gratuita hasta 1 hora antes de comenzar el evento</span>
+                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8;">Cancelación gratuita hasta 1 hora antes</span>
             </button>
             <label>Tipo de Evento</label>
             <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
@@ -239,7 +238,7 @@
             <label>Alias</label><input id="ed-ali" class="input-std">
             <button id="btn-save-config" class="btn btn-primary mt-2" onclick="guardarConfig()">GUARDAR CAMBIOS</button>
             <button class="btn btn-light mt-2" onclick="cerrarModals()">CANCELAR</button>
-            <button id="btn-borrar-cancha" class="btn mt-2" style="background: rgba(255,59,48,0.1); color: var(--red); display:none;" onclick="borrarCancha()">🗑️ ELIMINAR CANCHA DEFINITIVAMENTE</button>
+            <button id="btn-borrar-cancha" class="btn mt-2" style="background: rgba(255,59,48,0.1); color: var(--red); display:none;" onclick="borrarCancha()">🗑️ ELIMINAR CANCHA</button>
         </div>
     </div>
     
@@ -247,7 +246,6 @@
         <div class="modal-content text-center">
             <h2 class="h1" style="margin-bottom: var(--s1); font-size: 22px;">🚫 Suspender Evento</h2>
             <p class="text" style="margin-bottom: var(--s1);">Esta acción no genera cargos de sistema.</p>
-            <p class="label" style="margin-bottom: var(--s4);">¿Qué desea hacer con esta cancha?</p>
             <button class="btn btn-primary mt-2" style="background: var(--green-grad);" onclick="confirmarSuspension(true)">REPROGRAMAR PARA LA SEMANA QUE VIENE</button>
             <button class="btn mt-2" style="background: var(--red); color:white;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button>
             <button class="btn btn-light mt-2" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
@@ -257,16 +255,22 @@
 <script>
     let orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
-    let isNew = false;
-    window.defaultData = { owner: "", celu: "", alias: "" };
-    window.movimientos = []; let currentMovsData = []; let isInitialized = false;
-    let oldDeuda = 0, oldDisp = 0;
+    let isNew = false; window.defaultData = { owner: "", celu: "", alias: "" };
+    window.movimientos = []; let currentMovsData = []; let isInitialized = false, oldDeuda = 0, oldDisp = 0;
 
     // 🔥 UTILS & MODELO DE DATOS
-    function calcularOcupados(list) {
-        if (!list) return 0;
-        return list.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0);
+    function calcularOcupados(list) { if (!list) return 0; return list.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0); }
+    
+    function agruparPorCelular(list) {
+        const grupos = {};
+        list.forEach((p, idx) => {
+            const key = p.celular ? String(p.celular).trim() : `sin-celular-${idx}`;
+            if (!grupos[key]) grupos[key] = [];
+            grupos[key].push({ ...p, originalIndex: idx, fechaSegura: p.fecha || 0 });
+        });
+        return Object.values(grupos);
     }
+
     function calcularEstadoCancha(inscriptos) {
         if (!inscriptos || inscriptos.length === 0) return "error";
         let total = 0, pagados = 0, parcial = false;
@@ -279,6 +283,7 @@
         if (pagados > 0 || parcial) return "warning";
         return "error";
     }
+
     function toggleGroup(el) { el.classList.toggle('open'); }
     function animateValue(el, start, end, duration = 400) {
         if (start === end) { el.innerText = PadelUtils.fmtDinero(end); return; }
@@ -293,7 +298,7 @@
         requestAnimationFrame(step);
     }
 
-    // --- AUTH ---
+    // --- AUTH & INIT ---
     const auth = firebase.auth();
     auth.onAuthStateChanged(user => {
         document.getElementById('boot-screen').style.display = 'none';
@@ -303,31 +308,16 @@
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Buscando datos...";
                 db.ref('facturacion').once('value').then(snap => {
-                    let foundOrg = null; const data = snap.val() || {};
-                    const emailLimpio = user.email.trim().toLowerCase();
-                    for (let id in data) {
-                        if (data[id].cuenta && data[id].cuenta.emailOrganizador?.trim().toLowerCase() === emailLimpio) { foundOrg = id; break; }
-                    }
-                    if (foundOrg) {
-                        orgId = foundOrg; window.history.replaceState(null, null, `?org=${orgId}`);
-                        if(!isInitialized) { init(); isInitialized = true; }
-                    } else { alert(`⚠️ Tu usuario (${emailLimpio}) no tiene un club asignado.`); cerrarSesion(); }
-                }).catch(err => alert("❌ Error de permisos en Firebase."));
+                    let foundOrg = null; const data = snap.val() || {}; const emailLimpio = user.email.trim().toLowerCase();
+                    for (let id in data) { if (data[id].cuenta && data[id].cuenta.emailOrganizador?.trim().toLowerCase() === emailLimpio) { foundOrg = id; break; } }
+                    if (foundOrg) { orgId = foundOrg; window.history.replaceState(null, null, `?org=${orgId}`); if(!isInitialized) { init(); isInitialized = true; } } 
+                    else { alert(`Tu usuario no tiene club asignado.`); cerrarSesion(); }
+                }).catch(err => alert("Error de permisos Firebase."));
             } else { if(!isInitialized) { init(); isInitialized = true; } }
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('main-container').style.display = 'none';
-            isInitialized = false;
-        }
+        } else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('main-container').style.display = 'none'; isInitialized = false; }
     });
 
-    function iniciarSesion() {
-        const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value;
-        document.getElementById('log-error').style.display = 'none';
-        auth.signInWithEmailAndPassword(e, p).catch(err => {
-            document.getElementById('log-error').style.display = 'block'; document.getElementById('log-error').innerText = "Credenciales incorrectas.";
-        });
-    }
+    function iniciarSesion() { const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value; document.getElementById('log-error').style.display = 'none'; auth.signInWithEmailAndPassword(e, p).catch(err => { document.getElementById('log-error').style.display = 'block'; document.getElementById('log-error').innerText = "Credenciales incorrectas."; }); }
     function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
     function formatFec(f) { if(!f) return '--'; const [y, m, d] = f.split('-'); return `${d}-${m}-${y}`; }
     window.copiarMiLink = function() { PadelUtils.copiarLink(cuentaInfo.linkCorto ? cuentaInfo.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`); };
@@ -338,11 +328,8 @@
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
             if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
-                if (!cuentaInfo.esFundador) {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({ abonoMensual: cuentaInfo.proximoAbonoMensual, costoPorCancha: cuentaInfo.proximoCostoPorCancha, proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null });
-                } else {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({ proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null });
-                } return;
+                if (!cuentaInfo.esFundador) { db.ref(`facturacion/${orgId}/cuenta`).update({ abonoMensual: cuentaInfo.proximoAbonoMensual, costoPorCancha: cuentaInfo.proximoCostoPorCancha, proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } 
+                else { db.ref(`facturacion/${orgId}/cuenta`).update({ proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } return;
             }
             document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
             window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
@@ -352,8 +339,7 @@
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {}; 
             if (cuentaInfo.enTrial) {
-                let updates = {};
-                for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') updates[`${k}/estado`] = 'bonificado'; }
+                let updates = {}; for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') updates[`${k}/estado`] = 'bonificado'; }
                 if (Object.keys(updates).length > 0) { db.ref(`facturacion/${orgId}/movimientos`).update(updates); return; }
             }
             window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]})); calculateFinancials();
@@ -364,9 +350,7 @@
             if (ids.length === 0) renderizarCanchas();
             ids.forEach(id => {
                 db.ref('eventos/'+id).on('value', evS => {
-                    const d = evS.val(); 
-                    if(d) { checkAndRollover(id, d); courtData[id] = { id, ...d }; } else { delete courtData[id]; }
-                    renderizarCanchas();
+                    const d = evS.val(); if(d) { checkAndRollover(id, d); courtData[id] = { id, ...d }; } else { delete courtData[id]; } renderizarCanchas();
                 }, errorHandler);
             });
         }, errorHandler);
@@ -378,59 +362,42 @@
         
         const avisoAumento = document.getElementById('aviso-aumento');
         if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
-            avisoAumento.style.display = 'block';
-            avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
+            avisoAumento.style.display = 'block'; avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
         } else { avisoAumento.style.display = 'none'; }
 
-        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
-        if (!res) return;
+        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos); if (!res) return;
 
         const lblVencimiento = document.getElementById('lbl-vencimiento'), txtDiasTrial = document.getElementById('txt-dias-trial');
         const elRestantes = document.getElementById('txt-canchas-restantes'), badge = document.getElementById('badge-abono'), panelInfo = document.getElementById('txt-consumo-total');
-        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono);
-        const diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
+        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono), diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
         badge.className = "badge"; 
         
         if (res.enTrial) {
-            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`;
-            badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
-            
+            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`; badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
             let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
             if (!res.esTrialLargo) { const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba; textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`; }
             txtDiasTrial.innerText = textoTrial; txtDiasTrial.style.display = 'block';
-
-            let totalJugadores = 0, totalDinero = 0;
-            Object.values(courtData).forEach(c => { const cant = calcularOcupados(c.inscriptos); totalJugadores += cant; totalDinero += (cant * (c.valor || 0)); });
-
+            let totalJugadores = 0, totalDinero = 0; Object.values(courtData).forEach(c => { const cant = calcularOcupados(c.inscriptos); totalJugadores += cant; totalDinero += (cant * (c.valor || 0)); });
             document.getElementById('container-financials').style.display = 'none'; document.getElementById('box-resumen-uso').style.display = 'none';
             panelInfo.innerHTML = `
                 <div style="background: rgba(52,199,89,0.1); border: 1px solid var(--green); border-radius: 18px; padding: 15px; margin-top: 10px; text-align: left; animation: fadeSlide 0.5s ease-out;">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto de tu piloto automático</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto piloto automático</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">JUGADORES</span><br><b style="color:white; font-size:18px;">${totalJugadores}</b></div>
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">GESTIONADO</span><br><b style="color:white; font-size:18px;">${PadelUtils.fmtDinero(totalDinero)}</b></div>
                     </div>
-                    <p style="font-size: 11px; color: var(--blue); font-weight: 700; margin: 12px 0 0 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">${res.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}</p>
-                </div>
-            `;
+                </div>`;
             elRestantes.style.display = 'none';
         } else {
-            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
-            txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
+            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`; txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
             const txtVenc = document.getElementById('txt-venc-abono');
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
             animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
-            
             panelInfo.innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(cuentaInfo.limiteCredito || 0)}</span>`;
             if (cuentaInfo.costoPorCancha > 0) { const restantes = Math.floor(res.disponible / cuentaInfo.costoPorCancha); elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`; elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block'; } else { elRestantes.style.display = 'none'; }
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
-
             const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
-            if (res.bloqueadoAbono) { badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); txtVenc.style.color = "var(--red)"; } 
-            else if (res.bloqueadoLimite) { badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error'); } 
-            else if (porcentajeUso >= 0.8) { badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning'); } 
-            else if (diasFaltantes <= 5) { badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); txtVenc.style.color = "var(--orange)"; } 
-            else { badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); txtVenc.style.color = "var(--green)"; }
+            if (res.bloqueadoAbono) { badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); txtVenc.style.color = "var(--red)"; } else if (res.bloqueadoLimite) { badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error'); } else if (porcentajeUso >= 0.8) { badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning'); } else if (diasFaltantes <= 5) { badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); txtVenc.style.color = "var(--orange)"; } else { badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); txtVenc.style.color = "var(--green)"; }
         }
         isAccountBlocked = res.isBlocked; document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
         const msgLocked = document.getElementById('msg-locked'); if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
@@ -442,11 +409,10 @@
         document.getElementById('tab-pag').className = estadoFiltro==='pagado' ? "btn btn-primary" : "btn"; document.getElementById('tab-pag').style.background = estadoFiltro==='pagado' ? "" : "transparent"; document.getElementById('tab-pag').style.color = estadoFiltro==='pagado' ? "" : "var(--text-secondary)";
         const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
         const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
-        if(filtrados.length === 0) { lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`; } else {
+        if(filtrados.length === 0) { lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos.</p>`; } else {
             filtrados.forEach((m, index) => {
                 const dateObj = new Date(m.fecha); const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                let badgeHtml = '';
-                if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>'; else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>'; else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
+                let badgeHtml = ''; if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>'; else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>'; else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
                 lista.innerHTML += `
                     <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${index * 50}ms;">
                         <div style="flex:1; padding-right:15px;"><strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span></div>
@@ -460,7 +426,7 @@
         const ahora = Date.now(); let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (data.horaFin && data.hora && data.horaFin < data.hora) eventEnd += 86400000; 
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} hs`;
             const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
@@ -534,7 +500,8 @@
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
-            const d = s.val(); if(!d) return; const ins = d.inscriptos || [];
+            const d = s.val(); if(!d) return;
+            const ins = d.inscriptos || [];
             
             document.getElementById('st-total').innerText = d.cupo || 0; 
             document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
@@ -543,24 +510,22 @@
             document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            
-            const groupedMap = {};
-            ins.forEach((p, idx) => {
-                const key = p.celular || 'sin-celular';
-                if(!groupedMap[key]) groupedMap[key] = [];
-                groupedMap[key].push({ ...p, originalIndex: idx });
-            });
-            const grupos = Object.values(groupedMap);
+            const grupos = agruparPorCelular(ins);
 
             grupos.forEach(grupo => {
-                grupo.sort((a,b) => (a.fecha || 0) - (b.fecha || 0));
+                // Orden seguro: Primero por fecha, luego por índice original
+                grupo.sort((a,b) => {
+                    if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura;
+                    return a.originalIndex - b.originalIndex;
+                });
+                
                 const t = grupo[0]; const invitados = grupo.slice(1);
                 const labelExtra = invitados.length > 0 ? `<span class="extra-tag">+${invitados.length}</span>` : (t.cantidad > 1 ? `<span class="extra-tag">+${t.cantidad-1}</span>` : '');
                 
                 let htmlGrupo = `
                     <div class="player-group" onclick="toggleGroup(this)">
                         <div class="player-main">
-                            <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'S/C'}</div></div>
+                            <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'Sin celular'}</div></div>
                             <div class="player-actions-box">
                                 <button class="badge-status-btn st-${t.estado}" onclick="event.stopPropagation(); window.togglePago(${t.originalIndex})">${t.estado.replace(/-/g,' ').toUpperCase()}</button>
                                 <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${t.originalIndex})">✕</span>

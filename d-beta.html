@@ -80,7 +80,24 @@
         .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
         @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .player-row { background: var(--bg-main); border-radius: 14px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;}
+        /* --- 🔥 NUEVOS ESTILOS AGRUPACIÓN --- */
+        .grupo-reserva {
+            background: var(--gray-1);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--gray-2);
+        }
+        .player-row { 
+            display: grid; 
+            grid-template-columns: 1fr auto auto; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 6px 0;
+        }
+        .titular { font-weight: 800; font-size: 14px; color: var(--text-primary); }
+        .acompanante { font-weight: 500; font-size: 13px; color: var(--text-secondary); margin-left: 12px; }
+        .player-cel { font-size: 10px; color: var(--blue); font-weight: 700; display: block; margin-top: 2px;}
         
         .day-check { display: none; }
         .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
@@ -307,13 +324,24 @@
 
     let oldDeuda = 0, oldDisp = 0;
 
-    // 🔥 NUEVA FUNCIÓN PARA CALCULAR CUPOS DE FORMA RETROCOMPATIBLE
+    // 🔥 FUNCIÓN PARA CALCULAR CUPOS DE FORMA RETROCOMPATIBLE
     function calcularOcupados(list) {
         if (!list) return 0;
         return list.reduce((acc, p) => {
             if (p.cantidad) return acc + p.cantidad;
             return acc + 1;
         }, 0);
+    }
+
+    // 🔥 FUNCIÓN DE AGRUPACIÓN POR CELULAR
+    function agruparPorCelular(list) {
+        const grupos = {};
+        list.forEach((p, idx) => {
+            const key = p.celular || 'sin-celular';
+            if (!grupos[key]) grupos[key] = [];
+            grupos[key].push({ ...p, originalIndex: idx });
+        });
+        return Object.values(grupos);
     }
 
     function animateValue(el, start, end, duration = 400) {
@@ -444,7 +472,7 @@
             let totalJugadores = 0;
             let totalDinero = 0;
             Object.values(courtData).forEach(c => {
-                const cant = calcularOcupados(c.inscriptos); // Usamos la nueva función
+                const cant = calcularOcupados(c.inscriptos);
                 totalJugadores += cant;
                 totalDinero += (cant * (c.valor || 0));
             });
@@ -678,7 +706,6 @@
         const ahora = Date.now();
 
         sorted.forEach((d, index) => {
-            // 🔥 USAMOS calcularOcupados PARA LAS FILAS DEL DASHBOARD
             const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
             const conf = calcularOcupados(listaConfirmados);
             
@@ -824,6 +851,7 @@
         } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
     }
 
+    // --- 🔥 RENDER JUGADORES AGRUPADOS ---
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
@@ -832,7 +860,6 @@
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
             
-            // 🔥 USAMOS calcularOcupados PARA LOS STATS DE LOS JUGADORES
             const totalAnotados = calcularOcupados(ins);
             const pagados = calcularOcupados(ins.filter(p => p.estado === 'pagado'));
             const enCancha = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
@@ -845,30 +872,41 @@
             document.getElementById('st-enc').innerText = enCancha;
             document.getElementById('st-pen').innerText = pendientes; 
             
-            const prioridades = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
-            const listaOrdenada = ins.map((p, idx) => ({ ...p, originalIndex: idx })).sort((a, b) => prioridades[a.estado] - prioridades[b.estado]);
-
             const list = document.getElementById('players-list'); list.innerHTML = "";
+            const grupos = agruparPorCelular(ins);
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
-            
-            listaOrdenada.forEach((p) => {
-                const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
-                const cant = p.cantidad || 1;
-                // Si alguien viejo tiene cantidad > 1 se muestra el +X, si es nuevo (cant=1) no.
-                const nombreDisplay = cant > 1 ? `${p.nombre} <b style="color:var(--blue)">+${cant-1}</b>` : p.nombre;
+
+            grupos.forEach(grupo => {
+                // Ordenar por fecha para asegurar que el titular (el primero) sea el líder
+                grupo.sort((a,b) => (a.fecha || 0) - (b.fecha || 0));
                 
-                list.innerHTML += `<div class="player-row">
-                    <span class="player-name">${nombreDisplay}</span>
-                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${p.originalIndex})">${label}</button>
-                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${p.originalIndex})">✕</button>
-                </div>`;
+                let htmlGrupo = `<div class="grupo-reserva">`;
+                
+                grupo.forEach((p, i) => {
+                    const esTitular = (i === 0);
+                    const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
+                    const nombreDisp = esTitular ? p.nombre : `└ ${p.nombre}`;
+                    const claseNombre = esTitular ? 'titular' : 'acompanante';
+                    const celDisp = esTitular ? `<span class="player-cel">📱 ${p.celular}</span>` : '';
+
+                    htmlGrupo += `
+                        <div class="player-row">
+                            <div class="${claseNombre}">${nombreDisp}${celDisp}</div>
+                            <button style="width:100px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'};" onclick="window.togglePago(${p.originalIndex})">${label}</button>
+                            <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;" onclick="window.borrarP(${p.originalIndex})">✕</button>
+                        </div>`;
+                });
+                
+                htmlGrupo += `</div>`;
+                list.innerHTML += htmlGrupo;
             });
+
             document.getElementById('modal-players').style.display = 'flex';
         });
     };
 
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
-    window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador y liberar su/s lugar/es?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
+    window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
 </script>
 </body>

@@ -114,6 +114,36 @@
         .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
         .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
         .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
+    /* --- 🔥 SISTEMA COLAPSABLE Y SWIPE (iOS FEEL) --- */
+.player-group { background: white; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--gray-2); overflow: hidden; }
+.player-group.estado-ok { border-left: 5px solid var(--green); background: rgba(52,199,89,0.06); }
+.player-group.estado-mixto { border-left: 5px solid var(--orange); background: rgba(255,159,10,0.06); }
+.player-group.estado-pendiente { border-left: 5px solid var(--red); background: rgba(255,59,48,0.06); }
+
+.swipe-container { position: relative; width: 100%; overflow: hidden; background: #E5E5EA; }
+.swipe-bg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 20px; font-weight: 900; color: white; font-size: 14px; z-index: 0; }
+.left-action { left: 0; right: 50%; background: var(--blue); justify-content: flex-start; }
+.right-action { right: 0; left: 50%; background: var(--red); justify-content: flex-end; }
+
+.swipe-content { position: relative; z-index: 1; background: transparent; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+.swipe-content.no-transition { transition: none; }
+
+.player-main { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: inherit; }
+.player-child-row { padding: 12px 16px 12px 32px; position: relative; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.04); background: inherit; }
+.player-child-row::before { content: ''; position: absolute; left: 18px; top: 50%; width: 8px; height: 1px; background: #C7C7CC; }
+
+.player-name-box { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.player-name-box .extra-tag { color: var(--blue); font-weight: 800; font-size: 13px; }
+.player-phone-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+.player-actions-box { display: flex; align-items: center; gap: 10px; }
+.player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease; }
+.player-group.open .player-children-box { max-height: 1000px; opacity: 1; }
+.child-name-text { font-size: 14px; font-weight: 500; color: #555; }
+
+.badge-status-btn { padding: 6px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; min-width: 85px; text-align: center; border: none; cursor: pointer; transition: 0.1s ease;}
+.badge-status-btn:active { transform: scale(0.95); }
+.st-pendiente { background: var(--red); } .st-paga-en-la-cancha { background: var(--orange); } .st-pagado { background: var(--green); }
+.badge-status-btn.small { font-size: 9px; padding: 4px 8px; min-width: 75px; }
     </style>
 </head>
 <body>
@@ -204,18 +234,26 @@
     </div>
 
     <div id="modal-players" class="modal">
-        <div class="modal-content">
-            <h2 class="h1 text-center" style="margin-bottom: var(--s3); font-size: 22px;">👥 Jugadores</h2>
+        <div class="modal-content" style="padding: 15px;">
+            <h2 class="h1 text-center" style="margin-bottom: 15px; font-size: 22px;">👥 Jugadores</h2>
             <input type="hidden" id="pl-id">
-            <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
-                <div class="metric-box" style="background:var(--bg-main); padding:12px;"><span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary);">0</b></div>
-                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;"><span class="label" style="color:var(--blue)">LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue);">0</b></div>
+            
+            <div class="flex" style="gap: 8px; margin-bottom:15px; background:var(--gray-1); padding:10px; border-radius:12px; border:1px solid var(--gray-2);">
+                <div style="flex:1; text-align:center;">
+                    <div class="label">PAG</div><b id="st-pag" style="color:var(--green); font-size:16px;">0</b>
+                </div>
+                <div style="flex:1; text-align:center; border-left:1px solid #ddd; border-right:1px solid #ddd;">
+                    <div class="label">ENC</div><b id="st-enc" style="color:var(--orange); font-size:16px;">0</b>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div class="label">PEN</div><b id="st-pen" style="color:var(--red); font-size:16px;">0</b>
+                </div>
             </div>
-            <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 6px;">
-                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;"><span class="label" style="color:var(--green)">PAGADOS</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;"><span class="label" style="color:var(--orange)">EN CANCHA</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b></div>
-                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;"><span class="label" style="color:var(--red)">PEND.</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b></div>
+
+            <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">
+                💡 Deslizá a la derecha para estado, izq para borrar
             </div>
+
             <div id="players-list"></div>
             <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR</button>
         </div>
@@ -529,6 +567,20 @@
     function validarRecurrencia() { const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config'); document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none'; if (tipo === 'recurrente' && inputFecha) { const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()]; const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked); if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } }
 
     // --- 🔥 JUGADORES COLAPSABLES Y ESTADOS VISUALES ---
+    // --- LÓGICA DE AGRUPACIÓN Y ESTADOS ---
+    function obtenerEstadoGrupo(grupo) {
+        const ests = grupo.map(p => p.estado);
+        if (ests.every(e => e === 'pagado')) return 0;
+        if (ests.every(e => e === 'pendiente')) return 2;
+        return 1;
+    }
+
+    let hasSwiped = false;
+    window.handleGroupClick = function(el) {
+        if(hasSwiped) { hasSwiped = false; return; }
+        el.closest('.player-group').classList.toggle('open');
+    };
+
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
         if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
@@ -537,52 +589,39 @@
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
             
-            document.getElementById('st-total').innerText = d.cupo || 0; 
-            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
             document.getElementById('st-pag').innerText = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
             document.getElementById('st-enc').innerText = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
             document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
             let grupos = agruparPorCelular(ins);
-
-            // 🔥 ORDENAR GRUPOS POR ESTADO VISUAL
             grupos.sort((a, b) => obtenerEstadoGrupo(a) - obtenerEstadoGrupo(b));
 
             grupos.forEach(grupo => {
-                // Ordenar internamente para que el titular quede primero
-                grupo.sort((a,b) => {
-                    if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura;
-                    return a.originalIndex - b.originalIndex;
-                });
-                
+                grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
                 const t = grupo[0]; const invitados = grupo.slice(1);
                 const labelExtra = invitados.length > 0 ? `<span class="extra-tag">+${invitados.length}</span>` : (t.cantidad > 1 ? `<span class="extra-tag">+${t.cantidad-1}</span>` : '');
-                
-                // 🔥 ASIGNAR CLASE VISUAL AL GRUPO
-                const estadoGrupo = obtenerEstadoGrupo(grupo);
-                let claseEstado = 'estado-mixto';
-                if (estadoGrupo === 0) claseEstado = 'estado-ok';
-                if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
+                const estG = obtenerEstadoGrupo(grupo);
+                let claseEstado = estG === 0 ? 'estado-ok' : (estG === 2 ? 'estado-pendiente' : 'estado-mixto');
 
                 let htmlGrupo = `
-                    <div class="player-group ${claseEstado}" onclick="toggleGroup(this)">
-                        <div class="player-main">
-                            <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'Sin celular'}</div></div>
-                            <div class="player-actions-box">
-                                <button class="badge-status-btn st-${t.estado}" onclick="event.stopPropagation(); window.togglePago(${t.originalIndex})">${t.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${t.originalIndex})">✕</span>
+                    <div class="player-group ${claseEstado}">
+                        <div class="swipe-container" data-idx="${t.originalIndex}">
+                            <div class="swipe-bg left-action">💸 ESTADO</div><div class="swipe-bg right-action">🗑️ BORRAR</div>
+                            <div class="swipe-content player-main" onclick="handleGroupClick(this)">
+                                <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'S/C'}</div></div>
+                                <div class="player-actions-box"><button class="badge-status-btn st-${t.estado}" onclick="event.stopPropagation(); window.togglePago(${t.originalIndex})">${t.estado.replace(/-/g,' ').toUpperCase()}</button></div>
                             </div>
                         </div>
                         <div class="player-children-box">
                 `;
                 invitados.forEach(inv => {
                     htmlGrupo += `
-                        <div class="player-child-row">
-                            <div class="child-name-text">↳ ${inv.nombre}</div>
-                            <div class="player-actions-box">
-                                <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+                        <div class="swipe-container" data-idx="${inv.originalIndex}">
+                            <div class="swipe-bg left-action">💸 ESTADO</div><div class="swipe-bg right-action">🗑️ BORRAR</div>
+                            <div class="swipe-content player-child-row">
+                                <div class="child-name-text">↳ ${inv.nombre}</div>
+                                <div class="player-actions-box"><button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button></div>
                             </div>
                         </div>
                     `;
@@ -593,6 +632,54 @@
             document.getElementById('modal-players').style.display = 'flex';
         });
     };
+
+    // --- 🔥 MOTOR GESTOS SWIPE (iOS FEEL) ---
+    let startX = 0, startY = 0, currentX = 0, isDragging = false, swipeEl = null;
+
+    document.addEventListener('touchstart', e => {
+        const el = e.target.closest('.swipe-content');
+        if(!el) return;
+        swipeEl = el;
+        startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        isDragging = true; hasSwiped = false;
+        swipeEl.classList.add('no-transition');
+    }, {passive: true});
+
+    document.addEventListener('touchmove', e => {
+        if(!isDragging || !swipeEl) return;
+        const diffX = e.touches[0].clientX - startX;
+        const diffY = e.touches[0].clientY - startY;
+
+        // Tolerancia al scroll vertical
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(currentX) < 10) {
+            isDragging = false; swipeEl.style.transform = `translateX(0)`; swipeEl = null; return;
+        }
+
+        currentX = diffX;
+        if(Math.abs(currentX) > 10) hasSwiped = true;
+        // Resistencia elástica
+        const moveX = currentX > 100 ? 100 + (currentX - 100) * 0.2 : (currentX < -100 ? -100 + (currentX + 100) * 0.2 : currentX);
+        swipeEl.style.transform = `translateX(${moveX}px)`;
+        if(e.cancelable) e.preventDefault();
+    }, {passive: false});
+
+    document.addEventListener('touchend', e => {
+        if(!isDragging || !swipeEl) return;
+        isDragging = false; swipeEl.classList.remove('no-transition');
+        const idx = swipeEl.parentElement.dataset.idx;
+        const thresh = 80;
+
+        if (currentX > thresh) {
+            swipeEl.style.transform = `translateX(100%)`;
+            setTimeout(() => { window.togglePago(idx); if(swipeEl) swipeEl.style.transform = 'translateX(0)'; }, 200);
+            if(navigator.vibrate) navigator.vibrate(50);
+        } else if (currentX < -thresh) {
+            swipeEl.style.transform = `translateX(-100%)`;
+            setTimeout(() => { window.borrarP(idx); if(swipeEl) swipeEl.style.transform = 'translateX(0)'; }, 200);
+            if(navigator.vibrate) navigator.vibrate(50);
+        } else { swipeEl.style.transform = `translateX(0)`; }
+        currentX = 0; setTimeout(() => { swipeEl = null; }, 250);
+    });
 
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
     window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador y liberar su lugar?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val() || []; if (!Array.isArray(ins)) ins = []; ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };

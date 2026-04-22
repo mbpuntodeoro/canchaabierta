@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Dashboard - PadelApp</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
@@ -9,247 +10,164 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script src="app-config.js?v=21"></script>
 
-<style>
-:root {
-    --bg-main: #F2F2F7;
-    --bg-card: #FFFFFF;
-    --bg-dark: #1C1C1E;
+    <style>
+        :root {
+            --bg-main:#F2F2F7;--bg-card:#fff;--bg-dark:#1C1C1E;
+            --text-primary:#1C1C1E;--text-secondary:#8E8E93;--text-inverse:#fff;
+            --blue:#007AFF;--green:#34C759;--orange:#FF9F0A;--red:#FF3B30;
+            --border:#E5E5EA;
+            --r-lg:24px;--r-md:16px;
+        }
 
-    --text-primary: #1C1C1E;
-    --text-secondary: #8E8E93;
-    --text-inverse: #FFFFFF;
+        body{font-family:Outfit,-apple-system,sans-serif;background:var(--bg-main);margin:0;padding:16px;color:var(--text-primary)}
+        .h1{font-size:28px;font-weight:900;margin:0}
+        .container{max-width:520px;margin:auto;display:none}
+        .card{background:#fff;border-radius:var(--r-lg);padding:16px}
+        .btn{width:100%;padding:14px;border-radius:14px;border:none;font-weight:800;cursor:pointer}
+        .btn-primary{background:var(--blue);color:#fff}
+        .btn-dark{background:#111;color:#fff}
+        .btn-light{background:#eee}
+        .input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);margin-bottom:10px}
 
-    --blue: #007AFF;
-    --green: #34C759;
-    --orange: #FF9F0A;
-    --red: #FF3B30;
+        #boot-screen{display:flex;align-items:center;justify-content:center;height:90vh;flex-direction:column}
+        .spinner{width:40px;height:40px;border:4px solid #ddd;border-top:4px solid var(--blue);border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
-    --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
-    --green-grad: linear-gradient(180deg, #34C759, #30B350);
-
-    --border: #E5E5EA;
-    --gray-1: #F9F9FB;
-    --gray-2: #E5E5EA;
-    --gray-3: #C7C7CC;
-
-    --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
-    --r-lg: 24px; --r-md: 16px;
-
-    --anim-fast: 150ms;
-    --anim-normal: 220ms;
-    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-body {
-    font-family: 'Outfit', -apple-system, sans-serif;
-    background: var(--bg-main);
-    color: var(--text-primary);
-    margin: 0;
-    padding: var(--s3);
-}
-
-.input-std::placeholder {
-    color: var(--gray-3);
-}
-</style>
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center}
+        .modal-content{background:#fff;padding:16px;border-radius:16px;max-width:500px;width:100%}
+    </style>
 </head>
-
 <body>
 
-<!-- ================= BOOT ================= -->
 <div id="boot-screen">
     <div class="spinner"></div>
-    <h2 class="h1">Verificando sesión...</h2>
+    <h3>Cargando...</h3>
 </div>
 
-<!-- ================= LOGIN ================= -->
 <div id="login-screen" style="display:none;">
-    <div class="card login-card">
-        <h1 class="h1">PadelApp</h1>
-
-        <input id="log-email" type="email" class="input-std" placeholder="Correo">
-        <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
-
-        <button class="btn btn-dark" onclick="iniciarSesion()">INGRESAR</button>
-
-        <p id="log-error" style="display:none;color:red;font-size:12px;">Error login</p>
+    <div class="container" style="display:block">
+        <div class="card">
+            <h1 class="h1">PadelApp</h1>
+            <input id="log-email" class="input" placeholder="Email">
+            <input id="log-pass" type="password" class="input" placeholder="Password">
+            <button class="btn btn-dark" onclick="iniciarSesion()">Ingresar</button>
+            <p id="log-error" style="color:red;display:none">Error login</p>
+        </div>
     </div>
 </div>
 
-<!-- ================= APP ================= -->
 <div id="app-content">
+    <div class="container" id="main-container">
+        <header style="display:flex;justify-content:space-between;align-items:center">
+            <h1 id="org-name-disp" class="h1">...</h1>
+            <button onclick="cerrarSesion()" style="color:red;background:none;border:none">Salir</button>
+        </header>
 
-<div class="container" id="main-container">
+        <div id="canchas-list">Cargando...</div>
 
-<header class="flex space-between center">
-    <h1 id="org-name-disp" class="h1">Cargando...</h1>
-    <button onclick="cerrarSesion()">Salir</button>
-</header>
-
-<div id="canchas-list">Cargando...</div>
-
+        <button class="btn btn-dark" onclick="abrirNuevaCancha()">Agregar cancha</button>
+    </div>
 </div>
+
+<div id="modal-players" class="modal">
+    <div class="modal-content">
+        <h2>Jugadores</h2>
+        <input type="hidden" id="pl-id"/>
+        <div id="players-list"></div>
+        <button class="btn btn-dark" onclick="cerrarModals()">Cerrar</button>
+    </div>
 </div>
 
-<!-- ================= SCRIPT CORE ================= -->
 <script>
-
 let orgId = new URLSearchParams(window.location.search).get('org');
-
+let courtData = {};
 let currentPlayerRef = null;
 let playersListener = null;
+let dbRefSafe = null;
 
-/* ---------------- FIX OCUPADOS ---------------- */
-function calcularOcupados(list) {
-    if (!Array.isArray(list)) return 0;
+function safe(el){return document.getElementById(el)}
 
-    return list.reduce((acc, p) => {
-        const cant = Number(p?.cantidad ?? 1);
-        if (isNaN(cant) || cant <= 0) return acc;
-        return acc + cant;
-    }, 0);
+window.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(()=>{
+        document.getElementById('boot-screen').style.display='none';
+        document.getElementById('login-screen').style.display='block';
+    },800);
+});
+
+window.iniciarSesion = function(){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-content').style.display='block';
+    document.getElementById('main-container').style.display='block';
 }
 
-/* ---------------- AGRUPAR ---------------- */
-function agruparPorCelular(list) {
-    const grupos = {};
+window.cerrarSesion=function(){location.reload()}
 
-    (list || []).forEach((p, idx) => {
-        let cel = (p?.celular || "").replace(/\D/g, '');
+window.abrirJugadores=function(id){
+    safe('pl-id').value=id;
+    const ref=db.ref('eventos/'+id);
 
-        if (!cel || cel.length < 6) {
-            cel = `sin-${idx}`;
-        }
-
-        if (!grupos[cel]) grupos[cel] = [];
-        grupos[cel].push({ ...p, originalIndex: idx });
-    });
-
-    return Object.values(grupos);
-}
-
-/* ---------------- ABRIR JUGADORES (FIX REAL) ---------------- */
-window.abrirJugadores = function(id) {
-
-    document.getElementById('pl-id').value = id;
-
-    const ref = db.ref('eventos/' + id);
-
-    // cleanup seguro
-    if (currentPlayerRef && playersListener) {
-        currentPlayerRef.off('value', playersListener);
+    if(currentPlayerRef && playersListener){
+        currentPlayerRef.off('value',playersListener);
     }
 
-    currentPlayerRef = ref;
+    currentPlayerRef=ref;
 
-    playersListener = function (s) {
-        const d = s.val();
-        if (!d) return;
+    playersListener=function(s){
+        const d=s.val();if(!d)return;
+        const ins=d.inscriptos||[];
 
-        const ins = d.inscriptos || [];
-        const grupos = agruparPorCelular(ins);
-
-        const total = calcularOcupados(ins);
-        const pag = calcularOcupados(ins.filter(p => p.estado === 'pagado'));
-        const enc = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
-        const pen = calcularOcupados(ins.filter(p => p.estado === 'pendiente'));
-
-        const cupo = d.cupo || 0;
-
-        document.getElementById('st-total').innerText = cupo;
-        document.getElementById('st-lib').innerText = Math.max(0, cupo - total);
-        document.getElementById('st-pag').innerText = pag;
-        document.getElementById('st-enc').innerText = enc;
-        document.getElementById('st-pen').innerText = pen;
-
-        const list = document.getElementById('players-list');
-        list.innerHTML = "";
-
-        const colors = {
-            pagado: "var(--green)",
-            "paga-en-la-cancha": "var(--orange)",
-            pendiente: "var(--red)"
-        };
-
-        grupos.forEach(grupo => {
-
-            let html = `<div class="grupo-reserva">`;
-
-            grupo.forEach((p, i) => {
-
-                const titular = i === 0;
-
-                html += `
-                <div class="player-row">
-                    <div class="${titular ? 'titular' : 'acompanante'}">
-                        ${titular ? p.nombre : '└ ' + p.nombre}
-                    </div>
-
-                    <button style="background:${colors[p.estado] || '#ccc'};color:#fff;border:none;padding:8px;border-radius:10px;font-size:10px"
-                        onclick="togglePago(${p.originalIndex})">
-                        ${p.estado}
-                    </button>
-
-                    <button onclick="borrarP(${p.originalIndex})">✕</button>
-                </div>`;
-            });
-
-            html += `</div>`;
-            list.innerHTML += html;
+        let html='';
+        ins.forEach((p,i)=>{
+            html+=`<div style='display:flex;justify-content:space-between;margin:6px 0'>
+                <span>${p.nombre}</span>
+                <button onclick="togglePago(${i})">${p.estado||'pendiente'}</button>
+                <button onclick="borrarP(${i})">x</button>
+            </div>`;
         });
 
-        document.getElementById('modal-players').style.display = 'flex';
+        safe('players-list').innerHTML=html;
     };
 
-    currentPlayerRef.on('value', playersListener);
-};
+    currentPlayerRef.on('value',playersListener);
+    document.getElementById('modal-players').style.display='flex';
+}
 
-/* ---------------- CERRAR MODALS ---------------- */
-window.cerrarModals = function() {
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+window.cerrarModals=function(){
+    document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
 
-    if (currentPlayerRef && playersListener) {
-        currentPlayerRef.off('value', playersListener);
-        currentPlayerRef = null;
-        playersListener = null;
+    if(currentPlayerRef && playersListener){
+        currentPlayerRef.off('value',playersListener);
+        currentPlayerRef=null;
+        playersListener=null;
     }
-};
+}
 
-/* ---------------- TOGGLE PAGO ---------------- */
-window.togglePago = function(idx) {
-
-    const id = document.getElementById('pl-id').value;
-
-    db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => {
-
-        const estados = ["pendiente", "paga-en-la-cancha", "pagado"];
-        const actual = s.val();
-
-        const next = estados[(estados.indexOf(actual) + 1) % estados.length];
-
-        db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(next);
+window.togglePago=function(i){
+    const id=safe('pl-id').value;
+    db.ref(`eventos/${id}/inscriptos/${i}/estado`).once('value',s=>{
+        const v=s.val();
+        const next=v==='pagado'?'pendiente':'pagado';
+        db.ref(`eventos/${id}/inscriptos/${i}/estado`).set(next);
     });
-};
+}
 
-/* ---------------- BORRAR ---------------- */
-window.borrarP = function(idx) {
-
-    if (!confirm("¿Borrar?")) return;
-
-    const id = document.getElementById('pl-id').value;
-
-    db.ref(`eventos/${id}/inscriptos`).once('value', s => {
-
-        let ins = s.val() || [];
-        if (!Array.isArray(ins)) ins = [];
-
-        ins.splice(idx, 1);
-
-        db.ref(`eventos/${id}/inscriptos`).set(ins);
+window.borrarP=function(i){
+    const id=safe('pl-id').value;
+    db.ref(`eventos/${id}/inscriptos`).once('value',s=>{
+        let arr=s.val()||[];
+        arr.splice(i,1);
+        db.ref(`eventos/${id}/inscriptos`).set(arr);
     });
-};
+}
+
+function renderizarCanchas(){
+    const el=safe('canchas-list');
+    if(!el) return;
+    el.innerHTML='OK dashboard cargado';
+}
 
 </script>
 

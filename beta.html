@@ -18,12 +18,28 @@
             --orange-grad: linear-gradient(180deg, #FF9F0A, #FF8800);
             --border-color: #EEEEEE; --orange: #FF9F0A; --red: #FF3B30; --blue: #007AFF;
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); margin: 0; padding: 0; color: var(--text-main); overflow: hidden; }
+        
+        body { 
+            font-family: 'Outfit', -apple-system, sans-serif; 
+            background: var(--bg-main); 
+            margin: 0; padding: 0; 
+            color: var(--text-main); 
+            overflow: hidden; 
+        }
 
         /* --- SPA NAVEGACIÓN --- */
         .app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
-        .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); overflow-y: auto; overflow-x: hidden; transform: translateX(100%); opacity: 0; transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease; z-index: 1; padding-bottom: 40px;}
+
+        .view {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main); overflow-y: auto; overflow-x: hidden;
+            transform: translateX(100%); opacity: 0;
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
+            z-index: 1; padding-bottom: 40px;
+        }
+
         .view.active { transform: translateX(0); opacity: 1; z-index: 2; }
         .view.exit-left { transform: translateX(-30%); opacity: 0; pointer-events: none;}
 
@@ -31,56 +47,83 @@
         .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
         .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
         .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px;}
+
         .event-list { display: flex; flex-direction: column; width: 100%; max-width: 500px; margin: 0 auto; }
         .day-title { font-size: 13px; color: #888; font-weight: 700; margin: 16px 16px 4px 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .event-item { padding: 14px 16px; border-bottom: 1px solid var(--border-color); transition: background 0.15s ease, transform 0.1s ease; cursor: pointer; display: block; text-decoration: none; color: inherit; opacity: 0; transform: translateY(8px); animation: fadeInUp 0.3s ease forwards;}
+
+        .event-item {
+            padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease, transform 0.1s ease;
+            cursor: pointer; display: block; text-decoration: none; color: inherit;
+            opacity: 0; transform: translateY(8px); animation: fadeInUp 0.3s ease forwards;
+        }
         .event-item:active { background: #f5f5f5; transform: scale(0.98); }
         .event-item:active .arrow { transform: translateX(4px); }
+
         .line-1 { font-size: 16px; font-weight: 700; display: flex; align-items: center; }
         .line-2 { display: flex; justify-content: space-between; margin-top: 2px; font-size: 14px; align-items: center;}
+        
         .category { font-weight: 600; color: #555; font-size: 13px; }
         .price { font-weight: 700; min-width: 80px; text-align: right; }
+
         .line-3 { display: flex; justify-content: space-between; margin-top: 4px; font-size: 13px; color: #777; align-items: center; }
         .location { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; padding-right: 15px; }
         .arrow { color: #bbb; transition: transform 0.15s ease; font-size: 18px; font-weight: 600; line-height: 1; }
+
         .event-item.is-full { opacity: 0.45; pointer-events: none; }
         .event-item.is-full .arrow { font-size: 11px; font-weight: 800; color: var(--red); letter-spacing: 0.5px; text-transform: uppercase; }
+
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         #loading-init { text-align: center; margin-top: 50px; font-weight: 800; color: var(--text-sub); }
 
         /* --- ESTILOS DETALLE (M3) --- */
-        .top-bar { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; gap: 15px;}
+        .top-bar { 
+            display: flex; align-items: center; padding: 15px 20px; 
+            border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.9); 
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; gap: 15px;
+        }
         .btn-back { background: none; border: none; font-size: 16px; font-weight: 600; color: var(--blue); cursor: pointer; padding: 0; display: flex; align-items: center; }
         .top-title { font-weight: 800; font-size: 16px; text-transform: uppercase; margin: 0; }
+
         .detail-content { padding: 20px; max-width: 500px; margin: 0 auto; }
         .title-detail { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 8px; line-height: 1.2; letter-spacing: -0.5px;}
         .badge-cat-detail { font-size: 10px; color: #6A0DAD; background: rgba(106, 13, 173, 0.12); padding: 5px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; display: inline-block; margin-bottom: 20px;}
+
         .info-box { background: var(--gray-1); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border-color); }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 10px; }
+
         .input-std { width: 100%; padding: 16px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--gray-2); margin-bottom: 12px; font-family: inherit; font-size: 16px; outline: none; font-weight: 600; transition: border-color 0.2s;}
         select.input-std { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238E8E93' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; cursor: pointer; }
         .input-std:focus { border-color: var(--blue); }
         label { display: block; font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 0 0 6px 5px; }
 
-        #form-screen, #success-screen, #already-screen { animation: fadeSlide 0.25s ease; transition: opacity 0.15s ease, transform 0.15s ease;}
+        #form-screen, #success-screen, #already-screen { 
+            animation: fadeSlide 0.25s ease; 
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
         @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
         .btn-action { height: 52px; border-radius: 14px; width: 100%; font-weight: 800; font-size: 15px; cursor: pointer; text-transform: uppercase; transition: transform 0.1s ease, box-shadow 0.15s ease; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-action:active { transform: scale(0.96); box-shadow: 0 3px 8px rgba(0,122,255,0.2) !important; }
+        
         .btn-join { background: var(--blue-grad); color: white; margin-top: 10px; box-shadow: 0 6px 14px rgba(0,122,255,0.25); }
+        
         .btn-black { background: #1C1C1E; color: white; margin-bottom: 12px;}
         .btn-gray { background: var(--gray-2); color: var(--text-main); margin-bottom: 12px;}
         .btn-danger { background: rgba(255,59,48,0.1); color: var(--red); margin-bottom: 12px;}
         .btn-green { background: var(--green-grad); color: white; margin-top: 10px;}
 
         .check-icon { font-size: 35px; color: white; background: #34C759; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 8px 20px rgba(52,199,89,0.3);}
+        
         .payment-box { background: var(--gray-1); border: 2px solid rgba(0,122,255,0.15); border-radius: 20px; padding: 20px; margin: 24px 0; text-align: center; }
         .monto { font-size: 34px; font-weight: 900; letter-spacing: -1px; color: var(--text-main); margin: 5px 0 10px 0;}
         .alias-box { background: var(--gray-2); padding: 14px; border-radius: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; font-size: 16px; word-break: break-all;}
         .btn-copy { background: white; border: 1px solid var(--gray-3); color: var(--text-main); font-weight: 700; padding: 12px 20px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer; margin-bottom: 10px;}
+
         .loader { display: none; width: 18px; height: 18px; border: 2.5px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: auto; }
         .loading .btn-text { display: none; } .loading .loader { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
         .link-back { font-size: 13px; color: var(--text-sub); font-weight: 700; text-decoration: underline; cursor: pointer; text-transform: uppercase; display: inline-block; margin-top: 15px;}
 
         /* FOOTER DE VENTAS */
@@ -320,7 +363,6 @@
                         lastDate = d.fecha;
                     }
                     
-                    // 🔥 USAMOS LA NUEVA FUNCIÓN calcularOcupados
                     const ocupados = calcularOcupados(d.inscriptos);
                     const libres = Math.max(0, (d.cupo || 0) - ocupados);
                     const isFull = libres <= 0;
@@ -460,7 +502,6 @@
                 alert("Ya estás anotado."); btn.classList.remove("loading"); btn.disabled = false; return;
             }
             
-            // 🔥 USAMOS LA NUEVA FUNCIÓN calcularOcupados
             const ocupados = calcularOcupados(list);
             if (ocupados + cant > (eventData.cupo || 99)) {
                 alert("No quedan lugares suficientes."); btn.classList.remove("loading"); btn.disabled = false; return;
@@ -514,8 +555,7 @@
                     document.getElementById('transfer-details-box').style.display = 'none';
                     document.getElementById('btn-pay-cancha-container').style.display = 'none';
                     document.getElementById('court-confirmation-msg').style.display = 'block';
-                    
-                    M3_notificarWa('cancha');
+                    // 🔥 SE ELIMINÓ NOTIFICAR WA ACÁ
                 });
             }
         });

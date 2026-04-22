@@ -337,11 +337,19 @@
     // 🔥 FUNCIÓN DE AGRUPACIÓN POR CELULAR
    function agruparPorCelular(list) {
     const grupos = {};
+
     list.forEach((p, idx) => {
-        const key = p.celular ? p.celular.replace(/\D/g, '') : `sin-celular-${idx}`;
-        if (!grupos[key]) grupos[key] = [];
-        grupos[key].push({ ...p, originalIndex: idx });
+        let cel = (p.celular || "").replace(/\D/g, '');
+
+        // 👇 validación clave
+        if (!cel || cel.length < 6) {
+            cel = `sin-celular-${idx}`;
+        }
+
+        if (!grupos[cel]) grupos[cel] = [];
+        grupos[cel].push({ ...p, originalIndex: idx });
     });
+
     return Object.values(grupos);
 }
 
@@ -897,7 +905,8 @@
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
-            console.log("INSCRIPTOS RAW:", ins);
+            console.log("INSCRIPTOS:", ins);
+console.log("GRUPOS AGRUPADOS:", grupos);
             const grupos = agruparPorCelular(ins);
             console.log("GRUPOS:", grupos);
 
@@ -917,14 +926,13 @@ console.log("GRUPOS:", grupos); // 👈 mejor así
             document.getElementById('st-pen').innerText = pendientes; 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            console.log("INSCRIPTOS:", ins); // 👈 ACÁ
-           const grupos = agruparPorCelular(ins);
+        
 console.log("GRUPOS:", grupos);
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
 
             grupos.forEach(grupo => {
                 // Ordenar por fecha para asegurar que el titular (el primero) sea el líder
-                grupo.sort((a,b) => (a.fecha || 0) - (b.fecha || 0));
+                grupo.sort((a,b) => (a.timestamp || a.fecha || 0) - (b.timestamp || b.fecha || 0));
                 
                 let htmlGrupo = `<div class="grupo-reserva">`;
                 
@@ -933,7 +941,7 @@ console.log("GRUPOS:", grupos);
                     const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
                     const nombreDisp = esTitular ? p.nombre : `└ ${p.nombre}`;
                     const claseNombre = esTitular ? 'titular' : 'acompanante';
-                    const celDisp = esTitular ? `<span class="player-cel">📱 ${p.celular}</span>` : '';
+                    const celDisp = esTitular ? `<span class="player-cel">${p.celular ? `📱 ${p.celular}` : ''}</span>` : '';
 
                     htmlGrupo += `
                         <div class="player-row">

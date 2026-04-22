@@ -458,6 +458,8 @@
         PadelUtils.copiarLink(linkFinal);
     };
 
+let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin querer
+
     function init() {
         if(!orgId) return;
         const errorHandler = (err) => { console.error("Error Firebase:", err); };
@@ -500,18 +502,31 @@
 
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
-            courtData = {}; 
+            
+            // Limpiamos solo las canchas que fueron borradas (no vaciamos todo de golpe)
+            Object.keys(activeListeners).forEach(id => {
+                if(!ids.includes(id)) {
+                    db.ref('eventos/'+id).off('value', activeListeners[id]);
+                    delete activeListeners[id];
+                    delete courtData[id];
+                }
+            });
+
             if (ids.length === 0) renderizarCanchas();
+
             ids.forEach(id => {
-                db.ref('eventos/'+id).on('value', evS => {
-                    const d = evS.val(); 
-                    if(d) {
-                        checkAndRollover(id, d); courtData[id] = { id, ...d }; 
-                    } else {
-                        delete courtData[id];
-                    }
-                    renderizarCanchas();
-                }, errorHandler);
+                if(!activeListeners[id]) {
+                    const listener = db.ref('eventos/'+id).on('value', evS => {
+                        const d = evS.val(); 
+                        if(d) {
+                            checkAndRollover(id, d); courtData[id] = { id, ...d }; 
+                        } else {
+                            delete courtData[id];
+                        }
+                        renderizarCanchas();
+                    }, errorHandler);
+                    activeListeners[id] = listener; // Guardamos el listener para evitar duplicados
+                }
             });
         }, errorHandler);
     }
@@ -689,10 +704,16 @@
         const btnPasadas = document.getElementById('btn-toggle-pasadas');
         
         const prioridadEstado = { ok: 1, warning: 2, error: 3 };
+        
         const sorted = Object.values(courtData).map(c => ({ ...c, estadoVisual: calcularEstadoCancha(c.inscriptos) })).sort((a, b) => {
-            const pA = prioridadEstado[a.estadoVisual]; const pB = prioridadEstado[b.estadoVisual];
+            const pA = prioridadEstado[a.estadoVisual] || 3; 
+            const pB = prioridadEstado[b.estadoVisual] || 3;
             if (pA !== pB) return pA - pB;
-            return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora);
+            
+            // 🔥 PARCHE ANTI-NaN: Fechas seguras por si el organizador olvidó cargar la hora
+            const dateA = new Date(`${a.fecha || '1970-01-01'}T${a.hora || '00:00'}`).getTime() || 0;
+            const dateB = new Date(`${b.fecha || '1970-01-01'}T${b.hora || '00:00'}`).getTime() || 0;
+            return dateA - dateB;
         });
         
         listActivas.innerHTML = ""; listPasadas.innerHTML = "";
@@ -706,7 +727,7 @@
             const pagados = calcularOcupados((d.inscriptos || []).filter(p => p.estado === 'pagado'));
             const faltanPagar = totalAnotados - pagados;
 
-            let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo} Anotados</b>`;
+            let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo || 0} Anotados</b>`;
             if ((totalAnotados - conf) > 0) {
                 textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`;
             }
@@ -718,14 +739,16 @@
             else { textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; }
 
             let horaFinReal = d.horaFin || '23:59'; 
-            let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+            
+            // 🔥 PARCHE ANTI-NaN para calcular si es pasada
+            let finEvento = new Date(`${d.fecha || '1970-01-01'}T${horaFinReal}`).getTime() || 0;
             if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
             const htmlCard = `
                 <div class="item fade-in estado-${d.estadoVisual}" style="${esPasada ? 'opacity:0.6;filter:grayscale(50%);' : ''}">
-                    <div class="item-header"><div class="item-title">🎾 ${d.organiza}</div><span class="badge-cat">${d.categorias || ''}</span></div>
-                    <div class="item-meta" style="margin-bottom: 6px;">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora}</div>
+                    <div class="item-header"><div class="item-title">🎾 ${d.organiza || 'Cancha'}</div><span class="badge-cat">${d.categorias || ''}</span></div>
+                    <div class="item-meta" style="margin-bottom: 6px;">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora || '--'}</div>
                     <div class="item-meta" style="font-size: 14px;">${textoOcupacion}</div>
                     <div class="item-meta" style="font-weight:800; font-size: 13px; margin-top:2px;">${textoEstado}</div>
                     <div class="item-actions">

@@ -21,7 +21,12 @@
         .main-wrapper { flex: 1; display: flex; align-items: center; width: 100%; max-width: 420px; }
         .card-elevated { background: white; border-radius: 24px; padding: 35px 25px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box; display: none; }
         
-        .title { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 20px; line-height: 1.2; letter-spacing: -0.5px;}
+        /* Ajuste de título para que conviva bien con la etiqueta de categoría */
+        .title { font-size: 22px; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 8px; line-height: 1.2; letter-spacing: -0.5px;}
+        
+        /* 🔥 ETIQUETA DE CATEGORÍA VIOLETA */
+        .badge-cat { font-size: 10px; color: #6A0DAD; background: rgba(106, 13, 173, 0.12); padding: 5px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; white-space: nowrap; display: inline-block; margin-bottom: 20px; letter-spacing: 0.5px;}
+
         .info-box { background: var(--gray-1); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid var(--gray-2); }
         .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 10px; }
         
@@ -72,7 +77,11 @@
         <div class="card-elevated" id="main-card">
             
             <div id="form-screen" style="display:none;">
-                <div class="title" id="t-nombre">--</div>
+                <div style="text-align: center;">
+                    <div class="title" id="t-nombre">--</div>
+                    <div class="badge-cat" id="t-cat">Todas las categorías</div>
+                </div>
+
                 <div class="info-box">
                     <div class="info-row">📅 <span id="t-fec">--</span></div>
                     <div class="info-row">🕒 <span id="t-hs">--</span></div>
@@ -176,6 +185,10 @@
             document.getElementById('footer-pro').style.display = 'block';
 
             document.getElementById('t-nombre').innerText = eventData.organiza;
+            
+            // 🔥 INYECTAR LA CATEGORÍA AQUÍ
+            document.getElementById('t-cat').innerText = eventData.categorias || 'Todas las categorías';
+            
             document.getElementById('t-fec').innerText = PadelSaaS.fmtFecha(new Date(eventData.fecha + 'T12:00:00').getTime());
             document.getElementById('t-hs').innerText = eventData.hora + ' a ' + (eventData.horaFin || '--') + ' hs';
             document.getElementById('t-lug').innerText = eventData.lugar || 'Sede a confirmar';

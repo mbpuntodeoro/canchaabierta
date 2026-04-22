@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera de Canchas - PadelApp</title>
+    <title>Cartelera - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -12,74 +12,82 @@
             --bg-main: #F2F2F7; --gray-1: #F9F9FB; --gray-2: #E5E5EA; 
             --text-main: #1C1C1E; --text-sub: #8E8E93; 
             --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
-            --green-grad: linear-gradient(180deg, #34C759, #30B350);
             --anim-fast: 150ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+            --cat-color: #6A0DAD; --cat-bg: rgba(106, 13, 173, 0.1);
         }
 
-        /* FIX 1: Esto evita que cualquier elemento desborde los márgenes de su caja */
         * { box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
+        
+        .header-box { text-align: center; margin-bottom: 20px; width: 100%; max-width: 500px; }
+        .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; }
+        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px; text-transform: uppercase;}
 
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
-        
-        .header-box { text-align: center; margin-bottom: 25px; width: 100%; max-width: 500px; animation: modalIn 400ms var(--ease-out) forwards; }
-        .h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 0 0 5px 0; text-transform: uppercase; }
-        
-        /* ETIQUETA VIP PARA JUGADORES */
-        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 10px; font-weight: 900; padding: 5px 12px; border-radius: 8px; border: 1px solid #ffeeba; margin-top: 5px; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); text-transform: uppercase;}
+        /* SEPARADORES DE DÍA */
+        .date-header { 
+            width: 100%; max-width: 500px; 
+            padding: 25px 0 10px 10px; 
+            font-size: 12px; font-weight: 900; 
+            color: var(--text-sub); text-transform: uppercase; 
+            letter-spacing: 1px; display: flex; align-items: center;
+        }
+        .date-header::after { content: ""; flex: 1; height: 1px; background: var(--gray-2); margin-left: 15px; }
 
-        .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+        .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
         
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); text-decoration: none; color: inherit; display: block; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards; overflow: hidden; }
-        .card:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        /* TARJETA HORIZONTAL COMPACTA */
+        .card { 
+            background: white; border-radius: 18px; padding: 15px; 
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01);
+            text-decoration: none; color: inherit; transition: transform 0.2s;
+            opacity: 0; transform: translateY(10px); animation: fadeSlide 300ms var(--ease-out) forwards;
+        }
+        .card:active { transform: scale(0.98); }
+
+        .card-left { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .time-row { font-size: 17px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+        .place-row { font-size: 13px; font-weight: 600; color: var(--text-sub); }
+
+        .card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 120px; }
+        .badge-cat { 
+            font-size: 9px; color: var(--cat-color); background: var(--cat-bg); 
+            padding: 4px 10px; border-radius: 7px; font-weight: 800; text-transform: uppercase; 
+        }
         
-        /* FIX 2: Alineación de Cabecera y Categorías */
-        .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 1px dashed var(--gray-2); padding-bottom: 12px;}
-        .card-title { font-weight: 900; font-size: 18px; margin: 0; text-transform: uppercase; line-height: 1.2; flex: 1; }
-        
-        /* 🔥 NUEVO COLOR: Violeta oscuro / Púrpura para separar visualmente del botón INGRESAR */
-        .badge-cat { font-size: 10px; color: #6A0DAD; background: rgba(106, 13, 173, 0.12); padding: 4px 10px; border-radius: 8px; font-weight: 800; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; margin: 0; }
-        
-        .info-row { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #444; margin-bottom: 6px; }
-        
-        /* FIX 1 (continuación): box-sizing asegura que el padding no engorde el botón */
-        .btn-join { background: var(--blue-grad); box-shadow: 0 4px 12px rgba(0,122,255,0.2); color: white; border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: 800; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 15px; text-align: center; box-sizing: border-box; }
-        .btn-full { background: var(--gray-2); color: var(--text-sub); box-shadow: none; pointer-events: none;}
-        
-        @keyframes modalIn { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        .btn-join { 
+            background: var(--blue-grad); color: white; border: none; 
+            padding: 10px 18px; border-radius: 10px; font-weight: 800; 
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .btn-full { background: var(--gray-2); color: var(--text-sub); pointer-events: none; box-shadow: none; }
+
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
+        #loading-init { margin-top: 50px; font-weight: 800; color: var(--text-sub); }
 
-        #loading-init { text-align: center; font-weight: 800; color: var(--text-sub); margin-top: 50px; }
-        .no-courts { text-align: center; font-weight: 700; color: var(--text-sub); background: white; padding: 30px; border-radius: 20px; font-size: 15px; }
-
-        /* FOOTER VIRAL DE VENTAS */
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; max-width: 420px; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--gray-2); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: #FF9F0A; margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
+        /* FOOTER */
+        .footer-pro { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 420px; }
+        .footer-divider { border: 0; border-top: 1.5px dashed var(--gray-2); margin-bottom: 20px; }
+        .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 15px; border-radius: 15px; font-weight: 800; font-size: 14px; display: block; box-shadow: 0 4px 12px rgba(255,159,10,0.2); }
     </style>
 </head>
 <body>
 
-    <div id="loading-init">Buscando canchas disponibles...</div>
+    <div id="loading-init">Buscando canchas...</div>
 
     <div class="header-box" id="header-box" style="display:none;">
         <h1 class="h1" id="t-org-name">Cartelera</h1>
         <div id="badge-fundador-container" style="display: none;">
-            <span class="badge-fundador">⭐ ORGANIZADOR OFICIAL</span>
+            <span class="badge-fundador">⭐ Organizador Oficial</span>
         </div>
     </div>
 
     <div class="court-list" id="court-list"></div>
 
     <div class="footer-pro" id="footer-pro" style="display:none;">
-        <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
         <hr class="footer-divider">
-        <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
-        <p class="footer-subtitle">Pasala a piloto automático.</p>
-        <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+        <p style="font-size:13px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Querés automatizar tu cancha?</p>
+        <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha 🎾</a>
     </div>
 
 <script>
@@ -88,101 +96,73 @@
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
-        // Cargar datos del club (para nombre y etiqueta VIP)
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
-            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Canchas Disponibles";
-            
-            // Si es fundador, le mostramos la chapa a los jugadores
-            if (cuenta.esFundador && !cuenta.archivado) {
-                document.getElementById('badge-fundador-container').style.display = 'block';
-            }
-            
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Canchas";
+            if (cuenta.esFundador) document.getElementById('badge-fundador-container').style.display = 'block';
             document.getElementById('header-box').style.display = 'block';
             document.getElementById('footer-pro').style.display = 'block';
         });
 
-        // Cargar canchas disponibles
         db.ref('hubs/' + orgId).on('value', async (snap) => {
-            const hubData = snap.val();
             const listContainer = document.getElementById('court-list');
             document.getElementById('loading-init').style.display = 'none';
+            const hubData = snap.val();
 
-            if (!hubData || !hubData.canchas || hubData.canchas.length === 0) {
-                listContainer.innerHTML = "<div class='no-courts'>No hay canchas publicadas en este momento.<br><br>🎾 Volvé a consultar más tarde.</div>";
+            if (!hubData || !hubData.canchas) {
+                listContainer.innerHTML = "<div style='text-align:center; color:var(--text-sub); font-weight:700; padding:40px;'>No hay canchas publicadas.</div>";
                 return;
             }
 
-            let htmlAcumulado = "";
-            let canchasActivas = 0;
-            const ahora = Date.now();
-            const diasList = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
-            
             let eventos = [];
-            snapshots.forEach(s => {
-                if (s.exists()) {
-                    eventos.push({ id: s.key, ...s.val() });
-                }
-            });
+            snapshots.forEach(s => { if(s.exists()) eventos.push({ id: s.key, ...s.val() }); });
 
-            // Ordenar por fecha y hora
             eventos.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
+            let htmlAcumulado = "";
+            let lastDate = "";
+            const diasList = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+
             eventos.forEach((d, index) => {
-                let horaFinReal = d.horaFin;
-                if (!horaFinReal && d.hora) {
-                    const [h, m] = d.hora.split(':');
-                    const dateObj = new Date();
-                    dateObj.setHours(parseInt(h), parseInt(m) + 90);
-                    horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-                } else if (!horaFinReal) { horaFinReal = '23:59'; }
-                
+                const ahora = Date.now();
+                const horaFinReal = d.horaFin || '23:59';
                 const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-                
-                // Solo mostramos las que NO pasaron
+
                 if (ahora <= finEvento || d.tipo === 'recurrente') {
-                    canchasActivas++;
-                    const ocupados = (d.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
-                    const libres = Math.max(0, (d.cupo || 99) - ocupados);
-                    const fObj = new Date(d.fecha + 'T12:00:00');
-                    const fechaTxt = `${diasList[fObj.getDay()]} ${PadelSaaS.fmtFecha(fObj.getTime())}`;
-                    
-                    // 🔥 BOTÓN ACTUALIZADO
-                    let btnHtml = "";
-                    if (libres > 0) {
-                        btnHtml = `<div class="btn-join">INGRESAR</div>`;
-                    } else {
-                        btnHtml = `<div class="btn-join btn-full">CANCHA LLENA</div>`;
+                    // Lógica de encabezado de fecha
+                    if (d.fecha !== lastDate) {
+                        const fObj = new Date(d.fecha + 'T12:00:00');
+                        const fechaHeader = `${diasList[fObj.getDay()]} ${fObj.getDate()}/${fObj.getMonth()+1}`;
+                        htmlAcumulado += `<div class="date-header">${fechaHeader}</div>`;
+                        lastDate = d.fecha;
                     }
 
-                    // 🔥 INFO ACTUALIZADA (Lugar, Organizador y Horario Completo)
+                    const ocupados = (d.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
+                    const libres = Math.max(0, (d.cupo || 0) - ocupados);
+                    
+                    const btnHtml = libres > 0 
+                        ? `<div class="btn-join">INGRESAR</div>` 
+                        : `<div class="btn-join btn-full">LLENO</div>`;
+
                     htmlAcumulado += `
-                        <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 50}ms;">
-                            <div class="card-header">
-                                <h3 class="card-title">${d.organiza}</h3>
+                        <a href="i.html?id=${d.id}&org=${orgId}" class="card" style="animation-delay: ${index * 30}ms;">
+                            <div class="card-left">
+                                <div class="time-row">🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
+                                <div class="place-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
+                                <div style="font-size:13px; font-weight:800; color:var(--text-main); margin-top:2px;">💰 ${PadelUtils.fmtDinero(d.valor)}</div>
+                            </div>
+                            <div class="card-right">
                                 <span class="badge-cat">${d.categorias || 'Mixto'}</span>
+                                ${btnHtml}
                             </div>
-                            <div class="info-row">📅 ${fechaTxt}</div>
-                            <div class="info-row">🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                            <div class="info-row">📍 ${d.lugar || 'Sede a confirmar'}</div>
-                            <div class="info-row">👤 ${d.nombreOrganizador || 'Organizador'}</div>
-                            <div class="info-row" style="color:var(--text-main); font-size:16px; margin-top:10px;">
-                                💰 <b>${PadelUtils.fmtDinero(d.valor)}</b> <small style="font-size:11px; color:var(--text-sub);">/ persona</small>
-                            </div>
-                            ${btnHtml}
                         </a>
                     `;
                 }
             });
 
-            if (canchasActivas === 0) {
-                listContainer.innerHTML = "<div class='no-courts'>No hay canchas activas en este momento.<br><br>🎾 Volvé a consultar más tarde.</div>";
-            } else {
-                listContainer.innerHTML = htmlAcumulado;
-            }
+            listContainer.innerHTML = htmlAcumulado || "<div style='text-align:center; color:var(--text-sub); font-weight:700; padding:40px;'>No hay canchas disponibles.</div>";
         });
     }
 </script>

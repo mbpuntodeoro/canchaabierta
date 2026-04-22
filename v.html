@@ -17,13 +17,12 @@
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); -webkit-tap-highlight-color: transparent;}
         
         .header-box { text-align: center; margin-bottom: 20px; width: 100%; max-width: 500px; }
         .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; }
         .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 900; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px; text-transform: uppercase;}
 
-        /* SEPARADORES DE DÍA */
         .date-header { 
             width: 100%; max-width: 500px; 
             padding: 25px 0 10px 10px; 
@@ -35,7 +34,6 @@
 
         .court-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
         
-        /* TARJETA HORIZONTAL COMPACTA */
         .card { 
             background: white; border-radius: 18px; padding: 15px; 
             display: flex; align-items: center; justify-content: space-between;
@@ -45,11 +43,11 @@
         }
         .card:active { transform: scale(0.98); }
 
-        .card-left { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .card-left { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-right: 10px;}
         .time-row { font-size: 17px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
         .place-row { font-size: 13px; font-weight: 600; color: var(--text-sub); }
 
-        .card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 120px; }
+        .card-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 100px; }
         .badge-cat { 
             font-size: 9px; color: var(--cat-color); background: var(--cat-bg); 
             padding: 4px 10px; border-radius: 7px; font-weight: 800; text-transform: uppercase; 
@@ -58,14 +56,13 @@
         .btn-join { 
             background: var(--blue-grad); color: white; border: none; 
             padding: 10px 18px; border-radius: 10px; font-weight: 800; 
-            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; text-align: center;
         }
         .btn-full { background: var(--gray-2); color: var(--text-sub); pointer-events: none; box-shadow: none; }
 
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
         #loading-init { margin-top: 50px; font-weight: 800; color: var(--text-sub); }
 
-        /* FOOTER */
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px; width: 100%; max-width: 420px; }
         .footer-divider { border: 0; border-top: 1.5px dashed var(--gray-2); margin-bottom: 20px; }
         .btn-sales { background: #FF9F0A; color: white; text-decoration: none; padding: 15px; border-radius: 15px; font-weight: 800; font-size: 14px; display: block; box-shadow: 0 4px 12px rgba(255,159,10,0.2); }
@@ -99,7 +96,7 @@
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Canchas";
-            if (cuenta.esFundador) document.getElementById('badge-fundador-container').style.display = 'block';
+            if (cuenta.esFundador && !cuenta.archivado) document.getElementById('badge-fundador-container').style.display = 'block';
             document.getElementById('header-box').style.display = 'block';
             document.getElementById('footer-pro').style.display = 'block';
         });
@@ -127,11 +124,23 @@
 
             eventos.forEach((d, index) => {
                 const ahora = Date.now();
-                const horaFinReal = d.horaFin || '23:59';
-                const finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+                let horaFinReal = d.horaFin;
+                
+                if (!horaFinReal && d.hora) {
+                    const [h, m] = d.hora.split(':');
+                    const dateObj = new Date();
+                    dateObj.setHours(parseInt(h), parseInt(m) + 90);
+                    horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                } else if (!horaFinReal) { horaFinReal = '23:59'; }
+
+                let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+                
+                // 🔥 SOLUCIÓN MEDIANOCHE: Si hora fin es menor a hora inicio, sumamos 24hs
+                if (horaFinReal && d.hora && horaFinReal < d.hora) {
+                    finEvento += 86400000;
+                }
 
                 if (ahora <= finEvento || d.tipo === 'recurrente') {
-                    // Lógica de encabezado de fecha
                     if (d.fecha !== lastDate) {
                         const fObj = new Date(d.fecha + 'T12:00:00');
                         const fechaHeader = `${diasList[fObj.getDay()]} ${fObj.getDate()}/${fObj.getMonth()+1}`;

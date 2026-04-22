@@ -911,6 +911,7 @@
             document.getElementById('st-pen').innerText = pendientes; 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
+            console.log("INSCRIPTOS:", ins); // 👈 ACÁ
             const grupos = agruparPorCelular(ins);
             const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
 

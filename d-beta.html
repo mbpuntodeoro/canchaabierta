@@ -503,14 +503,24 @@
             const d = s.val(); if(!d) return;
             const ins = d.inscriptos || [];
             
-            document.getElementById('st-total').innerText = d.cupo || 0; 
-            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
-            document.getElementById('st-pag').innerText = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
-            document.getElementById('st-enc').innerText = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
-            document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
+            // 🔥 DEBUGGING PRO Y CÁLCULO ÚNICO
+            const grupos = agruparPorCelular(ins);
+            console.log("INSCRIPTOS (Data cruda):", ins);
+            console.log("GRUPOS (Data procesada):", grupos);
+
+            const totalAnotados = calcularOcupados(ins);
+            const pagados = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
+            const enCancha = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
+            const pendientes = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
+            const cupoTotal = d.cupo || 0;
+            
+            document.getElementById('st-total').innerText = cupoTotal; 
+            document.getElementById('st-lib').innerText = Math.max(0, cupoTotal - totalAnotados);
+            document.getElementById('st-pag').innerText = pagados; 
+            document.getElementById('st-enc').innerText = enCancha;
+            document.getElementById('st-pen').innerText = pendientes; 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            const grupos = agruparPorCelular(ins);
 
             grupos.forEach(grupo => {
                 // Orden seguro: Primero por fecha, luego por índice original

@@ -3,347 +3,116 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - PadelApp</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="app-config.js?v=21"></script>
-    <style>
-        :root {
-            --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
-            --text-primary: #1C1C1E; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
-            --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
-            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
-            --green-grad: linear-gradient(180deg, #34C759, #30B350);
-            --border: #E5E5EA; --gray-1: #F9F9FB; --gray-2: #E5E5EA;
-            --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
-            --r-lg: 24px; --r-md: 16px;
-            --anim-fast: 150ms; --anim-normal: 220ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-        }
 
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
-        .h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0; }
-        .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .text { font-size: 15px; font-weight: 600; }
+<style>
+:root {
+    --bg-main: #F2F2F7;
+    --bg-card: #FFFFFF;
+    --bg-dark: #1C1C1E;
 
-        #boot-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+    --text-primary: #1C1C1E;
+    --text-secondary: #8E8E93;
+    --text-inverse: #FFFFFF;
 
-        .container { max-width: 500px; margin: auto; padding-bottom: 50px; display: none; }
-        .flex { display: flex; } .space-between { justify-content: space-between; } .center { align-items: center; }
-        .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
-        .text-center { text-align: center; }
+    --blue: #007AFF;
+    --green: #34C759;
+    --orange: #FF9F0A;
+    --red: #FF3B30;
 
-        .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02);}
-        .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        
-        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
-        .login-card { max-width: 350px; width: 100%; box-sizing: border-box; }
+    --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
+    --green-grad: linear-gradient(180deg, #34C759, #30B350);
 
-        .financial { display: flex; gap: var(--s2); margin-top: var(--s3); }
-        .metric-box { flex: 1; background: #2C2C2E; border-radius: var(--r-md); padding: var(--s3); text-align: center; }
-        .metric-label { font-size: 10px; color: #8E8E93; font-weight: 800; text-transform: uppercase; }
-        .metric-value { font-size: 18px; font-weight: 900; margin-top: 4px; color: var(--text-inverse); }
+    --border: #E5E5EA;
+    --gray-1: #F9F9FB;
+    --gray-2: #E5E5EA;
+    --gray-3: #C7C7CC;
 
-        .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
-        .btn:active { transform: scale(0.96); }
-        
-        .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
-        .btn-primary:active { box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
-        
-        .btn-dark { background: #111; color: white; }
-        .btn-light { background: var(--bg-main); color: var(--text-primary); }
-        .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
+    --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
+    --r-lg: 24px; --r-md: 16px;
 
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
-        .badge-ok { background: rgba(52,199,89,0.15); color: var(--green); }
-        .badge-warning { background: rgba(255,159,10,0.15); color: var(--orange); }
-        .badge-error { background: rgba(255,59,48,0.15); color: var(--red); }
-        .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
+    --anim-fast: 150ms;
+    --anim-normal: 220ms;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
-        .item { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); margin-bottom: var(--s2); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.02); transition: transform var(--anim-fast) var(--ease-out); }
-        .item:active { transform: scale(0.98); }
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
-        .item-title { font-weight: 900; font-size: 18px; text-transform: uppercase; margin: 0; line-height: 1.2;}
-        .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
-        .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
+body {
+    font-family: 'Outfit', -apple-system, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    margin: 0;
+    padding: var(--s3);
+}
 
-        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
-        @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
-
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
-        .input-std::placeholder { color: var(--gray-3); }
-        .input-std:focus { border-color: var(--blue); }
-        
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: var(--s3); }
-        .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
-        @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        /* --- 🔥 NUEVOS ESTILOS AGRUPACIÓN --- */
-        .grupo-reserva {
-            background: var(--gray-1);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid var(--gray-2);
-        }
-        .player-row { 
-            display: grid; 
-            grid-template-columns: 1fr auto auto; 
-            align-items: center; 
-            gap: 10px; 
-            padding: 6px 0;
-        }
-        .titular { font-weight: 800; font-size: 14px; color: var(--text-primary); }
-        .acompanante { font-weight: 500; font-size: 13px; color: var(--text-secondary); margin-left: 12px; }
-        .player-cel { font-size: 10px; color: var(--blue); font-weight: 700; display: block; margin-top: 2px;}
-        
-        .day-check { display: none; }
-        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
-        .day-check:checked + .day-label { background: var(--blue); color: white; }
-
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
-    </style>
+.input-std::placeholder {
+    color: var(--gray-3);
+}
+</style>
 </head>
+
 <body>
 
-    <div id="boot-screen">
-        <div class="spinner"></div>
-        <h2 class="h1" style="font-size: 20px; color: var(--text-secondary);">Verificando sesión...</h2>
+<!-- ================= BOOT ================= -->
+<div id="boot-screen">
+    <div class="spinner"></div>
+    <h2 class="h1">Verificando sesión...</h2>
+</div>
+
+<!-- ================= LOGIN ================= -->
+<div id="login-screen" style="display:none;">
+    <div class="card login-card">
+        <h1 class="h1">PadelApp</h1>
+
+        <input id="log-email" type="email" class="input-std" placeholder="Correo">
+        <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
+
+        <button class="btn btn-dark" onclick="iniciarSesion()">INGRESAR</button>
+
+        <p id="log-error" style="display:none;color:red;font-size:12px;">Error login</p>
     </div>
+</div>
 
-    <div id="login-screen">
-        <div class="card login-card fade-in">
-            <h1 class="h1" style="margin-bottom: 5px;">PadelApp</h1>
-            <p class="label" style="margin-bottom: 25px;">Acceso Organizador</p>
-            <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
-            <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
-            <button class="btn btn-dark mt-2" onclick="iniciarSesion()">INGRESAR</button>
-            <p id="log-error" style="color: var(--red); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
-        </div>
-    </div>
+<!-- ================= APP ================= -->
+<div id="app-content">
 
-    <div id="app-content">
-        <div class="container fade-in" id="main-container">
-            
-            <header class="flex space-between center section" style="margin-bottom: 20px;">
-                <div>
-                    <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
-                    <span id="badge-client-fundador" style="display:none; background:#fff9e6; color:#856404; font-size:10px; font-weight:900; padding:4px 8px; border-radius:6px; border:1px solid #ffeeba; margin-top:6px; letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">⭐ MIEMBRO FUNDADOR</span>
-                </div>
-                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
-            </header>
+<div class="container" id="main-container">
 
-            <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;">
-                ⚠️ A partir del 1/X tu abono se actualizará.
-            </div>
+<header class="flex space-between center">
+    <h1 id="org-name-disp" class="h1">Cargando...</h1>
+    <button onclick="cerrarSesion()">Salir</button>
+</header>
 
-            <div class="card-dark section fade-in">
-                <div class="flex space-between center">
-                    <div style="font-size: 14px; font-weight: 600;" id="lbl-vencimiento">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
-                    <div id="badge-abono" class="badge badge-ok">AL DÍA</div>
-                </div>
-                <div id="txt-dias-trial" style="font-size: 12px; color: #4DA8DA; font-weight: 800; margin-top: 4px; display: none;">Te quedan -- días de prueba</div>
-                
-                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                
-                <div id="container-financials">
-                    <div class="label" style="color: #8E8E93;">CONSUMO DE CANCHAS</div>
-                    <div class="financial">
-                        <div class="metric-box">
-                            <div class="metric-label">USADOS</div>
-                            <div class="metric-value" id="txt-deuda-canchas">$0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">DISPONIBLE</div>
-                            <div class="metric-value" id="txt-disponible">$0</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total"></div>
-                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;"></div>
-                </div>
-                
-                <div id="box-resumen-uso" class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
-                    <div class="label" style="margin-bottom: 4px; color: #8E8E93;">RESUMEN DE USO:</div>
-                    <div style="font-size: 13px; font-weight: 600; color: white;" id="txt-detalle-canchas">Incluye: • 0 canchas &rarr; $0</div>
-                </div>
-            </div>
+<div id="canchas-list">Cargando...</div>
 
-            <div class="section fade-in" style="animation-delay: 100ms; margin-top: 20px; margin-bottom: 20px;">
-                <button class="btn btn-outline" style="margin-bottom: var(--s2);" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
-                <button class="btn btn-primary" onclick="copiarMiLink()">🔗 COPIAR LINK CARTELERA</button>
-            </div>
+</div>
+</div>
 
-            <div id="canchas-list" class="section">Cargando canchas...</div>
-
-            <div class="section fade-in" style="animation-delay: 150ms;">
-                <button id="btn-toggle-pasadas" class="btn btn-light" style="color:var(--blue); display:none;" onclick="togglePasadas()">📂 VER INFO DE CANCHAS ANTERIORES</button>
-                <div id="canchas-pasadas-list" style="display:none; margin-top:var(--s2);"></div>
-            </div>
-
-            <button id="btn-add-cancha" class="btn btn-dark mt-2 fade-in" style="padding: 20px; font-size: 14px; animation-delay: 200ms;" onclick="abrirNuevaCancha()">➕ AGREGAR NUEVA CANCHA</button>
-            <p id="msg-locked" style="display:none; color:var(--red); font-size:11px; font-weight:800; text-align:center; margin-top:10px;"></p>
-
-            <div class="footer-pro fade-in" style="animation-delay: 300ms;">
-                <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
-                <hr class="footer-divider">
-                <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
-                <p class="footer-subtitle">Pasala a piloto automático.</p>
-                <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="modal-detalle" class="modal">
-        <div class="modal-content">
-            <h2 class="h1" style="margin-bottom: var(--s3); font-size: 22px;">📋 Mis Movimientos</h2>
-            <div class="flex" style="gap:8px; background: var(--bg-main); padding: 4px; border-radius: 14px; margin-bottom: var(--s3);">
-                <button id="tab-pend" class="btn btn-primary" style="padding:10px;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
-                <button id="tab-pag" class="btn" style="padding:10px; background:transparent; color:var(--text-secondary);" onclick="cambiarTab('pagado')">HISTORIAL</button>
-            </div>
-            <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR DETALLE</button>
-        </div>
-    </div>
-
-    <div id="modal-players" class="modal">
-        <div class="modal-content">
-            <h2 class="h1 text-center" style="margin-bottom: var(--s3); font-size: 22px;">👥 Jugadores</h2>
-            <input type="hidden" id="pl-id">
-            
-            <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
-                <div class="metric-box" style="background:var(--bg-main); padding:12px;">
-                    <span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
-                </div>
-                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;">
-                    <span class="label" style="color:var(--blue)">LUGARES LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
-                </div>
-            </div>
-
-            <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 6px;">
-                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;">
-                    <span class="label" style="color:var(--green)">PAGADOS</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b>
-                </div>
-                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;">
-                    <span class="label" style="color:var(--orange)">EN CANCHA</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b>
-                </div>
-                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;">
-                    <span class="label" style="color:var(--red)">PEND.</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b>
-                </div>
-            </div>
-
-            <div id="players-list"></div>
-            <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR</button>
-        </div>
-    </div>
-    
-    <div id="modal-config" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title" class="h1" style="margin-bottom: var(--s3); font-size: 22px;">⚙️ Configuración</h2>
-            <input type="hidden" id="ed-id">
-            
-            <button id="btn-suspender" class="btn" style="background: rgba(255,159,10,0.1); color: var(--orange); margin-bottom: var(--s3); display:none; flex-direction: column; height: auto; padding: 12px; gap:4px;" onclick="abrirModalSuspension()">
-                <span style="font-weight: 900;">🚫 SUSPENDER EVENTO</span>
-                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8; letter-spacing: 0;">Cancelación gratuita hasta 1 hora antes de comenzar el evento</span>
-            </button>
-            
-            <label>Tipo de Evento</label>
-            <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
-                <option value="unico">Evento Único</option>
-                <option value="recurrente">Todas las semanas</option>
-            </select>
-            
-            <div id="days-container" style="display:none">
-                <label>Días que se repite</label>
-                <div class="flex space-between" style="gap:4px; margin-bottom:var(--s2);">
-                    <input type="checkbox" id="d-MO" class="day-check" onchange="validarRecurrencia()"><label for="d-MO" class="day-label">L</label>
-                    <input type="checkbox" id="d-TU" class="day-check" onchange="validarRecurrencia()"><label for="d-TU" class="day-label">M</label>
-                    <input type="checkbox" id="d-WE" class="day-check" onchange="validarRecurrencia()"><label for="d-WE" class="day-label">Mi</label>
-                    <input type="checkbox" id="d-TH" class="day-check" onchange="validarRecurrencia()"><label for="d-TH" class="day-label">J</label>
-                    <input type="checkbox" id="d-FR" class="day-check" onchange="validarRecurrencia()"><label for="d-FR" class="day-label">V</label>
-                    <input type="checkbox" id="d-SA" class="day-check" onchange="validarRecurrencia()"><label for="d-SA" class="day-label">S</label>
-                    <input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label>
-                </div>
-            </div>
-            
-            <div id="msg-error-rec" style="background:rgba(255,59,48,0.1); color:var(--red); padding:10px; border-radius:10px; font-size:11px; font-weight:800; margin-bottom:10px; display:none;">⚠️ La fecha no coincide con el día marcado</div>
-            
-            <label>Nombre Cancha</label><input id="ed-org" class="input-std">
-            <label>Organizador</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp</label><input id="ed-celu" class="input-std">
-            <label>Sede</label><input id="ed-lug" class="input-std">
-            <label>🏷️ Categoría</label><input id="ed-cat" class="input-std">
-            
-           <div class="flex" style="gap:10px">
-                <div style="flex:1"><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
-                <div style="flex:1"><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
-            </div>
-            <div class="flex" style="gap:10px">
-                <div style="flex:1"><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
-                <div style="flex:1"><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div>
-            </div>
-            
-            <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
-            <label>Alias</label><input id="ed-ali" class="input-std">
-            
-            <button id="btn-save-config" class="btn btn-primary mt-2" onclick="guardarConfig()">GUARDAR CAMBIOS</button>
-            <button class="btn btn-light mt-2" onclick="cerrarModals()">CANCELAR</button>
-            <button id="btn-borrar-cancha" class="btn mt-2" style="background: rgba(255,59,48,0.1); color: var(--red); display:none;" onclick="borrarCancha()">🗑️ ELIMINAR CANCHA DEFINITIVAMENTE</button>
-        </div>
-    </div>
-    
-    <div id="modal-suspension" class="modal">
-        <div class="modal-content text-center">
-            <h2 class="h1" style="margin-bottom: var(--s1); font-size: 22px;">🚫 Suspender Evento</h2>
-            <p class="text" style="margin-bottom: var(--s1);">Esta acción no genera cargos de sistema.</p>
-            <p class="label" style="margin-bottom: var(--s4);">¿Qué desea hacer con esta cancha?</p>
-            <button class="btn btn-primary mt-2" style="background: var(--green-grad);" onclick="confirmarSuspension(true)">REPROGRAMAR PARA LA SEMANA QUE VIENE</button>
-            <button class="btn mt-2" style="background: var(--red); color:white;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button>
-            <button class="btn btn-light mt-2" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
-        </div>
-    </div>
-
+<!-- ================= SCRIPT CORE ================= -->
 <script>
+
 let orgId = new URLSearchParams(window.location.search).get('org');
-let courtData = {}, cuentaInfo = {}, isAccountBlocked = false;
-let playersListener = null;
-let isNew = false;
-let isInitialized = false;
 
 let currentPlayerRef = null;
-let eventListeners = {};
+let playersListener = null;
 
-window.defaultData = { owner: "", celu: "", alias: "" };
-window.movimientos = [];
-let currentMovsData = [];
-
-let oldDeuda = 0, oldDisp = 0;
-
-/* -------------------------
-   UTILIDADES CORE FIXEADAS
-------------------------- */
-
+/* ---------------- FIX OCUPADOS ---------------- */
 function calcularOcupados(list) {
     if (!Array.isArray(list)) return 0;
 
     return list.reduce((acc, p) => {
         const cant = Number(p?.cantidad ?? 1);
-        if (isNaN(cant) || cant <= 0) return acc + 1;
+        if (isNaN(cant) || cant <= 0) return acc;
         return acc + cant;
     }, 0);
 }
 
+/* ---------------- AGRUPAR ---------------- */
 function agruparPorCelular(list) {
     const grupos = {};
 
@@ -351,7 +120,7 @@ function agruparPorCelular(list) {
         let cel = (p?.celular || "").replace(/\D/g, '');
 
         if (!cel || cel.length < 6) {
-            cel = `sin-${p.originalIndex ?? idx}`;
+            cel = `sin-${idx}`;
         }
 
         if (!grupos[cel]) grupos[cel] = [];
@@ -361,12 +130,83 @@ function agruparPorCelular(list) {
     return Object.values(grupos);
 }
 
+/* ---------------- ABRIR JUGADORES (FIX REAL) ---------------- */
+window.abrirJugadores = function(id) {
 
+    document.getElementById('pl-id').value = id;
 
-/* -------------------------
-   FIX OFF CLEAN GLOBAL
-------------------------- */
+    const ref = db.ref('eventos/' + id);
 
+    // cleanup seguro
+    if (currentPlayerRef && playersListener) {
+        currentPlayerRef.off('value', playersListener);
+    }
+
+    currentPlayerRef = ref;
+
+    playersListener = function (s) {
+        const d = s.val();
+        if (!d) return;
+
+        const ins = d.inscriptos || [];
+        const grupos = agruparPorCelular(ins);
+
+        const total = calcularOcupados(ins);
+        const pag = calcularOcupados(ins.filter(p => p.estado === 'pagado'));
+        const enc = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
+        const pen = calcularOcupados(ins.filter(p => p.estado === 'pendiente'));
+
+        const cupo = d.cupo || 0;
+
+        document.getElementById('st-total').innerText = cupo;
+        document.getElementById('st-lib').innerText = Math.max(0, cupo - total);
+        document.getElementById('st-pag').innerText = pag;
+        document.getElementById('st-enc').innerText = enc;
+        document.getElementById('st-pen').innerText = pen;
+
+        const list = document.getElementById('players-list');
+        list.innerHTML = "";
+
+        const colors = {
+            pagado: "var(--green)",
+            "paga-en-la-cancha": "var(--orange)",
+            pendiente: "var(--red)"
+        };
+
+        grupos.forEach(grupo => {
+
+            let html = `<div class="grupo-reserva">`;
+
+            grupo.forEach((p, i) => {
+
+                const titular = i === 0;
+
+                html += `
+                <div class="player-row">
+                    <div class="${titular ? 'titular' : 'acompanante'}">
+                        ${titular ? p.nombre : '└ ' + p.nombre}
+                    </div>
+
+                    <button style="background:${colors[p.estado] || '#ccc'};color:#fff;border:none;padding:8px;border-radius:10px;font-size:10px"
+                        onclick="togglePago(${p.originalIndex})">
+                        ${p.estado}
+                    </button>
+
+                    <button onclick="borrarP(${p.originalIndex})">✕</button>
+                </div>`;
+            });
+
+            html += `</div>`;
+            list.innerHTML += html;
+        });
+
+        document.getElementById('modal-players').style.display = 'flex';
+    };
+
+    currentPlayerRef.on('value', playersListener);
+};
+
+/* ---------------- CERRAR MODALS ---------------- */
 window.cerrarModals = function() {
     document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 
@@ -377,70 +217,31 @@ window.cerrarModals = function() {
     }
 };
 
-/* -------------------------
-   RENDER CANCHAS OPTIMIZADO
-------------------------- */
-
-function renderizarCanchas() {
-    const listActivas = document.getElementById('canchas-list');
-    const listPasadas = document.getElementById('canchas-pasadas-list');
-
-    const sorted = Object.values(courtData || []);
-
-    let htmlActivas = "";
-    let htmlPasadas = "";
-
-    const ahora = Date.now();
-
-    sorted.forEach(d => {
-        const conf = calcularOcupados(d.inscriptos);
-
-        const fin = new Date((d.fecha || '') + 'T' + (d.horaFin || '23:59')).getTime();
-        const esPasada = ahora > fin;
-
-        const card = `
-        <div class="item">
-            <div class="item-title">🎾 ${d.organiza || ''}</div>
-            <div class="item-meta">📅 ${d.fecha || ''} | 🕒 ${d.hora || ''}</div>
-            <div class="item-meta">👥 ${conf} / ${d.cupo || 0}</div>
-
-            <div class="item-actions">
-                <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                <button class="btn btn-dark" onclick="abrirJugadores('${d.id}')">👥 JUGADORES</button>
-            </div>
-        </div>`;
-
-        if (esPasada) htmlPasadas += card;
-        else htmlActivas += card;
-    });
-
-    listActivas.innerHTML = htmlActivas || "<div>No hay canchas</div>";
-    listPasadas.innerHTML = htmlPasadas;
-}
-
-/* -------------------------
-   FIX GLOBAL SAFE DEFAULTS
-------------------------- */
-
+/* ---------------- TOGGLE PAGO ---------------- */
 window.togglePago = function(idx) {
+
     const id = document.getElementById('pl-id').value;
 
     db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => {
-        const ests = ["pendiente", "paga-en-la-cancha", "pagado"];
+
+        const estados = ["pendiente", "paga-en-la-cancha", "pagado"];
         const actual = s.val();
 
-        const next = ests[(ests.indexOf(actual) + 1) % ests.length];
+        const next = estados[(estados.indexOf(actual) + 1) % estados.length];
 
         db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(next);
     });
 };
 
+/* ---------------- BORRAR ---------------- */
 window.borrarP = function(idx) {
-    if (!confirm("¿Borrar jugador?")) return;
+
+    if (!confirm("¿Borrar?")) return;
 
     const id = document.getElementById('pl-id').value;
 
     db.ref(`eventos/${id}/inscriptos`).once('value', s => {
+
         let ins = s.val() || [];
         if (!Array.isArray(ins)) ins = [];
 
@@ -449,23 +250,8 @@ window.borrarP = function(idx) {
         db.ref(`eventos/${id}/inscriptos`).set(ins);
     });
 };
+
 </script>
-<style>
-/* --- ESTADOS VISUALES DE CANCHA --- */
-.item.estado-ok {
-    border-left: 6px solid var(--green);
-    background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent);
-}
 
-.item.estado-warning {
-    border-left: 6px solid var(--orange);
-    background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent);
-}
-
-.item.estado-error {
-    border-left: 6px solid var(--red);
-    background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent);
-}
-</style>    
 </body>
 </html>

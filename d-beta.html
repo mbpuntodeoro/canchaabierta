@@ -481,8 +481,12 @@
         }, errorHandler);
     }
 
-    function calculateFinancials() {
+   function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
+        
+        // 🔥 METÉ ESTO PARA VER QUÉ ESTÁ LLEGANDO REALMENTE
+        console.log("DATOS DE LA CUENTA:", cuentaInfo);
+        console.log("¿ESTÁ EN TRIAL SEGÚN EL OBJETO?:", cuentaInfo.enTrial);
         document.getElementById('badge-client-fundador').style.display = cuentaInfo.esFundador ? 'inline-block' : 'none';
         
         const avisoAumento = document.getElementById('aviso-aumento');

@@ -49,7 +49,52 @@
         .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px;}
 
         .event-list { display: flex; flex-direction: column; width: 100%; max-width: 500px; margin: 0 auto; }
-        .day-title { font-size: 13px; color: #888; font-weight: 700; margin: 16px 16px 4px 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* --- ESTILOS LISTA (M2) --- */
+        .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
+        .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
+        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px;}
+
+        .event-list { display: flex; flex-direction: column; width: 100%; max-width: 500px; margin: 0 auto; position: relative; }
+        
+        /* 🔥 NUEVO: Sticky Header con Blur para las fechas */
+        .day-title { 
+            font-size: 11px; 
+            color: var(--text-main); 
+            font-weight: 900; 
+            padding: 12px 20px;
+            margin: 0;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            position: sticky; 
+            top: 0; 
+            z-index: 5;
+            background: rgba(242, 242, 247, 0.85); /* Gris clarito semitransparente (estilo iOS) */
+            backdrop-filter: blur(12px); /* Efecto vidrio esmerilado */
+            -webkit-backdrop-filter: blur(12px); /* Soporte para Safari */
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); /* Sombreado sutil para separar */
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Decorador visual sutil al lado de la fecha */
+        .day-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--blue);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .event-item {
+            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease, transform 0.1s ease;
+            cursor: pointer; display: block; text-decoration: none; color: inherit;
+            opacity: 0; transform: translateY(8px); animation: fadeInUp 0.3s ease forwards;
+            background: var(--bg-main);
+        }
 
         .event-item {
             padding: 14px 16px; border-bottom: 1px solid var(--border-color);

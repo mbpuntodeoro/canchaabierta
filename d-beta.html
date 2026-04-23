@@ -481,55 +481,118 @@
         }, errorHandler);
     }
 
-   function calculateFinancials() {
+  function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
-        
-        // 🔥 METÉ ESTO PARA VER QUÉ ESTÁ LLEGANDO REALMENTE
-        console.log("DATOS DE LA CUENTA:", cuentaInfo);
-        console.log("¿ESTÁ EN TRIAL SEGÚN EL OBJETO?:", cuentaInfo.enTrial);
-        document.getElementById('badge-client-fundador').style.display = cuentaInfo.esFundador ? 'inline-block' : 'none';
-        
+
+        if (cuentaInfo.esFundador) {
+            document.getElementById('badge-client-fundador').style.display = 'inline-block';
+        } else {
+            document.getElementById('badge-client-fundador').style.display = 'none';
+        }
+
         const avisoAumento = document.getElementById('aviso-aumento');
         if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
-            avisoAumento.style.display = 'block'; avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
-        } else { avisoAumento.style.display = 'none'; }
+            avisoAumento.style.display = 'block';
+            avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
+        } else {
+            avisoAumento.style.display = 'none';
+        }
 
-        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos); if (!res) return;
+        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
+        if (!res) return;
 
-        const lblVencimiento = document.getElementById('lbl-vencimiento'), txtDiasTrial = document.getElementById('txt-dias-trial');
-        const elRestantes = document.getElementById('txt-canchas-restantes'), badge = document.getElementById('badge-abono'), panelInfo = document.getElementById('txt-consumo-total');
-        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono), diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
+        const lblVencimiento = document.getElementById('lbl-vencimiento');
+        const txtDiasTrial = document.getElementById('txt-dias-trial');
+        const elRestantes = document.getElementById('txt-canchas-restantes');
+        const badge = document.getElementById('badge-abono');
+        const panelInfo = document.getElementById('txt-consumo-total');
+        
+        // Usamos la fecha de Firebase directo por si la librería se confunde
+        const fechaVencimiento = cuentaInfo.vencimientoAbono || res.vencimientoAbono;
+        const fechaStr = PadelSaaS.fmtFecha(fechaVencimiento);
+        const diasFaltantes = Math.ceil((fechaVencimiento - Date.now()) / (1000 * 60 * 60 * 24));
+        
         badge.className = "badge"; 
         
-        if (res.enTrial) {
-            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`; badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
+        // 🔥 LA LLAVE DE JUDO: Leemos la verdad absoluta de Firebase (cuentaInfo.enTrial)
+        if (cuentaInfo.enTrial === true) {
+            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`;
+            badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
+            
             let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
-            if (!res.esTrialLargo) { const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba; textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`; }
-            txtDiasTrial.innerText = textoTrial; txtDiasTrial.style.display = 'block';
-            let totalJugadores = 0, totalDinero = 0; Object.values(courtData).forEach(c => { const cant = calcularOcupados(c.inscriptos); totalJugadores += cant; totalDinero += (cant * (c.valor || 0)); });
-            document.getElementById('container-financials').style.display = 'none'; document.getElementById('box-resumen-uso').style.display = 'none';
+            
+            if (!cuentaInfo.esTrialLargo) {
+                const limite = cuentaInfo.limiteCanchasTrial || 10;
+                const usadas = res.canchasUsadasEnPrueba || 0;
+                const canchasRestantes = limite - usadas;
+                textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`;
+            }
+            txtDiasTrial.innerText = textoTrial;
+            txtDiasTrial.style.display = 'block';
+
+            let totalJugadores = 0; let totalDinero = 0;
+            Object.values(courtData).forEach(c => {
+                const cant = calcularOcupados(c.inscriptos);
+                totalJugadores += cant;
+                totalDinero += (cant * (c.valor || 0));
+            });
+
+            document.getElementById('container-financials').style.display = 'none';
+            document.getElementById('box-resumen-uso').style.display = 'none';
+            
             panelInfo.innerHTML = `
                 <div style="background: rgba(52,199,89,0.1); border: 1px solid var(--green); border-radius: 18px; padding: 15px; margin-top: 10px; text-align: left; animation: fadeSlide 0.5s ease-out;">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto piloto automático</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto de tu piloto automático</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">JUGADORES</span><br><b style="color:white; font-size:18px;">${totalJugadores}</b></div>
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">GESTIONADO</span><br><b style="color:white; font-size:18px;">${PadelUtils.fmtDinero(totalDinero)}</b></div>
                     </div>
-                </div>`;
+                    <p style="font-size: 11px; color: var(--blue); font-weight: 700; margin: 12px 0 0 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                        ${cuentaInfo.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}
+                    </p>
+                </div>
+            `;
             elRestantes.style.display = 'none';
+        
         } else {
-            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`; txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
-            const txtVenc = document.getElementById('txt-venc-abono');
+            // MODO ABONO NORMAL PAGO
+            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
+            txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
+            
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
             animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
+            
             panelInfo.innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(cuentaInfo.limiteCredito || 0)}</span>`;
-            if (cuentaInfo.costoPorCancha > 0) { const restantes = Math.floor(res.disponible / cuentaInfo.costoPorCancha); elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`; elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block'; } else { elRestantes.style.display = 'none'; }
+
+            const costoCancha = cuentaInfo.costoPorCancha || 0;
+            if (costoCancha > 0) {
+                const restantes = Math.floor(res.disponible / costoCancha);
+                elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
+                elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block';
+            } else {
+                elRestantes.style.display = 'none';
+            }
+
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
+
             const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
-            if (res.bloqueadoAbono) { badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); txtVenc.style.color = "var(--red)"; } else if (res.bloqueadoLimite) { badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error'); } else if (porcentajeUso >= 0.8) { badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning'); } else if (diasFaltantes <= 5) { badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); txtVenc.style.color = "var(--orange)"; } else { badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); txtVenc.style.color = "var(--green)"; }
+
+            if (res.bloqueadoAbono) {
+                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); document.getElementById('txt-venc-abono').style.color = "var(--red)";
+            } else if (res.bloqueadoLimite) {
+                badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error');
+            } else if (porcentajeUso >= 0.8) {
+                badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning');
+            } else if (diasFaltantes <= 5) {
+                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); document.getElementById('txt-venc-abono').style.color = "var(--orange)";
+            } else {
+                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); document.getElementById('txt-venc-abono').style.color = "var(--green)";
+            }
         }
+
         isAccountBlocked = res.isBlocked; document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
-        const msgLocked = document.getElementById('msg-locked'); if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
+        const msgLocked = document.getElementById('msg-locked');
+        if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
     }
 
     function abrirDetalle() { currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex'; }

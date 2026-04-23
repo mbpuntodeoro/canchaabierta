@@ -338,22 +338,26 @@
 <script>
     let orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
-    let isNew = false;
+    let isNew = false; window.movimientos = []; let isInitialized = false, oldDeuda = 0, oldDisp = 0;
     window.defaultData = { owner: "", celu: "", alias: "" };
-    window.movimientos = []; 
-    let currentMovsData = [];
-    let isInitialized = false;
-    let oldDeuda = 0, oldDisp = 0;
 
-    // 🔥 UTILS & MODELO DE DATOS
+    // --- 🔥 BLINDAJE ANTI-FIREBASE (Repara datos corruptos) ---
+    function safeArray(data) {
+        if (!data) return [];
+        return Array.isArray(data) ? data : Object.values(data);
+    }
+
+    // --- UTILS & MODELO DE DATOS ---
     function calcularOcupados(list) {
-        if (!list) return 0;
-        return list.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0);
+        const arr = safeArray(list);
+        if (arr.length === 0) return 0;
+        return arr.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0);
     }
 
     function agruparPorCelular(list) {
+        const arr = safeArray(list);
         const grupos = {};
-        list.forEach((p, idx) => {
+        arr.forEach((p, idx) => {
             const key = p.celular ? String(p.celular).trim() : `sin-celular-${idx}`;
             if (!grupos[key]) grupos[key] = [];
             grupos[key].push({ ...p, originalIndex: idx, fechaSegura: p.fecha || 0 });
@@ -362,9 +366,10 @@
     }
 
     function calcularEstadoCancha(inscriptos) {
-        if (!inscriptos || inscriptos.length === 0) return "error";
+        const arr = safeArray(inscriptos);
+        if (arr.length === 0) return "error";
         let total = 0, pagados = 0, parcial = false;
-        inscriptos.forEach(p => {
+        arr.forEach(p => {
             const cant = p.cantidad || 1; total += cant;
             if (p.estado === "pagado") pagados += cant;
             if (p.estado === "paga-en-la-cancha") parcial = true;
@@ -376,10 +381,8 @@
 
     function obtenerEstadoGrupo(grupo) {
         const estados = grupo.map(p => p.estado);
-        const todosPagados = estados.every(e => e === 'pagado');
-        const todosPendientes = estados.every(e => e === 'pendiente');
-        if (todosPagados) return 0;
-        if (todosPendientes) return 2;
+        if (estados.every(e => e === 'pagado')) return 0;
+        if (estados.every(e => e === 'pendiente')) return 2;
         return 1;
     }
 
@@ -391,48 +394,29 @@
             const progress = Math.min((timestamp - startTime) / duration, 1);
             const value = Math.floor(progress * (end - start) + start);
             el.innerText = PadelUtils.fmtDinero(value);
-            if (progress < 1) requestAnimationFrame(step);
-            else el.innerText = PadelUtils.fmtDinero(end);
+            if (progress < 1) requestAnimationFrame(step); else el.innerText = PadelUtils.fmtDinero(end);
         }
         requestAnimationFrame(step);
     }
 
     // --- AUTH & INIT ---
     const auth = firebase.auth();
+    let activeListeners = {}; // Para manejar la memoria inteligente de Firebase
 
     auth.onAuthStateChanged(user => {
         document.getElementById('boot-screen').style.display = 'none';
-
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-container').style.display = 'block'; 
-            
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Buscando datos...";
                 db.ref('facturacion').once('value').then(snap => {
-                    let foundOrg = null;
-                    const data = snap.val() || {};
-                    const emailLimpio = user.email.trim().toLowerCase();
-
-                    for (let id in data) {
-                        if (data[id].cuenta && data[id].cuenta.emailOrganizador) {
-                            if (data[id].cuenta.emailOrganizador.trim().toLowerCase() === emailLimpio) {
-                                foundOrg = id; break;
-                            }
-                        }
-                    }
-                    if (foundOrg) {
-                        orgId = foundOrg;
-                        window.history.replaceState(null, null, `?org=${orgId}`);
-                        if(!isInitialized) { init(); isInitialized = true; }
-                    } else {
-                        alert(`⚠️ Tu usuario no tiene un club asignado.`);
-                        cerrarSesion();
-                    }
-                }).catch(err => alert("❌ Error de permisos en Firebase."));
-            } else {
-                if(!isInitialized) { init(); isInitialized = true; }
-            }
+                    let foundOrg = null; const data = snap.val() || {}; const emailLimpio = user.email.trim().toLowerCase();
+                    for (let id in data) { if (data[id].cuenta && data[id].cuenta.emailOrganizador?.trim().toLowerCase() === emailLimpio) { foundOrg = id; break; } }
+                    if (foundOrg) { orgId = foundOrg; window.history.replaceState(null, null, `?org=${orgId}`); if(!isInitialized) { init(); isInitialized = true; } } 
+                    else { alert(`Tu usuario no tiene club asignado.`); cerrarSesion(); }
+                }).catch(err => alert("Error de permisos Firebase."));
+            } else { if(!isInitialized) { init(); isInitialized = true; } }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-container').style.display = 'none';
@@ -440,49 +424,22 @@
         }
     });
 
-    function iniciarSesion() {
-        const e = document.getElementById('log-email').value;
-        const p = document.getElementById('log-pass').value;
-        document.getElementById('log-error').style.display = 'none';
-        auth.signInWithEmailAndPassword(e, p).catch(err => {
-            document.getElementById('log-error').style.display = 'block';
-            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
-        });
-    }
-
-    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
-
-    window.copiarMiLink = function() {
-        const linkLargo = `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`;
-        const linkFinal = cuentaInfo.linkCorto ? cuentaInfo.linkCorto : linkLargo;
-        PadelUtils.copiarLink(linkFinal);
-    };
-
-let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin querer
+    function iniciarSesion() { const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value; document.getElementById('log-error').style.display = 'none'; auth.signInWithEmailAndPassword(e, p).catch(err => { document.getElementById('log-error').style.display = 'block'; document.getElementById('log-error').innerText = "Credenciales incorrectas."; }); }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.reload(); }); }
+    function formatFec(f) { if(!f) return '--'; const [y, m, d] = f.split('-'); return `${d}-${m}-${y}`; }
+    window.copiarMiLink = function() { PadelUtils.copiarLink(cuentaInfo.linkCorto ? cuentaInfo.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`); };
 
     function init() {
         if(!orgId) return;
         const errorHandler = (err) => { console.error("Error Firebase:", err); };
-
+        
         db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
             cuentaInfo = s.val() || {};
-            
             if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
-                if (!cuentaInfo.esFundador) {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({
-                        abonoMensual: cuentaInfo.proximoAbonoMensual,
-                        costoPorCancha: cuentaInfo.proximoCostoPorCancha,
-                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
-                    });
-                } else {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({
-                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
-                    });
-                }
-                return;
+                if (!cuentaInfo.esFundador) { db.ref(`facturacion/${orgId}/cuenta`).update({ abonoMensual: cuentaInfo.proximoAbonoMensual, costoPorCancha: cuentaInfo.proximoCostoPorCancha, proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } 
+                else { db.ref(`facturacion/${orgId}/cuenta`).update({ proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } return;
             }
-
-            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || "Mi Panel";
+            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
             window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
             calculateFinancials();
         }, errorHandler);
@@ -490,20 +447,16 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
         db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
             const movs = s.val() || {}; 
             if (cuentaInfo.enTrial) {
-                let updates = {};
-                for (let k in movs) {
-                    if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') { updates[`${k}/estado`] = 'bonificado'; }
-                }
+                let updates = {}; for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') updates[`${k}/estado`] = 'bonificado'; }
                 if (Object.keys(updates).length > 0) { db.ref(`facturacion/${orgId}/movimientos`).update(updates); return; }
             }
-            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
-            calculateFinancials();
+            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]})); calculateFinancials();
         }, errorHandler);
 
         db.ref('hubs/'+orgId).on('value', snap => {
             const ids = snap.val()?.canchas || [];
             
-            // Limpiamos solo las canchas que fueron borradas (no vaciamos todo de golpe)
+            // Limpieza inteligente de memoria
             Object.keys(activeListeners).forEach(id => {
                 if(!ids.includes(id)) {
                     db.ref('eventos/'+id).off('value', activeListeners[id]);
@@ -518,14 +471,11 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
                 if(!activeListeners[id]) {
                     const listener = db.ref('eventos/'+id).on('value', evS => {
                         const d = evS.val(); 
-                        if(d) {
-                            checkAndRollover(id, d); courtData[id] = { id, ...d }; 
-                        } else {
-                            delete courtData[id];
-                        }
+                        if(d) { checkAndRollover(id, d); courtData[id] = { id, ...d }; } 
+                        else { delete courtData[id]; } 
                         renderizarCanchas();
                     }, errorHandler);
-                    activeListeners[id] = listener; // Guardamos el listener para evitar duplicados
+                    activeListeners[id] = listener;
                 }
             });
         }, errorHandler);
@@ -533,163 +483,81 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
 
     function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
-
-        if (cuentaInfo.esFundador) {
-            document.getElementById('badge-client-fundador').style.display = 'inline-block';
-        } else {
-            document.getElementById('badge-client-fundador').style.display = 'none';
-        }
-
+        document.getElementById('badge-client-fundador').style.display = cuentaInfo.esFundador ? 'inline-block' : 'none';
+        
         const avisoAumento = document.getElementById('aviso-aumento');
         if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
-            avisoAumento.style.display = 'block';
-            avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
-        } else {
-            avisoAumento.style.display = 'none';
-        }
+            avisoAumento.style.display = 'block'; avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
+        } else { avisoAumento.style.display = 'none'; }
 
-        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
-        if (!res) return;
+        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos); if (!res) return;
 
-        const lblVencimiento = document.getElementById('lbl-vencimiento');
-        const txtDiasTrial = document.getElementById('txt-dias-trial');
-        const elRestantes = document.getElementById('txt-canchas-restantes');
-        const badge = document.getElementById('badge-abono');
-        const panelInfo = document.getElementById('txt-consumo-total');
-        
-        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono);
-        const diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
-        
+        const lblVencimiento = document.getElementById('lbl-vencimiento'), txtDiasTrial = document.getElementById('txt-dias-trial');
+        const elRestantes = document.getElementById('txt-canchas-restantes'), badge = document.getElementById('badge-abono'), panelInfo = document.getElementById('txt-consumo-total');
+        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono), diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
         badge.className = "badge"; 
         
         if (res.enTrial) {
-            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`;
-            badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
-            
+            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`; badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
             let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
-            if (!res.esTrialLargo) {
-                const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba;
-                textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`;
-            }
-            txtDiasTrial.innerText = textoTrial;
-            txtDiasTrial.style.display = 'block';
-
-            let totalJugadores = 0; let totalDinero = 0;
-            Object.values(courtData).forEach(c => {
-                const cant = calcularOcupados(c.inscriptos);
-                totalJugadores += cant;
-                totalDinero += (cant * (c.valor || 0));
-            });
-
-            document.getElementById('container-financials').style.display = 'none';
-            document.getElementById('box-resumen-uso').style.display = 'none';
-            
+            if (!res.esTrialLargo) { const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba; textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`; }
+            txtDiasTrial.innerText = textoTrial; txtDiasTrial.style.display = 'block';
+            let totalJugadores = 0, totalDinero = 0; Object.values(courtData).forEach(c => { const cant = calcularOcupados(c.inscriptos); totalJugadores += cant; totalDinero += (cant * (c.valor || 0)); });
+            document.getElementById('container-financials').style.display = 'none'; document.getElementById('box-resumen-uso').style.display = 'none';
             panelInfo.innerHTML = `
                 <div style="background: rgba(52,199,89,0.1); border: 1px solid var(--green); border-radius: 18px; padding: 15px; margin-top: 10px; text-align: left; animation: fadeSlide 0.5s ease-out;">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto de tu piloto automático</div>
+                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto piloto automático</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">JUGADORES</span><br><b style="color:white; font-size:18px;">${totalJugadores}</b></div>
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">GESTIONADO</span><br><b style="color:white; font-size:18px;">${PadelUtils.fmtDinero(totalDinero)}</b></div>
                     </div>
-                    <p style="font-size: 11px; color: var(--blue); font-weight: 700; margin: 12px 0 0 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                        ${res.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}
-                    </p>
-                </div>
-            `;
+                </div>`;
             elRestantes.style.display = 'none';
-        
         } else {
-            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
-            txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
-            
+            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`; txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
+            const txtVenc = document.getElementById('txt-venc-abono');
             animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
             animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
-            
             panelInfo.innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(cuentaInfo.limiteCredito || 0)}</span>`;
-
-            const costoCancha = cuentaInfo.costoPorCancha || 0;
-            if (costoCancha > 0) {
-                const restantes = Math.floor(res.disponible / costoCancha);
-                elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
-                elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block';
-            } else {
-                elRestantes.style.display = 'none';
-            }
-
+            if (cuentaInfo.costoPorCancha > 0) { const restantes = Math.floor(res.disponible / cuentaInfo.costoPorCancha); elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`; elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block'; } else { elRestantes.style.display = 'none'; }
             document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
-
             const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
-
-            if (res.bloqueadoAbono) {
-                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); document.getElementById('txt-venc-abono').style.color = "var(--red)";
-            } else if (res.bloqueadoLimite) {
-                badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error');
-            } else if (porcentajeUso >= 0.8) {
-                badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning');
-            } else if (diasFaltantes <= 5) {
-                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); document.getElementById('txt-venc-abono').style.color = "var(--orange)";
-            } else {
-                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); document.getElementById('txt-venc-abono').style.color = "var(--green)";
-            }
+            if (res.bloqueadoAbono) { badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); txtVenc.style.color = "var(--red)"; } else if (res.bloqueadoLimite) { badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error'); } else if (porcentajeUso >= 0.8) { badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning'); } else if (diasFaltantes <= 5) { badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); txtVenc.style.color = "var(--orange)"; } else { badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); txtVenc.style.color = "var(--green)"; }
         }
-
         isAccountBlocked = res.isBlocked; document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
-        const msgLocked = document.getElementById('msg-locked');
-        if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
+        const msgLocked = document.getElementById('msg-locked'); if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
     }
 
-    function abrirDetalle() {
-        currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha);
-        cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex';
-    }
-
+    function abrirDetalle() { currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex'; }
     function cambiarTab(estadoFiltro) {
-        const btnPend = document.getElementById('tab-pend'); const btnPag = document.getElementById('tab-pag');
-        if(estadoFiltro === 'pendiente') {
-            btnPend.className = "btn btn-primary"; btnPag.className = "btn"; btnPag.style.background = "transparent"; btnPag.style.color = "var(--text-secondary)";
-        } else {
-            btnPag.className = "btn btn-primary"; btnPend.className = "btn"; btnPend.style.background = "transparent"; btnPend.style.color = "var(--text-secondary)";
-        }
+        document.getElementById('tab-pend').className = estadoFiltro==='pendiente' ? "btn btn-primary" : "btn"; document.getElementById('tab-pend').style.background = estadoFiltro==='pendiente' ? "" : "transparent"; document.getElementById('tab-pend').style.color = estadoFiltro==='pendiente' ? "" : "var(--text-secondary)";
+        document.getElementById('tab-pag').className = estadoFiltro==='pagado' ? "btn btn-primary" : "btn"; document.getElementById('tab-pag').style.background = estadoFiltro==='pagado' ? "" : "transparent"; document.getElementById('tab-pag').style.color = estadoFiltro==='pagado' ? "" : "var(--text-secondary)";
         const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
         const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
 
-        if(filtrados.length === 0) {
-            lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`;
-        } else {
+        if(filtrados.length === 0) { lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`; } else {
             filtrados.forEach((m, index) => {
-                const dateObj = new Date(m.fecha);
-                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                let badgeHtml = '';
-                if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>';
-                else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>';
-                else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
-
+                const dateObj = new Date(m.fecha); const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                let badgeHtml = ''; if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>'; else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>'; else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
                 lista.innerHTML += `
                     <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${index * 50}ms;">
-                        <div style="flex:1; padding-right:15px;">
-                            <strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span>
-                        </div>
-                        <div class="text-center">
-                            <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}
-                        </div>
+                        <div style="flex:1; padding-right:15px;"><strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span></div>
+                        <div class="text-center"><strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}</div>
                     </div>`;
             });
         }
     }
 
     function checkAndRollover(id, data) {
-        const ahora = Date.now();
-        let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+        const ahora = Date.now(); let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
         if (data.horaFin && data.hora && data.horaFin < data.hora) { eventEnd += 86400000; }
         
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} hs`;
             const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
-
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
-                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
-                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
+                db.ref('eventos/' + id).update({ fecha: PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia), inscriptos: [] });
             } else if (data.tipo === 'unico' && !data.cobrado) {
                 db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 db.ref('eventos/' + id).update({ cobrado: true });
@@ -699,38 +567,28 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
 
     function renderizarCanchas() {
         if(cuentaInfo.enTrial) calculateFinancials();
-        const listActivas = document.getElementById('canchas-list');
-        const listPasadas = document.getElementById('canchas-pasadas-list');
-        const btnPasadas = document.getElementById('btn-toggle-pasadas');
-        
+        const listActivas = document.getElementById('canchas-list'), listPasadas = document.getElementById('canchas-pasadas-list'), btnPasadas = document.getElementById('btn-toggle-pasadas');
         const prioridadEstado = { ok: 1, warning: 2, error: 3 };
-        
         const sorted = Object.values(courtData).map(c => ({ ...c, estadoVisual: calcularEstadoCancha(c.inscriptos) })).sort((a, b) => {
-            const pA = prioridadEstado[a.estadoVisual] || 3; 
-            const pB = prioridadEstado[b.estadoVisual] || 3;
+            const pA = prioridadEstado[a.estadoVisual] || 3; const pB = prioridadEstado[b.estadoVisual] || 3;
             if (pA !== pB) return pA - pB;
-            
-            // 🔥 PARCHE ANTI-NaN: Fechas seguras por si el organizador olvidó cargar la hora
             const dateA = new Date(`${a.fecha || '1970-01-01'}T${a.hora || '00:00'}`).getTime() || 0;
             const dateB = new Date(`${b.fecha || '1970-01-01'}T${b.hora || '00:00'}`).getTime() || 0;
             return dateA - dateB;
         });
         
-        listActivas.innerHTML = ""; listPasadas.innerHTML = "";
-        let countActivas = 0, countPasadas = 0; const ahora = Date.now();
+        listActivas.innerHTML = ""; listPasadas.innerHTML = ""; let countActivas = 0, countPasadas = 0; const ahora = Date.now();
 
         sorted.forEach((d) => {
-            const listaConfirmados = (d.inscriptos || []).filter(p => p.estado !== 'pendiente');
+            const insArr = safeArray(d.inscriptos);
+            const listaConfirmados = insArr.filter(p => p.estado !== 'pendiente');
             const conf = calcularOcupados(listaConfirmados);
-            
-            const totalAnotados = calcularOcupados(d.inscriptos);
-            const pagados = calcularOcupados((d.inscriptos || []).filter(p => p.estado === 'pagado'));
+            const totalAnotados = calcularOcupados(insArr);
+            const pagados = calcularOcupados(insArr.filter(p => p.estado === 'pagado'));
             const faltanPagar = totalAnotados - pagados;
 
             let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo || 0} Anotados</b>`;
-            if ((totalAnotados - conf) > 0) {
-                textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`;
-            }
+            if ((totalAnotados - conf) > 0) { textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`; }
 
             let textoEstado = "";
             if (totalAnotados === 0) { textoEstado = "⚪ Sin inscriptos"; } 
@@ -739,8 +597,6 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
             else { textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; }
 
             let horaFinReal = d.horaFin || '23:59'; 
-            
-            // 🔥 PARCHE ANTI-NaN para calcular si es pasada
             let finEvento = new Date(`${d.fecha || '1970-01-01'}T${horaFinReal}`).getTime() || 0;
             if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
@@ -765,85 +621,40 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
         if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER CANCHAS ANTERIORES (${countPasadas})`; } else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
     }
 
-    function togglePasadas() {
-        const list = document.getElementById('canchas-pasadas-list'), btn = document.getElementById('btn-toggle-pasadas');
-        if (list.style.display === 'none') { list.style.display = 'block'; btn.innerText = `📂 OCULTAR CANCHAS ANTERIORES`; } else { list.style.display = 'none'; btn.innerText = `📂 VER CANCHAS ANTERIORES`; }
-    }
+    function togglePasadas() { const list = document.getElementById('canchas-pasadas-list'), btn = document.getElementById('btn-toggle-pasadas'); if (list.style.display === 'none') { list.style.display = 'block'; btn.innerText = `📂 OCULTAR CANCHAS ANTERIORES`; } else { list.style.display = 'none'; btn.innerText = `📂 VER CANCHAS ANTERIORES`; } }
 
     function abrirNuevaCancha() {
         if(isAccountBlocked) return alert("Cuenta bloqueada. Regularice su pago.");
-        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
-        document.getElementById('btn-suspender').style.display = 'none'; document.getElementById('btn-borrar-cancha').style.display = 'none'; 
-        document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
-        document.getElementById('ed-org').value = ""; document.getElementById('ed-owner').value = window.defaultData.owner;
-        document.getElementById('ed-celu').value = window.defaultData.celu; document.getElementById('ed-ali').value = window.defaultData.alias;
-        document.getElementById('ed-cat').value = "Todas las categorías"; document.getElementById('ed-fec').value = "";
-        document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30"; document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0;
-        document.getElementById('modal-config').style.display = 'flex'; validarRecurrencia();
+        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha"; document.getElementById('btn-suspender').style.display = 'none'; document.getElementById('btn-borrar-cancha').style.display = 'none'; 
+        document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico"; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
+        document.getElementById('ed-org').value = ""; document.getElementById('ed-owner').value = window.defaultData.owner; document.getElementById('ed-celu').value = window.defaultData.celu; document.getElementById('ed-ali').value = window.defaultData.alias; document.getElementById('ed-cat').value = "Todas las categorías"; document.getElementById('ed-fec').value = ""; document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30"; document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0; document.getElementById('modal-config').style.display = 'flex'; validarRecurrencia();
     }
 
     function abrirConfig(id) {
-        isNew = false; const d = courtData[id];
-        document.getElementById('modal-title').innerText = "⚙️ Configuración"; document.getElementById('ed-id').value = id; document.getElementById('ed-tipo').value = d.tipo || "unico";
+        isNew = false; const d = courtData[id]; document.getElementById('modal-title').innerText = "⚙️ Configuración"; document.getElementById('ed-id').value = id; document.getElementById('ed-tipo').value = d.tipo || "unico";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => { if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day); });
-        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || ""; document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || ""; document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || ""; document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || ""; document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0; document.getElementById('ed-ali').value = d.alias || "";
-        document.getElementById('btn-suspender').style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'flex' : 'none'; document.getElementById('btn-borrar-cancha').style.display = 'block';
+        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || ""; document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || ""; document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || ""; document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || ""; document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0; document.getElementById('ed-ali').value = d.alias || ""; document.getElementById('btn-suspender').style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'flex' : 'none'; document.getElementById('btn-borrar-cancha').style.display = 'block';
         validarRecurrencia(); document.getElementById('modal-config').style.display = 'flex';
     }
 
     function abrirModalSuspension() { document.getElementById('modal-suspension').style.display = 'flex'; }
-    function confirmarSuspension(reprogramar) {
-        const id = document.getElementById('ed-id').value, d = courtData[id];
-        if (reprogramar) {
-            const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia);
-            db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => { cerrarModals(); });
-        } else {
-            db.ref('hubs/' + orgId + '/canchas').once('value', s => {
-                let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { cerrarModals(); });
-            });
-        }
-    }
-
-    function borrarCancha() {
-        const id = document.getElementById('ed-id').value;
-        if (!confirm("¿Estás seguro de eliminar esta cancha definitivamente?")) return;
-        db.ref('hubs/' + orgId + '/canchas').once('value', s => {
-            let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c);
-            db.ref('eventos/' + id).remove().then(() => { delete courtData[id]; renderizarCanchas(); cerrarModals(); });
-        });
-    }
-
+    function confirmarSuspension(reprogramar) { const id = document.getElementById('ed-id').value, d = courtData[id]; if (reprogramar) { const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia); db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => { cerrarModals(); }); } else { db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { cerrarModals(); }); }); } }
+    function borrarCancha() { const id = document.getElementById('ed-id').value; if (!confirm("¿Eliminar cancha definitivamente?")) return; db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { delete courtData[id]; renderizarCanchas(); cerrarModals(); }); }); }
+    
     function guardarConfig() {
-        let id = document.getElementById('ed-id').value;
-        const dias = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) dias.push(d); });
+        let id = document.getElementById('ed-id').value; const dias = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) dias.push(d); });
         const upd = { tipo: document.getElementById('ed-tipo').value, diasRecurrencia: dias, organiza: document.getElementById('ed-org').value, nombreOrganizador: document.getElementById('ed-owner').value, celuOrganizador: document.getElementById('ed-celu').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value };
-        if(isNew) {
-            const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = [];
-            db.ref('eventos/'+id).set(upd).then(() => { db.ref('hubs/'+orgId+'/canchas').once('value', s => { let c = s.val() || []; c.push(id); db.ref('hubs/'+orgId+'/canchas').set(c); }); });
-        } else { db.ref('eventos/'+id).update(upd); }
+        if(isNew) { const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = []; db.ref('eventos/'+id).set(upd).then(() => { db.ref('hubs/'+orgId+'/canchas').once('value', s => { let c = s.val() || []; c.push(id); db.ref('hubs/'+orgId+'/canchas').set(c); }); }); } else { db.ref('eventos/'+id).update(upd); }
         cerrarModals();
     }
 
-    function validarRecurrencia() {
-        const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config');
-        document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none';
-        if (tipo === 'recurrente' && inputFecha) {
-            const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()];
-            const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked);
-            if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } 
-            else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-        } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-    }
+    function validarRecurrencia() { const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config'); document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none'; if (tipo === 'recurrente' && inputFecha) { const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()]; const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked); if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } }
 
     // --- 🔥 RENDER JUGADORES AGRUPADOS COLAPSABLES ---
     window.handleGroupClick = function(el) {
         if(hasSwiped) { hasSwiped = false; return; }
         const group = el.closest('.player-group');
-        // Solo abre si hay acompañantes o si es una reserva vieja (+X)
-        if(group.querySelector('.player-children-box').innerHTML.trim() !== '') {
-            group.classList.toggle('open');
-        }
+        if(group.querySelector('.player-children-box').innerHTML.trim() !== '') { group.classList.toggle('open'); }
     };
 
     window.abrirJugadores = function(id) {
@@ -852,30 +663,26 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
-            const ins = d.inscriptos || [];
+            const insArr = safeArray(d.inscriptos);
             
             document.getElementById('st-total').innerText = d.cupo || 0; 
-            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(ins));
-            document.getElementById('st-pag').innerText = calcularOcupados(ins.filter(p => p.estado === 'pagado')); 
-            document.getElementById('st-enc').innerText = calcularOcupados(ins.filter(p => p.estado === 'paga-en-la-cancha'));
-            document.getElementById('st-pen').innerText = calcularOcupados(ins.filter(p => p.estado === 'pendiente')); 
+            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(insArr));
+            document.getElementById('st-pag').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pagado')); 
+            document.getElementById('st-enc').innerText = calcularOcupados(insArr.filter(p => p.estado === 'paga-en-la-cancha'));
+            document.getElementById('st-pen').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pendiente')); 
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            let grupos = agruparPorCelular(ins);
-
+            let grupos = agruparPorCelular(insArr);
             grupos.sort((a, b) => obtenerEstadoGrupo(a) - obtenerEstadoGrupo(b));
 
             grupos.forEach(grupo => {
                 grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
                 
                 const t = grupo[0]; const invitados = grupo.slice(1);
-                const hasChildren = invitados.length > 0 || t.cantidad > 1;
-                const labelExtra = hasChildren ? `<span class="extra-tag">+${invitados.length || (t.cantidad - 1)}</span> <span class="chevron">▼</span>` : '';
+                const labelExtra = invitados.length > 0 ? `<span class="extra-tag">+${invitados.length}</span>` : (t.cantidad > 1 ? `<span class="extra-tag">+${t.cantidad-1}</span>` : '');
                 
                 const estadoGrupo = obtenerEstadoGrupo(grupo);
-                let claseEstado = 'estado-mixto';
-                if (estadoGrupo === 0) claseEstado = 'estado-ok';
-                if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
+                let claseEstado = 'estado-mixto'; if (estadoGrupo === 0) claseEstado = 'estado-ok'; if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
 
                 let htmlGrupo = `
                     <div class="player-group ${claseEstado}">
@@ -891,33 +698,23 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
                         </div>
                         <div class="player-children-box">
                 `;
-
-                if (invitados.length > 0) {
-                    invitados.forEach(inv => {
-                        htmlGrupo += `
-                            <div class="swipe-container" data-idx="${inv.originalIndex}">
-                                <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
-                                <div class="swipe-content player-child-row">
-                                    <div class="child-name-text">↳ ${inv.nombre}</div>
-                                    <div class="player-actions-box">
-                                        <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                        <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
-                                    </div>
+                invitados.forEach(inv => {
+                    htmlGrupo += `
+                        <div class="swipe-container" data-idx="${inv.originalIndex}">
+                            <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
+                            <div class="swipe-content player-child-row">
+                                <div class="child-name-text">↳ ${inv.nombre}</div>
+                                <div class="player-actions-box">
+                                    <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
+                                    <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
                                 </div>
                             </div>
-                        `;
-                    });
-                } else if (t.cantidad > 1) {
-                    htmlGrupo += `
-                        <div class="player-child-row" style="justify-content: center; color: var(--text-secondary); font-size: 12px; font-style: italic;">
-                            Reserva agrupada (formato anterior)
                         </div>
                     `;
-                }
-
+                });
                 htmlGrupo += `</div></div>`; list.innerHTML += htmlGrupo;
             });
-            if (ins.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";
+            if (insArr.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";
             document.getElementById('modal-players').style.display = 'flex';
         });
     };
@@ -928,8 +725,7 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
         if(!confirm("⚠️ ATENCIÓN\n\n¿Estás seguro que querés eliminar a este jugador?\nEsta acción liberará su cupo y no se puede deshacer.")) return; 
         const id = document.getElementById('pl-id').value; 
         db.ref(`eventos/${id}/inscriptos`).once('value', s => { 
-            let ins = s.val() || []; 
-            if (!Array.isArray(ins)) ins = []; 
+            let ins = safeArray(s.val()); 
             ins.splice(idx, 1); 
             db.ref(`eventos/${id}/inscriptos`).set(ins); 
         }); 
@@ -941,8 +737,7 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
     let startX = 0, startY = 0, currentX = 0, isDragging = false, swipeEl = null;
 
     document.addEventListener('touchstart', e => {
-        const el = e.target.closest('.swipe-content');
-        if(!el) return;
+        const el = e.target.closest('.swipe-content'); if(!el) return;
         swipeEl = el; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
         isDragging = true; hasSwiped = false; swipeEl.classList.add('no-transition');
     }, {passive: true});
@@ -950,17 +745,11 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
     document.addEventListener('touchmove', e => {
         if(!isDragging || !swipeEl) return;
         const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY;
-
-        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(currentX) < 10) {
-            isDragging = false; swipeEl.style.transform = `translateX(0)`; swipeEl = null; return;
-        }
-
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(currentX) < 10) { isDragging = false; swipeEl.style.transform = `translateX(0)`; swipeEl = null; return; }
         if (diffX < 0) { currentX = 0; } else { currentX = diffX; }
         if(Math.abs(currentX) > 10) hasSwiped = true;
-        
         const moveX = currentX > 100 ? 100 + (currentX - 100) * 0.2 : currentX;
         swipeEl.style.transform = `translateX(${moveX}px)`;
-        
         if(e.cancelable && currentX > 0) e.preventDefault();
     }, {passive: false});
 
@@ -968,7 +757,6 @@ let activeListeners = {}; // 🔥 NUEVO: Para no duplicar ni borrar canchas sin 
         if(!isDragging || !swipeEl) return;
         isDragging = false; swipeEl.classList.remove('no-transition');
         const idx = swipeEl.parentElement.dataset.idx; const thresh = 80;
-
         if (currentX > thresh) {
             swipeEl.style.transform = `translateX(100%)`;
             setTimeout(() => { window.togglePago(idx); if(swipeEl) swipeEl.style.transform = 'translateX(0)'; }, 200);

@@ -529,37 +529,60 @@
     }
 
     function abrirDetalle() { currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex'; }
-    function cambiarTab(estadoFiltro) {
-        document.getElementById('tab-pend').className = estadoFiltro==='pendiente' ? "btn btn-primary" : "btn"; document.getElementById('tab-pend').style.background = estadoFiltro==='pendiente' ? "" : "transparent"; document.getElementById('tab-pend').style.color = estadoFiltro==='pendiente' ? "" : "var(--text-secondary)";
-        document.getElementById('tab-pag').className = estadoFiltro==='pagado' ? "btn btn-primary" : "btn"; document.getElementById('tab-pag').style.background = estadoFiltro==='pagado' ? "" : "transparent"; document.getElementById('tab-pag').style.color = estadoFiltro==='pagado' ? "" : "var(--text-secondary)";
+   function cambiarTab(estadoFiltro) {
+        const btnPend = document.getElementById('tab-pend'); const btnPag = document.getElementById('tab-pag');
+        if(estadoFiltro === 'pendiente') {
+            btnPend.className = "btn btn-primary"; btnPag.className = "btn"; btnPag.style.background = "transparent"; btnPag.style.color = "var(--text-secondary)";
+        } else {
+            btnPag.className = "btn btn-primary"; btnPend.className = "btn"; btnPend.style.background = "transparent"; btnPend.style.color = "var(--text-secondary)";
+        }
         const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
-        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
+        
+        // 🔥 CORRECCIÓN: 'bonificado' (trial) ahora va al Historial, no genera deuda visual
+        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? m.estado === 'pendiente' : (m.estado === 'pagado' || m.estado === 'bonificado'));
 
-        if(filtrados.length === 0) { lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`; } else {
+        if(filtrados.length === 0) {
+            lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`;
+        } else {
             filtrados.forEach((m, index) => {
-                const dateObj = new Date(m.fecha); const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                let badgeHtml = ''; if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>'; else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>'; else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
+                const dateObj = new Date(m.fecha);
+                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
+                let badgeHtml = '';
+                if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>';
+                else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>';
+                else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
+
                 lista.innerHTML += `
                     <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${index * 50}ms;">
-                        <div style="flex:1; padding-right:15px;"><strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span></div>
-                        <div class="text-center"><strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}</div>
+                        <div style="flex:1; padding-right:15px;">
+                            <strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span>
+                        </div>
+                        <div class="text-center">
+                            <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}
+                        </div>
                     </div>`;
             });
         }
     }
 
-    function checkAndRollover(id, data) {
-        const ahora = Date.now(); let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
+ function checkAndRollover(id, data) {
+        const ahora = Date.now();
+        let eventEnd = new Date(`${data.fecha || '1970-01-01'}T${data.horaFin || '23:59'}`).getTime();
         if (data.horaFin && data.hora && data.horaFin < data.hora) { eventEnd += 86400000; }
         
         if (ahora > eventEnd && data.estado !== 'suspendida') {
             const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} hs`;
             const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
+            
+            // 🔥 LA MAGIA: ID Determinista. Evita duplicados si hay múltiples sesiones abiertas.
+            const movId = `turno_${id}_${data.fecha}`;
+
             if (data.tipo === 'recurrente') {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
-                db.ref('eventos/' + id).update({ fecha: PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia), inscriptos: [] });
+                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
+                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
+                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
             } else if (data.tipo === 'unico' && !data.cobrado) {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
+                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 db.ref('eventos/' + id).update({ cobrado: true });
             }
         }

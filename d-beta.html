@@ -741,10 +741,14 @@
     function validarRecurrencia() { const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config'); document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none'; if (tipo === 'recurrente' && inputFecha) { const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()]; const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked); if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } }
 
     // --- 🔥 RENDER JUGADORES AGRUPADOS COLAPSABLES ---
+    // --- 🔥 LÓGICA DE CLIC SEGURA ---
     window.handleGroupClick = function(el) {
-        if(hasSwiped) { hasSwiped = false; return; }
+        if(typeof hasSwiped !== 'undefined' && hasSwiped) { hasSwiped = false; return; }
         const group = el.closest('.player-group');
-        if(group.querySelector('.player-children-box').innerHTML.trim() !== '') { group.classList.toggle('open'); }
+        // Chequeo directo: si tiene la clase, se abre.
+        if(group.classList.contains('has-children')) {
+            group.classList.toggle('open');
+        }
     };
 
     window.abrirJugadores = function(id) {
@@ -753,6 +757,7 @@
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
+            // Usamos safeArray por si Firebase corrompe la lista
             const insArr = safeArray(d.inscriptos);
             
             document.getElementById('st-total').innerText = d.cupo || 0; 
@@ -763,19 +768,26 @@
             
             const list = document.getElementById('players-list'); list.innerHTML = "";
             let grupos = agruparPorCelular(insArr);
+
             grupos.sort((a, b) => obtenerEstadoGrupo(a) - obtenerEstadoGrupo(b));
 
             grupos.forEach(grupo => {
                 grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
                 
                 const t = grupo[0]; const invitados = grupo.slice(1);
-                const labelExtra = invitados.length > 0 ? `<span class="extra-tag">+${invitados.length}</span>` : (t.cantidad > 1 ? `<span class="extra-tag">+${t.cantidad-1}</span>` : '');
+                
+                // 🔥 DETECTAMOS SI DEBE TENER FUELLE (Tiene invitados o es una reserva vieja de +X)
+                const hasChildren = invitados.length > 0 || t.cantidad > 1;
+                const labelExtra = hasChildren ? `<span class="extra-tag">+${invitados.length || (t.cantidad - 1)}</span> <span style="font-size:10px; margin-left:4px; color:#888;">▼</span>` : '';
                 
                 const estadoGrupo = obtenerEstadoGrupo(grupo);
-                let claseEstado = 'estado-mixto'; if (estadoGrupo === 0) claseEstado = 'estado-ok'; if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
+                let claseEstado = 'estado-mixto';
+                if (estadoGrupo === 0) claseEstado = 'estado-ok';
+                if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
 
+                // Le inyectamos la clase 'has-children' al div principal para que el clic funcione
                 let htmlGrupo = `
-                    <div class="player-group ${claseEstado}">
+                    <div class="player-group ${claseEstado} ${hasChildren ? 'has-children' : ''}">
                         <div class="swipe-container" data-idx="${t.originalIndex}">
                             <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
                             <div class="swipe-content player-main" onclick="handleGroupClick(this)">
@@ -788,22 +800,35 @@
                         </div>
                         <div class="player-children-box">
                 `;
-                invitados.forEach(inv => {
-                    htmlGrupo += `
-                        <div class="swipe-container" data-idx="${inv.originalIndex}">
-                            <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
-                            <div class="swipe-content player-child-row">
-                                <div class="child-name-text">↳ ${inv.nombre}</div>
-                                <div class="player-actions-box">
-                                    <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                    <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+                
+                // Llenamos la caja del fuelle
+                if (invitados.length > 0) {
+                    invitados.forEach(inv => {
+                        htmlGrupo += `
+                            <div class="swipe-container" data-idx="${inv.originalIndex}">
+                                <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
+                                <div class="swipe-content player-child-row">
+                                    <div class="child-name-text">↳ ${inv.nombre}</div>
+                                    <div class="player-actions-box">
+                                        <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
+                                        <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+                                    </div>
                                 </div>
                             </div>
+                        `;
+                    });
+                } else if (t.cantidad > 1) {
+                    // 🔥 Si es una reserva vieja, ponemos este cartel. Así la caja NO queda vacía y se abre perfecto.
+                    htmlGrupo += `
+                        <div class="player-child-row" style="justify-content: center; color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 12px;">
+                            Reserva agrupada (formato anterior)
                         </div>
                     `;
-                });
+                }
+
                 htmlGrupo += `</div></div>`; list.innerHTML += htmlGrupo;
             });
+            
             if (insArr.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";
             document.getElementById('modal-players').style.display = 'flex';
         });

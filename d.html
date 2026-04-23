@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - PadelApp</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=21"></script>
+    <script src="app-config.js?v=22"></script>
     <style>
         :root {
             --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
@@ -48,10 +48,8 @@
 
         .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
         .btn:active { transform: scale(0.96); }
-        
         .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
         .btn-primary:active { box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
-        
         .btn-dark { background: #111; color: white; }
         .btn-light { background: var(--bg-main); color: var(--text-primary); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
@@ -73,19 +71,56 @@
         @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
 
         .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
-        .input-std::placeholder { color: var(--gray-3); }
         .input-std:focus { border-color: var(--blue); }
         
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: var(--s3); }
         .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
         @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .player-row { background: var(--bg-main); border-radius: 14px; padding: 10px 15px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; font-weight: 600; font-size: 14px;}
+        /* --- 🔥 ESTILOS SISTEMA COLAPSABLE Y SWIPE --- */
+        .player-group { background: white; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--gray-2); overflow: hidden; transition: transform 0.1s ease; }
+        .player-group:active { transform: scale(0.99); }
+        .player-group.estado-ok { border-left: 5px solid var(--green); background: rgba(52,199,89,0.06); }
+        .player-group.estado-mixto { border-left: 5px solid var(--orange); background: rgba(255,159,10,0.06); }
+        .player-group.estado-pendiente { border-left: 5px solid var(--red); background: rgba(255,59,48,0.06); }
+
+        .swipe-container { position: relative; width: 100%; overflow: hidden; background: #E5E5EA; }
+        .swipe-bg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 20px; font-weight: 900; color: white; font-size: 14px; z-index: 0; }
+        .left-action { left: 0; right: 50%; background: var(--blue); justify-content: flex-start; }
+
+        .swipe-content { position: relative; z-index: 1; background: transparent; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+        .swipe-content.no-transition { transition: none; }
+
+        .player-main { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: inherit; }
+        .player-child-row { padding: 12px 16px 12px 32px; position: relative; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.04); background: inherit; }
+        .player-child-row::before { content: ''; position: absolute; left: 18px; top: 50%; width: 8px; height: 1px; background: #C7C7CC; }
+
+        .player-name-box { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .player-name-box .extra-tag { color: var(--blue); font-weight: 800; font-size: 13px; }
+        .player-phone-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+        .player-actions-box { display: flex; align-items: center; gap: 10px; }
         
+        .player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease; }
+        .player-group.open .player-children-box { max-height: 1000px; opacity: 1; }
+        .child-name-text { font-size: 14px; font-weight: 500; color: #555; }
+
+        .chevron { font-size: 11px; color: #888; transition: transform 0.2s ease; margin-left: 4px; }
+        .player-group.open .chevron { transform: rotate(180deg); }
+
+        .badge-status-btn { padding: 6px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; min-width: 85px; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease;}
+        .badge-status-btn:active { transform: scale(0.95); }
+        .st-pendiente { background: var(--red); } .st-paga-en-la-cancha { background: var(--orange); } .st-pagado { background: var(--green); }
+        .badge-status-btn.small { font-size: 9px; padding: 4px 8px; min-width: 75px; }
+        .delete-btn-icon { color: #D1D1D6; font-size: 18px; font-weight: 900; padding: 5px; cursor: pointer; }
+
+        /* ESTADOS VISUALES DE CANCHA */
+        .item.estado-ok { border-left: 6px solid var(--green); background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent); }
+        .item.estado-warning { border-left: 6px solid var(--orange); background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent); }
+        .item.estado-error { border-left: 6px solid var(--red); background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent); }
+
         .day-check { display: none; }
         .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
         .day-check:checked + .day-label { background: var(--blue); color: white; }
-
         .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
         .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
         .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
@@ -115,7 +150,6 @@
 
     <div id="app-content">
         <div class="container fade-in" id="main-container">
-            
             <header class="flex space-between center section" style="margin-bottom: 20px;">
                 <div>
                     <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
@@ -124,16 +158,14 @@
                 <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
             </header>
 
-            <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;">
-                ⚠️ A partir del 1/X tu abono se actualizará.
-            </div>
+            <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;"></div>
 
             <div class="card-dark section fade-in">
                 <div class="flex space-between center">
                     <div style="font-size: 14px; font-weight: 600;" id="lbl-vencimiento">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
                     <div id="badge-abono" class="badge badge-ok">AL DÍA</div>
                 </div>
-                <div id="txt-dias-trial" style="font-size: 12px; color: #4DA8DA; font-weight: 800; margin-top: 4px; display: none;">Te quedan -- días de prueba</div>
+                <div id="txt-dias-trial" style="font-size: 12px; color: #4DA8DA; font-weight: 800; margin-top: 4px; display: none;"></div>
                 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
                 
@@ -158,7 +190,7 @@
                 
                 <div id="box-resumen-uso" class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
                     <div class="label" style="margin-bottom: 4px; color: #8E8E93;">RESUMEN DE USO:</div>
-                    <div style="font-size: 13px; font-weight: 600; color: white;" id="txt-detalle-canchas">Incluye: • 0 canchas &rarr; $0</div>
+                    <div style="font-size: 13px; font-weight: 600; color: white;" id="txt-detalle-canchas"></div>
                 </div>
             </div>
 
@@ -167,7 +199,7 @@
                 <button class="btn btn-primary" onclick="copiarMiLink()">🔗 COPIAR LINK CARTELERA</button>
             </div>
 
-            <div id="canchas-list" class="section">Cargando canchas...</div>
+            <div id="canchas-list" class="section"></div>
 
             <div class="section fade-in" style="animation-delay: 150ms;">
                 <button id="btn-toggle-pasadas" class="btn btn-light" style="color:var(--blue); display:none;" onclick="togglePasadas()">📂 VER INFO DE CANCHAS ANTERIORES</button>
@@ -182,9 +214,8 @@
                 <hr class="footer-divider">
                 <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
                 <p class="footer-subtitle">Pasala a piloto automático.</p>
-                <a href="https://wa.me/5491166463800?text=Hola%20Mariano,%20necesito%20ayuda%20para%20automatizar%20mi%20cancha%20abierta" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
+                <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
             </div>
-
         </div>
     </div>
 
@@ -201,29 +232,36 @@
     </div>
 
     <div id="modal-players" class="modal">
-        <div class="modal-content">
-            <h2 class="h1 text-center" style="margin-bottom: var(--s3); font-size: 22px;">👥 Jugadores</h2>
+        <div class="modal-content" style="padding: 15px;">
+            <h2 class="h1 text-center" style="margin-bottom: 15px; font-size: 22px;">👥 Jugadores</h2>
             <input type="hidden" id="pl-id">
             
             <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
                 <div class="metric-box" style="background:var(--bg-main); padding:12px;">
-                    <span class="label">CUPO TOTAL</span><b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
+                    <span class="label">CUPO TOTAL</span>&nbsp;&nbsp;<b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
                 </div>
                 <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;">
-                    <span class="label" style="color:var(--blue)">LUGARES LIBRES</span><b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
+                    <span class="label" style="color:var(--blue)">LIBRES</span>&nbsp;&nbsp;<b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
                 </div>
             </div>
 
-            <div class="financial" style="margin-top:0; margin-bottom:var(--s3); gap: 6px;">
-                <div class="metric-box" style="background:rgba(52,199,89,0.1); padding:10px;">
-                    <span class="label" style="color:var(--green)">PAGADOS</span><b id="st-pag" class="metric-value" style="color:var(--green); font-size:15px;">0</b>
+            <div class="flex" style="gap: 5px; margin-bottom:15px; background:var(--gray-1); padding:10px; border-radius:12px; border:1px solid var(--gray-2);">
+                <div style="flex:1; text-align:center;">
+                    <div class="label" style="font-size:9px;">Pagaron</div>
+                    <b id="st-pag" style="color:var(--green); font-size:16px;">0</b>
                 </div>
-                <div class="metric-box" style="background:rgba(255,159,10,0.1); padding:10px;">
-                    <span class="label" style="color:var(--orange)">EN CANCHA</span><b id="st-enc" class="metric-value" style="color:var(--orange); font-size:15px;">0</b>
+                <div style="flex:1; text-align:center; border-left:1px solid #ddd; border-right:1px solid #ddd;">
+                    <div class="label" style="font-size:9px;">En cancha</div>
+                    <b id="st-enc" style="color:var(--orange); font-size:16px;">0</b>
                 </div>
-                <div class="metric-box" style="background:rgba(255,59,48,0.1); padding:10px;">
-                    <span class="label" style="color:var(--red)">PEND.</span><b id="st-pen" class="metric-value" style="color:var(--red); font-size:15px;">0</b>
+                <div style="flex:1; text-align:center;">
+                    <div class="label" style="font-size:9px;">Pendientes</div>
+                    <b id="st-pen" style="color:var(--red); font-size:16px;">0</b>
                 </div>
+            </div>
+
+            <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">
+                💡 Deslizá a la derecha para cobrar
             </div>
 
             <div id="players-list"></div>
@@ -238,7 +276,7 @@
             
             <button id="btn-suspender" class="btn" style="background: rgba(255,159,10,0.1); color: var(--orange); margin-bottom: var(--s3); display:none; flex-direction: column; height: auto; padding: 12px; gap:4px;" onclick="abrirModalSuspension()">
                 <span style="font-weight: 900;">🚫 SUSPENDER EVENTO</span>
-                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8; letter-spacing: 0;">Cancelación gratuita hasta 1 hora antes de comenzar el evento</span>
+                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8; letter-spacing: 0;">Cancelación gratuita hasta 1 hora antes del evento</span>
             </button>
             
             <label>Tipo de Evento</label>
@@ -300,12 +338,53 @@
 <script>
     let orgId = new URLSearchParams(window.location.search).get('org');
     let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
+    let isNew = false; window.movimientos = []; let isInitialized = false, oldDeuda = 0, oldDisp = 0;
     window.defaultData = { owner: "", celu: "", alias: "" };
-    window.movimientos = []; 
-    let currentMovsData = [];
-    let isInitialized = false;
 
-    let oldDeuda = 0, oldDisp = 0;
+    // --- 🔥 BLINDAJE ANTI-FIREBASE (Repara datos corruptos) ---
+    function safeArray(data) {
+        if (!data) return [];
+        return Array.isArray(data) ? data : Object.values(data);
+    }
+
+    // --- UTILS & MODELO DE DATOS ---
+    function calcularOcupados(list) {
+        const arr = safeArray(list);
+        if (arr.length === 0) return 0;
+        return arr.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0);
+    }
+
+    function agruparPorCelular(list) {
+        const arr = safeArray(list);
+        const grupos = {};
+        arr.forEach((p, idx) => {
+            const key = p.celular ? String(p.celular).trim() : `sin-celular-${idx}`;
+            if (!grupos[key]) grupos[key] = [];
+            grupos[key].push({ ...p, originalIndex: idx, fechaSegura: p.fecha || 0 });
+        });
+        return Object.values(grupos);
+    }
+
+    function calcularEstadoCancha(inscriptos) {
+        const arr = safeArray(inscriptos);
+        if (arr.length === 0) return "error";
+        let total = 0, pagados = 0, parcial = false;
+        arr.forEach(p => {
+            const cant = p.cantidad || 1; total += cant;
+            if (p.estado === "pagado") pagados += cant;
+            if (p.estado === "paga-en-la-cancha") parcial = true;
+        });
+        if (pagados === total) return "ok";
+        if (pagados > 0 || parcial) return "warning";
+        return "error";
+    }
+
+    function obtenerEstadoGrupo(grupo) {
+        const estados = grupo.map(p => p.estado);
+        if (estados.every(e => e === 'pagado')) return 0;
+        if (estados.every(e => e === 'pendiente')) return 2;
+        return 1;
+    }
 
     function animateValue(el, start, end, duration = 400) {
         if (start === end) { el.innerText = PadelUtils.fmtDinero(end); return; }
@@ -315,47 +394,29 @@
             const progress = Math.min((timestamp - startTime) / duration, 1);
             const value = Math.floor(progress * (end - start) + start);
             el.innerText = PadelUtils.fmtDinero(value);
-            if (progress < 1) requestAnimationFrame(step);
-            else el.innerText = PadelUtils.fmtDinero(end);
+            if (progress < 1) requestAnimationFrame(step); else el.innerText = PadelUtils.fmtDinero(end);
         }
         requestAnimationFrame(step);
     }
 
+    // --- AUTH & INIT ---
     const auth = firebase.auth();
+    let activeListeners = {}; // Para manejar la memoria inteligente de Firebase
 
     auth.onAuthStateChanged(user => {
         document.getElementById('boot-screen').style.display = 'none';
-
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-container').style.display = 'block'; 
-            
             if (!orgId) {
                 document.getElementById('org-name-disp').innerText = "Buscando datos...";
                 db.ref('facturacion').once('value').then(snap => {
-                    let foundOrg = null;
-                    const data = snap.val() || {};
-                    const emailLimpio = user.email.trim().toLowerCase();
-
-                    for (let id in data) {
-                        if (data[id].cuenta && data[id].cuenta.emailOrganizador) {
-                            if (data[id].cuenta.emailOrganizador.trim().toLowerCase() === emailLimpio) {
-                                foundOrg = id; break;
-                            }
-                        }
-                    }
-                    if (foundOrg) {
-                        orgId = foundOrg;
-                        window.history.replaceState(null, null, `?org=${orgId}`);
-                        if(!isInitialized) { init(); isInitialized = true; }
-                    } else {
-                        alert("⚠️ Tu usuario ("+emailLimpio+") no tiene un club asignado.");
-                        cerrarSesion();
-                    }
-                }).catch(err => alert("❌ Error de permisos en Firebase."));
-            } else {
-                if(!isInitialized) { init(); isInitialized = true; }
-            }
+                    let foundOrg = null; const data = snap.val() || {}; const emailLimpio = user.email.trim().toLowerCase();
+                    for (let id in data) { if (data[id].cuenta && data[id].cuenta.emailOrganizador?.trim().toLowerCase() === emailLimpio) { foundOrg = id; break; } }
+                    if (foundOrg) { orgId = foundOrg; window.history.replaceState(null, null, `?org=${orgId}`); if(!isInitialized) { init(); isInitialized = true; } } 
+                    else { alert(`Tu usuario no tiene club asignado.`); cerrarSesion(); }
+                }).catch(err => alert("Error de permisos Firebase."));
+            } else { if(!isInitialized) { init(); isInitialized = true; } }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-container').style.display = 'none';
@@ -363,31 +424,64 @@
         }
     });
 
-    function iniciarSesion() {
-        const e = document.getElementById('log-email').value;
-        const p = document.getElementById('log-pass').value;
-        document.getElementById('log-error').style.display = 'none';
-        auth.signInWithEmailAndPassword(e, p).catch(err => {
-            document.getElementById('log-error').style.display = 'block';
-            document.getElementById('log-error').innerText = "Credenciales incorrectas.";
-        });
+    function iniciarSesion() { const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value; document.getElementById('log-error').style.display = 'none'; auth.signInWithEmailAndPassword(e, p).catch(err => { document.getElementById('log-error').style.display = 'block'; document.getElementById('log-error').innerText = "Credenciales incorrectas."; }); }
+    function cerrarSesion() { auth.signOut().then(() => { window.location.reload(); }); }
+    function formatFec(f) { if(!f) return '--'; const [y, m, d] = f.split('-'); return `${d}-${m}-${y}`; }
+    window.copiarMiLink = function() { PadelUtils.copiarLink(cuentaInfo.linkCorto ? cuentaInfo.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`); };
+
+    function init() {
+        if(!orgId) return;
+        const errorHandler = (err) => { console.error("Error Firebase:", err); };
+        
+        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
+            cuentaInfo = s.val() || {};
+            if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
+                if (!cuentaInfo.esFundador) { db.ref(`facturacion/${orgId}/cuenta`).update({ abonoMensual: cuentaInfo.proximoAbonoMensual, costoPorCancha: cuentaInfo.proximoCostoPorCancha, proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } 
+                else { db.ref(`facturacion/${orgId}/cuenta`).update({ proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } return;
+            }
+            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
+            window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
+            calculateFinancials();
+        }, errorHandler);
+
+        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
+            const movs = s.val() || {}; 
+            if (cuentaInfo.enTrial) {
+                let updates = {}; for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') updates[`${k}/estado`] = 'bonificado'; }
+                if (Object.keys(updates).length > 0) { db.ref(`facturacion/${orgId}/movimientos`).update(updates); return; }
+            }
+            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]})); calculateFinancials();
+        }, errorHandler);
+
+        db.ref('hubs/'+orgId).on('value', snap => {
+            const ids = snap.val()?.canchas || [];
+            
+            // Limpieza inteligente de memoria
+            Object.keys(activeListeners).forEach(id => {
+                if(!ids.includes(id)) {
+                    db.ref('eventos/'+id).off('value', activeListeners[id]);
+                    delete activeListeners[id];
+                    delete courtData[id];
+                }
+            });
+
+            if (ids.length === 0) renderizarCanchas();
+
+            ids.forEach(id => {
+                if(!activeListeners[id]) {
+                    const listener = db.ref('eventos/'+id).on('value', evS => {
+                        const d = evS.val(); 
+                        if(d) { checkAndRollover(id, d); courtData[id] = { id, ...d }; } 
+                        else { delete courtData[id]; } 
+                        renderizarCanchas();
+                    }, errorHandler);
+                    activeListeners[id] = listener;
+                }
+            });
+        }, errorHandler);
     }
 
-    function cerrarSesion() { auth.signOut().then(() => { window.location.href = 'index.html'; }); }
-
-    function formatFec(f) {
-        if(!f) return '--';
-        const [y, m, d] = f.split('-');
-        return `${d}-${m}-${y}`;
-    }
-
-    window.copiarMiLink = function() {
-        const linkLargo = 'https://mbpuntodeoro.github.io/canchaabierta/v.html?org=' + orgId;
-        const linkFinal = cuentaInfo.linkCorto ? cuentaInfo.linkCorto : linkLargo;
-        PadelUtils.copiarLink(linkFinal);
-    };
-
-    function calculateFinancials() {
+  function calculateFinancials() {
         if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
 
         if (cuentaInfo.esFundador) {
@@ -413,29 +507,32 @@
         const badge = document.getElementById('badge-abono');
         const panelInfo = document.getElementById('txt-consumo-total');
         
-        const fechaStr = PadelSaaS.fmtFecha(res.vencimientoAbono);
-        const diasFaltantes = Math.ceil((res.vencimientoAbono - Date.now()) / (1000 * 60 * 60 * 24));
+        // Usamos la fecha de Firebase directo por si la librería se confunde
+        const fechaVencimiento = cuentaInfo.vencimientoAbono || res.vencimientoAbono;
+        const fechaStr = PadelSaaS.fmtFecha(fechaVencimiento);
+        const diasFaltantes = Math.ceil((fechaVencimiento - Date.now()) / (1000 * 60 * 60 * 24));
         
         badge.className = "badge"; 
         
-        if (res.enTrial) {
+        // 🔥 LA LLAVE DE JUDO: Leemos la verdad absoluta de Firebase (cuentaInfo.enTrial)
+        if (cuentaInfo.enTrial === true) {
             lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`;
-            badge.innerText = "TRIAL GRATUITO";
-            badge.style.background = "rgba(0,122,255,0.2)";
-            badge.style.color = "var(--blue)";
+            badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
             
             let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
-            if (!res.esTrialLargo) {
-                const canchasRestantes = res.limiteCanchasTrial - res.canchasUsadasEnPrueba;
+            
+            if (!cuentaInfo.esTrialLargo) {
+                const limite = cuentaInfo.limiteCanchasTrial || 10;
+                const usadas = res.canchasUsadasEnPrueba || 0;
+                const canchasRestantes = limite - usadas;
                 textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`;
             }
             txtDiasTrial.innerText = textoTrial;
             txtDiasTrial.style.display = 'block';
 
-            let totalJugadores = 0;
-            let totalDinero = 0;
+            let totalJugadores = 0; let totalDinero = 0;
             Object.values(courtData).forEach(c => {
-                const cant = (c.inscriptos || []).reduce((acc, p) => acc + (p.cantidad || 1), 0);
+                const cant = calcularOcupados(c.inscriptos);
                 totalJugadores += cant;
                 totalDinero += (cant * (c.valor || 0));
             });
@@ -451,24 +548,19 @@
                         <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">GESTIONADO</span><br><b style="color:white; font-size:18px;">${PadelUtils.fmtDinero(totalDinero)}</b></div>
                     </div>
                     <p style="font-size: 11px; color: var(--blue); font-weight: 700; margin: 12px 0 0 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                        ${res.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}
+                        ${cuentaInfo.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}
                     </p>
                 </div>
             `;
             elRestantes.style.display = 'none';
         
         } else {
+            // MODO ABONO NORMAL PAGO
             lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
-            txtDiasTrial.style.display = 'none';
-            document.getElementById('container-financials').style.display = 'block';
-            document.getElementById('box-resumen-uso').style.display = 'block';
-            const txtVenc = document.getElementById('txt-venc-abono');
-
-            animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas);
-            oldDeuda = res.deudaCanchas;
-
-            animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible);
-            oldDisp = res.disponible;
+            txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
+            
+            animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
+            animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
             
             panelInfo.innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(cuentaInfo.limiteCredito || 0)}</span>`;
 
@@ -476,8 +568,7 @@
             if (costoCancha > 0) {
                 const restantes = Math.floor(res.disponible / costoCancha);
                 elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
-                elRestantes.style.color = "var(--green)";
-                elRestantes.style.display = 'block';
+                elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block';
             } else {
                 elRestantes.style.display = 'none';
             }
@@ -487,61 +578,35 @@
             const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
 
             if (res.bloqueadoAbono) {
-                badge.innerText = "ABONO VENCIDO";
-                badge.classList.add('badge-error');
-                txtVenc.style.color = "var(--red)";
+                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); document.getElementById('txt-venc-abono').style.color = "var(--red)";
             } else if (res.bloqueadoLimite) {
-                badge.innerText = "LÍMITE ALCANZADO";
-                badge.classList.add('badge-error');
+                badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error');
             } else if (porcentajeUso >= 0.8) {
-                badge.innerText = "CERCA DEL LÍMITE";
-                badge.classList.add('badge-warning');
+                badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning');
             } else if (diasFaltantes <= 5) {
-                badge.innerText = "ABONO POR VENCER";
-                badge.classList.add('badge-warning');
-                txtVenc.style.color = "var(--orange)";
+                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); document.getElementById('txt-venc-abono').style.color = "var(--orange)";
             } else {
-                badge.innerText = "AL DÍA";
-                badge.classList.add('badge-ok');
-                txtVenc.style.color = "var(--green)";
+                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); document.getElementById('txt-venc-abono').style.color = "var(--green)";
             }
         }
 
-        isAccountBlocked = res.isBlocked;
-        document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
-        
+        isAccountBlocked = res.isBlocked; document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
         const msgLocked = document.getElementById('msg-locked');
-        if (isAccountBlocked) {
-            msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked;
-        } else { msgLocked.style.display = 'none'; }
+        if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
     }
 
-    function abrirDetalle() {
-        currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha);
-        cambiarTab('pendiente');
-        document.getElementById('modal-detalle').style.display = 'flex';
-    }
-
-    function cambiarTab(estadoFiltro) {
-        const btnPend = document.getElementById('tab-pend');
-        const btnPag = document.getElementById('tab-pag');
-        
+    function abrirDetalle() { currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex'; }
+   function cambiarTab(estadoFiltro) {
+        const btnPend = document.getElementById('tab-pend'); const btnPag = document.getElementById('tab-pag');
         if(estadoFiltro === 'pendiente') {
-            btnPend.className = "btn btn-primary";
-            btnPag.className = "btn";
-            btnPag.style.background = "transparent";
-            btnPag.style.color = "var(--text-secondary)";
+            btnPend.className = "btn btn-primary"; btnPag.className = "btn"; btnPag.style.background = "transparent"; btnPag.style.color = "var(--text-secondary)";
         } else {
-            btnPag.className = "btn btn-primary";
-            btnPend.className = "btn";
-            btnPend.style.background = "transparent";
-            btnPend.style.color = "var(--text-secondary)";
+            btnPag.className = "btn btn-primary"; btnPend.className = "btn"; btnPend.style.background = "transparent"; btnPend.style.color = "var(--text-secondary)";
         }
-
-        const lista = document.getElementById('lista-movimientos-det');
-        lista.innerHTML = "";
+        const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
         
-        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? (m.estado === 'pendiente' || m.estado === 'bonificado') : m.estado === estadoFiltro);
+        // 🔥 CORRECCIÓN: 'bonificado' (trial) ahora va al Historial, no genera deuda visual
+        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? m.estado === 'pendiente' : (m.estado === 'pagado' || m.estado === 'bonificado'));
 
         if(filtrados.length === 0) {
             lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`;
@@ -549,269 +614,142 @@
             filtrados.forEach((m, index) => {
                 const dateObj = new Date(m.fecha);
                 const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                const delay = index * 50;
-
                 let badgeHtml = '';
                 if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>';
                 else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>';
                 else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
 
                 lista.innerHTML += `
-                    <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${delay}ms;">
+                    <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${index * 50}ms;">
                         <div style="flex:1; padding-right:15px;">
-                            <strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong>
-                            <span class="label">${dStr}</span>
+                            <strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span>
                         </div>
                         <div class="text-center">
-                            <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>
-                            ${badgeHtml}
+                            <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}
                         </div>
                     </div>`;
             });
         }
     }
 
-    function checkAndRollover(id, data) {
+ function checkAndRollover(id, data) {
         const ahora = Date.now();
-        let eventEnd = new Date(data.fecha + 'T' + (data.horaFin || '23:59')).getTime();
-        
-        if (data.horaFin && data.hora && data.horaFin < data.hora) {
-            eventEnd += 86400000; 
-        }
+        let eventEnd = new Date(`${data.fecha || '1970-01-01'}T${data.horaFin || '23:59'}`).getTime();
+        if (data.horaFin && data.hora && data.horaFin < data.hora) { eventEnd += 86400000; }
         
         if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} a ${data.horaFin || '--'} hs | ${data.lugar || 'Sin sede'}`;
+            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} hs`;
             const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
+            
+            // 🔥 LA MAGIA: ID Determinista. Evita duplicados si hay múltiples sesiones abiertas.
+            const movId = `turno_${id}_${data.fecha}`;
 
             if (data.tipo === 'recurrente') {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
+                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
                 db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
             } else if (data.tipo === 'unico' && !data.cobrado) {
-                db.ref(`facturacion/${orgId}/movimientos`).push({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
+                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 db.ref('eventos/' + id).update({ cobrado: true });
             }
         }
     }
 
-    function init() {
-        if(!orgId) return;
-        const errorHandler = (err) => { console.error("Error Firebase:", err); };
-
-        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
-            cuentaInfo = s.val() || {};
-            
-            if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
-                if (!cuentaInfo.esFundador) {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({
-                        abonoMensual: cuentaInfo.proximoAbonoMensual,
-                        costoPorCancha: cuentaInfo.proximoCostoPorCancha,
-                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
-                    });
-                } else {
-                    db.ref(`facturacion/${orgId}/cuenta`).update({
-                        proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null
-                    });
-                }
-                return;
-            }
-
-            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
-            window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
-            calculateFinancials();
-        }, errorHandler);
-
-        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
-            const movs = s.val() || {}; 
-            if (cuentaInfo.enTrial) {
-                let updates = {};
-                for (let k in movs) {
-                    if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') { updates[`${k}/estado`] = 'bonificado'; }
-                }
-                if (Object.keys(updates).length > 0) { db.ref(`facturacion/${orgId}/movimientos`).update(updates); return; }
-            }
-            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
-            calculateFinancials();
-        }, errorHandler);
-
-        db.ref('hubs/'+orgId).on('value', snap => {
-            const ids = snap.val()?.canchas || [];
-            courtData = {}; 
-            if (ids.length === 0) renderizarCanchas();
-            ids.forEach(id => {
-                db.ref('eventos/'+id).on('value', evS => {
-                    const d = evS.val(); 
-                    if(d) {
-                        checkAndRollover(id, d); courtData[id] = { id, ...d }; 
-                    } else {
-                        delete courtData[id];
-                    }
-                    renderizarCanchas();
-                }, errorHandler);
-            });
-        }, errorHandler);
-    }
-
     function renderizarCanchas() {
         if(cuentaInfo.enTrial) calculateFinancials();
+        const listActivas = document.getElementById('canchas-list'), listPasadas = document.getElementById('canchas-pasadas-list'), btnPasadas = document.getElementById('btn-toggle-pasadas');
+        const prioridadEstado = { ok: 1, warning: 2, error: 3 };
+        const sorted = Object.values(courtData).map(c => ({ ...c, estadoVisual: calcularEstadoCancha(c.inscriptos) })).sort((a, b) => {
+            const pA = prioridadEstado[a.estadoVisual] || 3; const pB = prioridadEstado[b.estadoVisual] || 3;
+            if (pA !== pB) return pA - pB;
+            const dateA = new Date(`${a.fecha || '1970-01-01'}T${a.hora || '00:00'}`).getTime() || 0;
+            const dateB = new Date(`${b.fecha || '1970-01-01'}T${b.hora || '00:00'}`).getTime() || 0;
+            return dateA - dateB;
+        });
+        
+        listActivas.innerHTML = ""; listPasadas.innerHTML = ""; let countActivas = 0, countPasadas = 0; const ahora = Date.now();
 
-        const listActivas = document.getElementById('canchas-list');
-        const listPasadas = document.getElementById('canchas-pasadas-list');
-        const btnPasadas = document.getElementById('btn-toggle-pasadas');
-        
-        const sorted = Object.values(courtData).sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        
-        listActivas.innerHTML = "";
-        listPasadas.innerHTML = "";
-        
-        let countActivas = 0;
-        let countPasadas = 0;
-        const ahora = Date.now();
+        sorted.forEach((d) => {
+            const insArr = safeArray(d.inscriptos);
+            const listaConfirmados = insArr.filter(p => p.estado !== 'pendiente');
+            const conf = calcularOcupados(listaConfirmados);
+            const totalAnotados = calcularOcupados(insArr);
+            const pagados = calcularOcupados(insArr.filter(p => p.estado === 'pagado'));
+            const faltanPagar = totalAnotados - pagados;
 
-        sorted.forEach((d, index) => {
-            const conf = (d.inscriptos || []).filter(p => p.estado !== 'pendiente').reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            
-            let horaFinReal = d.horaFin;
-            if (!horaFinReal && d.hora) {
-                const [h, m] = d.hora.split(':');
-                const dateObj = new Date();
-                dateObj.setHours(parseInt(h), parseInt(m) + 90);
-                horaFinReal = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-            } else if (!horaFinReal) {
-                horaFinReal = '23:59';
-            }
-            let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-            
-            if (horaFinReal && d.hora && horaFinReal < d.hora) {
-                finEvento += 86400000;
-            }
+            let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo || 0} Anotados</b>`;
+            if ((totalAnotados - conf) > 0) { textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`; }
+
+            let textoEstado = "";
+            if (totalAnotados === 0) { textoEstado = "⚪ Sin inscriptos"; } 
+            else if (pagados === totalAnotados) { textoEstado = "🟢 Todo pagado"; } 
+            else if (pagados === 0) { textoEstado = `🔴 Nadie pagó (${faltanPagar} a cobrar)`; } 
+            else { textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; }
+
+            let horaFinReal = d.horaFin || '23:59'; 
+            let finEvento = new Date(`${d.fecha || '1970-01-01'}T${horaFinReal}`).getTime() || 0;
+            if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
             const esPasada = ahora > finEvento && d.tipo === 'unico'; 
             
-            const htmlCard = `<div class="item fade-in" style="${esPasada ? 'opacity: 0.6; filter: grayscale(50%);' : ''} animation-delay: ${index * 50}ms;">
-                <div class="item-header">
-                    <div class="item-title">🎾 ${d.organiza}</div> 
-                    <span class="badge-cat" style="${esPasada ? 'background:rgba(255,59,48,0.1); color:var(--red);' : ''}">${esPasada ? 'FINALIZADO' : d.categorias}</span>
+            const htmlCard = `
+                <div class="item fade-in estado-${d.estadoVisual}" style="${esPasada ? 'opacity:0.6;filter:grayscale(50%);' : ''}">
+                    <div class="item-header"><div class="item-title">🎾 ${d.organiza || 'Cancha'}</div><span class="badge-cat">${d.categorias || ''}</span></div>
+                    <div class="item-meta" style="margin-bottom: 6px;">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora || '--'}</div>
+                    <div class="item-meta" style="font-size: 14px;">${textoOcupacion}</div>
+                    <div class="item-meta" style="font-weight:800; font-size: 13px; margin-top:2px;">${textoEstado}</div>
+                    <div class="item-actions">
+                        <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
+                        <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
+                    </div>
+                    <button class="btn mt-2" style="background: rgba(0,122,255,0.1); color: var(--blue);" onclick="window.open('v.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">➕ ANOTAR JUGADOR</button>
                 </div>
-                <div class="item-meta">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora} a ${d.horaFin || '--'} hs</div>
-                <div class="item-meta" style="color:var(--text-primary);">👥 ${conf} / ${d.cupo} Confirmados ${d.tipo === 'recurrente' ? '• 🔄' : ''}</div>
-                
-                <div class="item-actions">
-                    <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                    <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                </div>
-                <button class="btn mt-2" style="background: rgba(0,122,255,0.1); color: var(--blue); box-shadow: none;" onclick="window.open('i.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">➕ ANOTAR JUGADOR MANUALMENTE</button>
-                </div>`;
-
-            if (esPasada) { listPasadas.innerHTML += htmlCard; countPasadas++; } 
-            else { listActivas.innerHTML += htmlCard; countActivas++; }
+            `;
+            if (esPasada) { listPasadas.innerHTML += htmlCard; countPasadas++; } else { listActivas.innerHTML += htmlCard; countActivas++; }
         });
 
-        if (countActivas === 0) listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas programadas.</div>";
-        
-        if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER INFO DE CANCHAS ANTERIORES (${countPasadas})`; } 
-        else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
+        if (countActivas === 0) listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas.</div>";
+        if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER CANCHAS ANTERIORES (${countPasadas})`; } else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
     }
 
-    function togglePasadas() {
-        const list = document.getElementById('canchas-pasadas-list');
-        const btn = document.getElementById('btn-toggle-pasadas');
-        if (list.style.display === 'none') { list.style.display = 'block'; btn.innerText = `📂 OCULTAR CANCHAS ANTERIORES`; } 
-        else { list.style.display = 'none'; btn.innerText = `📂 VER INFO DE CANCHAS ANTERIORES`; }
-    }
+    function togglePasadas() { const list = document.getElementById('canchas-pasadas-list'), btn = document.getElementById('btn-toggle-pasadas'); if (list.style.display === 'none') { list.style.display = 'block'; btn.innerText = `📂 OCULTAR CANCHAS ANTERIORES`; } else { list.style.display = 'none'; btn.innerText = `📂 VER CANCHAS ANTERIORES`; } }
 
     function abrirNuevaCancha() {
         if(isAccountBlocked) return alert("Cuenta bloqueada. Regularice su pago.");
-        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha";
-        document.getElementById('btn-suspender').style.display = 'none';
-        document.getElementById('btn-borrar-cancha').style.display = 'none'; 
-        document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
-        document.getElementById('ed-org').value = "";
-        document.getElementById('ed-owner').value = window.defaultData.owner;
-        document.getElementById('ed-celu').value = window.defaultData.celu;
-        document.getElementById('ed-ali').value = window.defaultData.alias;
-        document.getElementById('ed-cat').value = "Todas las categorías";
-        document.getElementById('ed-fec').value = "";
-        document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30";
-        document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0;
-        document.getElementById('modal-config').style.display = 'flex';
-        validarRecurrencia();
+        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha"; document.getElementById('btn-suspender').style.display = 'none'; document.getElementById('btn-borrar-cancha').style.display = 'none'; 
+        document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico"; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
+        document.getElementById('ed-org').value = ""; document.getElementById('ed-owner').value = window.defaultData.owner; document.getElementById('ed-celu').value = window.defaultData.celu; document.getElementById('ed-ali').value = window.defaultData.alias; document.getElementById('ed-cat').value = "Todas las categorías"; document.getElementById('ed-fec').value = ""; document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30"; document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0; document.getElementById('modal-config').style.display = 'flex'; validarRecurrencia();
     }
 
     function abrirConfig(id) {
-        isNew = false; const d = courtData[id];
-        document.getElementById('modal-title').innerText = "⚙️ Configuración";
-        document.getElementById('ed-id').value = id;
-        document.getElementById('ed-tipo').value = d.tipo || "unico";
+        isNew = false; const d = courtData[id]; document.getElementById('modal-title').innerText = "⚙️ Configuración"; document.getElementById('ed-id').value = id; document.getElementById('ed-tipo').value = d.tipo || "unico";
         ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => { if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day); });
-        document.getElementById('ed-org').value = d.organiza || "";
-        document.getElementById('ed-owner').value = d.nombreOrganizador || "";
-        document.getElementById('ed-celu').value = d.celuOrganizador || "";
-        document.getElementById('ed-lug').value = d.lugar || "";
-        document.getElementById('ed-cat').value = d.categorias || "";
-        document.getElementById('ed-fec').value = d.fecha || "";
-        document.getElementById('ed-h1').value = d.hora || "";
-        document.getElementById('ed-h2').value = d.horaFin || "";
-        document.getElementById('ed-cup').value = d.cupo || 0;
-        document.getElementById('ed-val').value = d.valor || 0;
-        document.getElementById('ed-ali').value = d.alias || "";
-        
-        const btnS = document.getElementById('btn-suspender');
-        btnS.style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'flex' : 'none';
-        document.getElementById('btn-borrar-cancha').style.display = 'block';
-
-        validarRecurrencia();
-        document.getElementById('modal-config').style.display = 'flex';
+        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || ""; document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || ""; document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || ""; document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || ""; document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0; document.getElementById('ed-ali').value = d.alias || ""; document.getElementById('btn-suspender').style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'flex' : 'none'; document.getElementById('btn-borrar-cancha').style.display = 'block';
+        validarRecurrencia(); document.getElementById('modal-config').style.display = 'flex';
     }
 
     function abrirModalSuspension() { document.getElementById('modal-suspension').style.display = 'flex'; }
-    function confirmarSuspension(reprogramar) {
-        const id = document.getElementById('ed-id').value, d = courtData[id];
-        if (reprogramar) {
-            const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia);
-            db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => { cerrarModals(); });
-        } else {
-            db.ref('hubs/' + orgId + '/canchas').once('value', s => {
-                let c = s.val() || []; c = c.filter(cid => cid !== id);
-                db.ref('hubs/' + orgId + '/canchas').set(c);
-                db.ref('eventos/' + id).remove().then(() => { cerrarModals(); });
-            });
-        }
-    }
-
-    function borrarCancha() {
-        const id = document.getElementById('ed-id').value;
-        if (!confirm("¿Estás seguro de eliminar esta cancha definitivamente?")) return;
-        db.ref('hubs/' + orgId + '/canchas').once('value', s => {
-            let c = s.val() || []; c = c.filter(cid => cid !== id);
-            db.ref('hubs/' + orgId + '/canchas').set(c);
-            db.ref('eventos/' + id).remove().then(() => { 
-                delete courtData[id]; renderizarCanchas(); cerrarModals(); 
-            });
-        });
-    }
-
+    function confirmarSuspension(reprogramar) { const id = document.getElementById('ed-id').value, d = courtData[id]; if (reprogramar) { const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia); db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => { cerrarModals(); }); } else { db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { cerrarModals(); }); }); } }
+    function borrarCancha() { const id = document.getElementById('ed-id').value; if (!confirm("¿Eliminar cancha definitivamente?")) return; db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { delete courtData[id]; renderizarCanchas(); cerrarModals(); }); }); }
+    
     function guardarConfig() {
-        let id = document.getElementById('ed-id').value;
-        const dias = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) dias.push(d); });
+        let id = document.getElementById('ed-id').value; const dias = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) dias.push(d); });
         const upd = { tipo: document.getElementById('ed-tipo').value, diasRecurrencia: dias, organiza: document.getElementById('ed-org').value, nombreOrganizador: document.getElementById('ed-owner').value, celuOrganizador: document.getElementById('ed-celu').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value };
-        if(isNew) {
-            const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = [];
-            db.ref('eventos/'+id).set(upd).then(() => { db.ref('hubs/'+orgId+'/canchas').once('value', s => { let c = s.val() || []; c.push(id); db.ref('hubs/'+orgId+'/canchas').set(c); }); });
-        } else { db.ref('eventos/'+id).update(upd); }
+        if(isNew) { const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = []; db.ref('eventos/'+id).set(upd).then(() => { db.ref('hubs/'+orgId+'/canchas').once('value', s => { let c = s.val() || []; c.push(id); db.ref('hubs/'+orgId+'/canchas').set(c); }); }); } else { db.ref('eventos/'+id).update(upd); }
         cerrarModals();
     }
 
-    function validarRecurrencia() {
-        const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config');
-        document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none';
-        if (tipo === 'recurrente' && inputFecha) {
-            const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()];
-            const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked);
-            if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } 
-            else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-        } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; }
-    }
+    function validarRecurrencia() { const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config'); document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none'; if (tipo === 'recurrente' && inputFecha) { const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()]; const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked); if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } }
+
+    // --- 🔥 RENDER JUGADORES AGRUPADOS COLAPSABLES ---
+    // --- 🔥 LÓGICA DE CLIC SEGURA ---
+    window.handleGroupClick = function(el) {
+        if(typeof hasSwiped !== 'undefined' && hasSwiped) { hasSwiped = false; return; }
+        const group = el.closest('.player-group');
+        // Chequeo directo: si tiene la clase, se abre.
+        if(group.classList.contains('has-children')) {
+            group.classList.toggle('open');
+        }
+    };
 
     window.abrirJugadores = function(id) {
         document.getElementById('pl-id').value = id;
@@ -819,44 +757,128 @@
         
         playersListener = db.ref('eventos/'+id).on('value', s => {
             const d = s.val(); if(!d) return;
-            const ins = d.inscriptos || [];
+            // Usamos safeArray por si Firebase corrompe la lista
+            const insArr = safeArray(d.inscriptos);
             
-            const totalAnotados = ins.reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            const pagados = ins.filter(p => p.estado === 'pagado').reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            const enCancha = ins.filter(p => p.estado === 'paga-en-la-cancha').reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            const pendientes = ins.filter(p => p.estado === 'pendiente').reduce((acc, p) => acc + (p.cantidad || 1), 0);
-            const cupoTotal = d.cupo || 0;
+            document.getElementById('st-total').innerText = d.cupo || 0; 
+            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(insArr));
+            document.getElementById('st-pag').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pagado')); 
+            document.getElementById('st-enc').innerText = calcularOcupados(insArr.filter(p => p.estado === 'paga-en-la-cancha'));
+            document.getElementById('st-pen').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pendiente')); 
             
-            document.getElementById('st-total').innerText = cupoTotal; 
-            document.getElementById('st-lib').innerText = Math.max(0, cupoTotal - totalAnotados);
-            document.getElementById('st-pag').innerText = pagados; 
-            document.getElementById('st-enc').innerText = enCancha;
-            document.getElementById('st-pen').innerText = pendientes; 
-            
-            const prioridades = { "pagado": 1, "paga-en-la-cancha": 2, "pendiente": 3 };
-            const listaOrdenada = ins.map((p, idx) => ({ ...p, originalIndex: idx })).sort((a, b) => prioridades[a.estado] - prioridades[b.estado]);
-
             const list = document.getElementById('players-list'); list.innerHTML = "";
-            const bgColors = { "pagado": "var(--green)", "paga-en-la-cancha": "var(--orange)", "pendiente": "var(--red)" };
-            
-            listaOrdenada.forEach((p) => {
-                const label = p.estado === 'paga-en-la-cancha' ? 'EN CANCHA' : p.estado.toUpperCase();
-                const cant = p.cantidad || 1;
-                const nombreDisplay = cant > 1 ? `${p.nombre} <b style="color:var(--blue)">+${cant-1}</b>` : p.nombre;
+            let grupos = agruparPorCelular(insArr);
+
+            grupos.sort((a, b) => obtenerEstadoGrupo(a) - obtenerEstadoGrupo(b));
+
+            grupos.forEach(grupo => {
+                grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
                 
-                list.innerHTML += `<div class="player-row">
-                    <span class="player-name">${nombreDisplay}</span>
-                    <button style="width:110px; padding:10px; border-radius:12px; border:none; color:white; font-weight:800; font-size:10px; cursor:pointer; background:${bgColors[p.estado] || '#ccc'}; transition: transform var(--anim-fast);" onclick="window.togglePago(${p.originalIndex})">${label}</button>
-                    <button style="border:none;background:none;color:var(--red);font-weight:900;cursor:pointer;font-size:14px; transition: transform var(--anim-fast);" onclick="window.borrarP(${p.originalIndex})">✕</button>
-                </div>`;
+                const t = grupo[0]; const invitados = grupo.slice(1);
+                
+                // 🔥 DETECTAMOS SI DEBE TENER FUELLE (Tiene invitados o es una reserva vieja de +X)
+                const hasChildren = invitados.length > 0 || t.cantidad > 1;
+                const labelExtra = hasChildren ? `<span class="extra-tag">+${invitados.length || (t.cantidad - 1)}</span> <span style="font-size:10px; margin-left:4px; color:#888;">▼</span>` : '';
+                
+                const estadoGrupo = obtenerEstadoGrupo(grupo);
+                let claseEstado = 'estado-mixto';
+                if (estadoGrupo === 0) claseEstado = 'estado-ok';
+                if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
+
+                // Le inyectamos la clase 'has-children' al div principal para que el clic funcione
+                let htmlGrupo = `
+                    <div class="player-group ${claseEstado} ${hasChildren ? 'has-children' : ''}">
+                        <div class="swipe-container" data-idx="${t.originalIndex}">
+                            <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
+                            <div class="swipe-content player-main" onclick="handleGroupClick(this)">
+                                <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'Sin celular'}</div></div>
+                                <div class="player-actions-box">
+                                    <button class="badge-status-btn st-${t.estado}" onclick="event.stopPropagation(); window.togglePago(${t.originalIndex})">${t.estado.replace(/-/g,' ').toUpperCase()}</button>
+                                    <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${t.originalIndex})">✕</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player-children-box">
+                `;
+                
+                // Llenamos la caja del fuelle
+                if (invitados.length > 0) {
+                    invitados.forEach(inv => {
+                        htmlGrupo += `
+                            <div class="swipe-container" data-idx="${inv.originalIndex}">
+                                <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
+                                <div class="swipe-content player-child-row">
+                                    <div class="child-name-text">↳ ${inv.nombre}</div>
+                                    <div class="player-actions-box">
+                                        <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
+                                        <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else if (t.cantidad > 1) {
+                    // 🔥 Si es una reserva vieja, ponemos este cartel. Así la caja NO queda vacía y se abre perfecto.
+                    htmlGrupo += `
+                        <div class="player-child-row" style="justify-content: center; color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 12px;">
+                            Reserva agrupada (formato anterior)
+                        </div>
+                    `;
+                }
+
+                htmlGrupo += `</div></div>`; list.innerHTML += htmlGrupo;
             });
+            
+            if (insArr.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";
             document.getElementById('modal-players').style.display = 'flex';
         });
     };
 
     window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
-    window.borrarP = function(idx) { if(!confirm("¿Borrar a este jugador y liberar su/s lugar/es?")) return; const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos`).once('value', s => { let ins = s.val(); ins.splice(idx, 1); db.ref(`eventos/${id}/inscriptos`).set(ins); }); };
+    
+    window.borrarP = function(idx) { 
+        if(!confirm("⚠️ ATENCIÓN\n\n¿Estás seguro que querés eliminar a este jugador?\nEsta acción liberará su cupo y no se puede deshacer.")) return; 
+        const id = document.getElementById('pl-id').value; 
+        db.ref(`eventos/${id}/inscriptos`).once('value', s => { 
+            let ins = safeArray(s.val()); 
+            ins.splice(idx, 1); 
+            db.ref(`eventos/${id}/inscriptos`).set(ins); 
+        }); 
+    };
+
     window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
+
+    // --- 🔥 MOTOR GESTOS SWIPE (Solo Derecha) ---
+    let startX = 0, startY = 0, currentX = 0, isDragging = false, swipeEl = null;
+
+    document.addEventListener('touchstart', e => {
+        const el = e.target.closest('.swipe-content'); if(!el) return;
+        swipeEl = el; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        isDragging = true; hasSwiped = false; swipeEl.classList.add('no-transition');
+    }, {passive: true});
+
+    document.addEventListener('touchmove', e => {
+        if(!isDragging || !swipeEl) return;
+        const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY;
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(currentX) < 10) { isDragging = false; swipeEl.style.transform = `translateX(0)`; swipeEl = null; return; }
+        if (diffX < 0) { currentX = 0; } else { currentX = diffX; }
+        if(Math.abs(currentX) > 10) hasSwiped = true;
+        const moveX = currentX > 100 ? 100 + (currentX - 100) * 0.2 : currentX;
+        swipeEl.style.transform = `translateX(${moveX}px)`;
+        if(e.cancelable && currentX > 0) e.preventDefault();
+    }, {passive: false});
+
+    document.addEventListener('touchend', e => {
+        if(!isDragging || !swipeEl) return;
+        isDragging = false; swipeEl.classList.remove('no-transition');
+        const idx = swipeEl.parentElement.dataset.idx; const thresh = 80;
+        if (currentX > thresh) {
+            swipeEl.style.transform = `translateX(100%)`;
+            setTimeout(() => { window.togglePago(idx); if(swipeEl) swipeEl.style.transform = 'translateX(0)'; }, 200);
+            if(navigator.vibrate) navigator.vibrate(50);
+        } else { swipeEl.style.transform = `translateX(0)`; }
+        currentX = 0; setTimeout(() => { swipeEl = null; }, 250);
+    });
 </script>
 </body>
 </html>

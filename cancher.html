@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=25"></script>
+    <script src="app-config.js?v=26"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -21,112 +21,102 @@
             --border: #E5E7EB;
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0; 
-            padding: 0; 
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-base); 
-            color: var(--text-main); 
-            -webkit-font-smoothing: antialiased;
+            background: var(--bg-base); color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
         }
 
         /* --- 1. HEADER (GLOBAL) --- */
         .header-global {
-            background: var(--bg-white);
-            padding: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            background: var(--bg-white); padding: 16px;
+            position: sticky; top: 0; z-index: 50;
         }
+        .header-brand { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .header-org { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-top: 2px; }
 
-        .header-brand {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.5px;
-        }
-
-        .header-org {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--text-sub);
-            margin-top: 2px;
-        }
-
-        /* --- 2. CARTELERA (LISTA MOBILE) --- */
-        .cartelera-container {
-            background: var(--bg-white);
-            min-height: 100vh;
-            padding-bottom: 40px;
-        }
-
+        /* --- 2. CARTELERA --- */
+        .cartelera-container { background: var(--bg-white); min-height: 100vh; padding-bottom: 40px; }
         .day-header {
-            background: #F3F4F6;
-            color: #374151;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            padding: 10px 16px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 55px; /* Se pega justo abajo del header principal */
-            z-index: 40;
+            background: #F3F4F6; color: #374151; font-size: 13px; font-weight: 600;
+            text-transform: uppercase; padding: 10px 16px;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            position: sticky; top: 55px; z-index: 40;
         }
-
         .court-item {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            display: block;
-            background: var(--bg-white);
-            transition: background 0.1s ease;
+            padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+            display: block; background: var(--bg-white); transition: background 0.1s ease;
+        }
+        .court-item:active { background: #F9FAFB; }
+        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+        .c-line-3 { font-size: 13px; color: var(--text-sub); }
+        .c-cat-bold { font-weight: 600; color: var(--text-main); }
+        #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+
+        /* --- 3. INSCRIPCIÓN (NUEVO) --- */
+        .view-inscripcion {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-base); z-index: 100;
+            transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow-y: auto; padding-bottom: 40px;
+        }
+        .view-inscripcion.active { transform: translateX(0); }
+
+        .nav-back {
+            padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; position: sticky; top: 0; z-index: 110;
+            font-weight: 600; color: var(--text-main); font-size: 16px; cursor: pointer;
+        }
+        .nav-back svg { margin-right: 8px; }
+
+        .content-pad { padding: 24px 16px; }
+        
+        .info-card {
+            background: var(--bg-white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; margin-bottom: 12px;
+        }
+        .i-title { font-size: 18px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; text-transform: uppercase; }
+        .i-row { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center;}
+        .i-row span { margin-left: 6px; }
+        .i-price { margin-top: 16px; font-size: 16px; font-weight: 700; color: var(--text-main); }
+        
+        .scarcity-msg {
+            font-size: 13px; font-weight: 500; color: var(--text-sub); background: #F3F4F6;
+            padding: 10px 12px; border-radius: 8px; margin-bottom: 24px; text-align: center;
         }
 
-        .court-item:active {
-            background: #F9FAFB;
+        .form-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+
+        .input-group { margin-bottom: 16px; }
+        .input-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .input-clean {
+            width: 100%; height: 44px; padding: 10px 12px; font-size: 16px;
+            border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white);
+            font-family: inherit; outline: none; transition: border 0.2s; color: var(--text-main);
+        }
+        .input-clean:focus { border-color: #111111; }
+        select.input-clean {
+            appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
         }
 
-        .c-line-1 {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 4px;
-            line-height: 1.2;
+        .total-box {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 32px; margin-bottom: 24px; padding-top: 16px; border-top: 1px solid var(--border);
         }
+        .t-label { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+        .t-amount { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;}
 
-        .c-line-2 {
-            font-size: 13px;
-            color: var(--text-sub);
-            margin-bottom: 4px;
+        .btn-black {
+            width: 100%; height: 48px; background: #111111; color: #FFFFFF;
+            border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s ease;
         }
-
-        .c-line-3 {
-            font-size: 13px;
-            color: var(--text-sub);
-        }
-
-        .c-cat-bold {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        /* Loader inicial */
-        #loading-init {
-            text-align: center;
-            padding: 40px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-sub);
-        }
+        .btn-black:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -141,10 +131,65 @@
         <div id="court-list-container"></div>
     </main>
 
+    <div id="view-inscripcion" class="view-inscripcion">
+        <div class="nav-back" onclick="cerrarInscripcion()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Atrás
+        </div>
+        <div class="content-pad">
+            
+            <div class="info-card">
+                <div class="i-title" id="ins-title">--</div>
+                <div class="i-row">📅 <span id="ins-date">--</span></div>
+                <div class="i-row" id="ins-loc-container">📍 <span id="ins-loc">--</span></div>
+                <div class="i-row">👤 <span>Organiza: <span id="ins-org">--</span></span></div>
+                <div class="i-price"><span id="ins-price">--</span> por jugador</div>
+            </div>
+            
+            <div class="scarcity-msg">⚡ Esta cancha suele completarse rápido</div>
+
+            <div class="form-title">Completá tus datos para anotarte</div>
+            
+            <div style="display:flex; gap:12px;">
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Nombre</label>
+                    <input type="text" id="ins-nombre" class="input-clean" placeholder="Ej: Juan">
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Apellido</label>
+                    <input type="text" id="ins-apellido" class="input-clean" placeholder="Ej: Pérez">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Tu WhatsApp</label>
+                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: 1122334455">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">¿A cuántos jugadores anotás?</label>
+                <select id="ins-lugares" class="input-clean" onchange="actualizarTotal()">
+                    <option value="1">Solo yo</option>
+                    <option value="2">Yo + 1</option>
+                    <option value="3">Yo + 2</option>
+                    <option value="4">Yo + 3</option>
+                </select>
+            </div>
+
+            <div class="total-box">
+                <div class="t-label">TOTAL</div>
+                <div class="t-amount" id="ins-total-calc">$0</div>
+            </div>
+
+            <button class="btn-black" onclick="avanzarPaso4()">Anotarme ahora</button>
+        </div>
+    </div>
+
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const orgId = urlParams.get('org');
     let dbEvents = [];
+    let currentEventData = null; // Guardamos la data de la cancha clickeada
 
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
@@ -175,33 +220,26 @@
             dbEvents = [];
             snapshots.forEach(s => { if(s.exists()) dbEvents.push({ id: s.key, ...s.val() }); });
             
-            // Ordenar por fecha y hora ascendente
             dbEvents.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
             let htmlAcumulado = "<div class='cartelera-container'>";
-            let lastDate = ""; 
-            let canchasActivas = 0;
+            let lastDate = ""; let canchasActivas = 0;
 
             dbEvents.forEach((d) => {
                 const ahora = Date.now();
                 let horaFinReal = d.horaFin || '23:59';
                 let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-                if (d.hora && horaFinReal < d.hora) finEvento += 86400000; // Cruzó la medianoche
+                if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
 
                 if (ahora <= finEvento || d.tipo === 'recurrente') {
                     canchasActivas++;
                     
-                    // Agrupador por día
                     if (d.fecha !== lastDate) {
                         htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
                         lastDate = d.fecha;
                     }
                     
-                    // 🔥 ACÁ ESTÁ EL CAMBIO: Título limpio y lugar abajo
-                  // Título limpio
                     let tituloCancha = d.organiza || 'Cancha';
-                    
-                    // Sede con emoji
                     let lineaLugar = d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : '';
 
                     htmlAcumulado += `
@@ -222,6 +260,64 @@
             listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado;
         });
     }
+
+    // --- LÓGICA DE INSCRIPCIÓN (PASO 3) ---
+    function abrirInscripcion(id) {
+        currentEventData = dbEvents.find(e => e.id === id);
+        if(!currentEventData) return;
+
+        // Llenar datos de la tarjeta superior
+        document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha';
+        document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
+        
+        if(currentEventData.lugar) {
+            document.getElementById('ins-loc-container').style.display = 'flex';
+            document.getElementById('ins-loc').innerText = currentEventData.lugar;
+        } else {
+            document.getElementById('ins-loc-container').style.display = 'none';
+        }
+
+        document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || 'Organizador';
+        document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
+
+        // Resetear select y calcular total inicial
+        document.getElementById('ins-lugares').value = "1";
+        actualizarTotal();
+
+        // Animar entrada
+        document.getElementById('view-inscripcion').classList.add('active');
+        
+        // Pequeño hack para que no se superponga el scroll
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function cerrarInscripcion() {
+        document.getElementById('view-inscripcion').classList.remove('active');
+        document.body.style.overflow = ''; // Devolver scroll
+        currentEventData = null;
+    }
+
+    function actualizarTotal() {
+        if(!currentEventData) return;
+        const lugares = parseInt(document.getElementById('ins-lugares').value) || 1;
+        const total = lugares * (currentEventData.valor || 0);
+        document.getElementById('ins-total-calc').innerText = PadelUtils.fmtDinero(total);
+    }
+
+    function avanzarPaso4() {
+        const nom = document.getElementById('ins-nombre').value.trim();
+        const ape = document.getElementById('ins-apellido').value.trim();
+        const celu = document.getElementById('ins-celu').value.trim();
+
+        if(!nom || !ape || !celu) {
+            alert("Por favor completá nombre, apellido y celular para avanzar.");
+            return;
+        }
+
+        // Acá en el próximo mensaje armamos el Paso 4
+        alert("Paso 3 completado con éxito. ¡Acá deslizaría el Paso 4 de confirmación de pago!");
+    }
+
     // --- FORMATEADORES DE FECHA ---
     function formatearDiaHeader(fechaStr) {
         const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
@@ -235,11 +331,6 @@
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const f = new Date(fechaStr + 'T12:00:00');
         return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]}`;
-    }
-
-    // Placeholder para el paso 3
-    function abrirInscripcion(id) {
-        alert("Paso 3: Acá abrimos la inscripción limpia para la cancha " + id);
     }
 </script>
 </body>

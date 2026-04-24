@@ -6,51 +6,101 @@
     <title>Panel Cancher</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=32"></script>
+    <script src="app-config.js?v=34"></script>
     
     <style>
-        /* --- SISTEMA DE DISEÑO CANCHER --- */
         :root { 
-            --bg-base: #F7F7F7;
-            --bg-white: #FFFFFF;
-            --text-main: #111111;
-            --text-sub: #6B7280;
+            --bg-base: #F3F4F6; --bg-white: #FFFFFF;
+            --text-main: #111111; --text-sub: #6B7280;
             --border: #E5E7EB;
-            --brand-purple: #7C3AED;
-            --brand-green: #10B981;
-            --brand-red: #EF4444;
+            --brand-purple: #7C3AED; --brand-green: #10B981; --brand-red: #EF4444; --brand-orange: #F59E0B;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-base); color: var(--text-main); 
-            -webkit-font-smoothing: antialiased; overflow-x: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        /* --- HEADER DEL DASHBOARD --- */
-        .header-global {
-            background: var(--bg-white); padding: 16px;
-            position: sticky; top: 0; z-index: 50;
-            border-bottom: 1px solid var(--border);
+        /* HEADER & DASHBOARD FIJO */
+        .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .header-brand { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-org { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+        
+        .dash-finanzas { background: var(--bg-white); padding: 24px 16px; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+        .df-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+        .df-monto { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin: 8px 0 16px 0; }
+
+        .app-container { max-width: 600px; margin: 0 auto; padding: 0 16px 80px 16px; }
+
+        /* CARDS CANCHA */
+        .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; transition: transform 0.1s ease; }
+        .card-cancha:active { transform: scale(0.98); }
+        .card-completa { border: 1px solid var(--brand-green); }
+        .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); }
+        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
+        .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
+        .cc-dinero { color: var(--brand-green); }
+
+        .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 90; }
+
+        /* --- FASE 2: MODAL PANEL DE CANCHA --- */
+        .view-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-base); z-index: 100;
+            transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow-y: auto; padding-bottom: 40px;
+        }
+        .view-modal.active { transform: translateX(0); }
+
+        .nav-modal {
+            padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110;
+        }
+        .nav-back-btn { font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center;}
+        .nav-back-btn svg { margin-right: 8px; }
+        .btn-config { font-size: 20px; background: none; border: none; cursor: pointer; color: var(--text-sub); }
+
+        .modal-content { padding: 16px; max-width: 600px; margin: 0 auto;}
+        
+        .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; }
+        .modal-subtitle { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 20px; }
+
+        /* Acciones Principales Modal */
+        .action-row { display: flex; gap: 12px; margin-bottom: 24px; }
+        .btn-black-modal {
+            flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px;
+            border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer;
+        }
+        
+        /* Resumen Mejorado */
+        .mj-resumen {
+            display: flex; justify-content: space-between; font-size: 15px; font-weight: 700;
+            background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Grupos de Jugadores */
+        .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
+        
+        /* Estructura Fila Simplificada (Fase 3 base) */
+        .jugador-fila {
             display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-white); padding: 16px; border-radius: 10px;
+            margin-bottom: 8px; border: 1px solid var(--border);
         }
-        .header-brand { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
-        .header-org { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-top: 2px; }
+        .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
         
-        /* Contenedor Principal */
-        .app-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding-bottom: 80px;
-        }
+        /* Puntos de estado */
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.pendiente { background: var(--brand-red); }
+        .dot.cancha { background: var(--brand-orange); }
+        .dot.pagado { background: var(--brand-green); }
 
-        #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+        .acciones { display: flex; gap: 12px; align-items: center; }
+        .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px;}
+
+        #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
     </style>
 </head>
 <body>
@@ -63,38 +113,184 @@
         <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="firebase.auth().signOut().then(() => location.reload())">Salir</div>
     </header>
 
-    <main class="app-container" id="app-content">
+    <div class="dash-finanzas">
+        <div class="df-label">Recaudación Global</div>
+        <div class="df-monto" id="dash-recaudado">$0</div>
+        <button style="background:transparent; border:1px solid var(--border); border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;" onclick="alert('Ver Movimientos')">Ver movimientos</button>
+    </div>
+
+    <main class="app-container">
         <div id="loading-init">Cargando tu panel...</div>
-        </main>
+        <div id="cards-container"></div>
+    </main>
+
+    <div class="fab-crear" onclick="alert('Formulario de nueva cancha')">+</div>
+
+    <div id="view-panel-cancha" class="view-modal">
+        <div class="nav-modal">
+            <div class="nav-back-btn" onclick="cerrarPanelCancha()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Atrás
+            </div>
+            <button class="btn-config" onclick="alert('Abre Configuración de Cancha')">⚙️</button>
+        </div>
+
+        <div class="modal-content">
+            <div class="modal-title" id="pc-titulo">--</div>
+            <div class="modal-subtitle" id="pc-fecha">--</div>
+
+            <div class="action-row">
+                <button class="btn-black-modal" onclick="alert('Abre formulario interno de Anotar Jugador')">+ Anotar Jugador</button>
+            </div>
+
+            <div class="mj-resumen">
+                <div id="pc-cupos">0 / 0 lugares</div>
+                <div style="color: var(--brand-green);" id="pc-recaudado">$0</div>
+            </div>
+
+            <div id="lista-jugadores-container">
+                <div style="text-align:center; padding:20px;">Cargando jugadores...</div>
+            </div>
+        </div>
+    </div>
 
 <script>
-    // Lógica básica de autenticación para que el panel inicie
+    let globalOrgId = null;
+    let eventosCache = [];
+
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             db.ref('organizadores/' + user.uid).once('value', snap => {
-                const orgId = snap.val();
-                if(orgId) {
-                    cargarPanel(orgId);
-                } else {
-                    document.getElementById('loading-init').innerText = "Usuario sin organización vinculada.";
-                }
+                globalOrgId = snap.val();
+                if(globalOrgId) cargarPanel(globalOrgId);
             });
-        } else {
-            // Si no está logueado, lo mandamos al login (ajustá esta URL si tu login es otro)
-            window.location.href = 'index.html'; 
         }
     });
 
     function cargarPanel(orgId) {
-        // Traer datos de la cuenta
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
-            const cuenta = snap.val() || {};
-            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
-            document.getElementById('loading-init').style.display = 'none';
-            
-            // Acá llamaremos a las funciones de renderizado del rediseño
-            console.log("Panel cargado para:", orgId);
+            document.getElementById('t-org-name').innerText = (snap.val() || {}).nombreOrg || "Tu Club";
         });
+
+        db.ref('hubs/' + orgId).on('value', async (snap) => {
+            const container = document.getElementById('cards-container');
+            document.getElementById('loading-init').style.display = 'none';
+            const hubData = snap.val();
+            if (!hubData || !hubData.canchas) return;
+
+            const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
+            const snapshots = await Promise.all(promesas);
+            eventosCache = [];
+            snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
+            eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+
+            let htmlCards = ''; let totalGlobalRecaudado = 0; const ahora = Date.now();
+
+            eventosCache.forEach(d => {
+                let ocupados = 0; let recaudadoCard = 0;
+                (d.inscriptos || []).forEach(jug => {
+                    const cant = jug.cantidad || 1;
+                    ocupados += cant;
+                    if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant);
+                });
+                totalGlobalRecaudado += recaudadoCard;
+
+                const claseCompleta = (ocupados >= (d.cupo || 0)) ? 'card-completa' : '';
+                let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
+
+                let finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
+                if (d.hora && (d.horaFin || '23:59') < d.hora) finEvento += 86400000;
+
+                if (ahora <= finEvento || d.tipo === 'recurrente') {
+                    htmlCards += `
+                        <div class="card-cancha ${claseCompleta}" onclick="abrirPanelCancha('${d.id}')">
+                            <div class="cc-header"><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora">${d.hora} – ${d.horaFin || '--'}</span></div>
+                            <div class="cc-categoria">${titulo}</div>
+                            <div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div>
+                        </div>`;
+                }
+            });
+            container.innerHTML = htmlCards;
+            document.getElementById('dash-recaudado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+        });
+    }
+
+    // --- LÓGICA DEL PANEL DE CANCHA (FASE 2 Y 3 BASE) ---
+    function abrirPanelCancha(id) {
+        const cancha = eventosCache.find(e => e.id === id);
+        if(!cancha) return;
+
+        // Títulos
+        document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha';
+        document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`;
+
+        const inscriptos = cancha.inscriptos || [];
+        let ocupados = 0; let recaudado = 0;
+
+        // REGLA 2.2: Agrupar por estado
+        const grupos = { pendiente: [], cancha: [], pagado: [] };
+
+        inscriptos.forEach(jug => {
+            const cant = jug.cantidad || 1;
+            ocupados += cant;
+            
+            // Fila simplificada (REGLA 3.1)
+            let estadoClase = 'pendiente';
+            if (jug.estado === 'pagado') { estadoClase = 'pagado'; recaudado += (cancha.valor * cant); }
+            else if (jug.estado === 'paga-en-la-cancha') { estadoClase = 'cancha'; }
+
+            const fila = `
+                <div class="jugador-fila">
+                    <div class="jugador-main">
+                        <span class="nombre">${jugadorAbreviado(jug.nombre)} ${cant > 1 ? `<span style="color:var(--text-sub);">+${cant-1}</span>` : ''}</span>
+                        <span class="dot ${estadoClase}"></span>
+                    </div>
+                    <div class="acciones">
+                        ${estadoClase !== 'pagado' ? `<button style="background:#E5E7EB; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="alert('Marcar pagado y detener burbuja de evento')">✔</button>` : ''}
+                        <button class="btn-menu" onclick="alert('Abre menú: WhatsApp, Editar, Eliminar')">⋯</button>
+                    </div>
+                </div>
+            `;
+
+            if(jug.estado === 'pagado') grupos.pagado.push(fila);
+            else if(jug.estado === 'paga-en-la-cancha') grupos.cancha.push(fila);
+            else grupos.pendiente.push(fila);
+        });
+
+        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`;
+        document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
+
+        // REGLA 2.3: Render Bloques
+        let htmlLista = '';
+        if(grupos.pendiente.length > 0) htmlLista += `<div class="grupo-titulo">Pendientes (${grupos.pendiente.length})</div>` + grupos.pendiente.join('');
+        if(grupos.cancha.length > 0) htmlLista += `<div class="grupo-titulo">Pagan en club (${grupos.cancha.length})</div>` + grupos.cancha.join('');
+        if(grupos.pagado.length > 0) htmlLista += `<div class="grupo-titulo">Pagados (${grupos.pagado.length})</div>` + grupos.pagado.join('');
+        
+        if(!htmlLista) htmlLista = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
+        
+        document.getElementById('lista-jugadores-container').innerHTML = htmlLista;
+
+        // Abrir Modal
+        document.getElementById('view-panel-cancha').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarPanelCancha() {
+        document.getElementById('view-panel-cancha').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function formatearDiaCorto(fechaStr) {
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`;
+    }
+
+    // Mostrar solo primer nombre y apellido para no saturar
+    function jugadorAbreviado(nombreCompleto) {
+        if(!nombreCompleto) return 'Jugador';
+        const partes = nombreCompleto.split(' ');
+        if(partes.length === 1) return partes[0];
+        return `${partes[0]} ${partes[1].charAt(0)}.`;
     }
 </script>
 </body>

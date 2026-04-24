@@ -193,11 +193,11 @@
 
             <div id="court-list-container"></div>
 
-            <div class="footer-pro" id="footer-pro" style="display:none;">
+          <div class="footer-pro" id="footer-pro" style="display:none;">
                 <hr class="footer-divider">
                 <p style="font-size:12px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Tu cancha es un caos de mensajes?</p>
-                <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, pasame a piloto automático 🎾</a>
-                <div class="dev-credit">Desarrollado por Mariano Blumenfeld</div>
+                <a href="https://wa.me/5491166463800?text=Hola%20Cancher,%20quiero%20el%20piloto%20automático" class="btn-sales">Pasame a Cancher ⚡</a>
+                <div class="dev-credit">Organizado con Cancher</div>
             </div>
         </div>
 
@@ -264,7 +264,8 @@
                 <div id="success-screen" style="display:none; text-align:center;">
                     <div class="check-icon">✓</div>
                     <h2 style="margin:0 0 5px 0; font-weight:900; font-size:24px;">¡Ya estás adentro!</h2>
-                    <p style="color:var(--text-sub); font-weight:600; font-size:14px; margin:0 0 20px 0;">Asegurá tu lugar con la transferencia</p>
+                    <p style="color:var(--orange); font-weight:800; font-size:15px; margin:0 0 5px 0;">🔥 Bienvenido/a a Cancher</p>
+                    <p style="color:var(--text-sub); font-weight:600; font-size:13px; margin:0 0 20px 0;">Asegurá tu lugar con el pago</p>
 
                     <div class="payment-box" style="display:block;" id="transfer-details-box">
                         <div style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase;">Total a pagar</div>
@@ -293,7 +294,7 @@
                     </div>
                 </div>
                 
-                <div class="dev-credit" style="text-align:center;">Desarrollado por Mariano Blumenfeld</div>
+                <div class="dev-credit" style="text-align:center;">⚡ Organizado con Cancher</div>
             </div>
         </div>
     </div>
@@ -366,7 +367,7 @@
     function M2_cargarCartelera() {
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
-            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Canchas";
+            document.getElementById('t-org-name').innerHTML = `${cuenta.nombreOrg || "Canchas"} <span style="font-size: 14px; color: var(--text-sub); text-transform: none; font-weight: 600; letter-spacing: 0;"> con Cancher</span>`;
             if (cuenta.esFundador && !cuenta.archivado) document.getElementById('badge-fundador-container').style.display = 'block';
             document.getElementById('header-box').style.display = 'block';
             document.getElementById('footer-pro').style.display = 'block';
@@ -416,6 +417,9 @@
                     const classItem = isFull ? "event-item is-full" : "event-item";
                     const delay = Math.min(i * 40, 500);
 
+                    // 🔥 INYECCIÓN DE GROWTH: Banner de cancha llena
+                    const fullBanner = isFull ? `<div style="font-size:11px; color:var(--orange); font-weight:800; margin-top:10px; text-align:center; background:rgba(255,159,10,0.1); padding:6px; border-radius:8px; letter-spacing: 0.5px;">🎉 Cancha completa. Así se organiza con Cancher.</div>` : "";
+
                     htmlAcumulado += `
                         <div class="${classItem}" onclick="openDetail('${d.id}')" style="animation-delay: ${delay}ms;">
                             <div class="line-1"><span class="time">${d.hora}–${d.horaFin || '--'}</span></div>
@@ -427,6 +431,9 @@
                                 <span class="location">${d.lugar || 'Sede a confirmar'}</span>
                                 <span class="arrow">${arrowHtml}</span>
                             </div>
+                            ${fullBanner}
+                        </div>
+                    `;
                         </div>
                     `;
                 }

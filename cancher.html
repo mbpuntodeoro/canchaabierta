@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cancher.App</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js?v=25"></script>
+    
+    <style>
+        /* --- SISTEMA DE DISEÑO CANCHER --- */
+        :root { 
+            --bg-base: #F7F7F7;
+            --bg-white: #FFFFFF;
+            --text-main: #111111;
+            --text-sub: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-base); 
+            color: var(--text-main); 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- 1. HEADER (GLOBAL) --- */
+        .header-global {
+            background: var(--bg-white);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-brand {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .header-org {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-global">
+        <div class="header-brand">CANCHER</div>
+        <div class="header-org" id="t-org-name">Organizado por ...</div>
+    </header>
+
+    <main id="app-content">
+    </main>
+
+<script>
+    // --- LÓGICA BASE ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const orgId = urlParams.get('org');
+
+    if(!orgId) {
+        document.getElementById('t-org-name').innerText = "Enlace incompleto.";
+    } else {
+        cargarHeader();
+    }
+
+    function cargarHeader() {
+        db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
+            const cuenta = snap.val() || {};
+            const nombre = cuenta.nombreOrg || "Club";
+            document.getElementById('t-org-name').innerText = `Organizado por ${nombre}`;
+        });
+    }
+</script>
+</body>
+</html>

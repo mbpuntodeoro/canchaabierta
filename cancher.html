@@ -197,9 +197,9 @@
                         lastDate = d.fecha;
                     }
                     
-                    // Armado del Título (Ej: MIXTA - CENTENERA)
+                    // 🔥 ACÁ ESTÁ EL CAMBIO: Título limpio y lugar abajo
                     let tituloCancha = d.organiza || 'Cancha';
-                    if (d.lugar) tituloCancha += ` - ${d.lugar}`;
+                    let lineaLugar = d.lugar ? `<div class="c-line-2">${d.lugar}</div>` : '';
 
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
@@ -208,6 +208,7 @@
                                 <span>${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
                             <div class="c-line-2">${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            ${lineaLugar}
                             <div class="c-line-3">Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
                         </div>
                     `;
@@ -218,7 +219,6 @@
             listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado;
         });
     }
-
     // --- FORMATEADORES DE FECHA ---
     function formatearDiaHeader(fechaStr) {
         const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];

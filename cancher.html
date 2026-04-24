@@ -39,7 +39,6 @@
         .header-global {
             background: var(--bg-white);
             padding: 16px;
-            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 50;
@@ -58,35 +57,186 @@
             color: var(--text-sub);
             margin-top: 2px;
         }
+
+        /* --- 2. CARTELERA (LISTA MOBILE) --- */
+        .cartelera-container {
+            background: var(--bg-white);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .day-header {
+            background: #F3F4F6;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 55px; /* Se pega justo abajo del header principal */
+            z-index: 40;
+        }
+
+        .court-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: block;
+            background: var(--bg-white);
+            transition: background 0.1s ease;
+        }
+
+        .court-item:active {
+            background: #F9FAFB;
+        }
+
+        .c-line-1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .c-line-2 {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .c-line-3 {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .c-cat-bold {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Loader inicial */
+        #loading-init {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
     </style>
 </head>
 <body>
 
     <header class="header-global">
         <div class="header-brand">CANCHER</div>
-        <div class="header-org" id="t-org-name">Organizado por ...</div>
+        <div class="header-org" id="t-org-name">Cargando...</div>
     </header>
 
     <main id="app-content">
+        <div id="loading-init">Buscando canchas...</div>
+        <div id="court-list-container"></div>
     </main>
 
 <script>
-    // --- LÓGICA BASE ---
     const urlParams = new URLSearchParams(window.location.search);
     const orgId = urlParams.get('org');
+    let dbEvents = [];
 
     if(!orgId) {
-        document.getElementById('t-org-name').innerText = "Enlace incompleto.";
+        document.getElementById('loading-init').innerText = "Enlace incompleto.";
     } else {
-        cargarHeader();
+        cargarBase();
     }
 
-    function cargarHeader() {
+    function cargarBase() {
+        // Cargar Header
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
-            const nombre = cuenta.nombreOrg || "Club";
-            document.getElementById('t-org-name').innerText = `Organizado por ${nombre}`;
+            document.getElementById('t-org-name').innerText = `Organizado por ${cuenta.nombreOrg || "Club"}`;
         });
+
+        // Cargar Cartelera
+        db.ref('hubs/' + orgId).on('value', async (snap) => {
+            const listContainer = document.getElementById('court-list-container');
+            document.getElementById('loading-init').style.display = 'none';
+            
+            const hubData = snap.val();
+            if (!hubData || !hubData.canchas) {
+                listContainer.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
+                return;
+            }
+
+            const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
+            const snapshots = await Promise.all(promesas);
+            dbEvents = [];
+            snapshots.forEach(s => { if(s.exists()) dbEvents.push({ id: s.key, ...s.val() }); });
+            
+            // Ordenar por fecha y hora ascendente
+            dbEvents.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+
+            let htmlAcumulado = "<div class='cartelera-container'>";
+            let lastDate = ""; 
+            let canchasActivas = 0;
+
+            dbEvents.forEach((d) => {
+                const ahora = Date.now();
+                let horaFinReal = d.horaFin || '23:59';
+                let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
+                if (d.hora && horaFinReal < d.hora) finEvento += 86400000; // Cruzó la medianoche
+
+                if (ahora <= finEvento || d.tipo === 'recurrente') {
+                    canchasActivas++;
+                    
+                    // Agrupador por día
+                    if (d.fecha !== lastDate) {
+                        htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
+                        lastDate = d.fecha;
+                    }
+                    
+                    // Armado del Título (Ej: MIXTA - CENTENERA)
+                    let tituloCancha = d.organiza || 'Cancha';
+                    if (d.lugar) tituloCancha += ` - ${d.lugar}`;
+
+                    htmlAcumulado += `
+                        <div class="court-item" onclick="abrirInscripcion('${d.id}')">
+                            <div class="c-line-1">
+                                <span style="padding-right: 15px;">${tituloCancha.toUpperCase()}</span>
+                                <span>${PadelUtils.fmtDinero(d.valor)}</span>
+                            </div>
+                            <div class="c-line-2">${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            <div class="c-line-3">Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
+                        </div>
+                    `;
+                }
+            });
+
+            htmlAcumulado += "</div>";
+            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado;
+        });
+    }
+
+    // --- FORMATEADORES DE FECHA ---
+    function formatearDiaHeader(fechaStr) {
+        const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]}`;
+    }
+
+    function formatearDiaCorto(fechaStr) {
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]}`;
+    }
+
+    // Placeholder para el paso 3
+    function abrirInscripcion(id) {
+        alert("Paso 3: Acá abrimos la inscripción limpia para la cancha " + id);
     }
 </script>
 </body>

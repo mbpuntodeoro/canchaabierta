@@ -43,12 +43,7 @@
         .view.active { transform: translateX(0); opacity: 1; z-index: 2; }
         .view.exit-left { transform: translateX(-30%); opacity: 0; pointer-events: none;}
 
-        /* --- ESTILOS LISTA (M2) --- */
-        .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
-        .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
-        .badge-fundador { display: inline-block; background: #fff9e6; color: #856404; font-size: 9px; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: 5px;}
-
-        .event-list { display: flex; flex-direction: column; width: 100%; max-width: 500px; margin: 0 auto; }
+    
         /* --- ESTILOS LISTA (M2) --- */
         .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
         .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
@@ -434,14 +429,8 @@
                             ${fullBanner}
                         </div>
                     `;
-                        </div>
-                    `;
                 }
             });
-            htmlAcumulado += "</div>";
-            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; color:var(--text-sub); font-weight:600; padding:40px;'>No hay canchas activas en este momento.</div>" : htmlAcumulado;
-        });
-    }
 
     // --- MÓDULO 3: INSCRIPCIÓN ---
     function M3_cargarInscripcion() {

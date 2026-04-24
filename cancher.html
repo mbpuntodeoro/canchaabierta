@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=29"></script>
+    <script src="app-config.js?v=30"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -19,6 +19,7 @@
             --text-main: #111111;
             --text-sub: #6B7280;
             --border: #E5E7EB;
+            --brand-purple: #7C3AED; /* Violeta moderno y vibrante */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -157,8 +158,12 @@
         }
         .link-sec:active { color: var(--text-main); }
 
+        /* FOOTER BRANDING VIOLETA */
         .branding-footer {
             font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: 40px;
+        }
+        .link-cancher {
+            color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px;
         }
     </style>
 </head>
@@ -175,6 +180,10 @@
     <main id="app-content">
         <div id="loading-init">Buscando canchas...</div>
         <div id="court-list-container"></div>
+        
+        <div class="branding-footer" id="main-footer" style="display:none; padding-bottom: 30px;">
+            Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+        </div>
     </main>
 
     <div id="view-inscripcion" class="view-inscripcion">
@@ -255,7 +264,9 @@
                     <a class="link-sec" onclick="cerrarInscripcion()">Ver más canchas</a>
                 </div>
 
-                <div class="branding-footer">Organizado con Cancher</div>
+                <div class="branding-footer" style="padding-bottom: 20px;">
+                    Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+                </div>
             </div>
 
         </div>
@@ -291,6 +302,8 @@
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             const listContainer = document.getElementById('court-list-container');
             document.getElementById('loading-init').style.display = 'none';
+            document.getElementById('main-footer').style.display = 'block'; // Mostrar el footer
+
             const hubData = snap.val();
             if (!hubData || !hubData.canchas) {
                 listContainer.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
@@ -335,12 +348,10 @@
         currentEventData = dbEvents.find(e => e.id === id);
         if(!currentEventData) return;
         
-        // Reset de vistas
         document.getElementById('step-3-form').style.display = 'block';
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        // Llenado de info superior
         document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
@@ -348,7 +359,6 @@
         document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || 'Organizador';
         document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
         
-        // Llenado del paso 4 oculto
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar';
 
         document.getElementById('ins-lugares').value = "1";
@@ -397,7 +407,6 @@
         }
     }
 
-    // --- ACCIÓN PRINCIPAL DE INSCRIPCIÓN ---
     function avanzarPaso4() {
         const nom = document.getElementById('ins-nombre').value.trim();
         const ape = document.getElementById('ins-apellido').value.trim();
@@ -428,7 +437,6 @@
         const btn = document.getElementById('btn-submit');
         btn.innerText = "Procesando..."; btn.disabled = true;
 
-        // Validación en Firebase
         db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
             let list = s.val() || [];
             const name = (nom + " " + ape).trim();
@@ -444,15 +452,12 @@
                 btn.innerText = "Anotarme ahora"; btn.disabled = false; return;
             }
             
-            // Guardar
             list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
             list = list.concat(personasExtra);
             
             db.ref(`eventos/${currentEventData.id}/inscriptos`).set(list).then(() => {
-                // Guardado local (para recordar al usuario si entra de nuevo)
                 localStorage.setItem('padelapp_cancha_' + currentEventData.id, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
                 
-                // Transición al Paso 4
                 document.getElementById('step-3-form').style.display = 'none';
                 document.getElementById('step-4-success').style.display = 'block';
                 document.getElementById('nav-text').innerText = "Volver al inicio";
@@ -463,7 +468,7 @@
         });
     }
 
-    // --- ACCIONES DEL PASO 4 ---
+    // --- ACCIONES DEL PASO 4 (WHATSAPP MODIFICADO) ---
     function copiarAlias(btn) {
         navigator.clipboard.writeText(document.getElementById('conf-alias').innerText).then(() => {
             const old = btn.innerText; 
@@ -476,10 +481,19 @@
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
         if(!local) return;
 
-        let texto = `ALTA CANCHA ABIERTA\n\n`;
+        // Formato para WhatsApp: "Dom 27/4"
+        const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
+        const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+
+        let tituloCancha = currentEventData.organiza || 'Cancha';
+        let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
+
+        // Texto estructurado exactamente como pediste
+        let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
         texto += `Nombre: ${local.nombre}\n`;
         texto += `Personas: ${local.cantidad}\n`;
-        texto += `Evento: ${currentEventData.organiza} - ${currentEventData.hora}\n`;
+        texto += `Evento: ${tituloCancha}${sede} - ${fechaFormateada} - ${currentEventData.hora}\n`;
         texto += `Pago: Transferencia\n\nAdjunto comprobante.`;
 
         const telefono = currentEventData.celuOrganizador.replace(/[^0-9]/g, '');
@@ -510,7 +524,6 @@
     }
 
     function sumarOtroJugador() {
-        // Blanquear campos y volver al paso 3
         document.getElementById('ins-nombre').value = '';
         document.getElementById('ins-apellido').value = '';
         document.getElementById('ins-lugares').value = '1';

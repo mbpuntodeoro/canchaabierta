@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=34"></script>
+    <script src="app-config.js?v=35"></script>
     
     <style>
         :root { 
@@ -66,38 +66,47 @@
         .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; }
         .modal-subtitle { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 20px; }
 
-        /* Acciones Principales Modal */
         .action-row { display: flex; gap: 12px; margin-bottom: 24px; }
         .btn-black-modal {
             flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px;
             border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer;
         }
         
-        /* Resumen Mejorado */
         .mj-resumen {
             display: flex; justify-content: space-between; font-size: 15px; font-weight: 700;
             background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px;
             border: 1px solid var(--border);
         }
         
-        /* Grupos de Jugadores */
         .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
         
-        /* Estructura Fila Simplificada (Fase 3 base) */
+        /* ESTRUCTURAS DE FILAS Y GRUPOS (FASE 3 Y 4) */
         .jugador-fila {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-white); padding: 16px; border-radius: 10px;
             margin-bottom: 8px; border: 1px solid var(--border);
+            transition: all 0.2s ease;
         }
-        .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
         
-        /* Puntos de estado */
+        .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
+        .grupo-expandible .jugador-fila { margin-bottom: 0; border: none; border-radius: 0; }
+        
+        .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
+        .grupo-detalle.open { max-height: 500px; }
+        
+        .sub-fila { padding: 12px 16px 12px 32px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
+        .icon-chevron { color: var(--text-sub); transition: transform 0.2s ease; margin-left: 4px; }
+        .icon-chevron.open { transform: rotate(180deg); }
+
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         .dot.pendiente { background: var(--brand-red); }
         .dot.cancha { background: var(--brand-orange); }
         .dot.pagado { background: var(--brand-green); }
 
         .acciones { display: flex; gap: 12px; align-items: center; }
+        .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); }
         .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px;}
 
         #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
@@ -157,32 +166,22 @@
     let globalOrgId = null;
     let eventosCache = [];
 
-    // --- TRUCO PARA TESTEAR DIRECTO CON EL LINK ---
+    // Login (modo prueba directo o Firebase real)
     const urlParams = new URLSearchParams(window.location.search);
     const testOrgId = urlParams.get('org');
 
     if (testOrgId) {
-        // Entramos en MODO PRUEBA usando el ID del link
         globalOrgId = testOrgId;
         cargarPanel(testOrgId);
     } else {
-        // MODO PRODUCCIÓN: Busca el login normal
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 db.ref('organizadores/' + user.uid).once('value', snap => {
                     globalOrgId = snap.val();
-                    if(globalOrgId) {
-                        cargarPanel(globalOrgId);
-                    } else {
-                        document.getElementById('loading-init').innerText = "Error: Tu usuario no tiene un club asignado.";
-                    }
+                    if(globalOrgId) cargarPanel(globalOrgId);
                 });
             } else {
-                document.getElementById('loading-init').innerHTML = `
-                    No estás logueado en esta pestaña.<br><br>
-                    Para probar este diseño, agregá tu ID en la barra de direcciones así:<br>
-                    <b>d-cancher.html?org=ACA_TU_ID</b>
-                `;
+                document.getElementById('loading-init').innerHTML = `Modo Prueba: agregá <b>?org=ACA_TU_ID</b> al final del link.`;
             }
         });
     }
@@ -196,11 +195,7 @@
             const container = document.getElementById('cards-container');
             document.getElementById('loading-init').style.display = 'none';
             const hubData = snap.val();
-            
-            if (!hubData || !hubData.canchas) {
-                container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas activas en tu panel.</div>";
-                return;
-            }
+            if (!hubData || !hubData.canchas) return;
 
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
@@ -239,7 +234,7 @@
         });
     }
 
-    // --- LÓGICA DEL PANEL DE CANCHA (FASE 2 Y 3 BASE) ---
+    // --- LÓGICA DEL PANEL DE CANCHA Y AGRUPAMIENTO ---
     function abrirPanelCancha(id) {
         const cancha = eventosCache.find(e => e.id === id);
         if(!cancha) return;
@@ -250,48 +245,127 @@
         const inscriptos = cancha.inscriptos || [];
         let ocupados = 0; let recaudado = 0;
 
-        const grupos = { pendiente: [], cancha: [], pagado: [] };
-
-        inscriptos.forEach(jug => {
+        // 1. Agrupar por celular
+        const gruposPorCelular = {};
+        inscriptos.forEach((jug, idx) => {
+            jug.originalIndex = idx; // Guardamos el index para poder editarlos luego
             const cant = jug.cantidad || 1;
             ocupados += cant;
+            if(jug.estado === 'pagado') recaudado += (cancha.valor * cant);
+
+            // Si por algún motivo no tiene celu, le damos un ID único para que no se pise
+            const cel = jug.celular || `sin-celu-${idx}`;
+            if(!gruposPorCelular[cel]) gruposPorCelular[cel] = [];
+            gruposPorCelular[cel].push(jug);
+        });
+
+        // 2. Clasificarlos por Estado del Grupo
+        const htmlPorEstado = { pagado: [], cancha: [], pendiente: [] };
+
+        Object.keys(gruposPorCelular).forEach(cel => {
+            const jugadores = gruposPorCelular[cel];
+            const titular = jugadores[0];
             
-            let estadoClase = 'pendiente';
-            if (jug.estado === 'pagado') { estadoClase = 'pagado'; recaudado += (cancha.valor * cant); }
-            else if (jug.estado === 'paga-en-la-cancha') { estadoClase = 'cancha'; }
+            // Calculamos cuántos lugares reales ocupa este grupo
+            let totalEnGrupo = 0;
+            jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1));
+            
+            // Es un grupo de la app vieja (1 solo registro con cantidad > 1)?
+            const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1);
 
-            const fila = `
-                <div class="jugador-fila">
-                    <div class="jugador-main">
-                        <span class="nombre">${jugadorAbreviado(jug.nombre)} ${cant > 1 ? `<span style="color:var(--text-sub);">+${cant-1}</span>` : ''}</span>
-                        <span class="dot ${estadoClase}"></span>
-                    </div>
-                    <div class="acciones">
-                        ${estadoClase !== 'pagado' ? `<button style="background:#E5E7EB; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="event.stopPropagation(); alert('✔ Marcar pagado')">✔</button>` : ''}
-                        <button class="btn-menu" onclick="event.stopPropagation(); alert('⋯ Menú (WhatsApp, Eliminar)')">⋯</button>
-                    </div>
-                </div>
-            `;
+            // Estado general del grupo
+            let estadoGrupo = 'pagado';
+            if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente';
+            else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha';
 
-            if(jug.estado === 'pagado') grupos.pagado.push(fila);
-            else if(jug.estado === 'paga-en-la-cancha') grupos.cancha.push(fila);
-            else grupos.pendiente.push(fila);
+            if(jugadores.length === 1 && !isLegacyGroup) {
+                // JUGADOR SOLO
+                const jug = jugadores[0];
+                const fila = `
+                    <div class="jugador-fila">
+                        <div class="jugador-main">
+                            <span class="nombre">${jugadorAbreviado(jug.nombre)}</span>
+                            <span class="dot ${estadoGrupo}"></span>
+                        </div>
+                        <div class="acciones">
+                            ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); alert('✔ Marcar pagado a ${jug.nombre}')">✔</button>` : ''}
+                            <button class="btn-menu" onclick="event.stopPropagation(); alert('Menú: Abrir WhatsApp')">⋯</button>
+                        </div>
+                    </div>
+                `;
+                htmlPorEstado[estadoGrupo].push(fila);
+            } else {
+                // GRUPO EXPANDIBLE ("Juan + 2")
+                let subJugadoresHtml = '';
+                if (isLegacyGroup) {
+                    subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`;
+                } else {
+                    jugadores.forEach(j => {
+                        let subClase = j.estado === 'pagado' ? 'pagado' : (j.estado === 'paga-en-la-cancha' ? 'cancha' : 'pendiente');
+                        subJugadoresHtml += `
+                            <div class="sub-fila">
+                                <div class="jugador-main">
+                                    <span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span>
+                                    <span class="dot ${subClase}" style="width:8px; height:8px;"></span>
+                                </div>
+                                <div class="acciones">
+                                    ${j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); alert('✔ Marcar pagado a ${j.nombre}')">✔</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                const filaExtendida = `
+                    <div class="grupo-expandible">
+                        <div class="jugador-fila" onclick="toggleGrupo('${cel}')" style="cursor:pointer;">
+                            <div class="jugador-main">
+                                <span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span></span>
+                                <span class="dot ${estadoGrupo}"></span>
+                                <svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                            <div class="acciones">
+                                ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); alert('✔ Marcar pagado a todo el grupo')">✔</button>` : ''}
+                                <button class="btn-menu" onclick="event.stopPropagation(); alert('Menú: Abrir WhatsApp del Titular')">⋯</button>
+                            </div>
+                        </div>
+                        <div class="grupo-detalle" id="det-${cel}">
+                            ${subJugadoresHtml}
+                        </div>
+                    </div>
+                `;
+                htmlPorEstado[estadoGrupo].push(filaExtendida);
+            }
         });
 
         document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`;
         document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
 
-        let htmlLista = '';
-        if(grupos.pendiente.length > 0) htmlLista += `<div class="grupo-titulo">Pendientes (${grupos.pendiente.length})</div>` + grupos.pendiente.join('');
-        if(grupos.cancha.length > 0) htmlLista += `<div class="grupo-titulo">Pagan en club (${grupos.cancha.length})</div>` + grupos.cancha.join('');
-        if(grupos.pagado.length > 0) htmlLista += `<div class="grupo-titulo">Pagados (${grupos.pagado.length})</div>` + grupos.pagado.join('');
+        // 3. Renderizar en el orden solicitado: PAGADOS, CLUB, PENDIENTES
+        let htmlFinal = '';
+        if(htmlPorEstado.pagado.length > 0) htmlFinal += `<div class="grupo-titulo">Pagados (${htmlPorEstado.pagado.length})</div>` + htmlPorEstado.pagado.join('');
+        if(htmlPorEstado.cancha.length > 0) htmlFinal += `<div class="grupo-titulo">Pagan en club (${htmlPorEstado.cancha.length})</div>` + htmlPorEstado.cancha.join('');
+        if(htmlPorEstado.pendiente.length > 0) htmlFinal += `<div class="grupo-titulo">Pendientes (${htmlPorEstado.pendiente.length})</div>` + htmlPorEstado.pendiente.join('');
         
-        if(!htmlLista) htmlLista = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
+        if(!htmlFinal) htmlFinal = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
         
-        document.getElementById('lista-jugadores-container').innerHTML = htmlLista;
+        document.getElementById('lista-jugadores-container').innerHTML = htmlFinal;
 
         document.getElementById('view-panel-cancha').classList.add('active');
         document.body.style.overflow = 'hidden';
+    }
+
+    // Funcionalidad del Acordeón (Fuelle)
+    function toggleGrupo(celular) {
+        const detalle = document.getElementById(`det-${celular}`);
+        const chevron = document.getElementById(`chev-${celular}`);
+        if(detalle.classList.contains('open')) {
+            detalle.classList.remove('open');
+            chevron.classList.remove('open');
+        } else {
+            detalle.classList.add('open');
+            chevron.classList.add('open');
+        }
     }
 
     function cerrarPanelCancha() {

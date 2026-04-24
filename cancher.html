@@ -198,8 +198,11 @@
                     }
                     
                     // 🔥 ACÁ ESTÁ EL CAMBIO: Título limpio y lugar abajo
+                  // Título limpio
                     let tituloCancha = d.organiza || 'Cancha';
-                    let lineaLugar = d.lugar ? `<div class="c-line-2">${d.lugar}</div>` : '';
+                    
+                    // Sede con emoji
+                    let lineaLugar = d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : '';
 
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
@@ -207,9 +210,9 @@
                                 <span style="padding-right: 15px;">${tituloCancha.toUpperCase()}</span>
                                 <span>${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
-                            <div class="c-line-2">${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
                             ${lineaLugar}
-                            <div class="c-line-3">Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
+                            <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
                         </div>
                     `;
                 }

@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=35"></script>
+    <script src="app-config.js?v=36"></script>
     
     <style>
         :root { 
@@ -70,7 +70,9 @@
         .btn-black-modal {
             flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px;
             border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer;
+            transition: transform 0.1s ease;
         }
+        .btn-black-modal:active { transform: scale(0.98); }
         
         .mj-resumen {
             display: flex; justify-content: space-between; font-size: 15px; font-weight: 700;
@@ -80,7 +82,7 @@
         
         .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
         
-        /* ESTRUCTURAS DE FILAS Y GRUPOS (FASE 3 Y 4) */
+        /* FILAS DE JUGADORES */
         .jugador-fila {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-white); padding: 16px; border-radius: 10px;
@@ -106,8 +108,36 @@
         .dot.pagado { background: var(--brand-green); }
 
         .acciones { display: flex; gap: 12px; align-items: center; }
-        .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); }
-        .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px;}
+        .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); transition: 0.1s; }
+        .btn-check:active { transform: scale(0.9); }
+        .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px; cursor: pointer;}
+
+        /* --- BOTTOM SHEET (MENÚ iOS) --- */
+        .bs-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 200;
+            display: none; align-items: flex-end;
+            opacity: 0; transition: opacity 0.2s ease;
+        }
+        .bs-overlay.active { opacity: 1; }
+        
+        .bs-content {
+            width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0;
+            padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .bs-content.open { transform: translateY(0); }
+        
+        .bs-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
+        .bs-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        .bs-btn {
+            width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s ease;
+        }
+        .bs-btn:active { transform: scale(0.98); }
+        .bs-btn-danger { color: var(--brand-red); background: #FEE2E2; }
+        .bs-btn-cancel { background: transparent; color: var(--text-sub); margin-top: 8px; }
 
         #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
     </style>
@@ -162,11 +192,22 @@
         </div>
     </div>
 
+    <div id="bs-menu" class="bs-overlay">
+        <div class="bs-content" id="bs-content">
+            <div class="bs-handle"></div>
+            <div class="bs-title" id="bs-nombre-jugador">Opciones</div>
+            <button class="bs-btn" id="btn-wa">💬 Enviar WhatsApp</button>
+            <button class="bs-btn bs-btn-danger" id="btn-eliminar">🗑️ Eliminar de la cancha</button>
+            <button class="bs-btn bs-btn-cancel" onclick="cerrarMenuOpciones()">Cancelar</button>
+        </div>
+    </div>
+
 <script>
     let globalOrgId = null;
     let eventosCache = [];
+    let panelCanchaId = null; // Saber qué cancha tenemos abierta
+    let actionData = null; // Guardar datos para el menú inferior
 
-    // Login (modo prueba directo o Firebase real)
     const urlParams = new URLSearchParams(window.location.search);
     const testOrgId = urlParams.get('org');
 
@@ -191,6 +232,7 @@
             document.getElementById('t-org-name').innerText = (snap.val() || {}).nombreOrg || "Tu Club";
         });
 
+        // Escucha en vivo de las canchas
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             const container = document.getElementById('cards-container');
             document.getElementById('loading-init').style.display = 'none';
@@ -231,11 +273,29 @@
             });
             container.innerHTML = htmlCards;
             document.getElementById('dash-recaudado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+
+            // Si el modal está abierto, lo actualizamos silenciosamente
+            if (panelCanchaId) {
+                renderizarModalCancha(panelCanchaId);
+            }
         });
     }
 
-    // --- LÓGICA DEL PANEL DE CANCHA Y AGRUPAMIENTO ---
+    // --- LÓGICA DEL MODAL DE LA CANCHA ---
     function abrirPanelCancha(id) {
+        panelCanchaId = id;
+        renderizarModalCancha(id);
+        document.getElementById('view-panel-cancha').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarPanelCancha() {
+        document.getElementById('view-panel-cancha').classList.remove('active');
+        document.body.style.overflow = '';
+        panelCanchaId = null;
+    }
+
+    function renderizarModalCancha(id) {
         const cancha = eventosCache.find(e => e.id === id);
         if(!cancha) return;
 
@@ -244,39 +304,35 @@
 
         const inscriptos = cancha.inscriptos || [];
         let ocupados = 0; let recaudado = 0;
-
-        // 1. Agrupar por celular
         const gruposPorCelular = {};
+
         inscriptos.forEach((jug, idx) => {
-            jug.originalIndex = idx; // Guardamos el index para poder editarlos luego
+            jug.originalIndex = idx; // Clave para modificar Firebase exacto
             const cant = jug.cantidad || 1;
             ocupados += cant;
             if(jug.estado === 'pagado') recaudado += (cancha.valor * cant);
 
-            // Si por algún motivo no tiene celu, le damos un ID único para que no se pise
             const cel = jug.celular || `sin-celu-${idx}`;
             if(!gruposPorCelular[cel]) gruposPorCelular[cel] = [];
             gruposPorCelular[cel].push(jug);
         });
 
-        // 2. Clasificarlos por Estado del Grupo
         const htmlPorEstado = { pagado: [], cancha: [], pendiente: [] };
 
         Object.keys(gruposPorCelular).forEach(cel => {
             const jugadores = gruposPorCelular[cel];
             const titular = jugadores[0];
             
-            // Calculamos cuántos lugares reales ocupa este grupo
             let totalEnGrupo = 0;
             jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1));
-            
-            // Es un grupo de la app vieja (1 solo registro con cantidad > 1)?
             const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1);
 
-            // Estado general del grupo
             let estadoGrupo = 'pagado';
             if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente';
             else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha';
+
+            // Parámetros seguros para inyectar en HTML
+            const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'");
 
             if(jugadores.length === 1 && !isLegacyGroup) {
                 // JUGADOR SOLO
@@ -288,14 +344,14 @@
                             <span class="dot ${estadoGrupo}"></span>
                         </div>
                         <div class="acciones">
-                            ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); alert('✔ Marcar pagado a ${jug.nombre}')">✔</button>` : ''}
-                            <button class="btn-menu" onclick="event.stopPropagation(); alert('Menú: Abrir WhatsApp')">⋯</button>
+                            ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${cancha.id}', ${jug.originalIndex})">✔</button>` : ''}
+                            <button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button>
                         </div>
                     </div>
                 `;
                 htmlPorEstado[estadoGrupo].push(fila);
             } else {
-                // GRUPO EXPANDIBLE ("Juan + 2")
+                // GRUPO ("Juan + 2")
                 let subJugadoresHtml = '';
                 if (isLegacyGroup) {
                     subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`;
@@ -304,12 +360,9 @@
                         let subClase = j.estado === 'pagado' ? 'pagado' : (j.estado === 'paga-en-la-cancha' ? 'cancha' : 'pendiente');
                         subJugadoresHtml += `
                             <div class="sub-fila">
-                                <div class="jugador-main">
-                                    <span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span>
-                                    <span class="dot ${subClase}" style="width:8px; height:8px;"></span>
-                                </div>
+                                <div class="jugador-main"><span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span><span class="dot ${subClase}" style="width:8px; height:8px;"></span></div>
                                 <div class="acciones">
-                                    ${j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); alert('✔ Marcar pagado a ${j.nombre}')">✔</button>` : ''}
+                                    ${j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${cancha.id}', ${j.originalIndex})">✔</button>` : ''}
                                 </div>
                             </div>
                         `;
@@ -325,13 +378,11 @@
                                 <svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </div>
                             <div class="acciones">
-                                ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); alert('✔ Marcar pagado a todo el grupo')">✔</button>` : ''}
-                                <button class="btn-menu" onclick="event.stopPropagation(); alert('Menú: Abrir WhatsApp del Titular')">⋯</button>
+                                ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${cancha.id}', '${cel}')">✔</button>` : ''}
+                                <button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button>
                             </div>
                         </div>
-                        <div class="grupo-detalle" id="det-${cel}">
-                            ${subJugadoresHtml}
-                        </div>
+                        <div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div>
                     </div>
                 `;
                 htmlPorEstado[estadoGrupo].push(filaExtendida);
@@ -341,44 +392,91 @@
         document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`;
         document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
 
-        // 3. Renderizar en el orden solicitado: PAGADOS, CLUB, PENDIENTES
         let htmlFinal = '';
         if(htmlPorEstado.pagado.length > 0) htmlFinal += `<div class="grupo-titulo">Pagados (${htmlPorEstado.pagado.length})</div>` + htmlPorEstado.pagado.join('');
         if(htmlPorEstado.cancha.length > 0) htmlFinal += `<div class="grupo-titulo">Pagan en club (${htmlPorEstado.cancha.length})</div>` + htmlPorEstado.cancha.join('');
         if(htmlPorEstado.pendiente.length > 0) htmlFinal += `<div class="grupo-titulo">Pendientes (${htmlPorEstado.pendiente.length})</div>` + htmlPorEstado.pendiente.join('');
         
         if(!htmlFinal) htmlFinal = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
-        
         document.getElementById('lista-jugadores-container').innerHTML = htmlFinal;
-
-        document.getElementById('view-panel-cancha').classList.add('active');
-        document.body.style.overflow = 'hidden';
     }
 
-    // Funcionalidad del Acordeón (Fuelle)
     function toggleGrupo(celular) {
         const detalle = document.getElementById(`det-${celular}`);
         const chevron = document.getElementById(`chev-${celular}`);
-        if(detalle.classList.contains('open')) {
-            detalle.classList.remove('open');
-            chevron.classList.remove('open');
-        } else {
-            detalle.classList.add('open');
-            chevron.classList.add('open');
-        }
+        if(detalle.classList.contains('open')) { detalle.classList.remove('open'); chevron.classList.remove('open'); } 
+        else { detalle.classList.add('open'); chevron.classList.add('open'); }
     }
 
-    function cerrarPanelCancha() {
-        document.getElementById('view-panel-cancha').classList.remove('active');
-        document.body.style.overflow = '';
+    // --- ACCIONES DE BASE DE DATOS ---
+    function marcarIndividualPagado(eventoId, indexOriginal) {
+        db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
+            let list = s.val() || [];
+            if(list[indexOriginal]) {
+                list[indexOriginal].estado = 'pagado';
+                db.ref(`eventos/${eventoId}/inscriptos`).set(list);
+            }
+        });
     }
 
+    function marcarGrupoPagado(eventoId, celular) {
+        db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
+            let list = s.val() || [];
+            let huboCambios = false;
+            list.forEach((j, idx) => {
+                if((j.celular || `sin-celu-${idx}`) === celular) {
+                    j.estado = 'pagado';
+                    huboCambios = true;
+                }
+            });
+            if(huboCambios) db.ref(`eventos/${eventoId}/inscriptos`).set(list);
+        });
+    }
+
+    // --- MENÚ BOTTOM SHEET ---
+    function abrirMenuOpciones(nombre, celular) {
+        actionData = { celular: celular };
+        document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${nombre}`;
+        
+        document.getElementById('btn-wa').onclick = () => {
+            window.open(`https://wa.me/${celular}`, '_blank');
+            cerrarMenuOpciones();
+        };
+
+        document.getElementById('btn-eliminar').onclick = () => {
+            if(!confirm(`¿Seguro que querés eliminar a ${nombre} y liberar su cupo?`)) return;
+            
+            db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => {
+                let list = s.val() || [];
+                // Filtramos y dejamos a todos los que NO coincidan con el celular
+                let nuevaLista = list.filter((j, idx) => (j.celular || `sin-celu-${idx}`) !== actionData.celular);
+                db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nuevaLista).then(() => {
+                    cerrarMenuOpciones();
+                });
+            });
+        };
+
+        document.getElementById('bs-menu').style.display = 'flex';
+        // Delay minúsculo para que la animación CSS funcione bien
+        setTimeout(() => {
+            document.getElementById('bs-menu').classList.add('active');
+            document.getElementById('bs-content').classList.add('open');
+        }, 10);
+    }
+
+    function cerrarMenuOpciones() {
+        document.getElementById('bs-content').classList.remove('open');
+        document.getElementById('bs-menu').classList.remove('active');
+        setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300);
+        actionData = null;
+    }
+
+    // --- UTILS ---
     function formatearDiaCorto(fechaStr) {
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const f = new Date(fechaStr + 'T12:00:00');
         return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`;
     }
-
     function jugadorAbreviado(nombreCompleto) {
         if(!nombreCompleto) return 'Jugador';
         const partes = nombreCompleto.split(' ');

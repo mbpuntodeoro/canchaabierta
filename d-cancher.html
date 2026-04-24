@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Panel Cancher</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="app-config.js?v=32"></script>
+    
+    <style>
+        /* --- SISTEMA DE DISEÑO CANCHER --- */
+        :root { 
+            --bg-base: #F7F7F7;
+            --bg-white: #FFFFFF;
+            --text-main: #111111;
+            --text-sub: #6B7280;
+            --border: #E5E7EB;
+            --brand-purple: #7C3AED;
+            --brand-green: #10B981;
+            --brand-red: #EF4444;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-base); color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+
+        /* --- HEADER DEL DASHBOARD --- */
+        .header-global {
+            background: var(--bg-white); padding: 16px;
+            position: sticky; top: 0; z-index: 50;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-brand { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .header-org { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-top: 2px; }
+        
+        /* Contenedor Principal */
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+    </style>
+</head>
+<body>
+
+    <header class="header-global">
+        <div>
+            <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple); text-transform: uppercase; font-weight: 800;">Panel</span></div>
+            <div class="header-org" id="t-org-name">Cargando...</div>
+        </div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="firebase.auth().signOut().then(() => location.reload())">Salir</div>
+    </header>
+
+    <main class="app-container" id="app-content">
+        <div id="loading-init">Cargando tu panel...</div>
+        </main>
+
+<script>
+    // Lógica básica de autenticación para que el panel inicie
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            db.ref('organizadores/' + user.uid).once('value', snap => {
+                const orgId = snap.val();
+                if(orgId) {
+                    cargarPanel(orgId);
+                } else {
+                    document.getElementById('loading-init').innerText = "Usuario sin organización vinculada.";
+                }
+            });
+        } else {
+            // Si no está logueado, lo mandamos al login (ajustá esta URL si tu login es otro)
+            window.location.href = 'index.html'; 
+        }
+    });
+
+    function cargarPanel(orgId) {
+        // Traer datos de la cuenta
+        db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
+            const cuenta = snap.val() || {};
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+            document.getElementById('loading-init').style.display = 'none';
+            
+            // Acá llamaremos a las funciones de renderizado del rediseño
+            console.log("Panel cargado para:", orgId);
+        });
+    }
+</script>
+</body>
+</html>

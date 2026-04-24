@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=41"></script>
+    <script src="app-config.js?v=42"></script>
     
     <style>
         :root { 
@@ -29,27 +29,18 @@
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
-        /* --- NUEVA PREMIUM CARD (ESTADO Y FINANZAS) --- */
-        .status-card {
-            background: #111111; color: #FFFFFF;
-            border-radius: 16px; padding: 20px; margin: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
+        /* PREMIUM CARD */
+        .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
         .dsc-title { font-size: 16px; font-weight: 700; letter-spacing: -0.3px;}
         .dsc-badge { background: rgba(255,255,255,0.15); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         .dsc-subtitle { font-size: 13px; color: #A1A1AA; margin-bottom: 20px; font-weight: 500;}
-        
-        .dsc-impact-box {
-            border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);
-            border-radius: 12px; padding: 16px;
-        }
+        .dsc-impact-box { border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); border-radius: 12px; padding: 16px; }
         .dsc-impact-title { font-size: 11px; font-weight: 800; color: #10B981; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
         .dsc-metrics { display: flex; justify-content: space-between; }
         .dsc-metric { flex: 1; }
         .dsc-metric-label { font-size: 11px; color: #A1A1AA; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;}
         .dsc-metric-val { font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;}
-        
         .dsc-actions { margin-top: 16px; display: flex; gap: 12px; }
         .btn-dark-outline { flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.1s;}
         .btn-dark-outline:active { background: rgba(255,255,255,0.1); }
@@ -113,10 +104,9 @@
         /* Movimiento Fila */
         .mov-fila { background: var(--bg-white); padding: 16px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
         .mov-info { display: flex; flex-direction: column; }
-        .mov-nombre { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .mov-fecha { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
-        .mov-monto { font-size: 16px; font-weight: 800; color: var(--brand-green); }
-        .mov-monto.deuda { color: var(--brand-red); }
+        .mov-nombre { font-size: 15px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
+        .mov-fecha { font-size: 13px; color: var(--text-sub); margin-top: 4px; font-weight: 500;}
+        .mov-monto { font-size: 16px; font-weight: 800; letter-spacing: -0.5px;}
 
         /* BOTTOM SHEETS */
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; opacity: 0; transition: opacity 0.2s ease; }
@@ -133,7 +123,7 @@
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; font-weight: 500; font-family: inherit;}
-        select.input-clean { appearance: none; background-image: url("data:image/svg+xml..."); background-repeat: no-repeat; background-position: right 12px center; }
+        select.input-clean { appearance: none; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
         #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
     </style>
 </head>
@@ -191,7 +181,7 @@
         <div class="modal-content">
             <div class="modal-title" style="margin-bottom: 24px;">Movimientos</div>
             <div id="lista-movimientos-container">
-                <div style="text-align:center; padding:20px; color:var(--text-sub);">Acá verás quién pagó recientemente... (En desarrollo)</div>
+                <div style="text-align:center; padding:20px; color:var(--text-sub);">Calculando finanzas...</div>
             </div>
         </div>
     </div>
@@ -241,52 +231,33 @@
     <div id="bs-anotar" class="bs-overlay"><div class="bs-content" id="bs-content-anotar"><div class="bs-handle"></div><div class="bs-title">Anotar Jugador</div><div style="display:flex; gap:12px;"><div class="input-group" style="flex:1;"><input type="text" id="man-nombre" class="input-clean" placeholder="Nombre"></div><div class="input-group" style="flex:1;"><input type="text" id="man-apellido" class="input-clean" placeholder="Apellido"></div></div><div class="input-group"><input type="tel" id="man-celu" class="input-clean" placeholder="WhatsApp (Ej: 1122334455)"></div><div style="display:flex; gap:12px;"><div class="input-group" style="flex:1;"><select id="man-lugares" class="input-clean"><option value="1">1 lugar</option><option value="2">2 lugares</option><option value="3">3 lugares</option><option value="4">4 lugares</option></select></div><div class="input-group" style="flex:1;"><select id="man-estado" class="input-clean"><option value="pagado">Ya pagó</option><option value="paga-en-la-cancha">Paga en club</option><option value="pendiente">Debe</option></select></div></div><button class="bs-btn" style="background:var(--text-main); color:var(--bg-white); margin-top:8px;" onclick="guardarAnotacionManual()">Guardar</button><button class="bs-btn-clean" onclick="cerrarModalAnotar()">Cancelar</button></div></div>
 
 <script>
-    let globalOrgId = null;
-    let eventosCache = [];
-    let panelCanchaId = null; let actionData = null; let activeEventRef = null; let editandoCanchaId = null;
+    let globalOrgId = null; let eventosCache = []; let panelCanchaId = null; let actionData = null; let activeEventRef = null; let editandoCanchaId = null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const testOrgId = urlParams.get('org');
 
     if (testOrgId) { globalOrgId = testOrgId; cargarPanel(testOrgId); } 
-    else {
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); }
-        });
-    }
+    else { firebase.auth().onAuthStateChanged(user => { if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); } }); }
 
     function cargarPanel(orgId) {
-        // Cargar Cuenta y Datos de Suscripción para la Premium Card
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
-            
-            // Lógica de llenado de la Premium Card
             document.getElementById('main-status-card').style.display = 'block';
-            
-            // Simulación/Fallback de los datos si no existen las keys exactas
             const vencimiento = cuenta.vencimientoPrueba || cuenta.fechaVencimiento || '06-05-2026';
             const plan = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL GRATUITO';
-            
             document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Automatizado' : `Tu prueba vence el ${vencimiento}`;
             document.getElementById('sc-badge').innerText = plan;
-            
-            // Mantenemos tu frase motivacional
             document.getElementById('sc-subtitle').innerText = "⏳ Te quedan 12 días o 3 canchas";
         });
 
-        // Escucha de Canchas Activas
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             document.getElementById('loading-init').style.display = 'none';
             const hubData = snap.val();
-            if (!hubData || !hubData.canchas) {
-                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>";
-                return;
-            }
+            if (!hubData || !hubData.canchas) { document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>"; return; }
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
-            eventosCache = [];
-            snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
+            eventosCache = []; snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
             eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             renderDashboardCards();
         });
@@ -308,96 +279,118 @@
 
             if (ahora <= finEvento || d.tipo === 'recurrente') {
                 let ocupados = 0; let recaudadoCard = 0;
-                (d.inscriptos || []).forEach(jug => {
-                    const cant = jug.cantidad || 1; ocupados += cant;
-                    if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant);
-                });
-                
-                totalGlobalRecaudado += recaudadoCard;
-                totalGlobalJugadores += ocupados; // Sumamos para la métrica de Impacto
-                
-                const isSuspended = d.estado === 'suspendido';
-                const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : '';
-                const claseSusp = isSuspended ? 'card-suspendida' : '';
-                
+                (d.inscriptos || []).forEach(jug => { const cant = jug.cantidad || 1; ocupados += cant; if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); });
+                totalGlobalRecaudado += recaudadoCard; totalGlobalJugadores += ocupados; 
+                const isSuspended = d.estado === 'suspendido'; const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; const claseSusp = isSuspended ? 'card-suspendida' : '';
                 let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
-                let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : '';
-                let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
+                let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
 
                 htmlCards += `<div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">${htmlSusp}<div class="cc-header"><div><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span></div>${badgeRec}</div><div class="cc-categoria">${titulo}</div><div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div></div>`;
             }
         });
         
         container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
-        
-        // Actualizar Premium Card Metrics
-        document.getElementById('sc-jugadores').innerText = totalGlobalJugadores;
-        document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+        document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
     }
 
-    // --- VIEW MOVIMIENTOS ---
+    // --- LÓGICA DE MOVIMIENTOS ---
     function abrirViewMovimientos() {
+        renderMovimientos();
         document.getElementById('view-movimientos').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
+
     function cerrarViewMovimientos() {
         document.getElementById('view-movimientos').classList.remove('active');
         document.body.style.overflow = '';
     }
 
-    // --- PANEL CANCHA ---
+    function renderMovimientos() {
+        const container = document.getElementById('lista-movimientos-container');
+        let movimientos = [];
+
+        // Extraer todos los jugadores de todas las canchas para armar el historial
+        eventosCache.forEach(cancha => {
+            (cancha.inscriptos || []).forEach(jug => {
+                movimientos.push({
+                    nombre: jug.nombre,
+                    canchaNombre: cancha.organiza || 'Cancha',
+                    estado: jug.estado,
+                    monto: cancha.valor * (jug.cantidad || 1),
+                    fechaSys: jug.fecha || 0 // Timestamp de cuando se anotó/pagó
+                });
+            });
+        });
+
+        // Ordenar del más reciente al más antiguo
+        movimientos.sort((a, b) => b.fechaSys - a.fechaSys);
+
+        if (movimientos.length === 0) {
+            container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>Aún no hay movimientos registrados.</div>";
+            return;
+        }
+
+        let html = '';
+        movimientos.forEach(m => {
+            const isPagado = m.estado === 'pagado';
+            const isClub = m.estado === 'paga-en-la-cancha';
+            
+            // Lógica visual al estilo Mercado Pago
+            let colorClase = '';
+            let signo = '';
+            let dotClase = '';
+
+            if (isPagado) { colorClase = ''; signo = '+ '; dotClase = 'pagado'; } 
+            else if (isClub) { colorClase = 'deuda'; signo = ''; dotClase = 'cancha'; } 
+            else { colorClase = 'deuda'; signo = '- '; dotClase = 'pendiente'; }
+
+            const montoMostrar = m.monto === 0 ? 'Gratis' : `${signo}${PadelUtils.fmtDinero(m.monto)}`;
+            const fechaTxt = m.fechaSys > 0 ? formatearFechaHora(m.fechaSys) : '';
+
+            html += `
+                <div class="mov-fila">
+                    <div class="mov-info">
+                        <div class="mov-nombre"><span class="dot ${dotClase}"></span> ${jugadorAbreviado(m.nombre)}</div>
+                        <div class="mov-fecha">${m.canchaNombre} · ${fechaTxt}</div>
+                    </div>
+                    <div class="mov-monto ${colorClase}">${montoMostrar}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // --- PANEL CANCHA, CREACIÓN Y BOTTOM SHEETS ---
+    // (Funciones minimizadas para mantener todo el archivo prolijo y completo)
     function abrirPanelCancha(id) { panelCanchaId = id; if(activeEventRef) activeEventRef.off(); activeEventRef = db.ref('eventos/' + id); activeEventRef.on('value', snap => { const canchaData = snap.val(); if(canchaData) { const idx = eventosCache.findIndex(e => e.id === id); if(idx !== -1) eventosCache[idx] = { id, ...canchaData }; renderizarModalCancha(id, canchaData); } }); document.getElementById('view-panel-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
     function cerrarPanelCancha() { if(activeEventRef) { activeEventRef.off(); activeEventRef = null; } document.getElementById('view-panel-cancha').classList.remove('active'); document.body.style.overflow = ''; panelCanchaId = null; }
 
     function renderizarModalCancha(id, cancha) {
-        document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha';
-        document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`;
-        const isSuspended = cancha.estado === 'suspendido';
-        document.getElementById('pc-status-badge').innerHTML = isSuspended ? `<div class="badge-susp">CANCHA SUSPENDIDA</div>` : '';
-        document.getElementById('pc-action-btn-container').style.display = isSuspended ? 'none' : 'flex';
-
+        document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha'; document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`; const isSuspended = cancha.estado === 'suspendido'; document.getElementById('pc-status-badge').innerHTML = isSuspended ? `<div class="badge-susp">CANCHA SUSPENDIDA</div>` : ''; document.getElementById('pc-action-btn-container').style.display = isSuspended ? 'none' : 'flex';
         const inscriptos = cancha.inscriptos || []; let ocupados = 0; let recaudado = 0; const gruposPorCelular = {};
         inscriptos.forEach((jug, idx) => { jug.originalIndex = idx; const cant = jug.cantidad || 1; ocupados += cant; if(jug.estado === 'pagado') recaudado += (cancha.valor * cant); const cel = jug.celular || `sin-celu-${idx}`; if(!gruposPorCelular[cel]) gruposPorCelular[cel] = []; gruposPorCelular[cel].push(jug); });
         const htmlPorEstado = { pagado: [], cancha: [], pendiente: [] };
-        
         Object.keys(gruposPorCelular).forEach(cel => {
-            const jugadores = gruposPorCelular[cel]; const titular = jugadores[0]; let totalEnGrupo = 0; jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1)); const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1);
-            let estadoGrupo = 'pagado'; if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente'; else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha';
-            const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'");
-            const checksHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${jugadores[0].originalIndex})">✔</button>` : ''}`;
-            const checksGrupoHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>` : ''}`;
-            
-            if(jugadores.length === 1 && !isLegacyGroup) {
-                const jug = jugadores[0]; htmlPorEstado[estadoGrupo].push(`<div class="jugador-fila"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(jug.nombre)}</span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checksHTML}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div>`);
-            } else {
-                let pagadosDelGrupo = jugadores.filter(j => j.estado === 'pagado').length;
-                let badgeParcial = (pagadosDelGrupo > 0 && pagadosDelGrupo < jugadores.length && !isLegacyGroup) ? `<span class="badge-parcial">${pagadosDelGrupo}/${jugadores.length} pagos</span>` : '';
-                let subJugadoresHtml = '';
-                if (isLegacyGroup) { subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`; }
-                else { jugadores.forEach(j => { let subClase = j.estado === 'pagado' ? 'pagado' : (j.estado === 'paga-en-la-cancha' ? 'cancha' : 'pendiente'); subJugadoresHtml += `<div class="sub-fila"><div class="jugador-main"><span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span><span class="dot ${subClase}" style="width:8px; height:8px;"></span></div><div class="acciones">${!isSuspended && j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${j.originalIndex})">✔</button>` : ''}</div></div>`; }); }
+            const jugadores = gruposPorCelular[cel]; const titular = jugadores[0]; let totalEnGrupo = 0; jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1)); const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1); let estadoGrupo = 'pagado'; if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente'; else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha'; const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'"); const checksHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${jugadores[0].originalIndex})">✔</button>` : ''}`; const checksGrupoHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>` : ''}`;
+            if(jugadores.length === 1 && !isLegacyGroup) { htmlPorEstado[estadoGrupo].push(`<div class="jugador-fila"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(jugadores[0].nombre)}</span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checksHTML}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div>`); } else {
+                let pagadosDelGrupo = jugadores.filter(j => j.estado === 'pagado').length; let badgeParcial = (pagadosDelGrupo > 0 && pagadosDelGrupo < jugadores.length && !isLegacyGroup) ? `<span class="badge-parcial">${pagadosDelGrupo}/${jugadores.length} pagos</span>` : ''; let subJugadoresHtml = '';
+                if (isLegacyGroup) { subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`; } else { jugadores.forEach(j => { let subClase = j.estado === 'pagado' ? 'pagado' : (j.estado === 'paga-en-la-cancha' ? 'cancha' : 'pendiente'); subJugadoresHtml += `<div class="sub-fila"><div class="jugador-main"><span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span><span class="dot ${subClase}" style="width:8px; height:8px;"></span></div><div class="acciones">${!isSuspended && j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${j.originalIndex})">✔</button>` : ''}</div></div>`; }); }
                 htmlPorEstado[estadoGrupo].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="toggleGrupo('${cel}')" style="cursor:pointer;"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span> ${badgeParcial}</span><span class="dot ${estadoGrupo}"></span><svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div class="acciones">${checksGrupoHTML}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div><div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div></div>`);
             }
         });
-        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`; document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
-        let htmlFinal = '';
-        if(htmlPorEstado.pagado.length > 0) htmlFinal += `<div class="grupo-titulo">Pagados (${htmlPorEstado.pagado.length})</div>` + htmlPorEstado.pagado.join('');
-        if(htmlPorEstado.cancha.length > 0) htmlFinal += `<div class="grupo-titulo">Pagan en club (${htmlPorEstado.cancha.length})</div>` + htmlPorEstado.cancha.join('');
-        if(htmlPorEstado.pendiente.length > 0) htmlFinal += `<div class="grupo-titulo">Pendientes (${htmlPorEstado.pendiente.length})</div>` + htmlPorEstado.pendiente.join('');
-        document.getElementById('lista-jugadores-container').innerHTML = htmlFinal || '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
+        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`; document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado); let htmlFinal = ''; if(htmlPorEstado.pagado.length > 0) htmlFinal += `<div class="grupo-titulo">Pagados (${htmlPorEstado.pagado.length})</div>` + htmlPorEstado.pagado.join(''); if(htmlPorEstado.cancha.length > 0) htmlFinal += `<div class="grupo-titulo">Pagan en club (${htmlPorEstado.cancha.length})</div>` + htmlPorEstado.cancha.join(''); if(htmlPorEstado.pendiente.length > 0) htmlFinal += `<div class="grupo-titulo">Pendientes (${htmlPorEstado.pendiente.length})</div>` + htmlPorEstado.pendiente.join(''); document.getElementById('lista-jugadores-container').innerHTML = htmlFinal || '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
     }
 
     function toggleGrupo(cel) { document.getElementById(`det-${cel}`).classList.toggle('open'); document.getElementById(`chev-${cel}`).classList.toggle('open'); }
     function marcarIndividualPagado(eId, idx) { db.ref(`eventos/${eId}/inscriptos`).once('value', s => { let l = s.val() || []; if(l[idx]) { l[idx].estado = 'pagado'; db.ref(`eventos/${eId}/inscriptos`).set(l); } }); }
     function marcarGrupoPagado(eId, cel) { db.ref(`eventos/${eId}/inscriptos`).once('value', s => { let l = s.val() || []; l.forEach((j, i) => { if((j.celular || `sin-celu-${i}`) === cel) j.estado = 'pagado'; }); db.ref(`eventos/${eId}/inscriptos`).set(l); }); }
-    
     function abrirMenuOpciones(n, c) { actionData = { celular: c }; document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${n}`; document.getElementById('btn-wa').onclick = () => { window.open(`https://wa.me/${c}`, '_blank'); cerrarMenuOpciones(); }; document.getElementById('btn-eliminar').onclick = () => { if(!confirm(`¿Eliminar a ${n}?`)) return; db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let l = s.val() || []; let nL = l.filter((j, i) => (j.celular || `sin-celu-${i}`) !== actionData.celular); db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nL).then(() => { cerrarMenuOpciones(); }); }); }; document.getElementById('bs-menu').style.display = 'flex'; setTimeout(() => { document.getElementById('bs-menu').classList.add('active'); document.getElementById('bs-content').classList.add('open'); }, 10); }
     function cerrarMenuOpciones() { document.getElementById('bs-content').classList.remove('open'); document.getElementById('bs-menu').classList.remove('active'); setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300); actionData = null; }
-    
     function abrirModalAnotar() { document.getElementById('man-nombre').value=''; document.getElementById('man-apellido').value=''; document.getElementById('man-celu').value=''; document.getElementById('man-lugares').value='1'; document.getElementById('man-estado').value='pagado'; document.getElementById('bs-anotar').style.display='flex'; setTimeout(() => { document.getElementById('bs-anotar').classList.add('active'); document.getElementById('bs-content-anotar').classList.add('open'); }, 10); }
     function cerrarModalAnotar() { document.getElementById('bs-content-anotar').classList.remove('open'); document.getElementById('bs-anotar').classList.remove('active'); setTimeout(() => document.getElementById('bs-anotar').style.display='none', 300); }
     function guardarAnotacionManual() { const nom=document.getElementById('man-nombre').value.trim(); const ape=document.getElementById('man-apellido').value.trim(); const celu=document.getElementById('man-celu').value.trim(); const lugares=parseInt(document.getElementById('man-lugares').value)||1; const estado=document.getElementById('man-estado').value; if(!nom || !ape) { alert('Completá nombre y apellido'); return; } db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let list = s.val() || []; const finalCelu = celu || ('manual-' + Date.now()); for(let i=0; i<lugares; i++) { list.push({ nombre: i===0 ? `${nom} ${ape}` : `Amigo de ${nom} ${ape}`, celular: finalCelu, cantidad: 1, estado: estado, fecha: Date.now() }); } db.ref(`eventos/${panelCanchaId}/inscriptos`).set(list).then(() => { cerrarModalAnotar(); }); }); }
 
-    // --- FORMULARIO CANCHA (Minimizado) ---
     function abrirFormularioCancha(idEdit = null) { editandoCanchaId = idEdit; const bG = document.getElementById('btn-save-cancha'); const contBtn = document.getElementById('cont-edit-buttons'); const bS = document.getElementById('btn-suspend-cancha'); const tit = document.getElementById('fc-head-title'); if(idEdit) { tit.innerText = "Editar Cancha"; contBtn.style.display = "flex"; bG.innerText = "Guardar Cambios"; const c = eventosCache.find(e => e.id === idEdit); if(c) { document.getElementById('fc-fecha').value = c.fecha || ''; document.getElementById('fc-hora').value = c.hora || ''; document.getElementById('fc-horafin').value = c.horaFin || ''; document.getElementById('fc-titulo').value = c.organiza || ''; document.getElementById('fc-tipo').value = c.tipo || 'unico'; document.getElementById('fc-precio').value = c.valor || ''; document.getElementById('fc-cupo').value = c.cupo || ''; document.getElementById('fc-cat').value = c.categorias || ''; document.getElementById('fc-lugar').value = c.lugar || ''; document.getElementById('fc-alias').value = c.alias || ''; document.getElementById('fc-celu').value = c.celuOrganizador || ''; if (c.estado === 'suspendido') { bS.innerText = "Reactivar"; bS.onclick = reactivarCancha; } else { bS.innerText = "Suspender"; bS.onclick = suspenderCancha; } } } else { tit.innerText = "Nueva Cancha"; contBtn.style.display = "none"; bG.innerText = "Publicar Cancha"; const h = new Date(); document.getElementById('fc-fecha').value = `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`; document.getElementById('fc-hora').value = '18:00'; document.getElementById('fc-horafin').value = '19:30'; document.getElementById('fc-tipo').value = 'unico'; document.getElementById('fc-titulo').value = ''; document.getElementById('fc-precio').value = ''; document.getElementById('fc-cupo').value = '8'; document.getElementById('fc-cat').value = ''; document.getElementById('fc-lugar').value = ''; if(eventosCache.length > 0) { document.getElementById('fc-alias').value = eventosCache[0].alias || ''; document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || ''; } else { document.getElementById('fc-alias').value = ''; document.getElementById('fc-celu').value = ''; } } document.getElementById('view-form-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); if(!panelCanchaId) document.body.style.overflow = ''; editandoCanchaId = null; }
     function guardarCancha() { const f = document.getElementById('fc-fecha').value; const h = document.getElementById('fc-hora').value; const hF = document.getElementById('fc-horafin').value; const t = document.getElementById('fc-tipo').value; const o = document.getElementById('fc-titulo').value.trim(); const v = parseInt(document.getElementById('fc-precio').value) || 0; const c = parseInt(document.getElementById('fc-cupo').value) || 8; const cat = document.getElementById('fc-cat').value.trim(); const l = document.getElementById('fc-lugar').value.trim(); const a = document.getElementById('fc-alias').value.trim(); const cel = document.getElementById('fc-celu').value.trim(); if(!f || !h || !hF || !o || !v || !cel || !a) { alert("Completá Fecha, Inicio, Fin, Título, Precio, Alias y Celular."); return; } const eD = { fecha:f, hora:h, horaFin:hF, tipo:t, organiza:o, lugar:l, categorias:cat, valor:v, cupo:c, alias:a, celuOrganizador:cel }; if(!editandoCanchaId) eD.estado = 'activo'; const bS = document.getElementById('btn-save-cancha'); bS.innerText = "Guardando..."; bS.disabled = true; if (editandoCanchaId) { db.ref(`eventos/${editandoCanchaId}`).update(eD).then(() => { bS.innerText = "Guardar Cambios"; bS.disabled = false; cerrarFormularioCancha(); }); } else { eD.inscriptos = []; const nR = db.ref('eventos').push(); nR.set(eD).then(() => { db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; li.push(nR.key); db.ref(`hubs/${globalOrgId}/canchas`).set(li).then(() => { bS.innerText = "Publicar Cancha"; bS.disabled = false; cerrarFormularioCancha(); }); }); }); } }
@@ -406,6 +399,7 @@
     function reactivarCancha() { if(!editandoCanchaId) return; db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'activo' }).then(() => cerrarFormularioCancha()); }
 
     function formatearDiaCorto(fechaStr) { const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; const f = new Date(fechaStr + 'T12:00:00'); return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`; }
+    function formatearFechaHora(ts) { const d = new Date(ts); const dia = String(d.getDate()).padStart(2, '0'); const mes = String(d.getMonth() + 1).padStart(2, '0'); const hora = String(d.getHours()).padStart(2, '0'); const min = String(d.getMinutes()).padStart(2, '0'); return `${dia}/${mes} ${hora}:${min}hs`; }
     function jugadorAbreviado(n) { if(!n) return 'Jugador'; let p = n.split(' '); return p.length === 1 ? p[0] : `${p[0]} ${p[1].charAt(0)}.`; }
 </script>
 </body>

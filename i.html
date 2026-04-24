@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PadelApp Beta</title>
+    <title>Cancher.App</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=23"></script>
+    <script src="app-config.js?v=24"></script>
     
     <style>
         :root { 
@@ -43,7 +43,6 @@
         .view.active { transform: translateX(0); opacity: 1; z-index: 2; }
         .view.exit-left { transform: translateX(-30%); opacity: 0; pointer-events: none;}
 
-    
         /* --- ESTILOS LISTA (M2) --- */
         .header-box { text-align: center; margin: 20px 0 10px; width: 100%; padding: 0 20px; }
         .h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;}
@@ -84,18 +83,11 @@
         }
 
         .event-item {
-            padding: 16px 20px; border-bottom: 1px solid var(--border-color);
-            transition: background 0.15s ease, transform 0.1s ease;
-            cursor: pointer; display: block; text-decoration: none; color: inherit;
-            opacity: 0; transform: translateY(8px); animation: fadeInUp 0.3s ease forwards;
-            background: var(--bg-main);
-        }
-
-        .event-item {
             padding: 14px 16px; border-bottom: 1px solid var(--border-color);
             transition: background 0.15s ease, transform 0.1s ease;
             cursor: pointer; display: block; text-decoration: none; color: inherit;
             opacity: 0; transform: translateY(8px); animation: fadeInUp 0.3s ease forwards;
+            background: var(--bg-main);
         }
         .event-item:active { background: #f5f5f5; transform: scale(0.98); }
         .event-item:active .arrow { transform: translateX(4px); }
@@ -182,13 +174,13 @@
             <div class="header-box" id="header-box" style="display:none;">
                 <h1 class="h1" id="t-org-name">Cartelera</h1>
                 <div id="badge-fundador-container" style="display: none;">
-    <span class="badge-fundador">⭐ Top 10 · Miembro Fundador</span>
-</div>
+                    <span class="badge-fundador">⭐ Top 10 · Miembro Fundador</span>
+                </div>
             </div>
 
             <div id="court-list-container"></div>
 
-          <div class="footer-pro" id="footer-pro" style="display:none;">
+            <div class="footer-pro" id="footer-pro" style="display:none;">
                 <hr class="footer-divider">
                 <p style="font-size:12px; font-weight:800; color:var(--text-sub); margin-bottom:15px; text-transform:uppercase;">¿Tu cancha es un caos de mensajes?</p>
                 <a href="https://wa.me/5491166463800?text=Hola%20Cancher,%20quiero%20el%20piloto%20automático" class="btn-sales">Pasame a Cancher ⚡</a>
@@ -431,6 +423,10 @@
                     `;
                 }
             });
+            htmlAcumulado += "</div>";
+            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; color:var(--text-sub); font-weight:600; padding:40px;'>No hay canchas activas en este momento.</div>" : htmlAcumulado;
+        });
+    }
 
     // --- MÓDULO 3: INSCRIPCIÓN ---
     function M3_cargarInscripcion() {
@@ -596,7 +592,6 @@
                     document.getElementById('transfer-details-box').style.display = 'none';
                     document.getElementById('btn-pay-cancha-container').style.display = 'none';
                     document.getElementById('court-confirmation-msg').style.display = 'block';
-                    // 🔥 SE ELIMINÓ NOTIFICAR WA ACÁ
                 });
             }
         });

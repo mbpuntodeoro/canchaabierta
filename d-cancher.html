@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=42"></script>
+    <script src="app-config.js?v=43"></script>
     
     <style>
         :root { 
@@ -61,6 +61,14 @@
         .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 90; transition: transform 0.1s ease;}
         .fab-crear:active { transform: scale(0.9); }
 
+        /* EXTRA BUTTONS & FOOTER */
+        .dashboard-actions { padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+        .btn-action-dash { width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; border: none; transition: transform 0.1s ease;}
+        .btn-action-dash:active { transform: scale(0.98); }
+        .btn-link { background: var(--bg-white); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-wsp { background: #25D366; color: #FFF; }
+        .branding-footer { text-align: center; padding: 24px 16px; font-size: 11px; font-weight: 600; color: var(--text-sub); }
+
         /* VIEWS (MODALES) */
         .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1); overflow-y: auto; padding-bottom: 40px; }
         .view-modal.active { transform: translateX(0); }
@@ -79,14 +87,13 @@
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border); }
         .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
         
-        /* Listas Jugadores y Movimientos */
+        /* Listas Jugadores */
         .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); transition: all 0.2s ease; }
         .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
         .grupo-expandible .jugador-fila { margin-bottom: 0; border: none; border-radius: 0; }
         .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
         .grupo-detalle.open { max-height: 500px; }
         .sub-fila { padding: 12px 16px 12px 32px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
-
         .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
         .icon-chevron { color: var(--text-sub); transition: transform 0.2s ease; margin-left: 4px; }
         .icon-chevron.open { transform: rotate(180deg); }
@@ -101,12 +108,21 @@
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); transition: 0.1s; }
         .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px; cursor: pointer;}
 
-        /* Movimiento Fila */
-        .mov-fila { background: var(--bg-white); padding: 16px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
-        .mov-info { display: flex; flex-direction: column; }
-        .mov-nombre { font-size: 15px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
-        .mov-fecha { font-size: 13px; color: var(--text-sub); margin-top: 4px; font-weight: 500;}
+        /* --- TABS & MOVIMIENTOS B2B --- */
+        .tabs-mov { display: flex; background: #F3F4F6; border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+        .tab-mov { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text-sub); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .tab-mov.active { background: var(--bg-white); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .mov-card { background: var(--bg-white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+        .mov-info { flex: 1; padding-right: 12px; }
+        .mov-concepto { font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.3; margin-bottom: 6px;}
+        .mov-fecha { font-size: 11px; color: var(--text-sub); font-weight: 600;}
+        .mov-monto-box { text-align: right; }
         .mov-monto { font-size: 16px; font-weight: 800; letter-spacing: -0.5px;}
+        .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block;}
+        .mb-bonif { background: #D1FAE5; color: #065F46; }
+        .mb-pagado { background: #E0E7FF; color: #3730A3; }
+        .mb-deuda { background: #FEE2E2; color: #991B1B; }
 
         /* BOTTOM SHEETS */
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; opacity: 0; transition: opacity 0.2s ease; }
@@ -149,24 +165,27 @@
             <div class="dsc-impact-box">
                 <div class="dsc-impact-title">🚀 Impacto del Piloto Automático</div>
                 <div class="dsc-metrics">
-                    <div class="dsc-metric">
-                        <div class="dsc-metric-label">Jugadores</div>
-                        <div class="dsc-metric-val" id="sc-jugadores">0</div>
-                    </div>
-                    <div class="dsc-metric">
-                        <div class="dsc-metric-label">Gestionado</div>
-                        <div class="dsc-metric-val" id="sc-gestionado">$0</div>
-                    </div>
+                    <div class="dsc-metric"><div class="dsc-metric-label">Jugadores</div><div class="dsc-metric-val" id="sc-jugadores">0</div></div>
+                    <div class="dsc-metric"><div class="dsc-metric-label">Gestionado</div><div class="dsc-metric-val" id="sc-gestionado">$0</div></div>
                 </div>
             </div>
             
             <div class="dsc-actions">
-                <button class="btn-dark-outline" onclick="abrirViewMovimientos()">Ver Movimientos</button>
+                <button class="btn-dark-outline" onclick="abrirViewMovimientos()">📋 Mis Movimientos (Cargos)</button>
             </div>
         </div>
 
         <div id="loading-init">Cargando tu panel...</div>
         <div class="cards-wrapper" id="cards-container"></div>
+
+        <div class="dashboard-actions" id="dash-actions" style="display:none;">
+            <button class="btn-action-dash btn-link" onclick="copiarLinkCartelera()">🔗 Copiar Link de mi Cartelera</button>
+            <button class="btn-action-dash btn-wsp" onclick="soporteWhatsapp()">💬 Soporte WhatsApp</button>
+        </div>
+
+        <div class="branding-footer" id="dash-footer" style="display:none;">
+            Organizado con Cancher · Panel de Gestión
+        </div>
     </main>
 
     <div class="fab-crear" onclick="abrirFormularioCancha(null)">+</div>
@@ -176,13 +195,22 @@
             <div class="nav-back-btn" onclick="cerrarViewMovimientos()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Atrás
             </div>
-            <div style="font-weight: 700; font-size: 15px;">Historial</div>
+            <div style="font-weight: 700; font-size: 15px;">Mis Movimientos</div>
         </div>
         <div class="modal-content">
-            <div class="modal-title" style="margin-bottom: 24px;">Movimientos</div>
-            <div id="lista-movimientos-container">
-                <div style="text-align:center; padding:20px; color:var(--text-sub);">Calculando finanzas...</div>
+            
+            <div class="tabs-mov">
+                <div class="tab-mov active" id="tab-pendientes" onclick="switchTabMov('pendientes')">PENDIENTES</div>
+                <div class="tab-mov" id="tab-historial" onclick="switchTabMov('historial')">HISTORIAL</div>
             </div>
+
+            <div id="mov-pendientes-container">
+                <div style="text-align:center; padding:40px; color:var(--text-sub);">Calculando saldo...</div>
+            </div>
+            <div id="mov-historial-container" style="display:none;">
+                <div style="text-align:center; padding:40px; color:var(--text-sub);">Buscando historial...</div>
+            </div>
+
         </div>
     </div>
 
@@ -244,6 +272,7 @@
             const cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             document.getElementById('main-status-card').style.display = 'block';
+            
             const vencimiento = cuenta.vencimientoPrueba || cuenta.fechaVencimiento || '06-05-2026';
             const plan = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL GRATUITO';
             document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Automatizado' : `Tu prueba vence el ${vencimiento}`;
@@ -253,6 +282,9 @@
 
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             document.getElementById('loading-init').style.display = 'none';
+            document.getElementById('dash-actions').style.display = 'flex';
+            document.getElementById('dash-footer').style.display = 'block';
+
             const hubData = snap.val();
             if (!hubData || !hubData.canchas) { document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>"; return; }
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
@@ -293,11 +325,26 @@
         document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
     }
 
-    // --- LÓGICA DE MOVIMIENTOS ---
+    // --- ACCIONES EXTRAS DEL DASHBOARD ---
+    function copiarLinkCartelera() {
+        // Obtenemos el link actual y reemplazamos el archivo del panel por la vista de jugadores
+        let linkApp = window.location.href.replace('d-cancher.html', 'index.html').replace('d.html', 'index.html').split('?')[0];
+        let linkFinal = `${linkApp}?org=${globalOrgId}`;
+        
+        navigator.clipboard.writeText(linkFinal).then(() => {
+            alert("¡Link copiado con éxito! Pegalo en tus grupos de WhatsApp.");
+        });
+    }
+
+    function soporteWhatsapp() {
+        window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank');
+    }
+
+    // --- VIEW MOVIMIENTOS B2B ---
     function abrirViewMovimientos() {
-        renderMovimientos();
         document.getElementById('view-movimientos').classList.add('active');
         document.body.style.overflow = 'hidden';
+        cargarMovimientosB2B();
     }
 
     function cerrarViewMovimientos() {
@@ -305,64 +352,75 @@
         document.body.style.overflow = '';
     }
 
-    function renderMovimientos() {
-        const container = document.getElementById('lista-movimientos-container');
-        let movimientos = [];
-
-        // Extraer todos los jugadores de todas las canchas para armar el historial
-        eventosCache.forEach(cancha => {
-            (cancha.inscriptos || []).forEach(jug => {
-                movimientos.push({
-                    nombre: jug.nombre,
-                    canchaNombre: cancha.organiza || 'Cancha',
-                    estado: jug.estado,
-                    monto: cancha.valor * (jug.cantidad || 1),
-                    fechaSys: jug.fecha || 0 // Timestamp de cuando se anotó/pagó
-                });
-            });
-        });
-
-        // Ordenar del más reciente al más antiguo
-        movimientos.sort((a, b) => b.fechaSys - a.fechaSys);
-
-        if (movimientos.length === 0) {
-            container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>Aún no hay movimientos registrados.</div>";
-            return;
+    function switchTabMov(tab) {
+        if(tab === 'pendientes') {
+            document.getElementById('tab-pendientes').classList.add('active');
+            document.getElementById('tab-historial').classList.remove('active');
+            document.getElementById('mov-pendientes-container').style.display = 'block';
+            document.getElementById('mov-historial-container').style.display = 'none';
+        } else {
+            document.getElementById('tab-pendientes').classList.remove('active');
+            document.getElementById('tab-historial').classList.add('active');
+            document.getElementById('mov-pendientes-container').style.display = 'none';
+            document.getElementById('mov-historial-container').style.display = 'block';
         }
-
-        let html = '';
-        movimientos.forEach(m => {
-            const isPagado = m.estado === 'pagado';
-            const isClub = m.estado === 'paga-en-la-cancha';
-            
-            // Lógica visual al estilo Mercado Pago
-            let colorClase = '';
-            let signo = '';
-            let dotClase = '';
-
-            if (isPagado) { colorClase = ''; signo = '+ '; dotClase = 'pagado'; } 
-            else if (isClub) { colorClase = 'deuda'; signo = ''; dotClase = 'cancha'; } 
-            else { colorClase = 'deuda'; signo = '- '; dotClase = 'pendiente'; }
-
-            const montoMostrar = m.monto === 0 ? 'Gratis' : `${signo}${PadelUtils.fmtDinero(m.monto)}`;
-            const fechaTxt = m.fechaSys > 0 ? formatearFechaHora(m.fechaSys) : '';
-
-            html += `
-                <div class="mov-fila">
-                    <div class="mov-info">
-                        <div class="mov-nombre"><span class="dot ${dotClase}"></span> ${jugadorAbreviado(m.nombre)}</div>
-                        <div class="mov-fecha">${m.canchaNombre} · ${fechaTxt}</div>
-                    </div>
-                    <div class="mov-monto ${colorClase}">${montoMostrar}</div>
-                </div>
-            `;
-        });
-
-        container.innerHTML = html;
     }
 
-    // --- PANEL CANCHA, CREACIÓN Y BOTTOM SHEETS ---
-    // (Funciones minimizadas para mantener todo el archivo prolijo y completo)
+    function cargarMovimientosB2B() {
+        // Lee de la base de facturación real (Organizador <-> Cancher)
+        db.ref(`facturacion/${globalOrgId}/movimientos`).once('value', snap => {
+            const movs = snap.val() || {};
+            const arrMovs = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
+            
+            // Ordenamos por fecha (del más reciente al más antiguo)
+            arrMovs.sort((a,b) => (b.fecha || 0) - (a.fecha || 0));
+
+            let htmlPendientes = '';
+            let htmlHistorial = '';
+
+            arrMovs.forEach(m => {
+                const isPendiente = m.estado === 'pendiente';
+                const isBonificado = m.estado === 'bonificado';
+                const isPagado = m.estado === 'pagado';
+                
+                let colorMonto = isPendiente ? 'var(--text-main)' : 'var(--brand-green)';
+                
+                // Badges visuales estilo app financiera
+                let badge = '';
+                if (isBonificado) badge = `<div class="mov-badge mb-bonif">BONIFICADO</div>`;
+                if (isPagado) badge = `<div class="mov-badge mb-pagado">PAGADO</div>`;
+                if (isPendiente) badge = `<div class="mov-badge mb-deuda">IMPAGO</div>`;
+
+                const card = `
+                    <div class="mov-card">
+                        <div class="mov-info">
+                            <div class="mov-concepto">${m.concepto || 'Cancha Abierta / Cargo por uso'}</div>
+                            <div class="mov-fecha">${m.fechaStr || '--'}</div>
+                            ${badge}
+                        </div>
+                        <div class="mov-monto-box">
+                            <div class="mov-monto" style="color:${colorMonto}">$${m.monto || 0}</div>
+                        </div>
+                    </div>
+                `;
+
+                if (isPendiente) {
+                    htmlPendientes += card;
+                } else {
+                    htmlHistorial += card;
+                }
+            });
+
+            if (!htmlPendientes) htmlPendientes = "<div style='text-align:center; padding:40px; color:var(--brand-green); font-size:14px; font-weight:600;'>✅ Todo al día. No tenés deudas con Cancher.</div>";
+            if (!htmlHistorial) htmlHistorial = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>Aún no hay historial registrado.</div>";
+
+            document.getElementById('mov-pendientes-container').innerHTML = htmlPendientes;
+            document.getElementById('mov-historial-container').innerHTML = htmlHistorial;
+        });
+    }
+
+
+    // --- PANEL CANCHA, BOTTOM SHEETS, ETC (Minimizados) ---
     function abrirPanelCancha(id) { panelCanchaId = id; if(activeEventRef) activeEventRef.off(); activeEventRef = db.ref('eventos/' + id); activeEventRef.on('value', snap => { const canchaData = snap.val(); if(canchaData) { const idx = eventosCache.findIndex(e => e.id === id); if(idx !== -1) eventosCache[idx] = { id, ...canchaData }; renderizarModalCancha(id, canchaData); } }); document.getElementById('view-panel-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
     function cerrarPanelCancha() { if(activeEventRef) { activeEventRef.off(); activeEventRef = null; } document.getElementById('view-panel-cancha').classList.remove('active'); document.body.style.overflow = ''; panelCanchaId = null; }
 
@@ -399,7 +457,6 @@
     function reactivarCancha() { if(!editandoCanchaId) return; db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'activo' }).then(() => cerrarFormularioCancha()); }
 
     function formatearDiaCorto(fechaStr) { const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; const f = new Date(fechaStr + 'T12:00:00'); return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`; }
-    function formatearFechaHora(ts) { const d = new Date(ts); const dia = String(d.getDate()).padStart(2, '0'); const mes = String(d.getMonth() + 1).padStart(2, '0'); const hora = String(d.getHours()).padStart(2, '0'); const min = String(d.getMinutes()).padStart(2, '0'); return `${dia}/${mes} ${hora}:${min}hs`; }
     function jugadorAbreviado(n) { if(!n) return 'Jugador'; let p = n.split(' '); return p.length === 1 ? p[0] : `${p[0]} ${p[1].charAt(0)}.`; }
 </script>
 </body>

@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=36"></script>
+    <script src="app-config.js?v=37"></script>
     
     <style>
         :root { 
@@ -44,58 +44,34 @@
 
         .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 90; }
 
-        /* --- FASE 2: MODAL PANEL DE CANCHA --- */
-        .view-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-base); z-index: 100;
-            transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-            overflow-y: auto; padding-bottom: 40px;
-        }
+        /* --- MODAL PANEL DE CANCHA --- */
+        .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1); overflow-y: auto; padding-bottom: 40px; }
         .view-modal.active { transform: translateX(0); }
 
-        .nav-modal {
-            padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110;
-        }
+        .nav-modal { padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110; }
         .nav-back-btn { font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center;}
         .nav-back-btn svg { margin-right: 8px; }
         .btn-config { font-size: 20px; background: none; border: none; cursor: pointer; color: var(--text-sub); }
 
         .modal-content { padding: 16px; max-width: 600px; margin: 0 auto;}
-        
         .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; }
         .modal-subtitle { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 20px; }
 
         .action-row { display: flex; gap: 12px; margin-bottom: 24px; }
-        .btn-black-modal {
-            flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px;
-            border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer;
-            transition: transform 0.1s ease;
-        }
+        .btn-black-modal { flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.1s ease; }
         .btn-black-modal:active { transform: scale(0.98); }
         
-        .mj-resumen {
-            display: flex; justify-content: space-between; font-size: 15px; font-weight: 700;
-            background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px;
-            border: 1px solid var(--border);
-        }
-        
+        .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border); }
         .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
         
         /* FILAS DE JUGADORES */
-        .jugador-fila {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-white); padding: 16px; border-radius: 10px;
-            margin-bottom: 8px; border: 1px solid var(--border);
-            transition: all 0.2s ease;
-        }
+        .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); transition: all 0.2s ease; }
         
         .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
         .grupo-expandible .jugador-fila { margin-bottom: 0; border: none; border-radius: 0; }
         
         .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
         .grupo-detalle.open { max-height: 500px; }
-        
         .sub-fila { padding: 12px 16px 12px 32px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
 
         .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
@@ -106,38 +82,32 @@
         .dot.pendiente { background: var(--brand-red); }
         .dot.cancha { background: var(--brand-orange); }
         .dot.pagado { background: var(--brand-green); }
+        
+        .badge-parcial { font-size:11px; background:#D1FAE5; color:#065F46; padding:2px 6px; border-radius:4px; font-weight:700;}
 
         .acciones { display: flex; gap: 12px; align-items: center; }
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); transition: 0.1s; }
         .btn-check:active { transform: scale(0.9); }
         .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px; cursor: pointer;}
 
-        /* --- BOTTOM SHEET (MENÚ iOS) --- */
-        .bs-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 200;
-            display: none; align-items: flex-end;
-            opacity: 0; transition: opacity 0.2s ease;
-        }
+        /* --- BOTTOM SHEETS (MENÚ Y FORMULARIO) --- */
+        .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; opacity: 0; transition: opacity 0.2s ease; }
         .bs-overlay.active { opacity: 1; }
-        
-        .bs-content {
-            width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0;
-            padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .bs-content { width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
         .bs-content.open { transform: translateY(0); }
-        
         .bs-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
         .bs-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;}
         
-        .bs-btn {
-            width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px;
-            font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s ease;
-        }
+        .bs-btn { width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s ease; }
         .bs-btn:active { transform: scale(0.98); }
         .bs-btn-danger { color: var(--brand-red); background: #FEE2E2; }
-        .bs-btn-cancel { background: transparent; color: var(--text-sub); margin-top: 8px; }
+        .bs-btn-cancel { background: transparent; color: var(--text-sub); margin-top: 8px; border: none; font-weight: 600; font-size: 15px; width: 100%; cursor: pointer;}
+
+        /* Inputs del Formulario Manual */
+        .input-group { margin-bottom: 12px; }
+        .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; font-weight: 500; font-family: inherit;}
+        .input-clean:focus { border-color: var(--text-main); }
+        select.input-clean { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
 
         #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
     </style>
@@ -178,7 +148,7 @@
             <div class="modal-subtitle" id="pc-fecha">--</div>
 
             <div class="action-row">
-                <button class="btn-black-modal" onclick="alert('Abre formulario interno de Anotar Jugador')">+ Anotar Jugador</button>
+                <button class="btn-black-modal" onclick="abrirModalAnotar()">+ Anotar Jugador</button>
             </div>
 
             <div class="mj-resumen">
@@ -198,7 +168,38 @@
             <div class="bs-title" id="bs-nombre-jugador">Opciones</div>
             <button class="bs-btn" id="btn-wa">💬 Enviar WhatsApp</button>
             <button class="bs-btn bs-btn-danger" id="btn-eliminar">🗑️ Eliminar de la cancha</button>
-            <button class="bs-btn bs-btn-cancel" onclick="cerrarMenuOpciones()">Cancelar</button>
+            <button class="bs-btn-cancel" onclick="cerrarMenuOpciones()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="bs-anotar" class="bs-overlay">
+        <div class="bs-content" id="bs-content-anotar">
+            <div class="bs-handle"></div>
+            <div class="bs-title">Anotar Manualmente</div>
+            
+            <div class="input-group">
+                <input type="text" id="man-nombre" class="input-clean" placeholder="Nombre y Apellido">
+            </div>
+            <div style="display:flex; gap:12px;">
+                <div class="input-group" style="flex:1;">
+                    <select id="man-lugares" class="input-clean">
+                        <option value="1">1 lugar</option>
+                        <option value="2">2 lugares</option>
+                        <option value="3">3 lugares</option>
+                        <option value="4">4 lugares</option>
+                    </select>
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <select id="man-estado" class="input-clean">
+                        <option value="pagado">Ya pagó</option>
+                        <option value="paga-en-la-cancha">Paga en club</option>
+                        <option value="pendiente">Debe</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="bs-btn" style="background:var(--text-main); color:var(--bg-white); margin-top:8px;" onclick="guardarAnotacionManual()">Guardar Inscripción</button>
+            <button class="bs-btn-cancel" onclick="cerrarModalAnotar()">Cancelar</button>
         </div>
     </div>
 
@@ -207,7 +208,7 @@
     let eventosCache = [];
     let panelCanchaId = null; 
     let actionData = null; 
-    let activeEventRef = null; // 🔥 NUEVO: Referencia para la escucha activa del modal
+    let activeEventRef = null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const testOrgId = urlParams.get('org');
@@ -233,15 +234,11 @@
             document.getElementById('t-org-name').innerText = (snap.val() || {}).nombreOrg || "Tu Club";
         });
 
-        // Escucha del Dashboard principal
         db.ref('hubs/' + orgId).on('value', async (snap) => {
-            const container = document.getElementById('cards-container');
             document.getElementById('loading-init').style.display = 'none';
-            document.getElementById('main-footer').style.display = 'block';
-
             const hubData = snap.val();
             if (!hubData || !hubData.canchas) {
-                container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
+                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas publicadas.</div>";
                 return;
             }
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
@@ -269,7 +266,6 @@
 
             const claseCompleta = (ocupados >= (d.cupo || 0)) ? 'card-completa' : '';
             let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
-
             let finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
             if (d.hora && (d.horaFin || '23:59') < d.hora) finEvento += 86400000;
 
@@ -286,23 +282,17 @@
         document.getElementById('dash-recaudado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
     }
 
-    // --- LÓGICA DEL MODAL (CORREGIDA PARA ACTUALIZACIÓN EN VIVO) ---
+    // --- LÓGICA DEL MODAL ---
     function abrirPanelCancha(id) {
         panelCanchaId = id;
-        
-        // 🔥 Si ya estábamos escuchando otra cancha, la apagamos
         if(activeEventRef) activeEventRef.off();
 
-        // 🔥 Ponemos el "oído" en esta cancha específica
         activeEventRef = db.ref('eventos/' + id);
         activeEventRef.on('value', snap => {
             const canchaData = snap.val();
             if(canchaData) {
-                // Actualizamos el cache local por si acaso
                 const idx = eventosCache.findIndex(e => e.id === id);
                 if(idx !== -1) eventosCache[idx] = { id, ...canchaData };
-                
-                // Re-renderizamos el interior del modal automáticamente
                 renderizarModalCancha(id, canchaData);
             }
         });
@@ -312,11 +302,7 @@
     }
 
     function cerrarPanelCancha() {
-        // 🔥 Apagamos la escucha al cerrar para no gastar batería/datos
-        if(activeEventRef) {
-            activeEventRef.off();
-            activeEventRef = null;
-        }
+        if(activeEventRef) { activeEventRef.off(); activeEventRef = null; }
         document.getElementById('view-panel-cancha').classList.remove('active');
         document.body.style.overflow = '';
         panelCanchaId = null;
@@ -369,6 +355,13 @@
                 htmlPorEstado[estadoGrupo].push(fila);
             } else {
                 let subJugadoresHtml = '';
+                // 🔥 LÓGICA DE PAGOS PARCIALES
+                let pagadosDelGrupo = jugadores.filter(j => j.estado === 'pagado').length;
+                let badgeParcial = '';
+                if (pagadosDelGrupo > 0 && pagadosDelGrupo < jugadores.length && !isLegacyGroup) {
+                    badgeParcial = `<span class="badge-parcial">${pagadosDelGrupo}/${jugadores.length} pagos</span>`;
+                }
+
                 if (isLegacyGroup) {
                     subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`;
                 } else {
@@ -388,7 +381,7 @@
                     <div class="grupo-expandible">
                         <div class="jugador-fila" onclick="toggleGrupo('${cel}')" style="cursor:pointer;">
                             <div class="jugador-main">
-                                <span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span></span>
+                                <span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span> ${badgeParcial}</span>
                                 <span class="dot ${estadoGrupo}"></span>
                                 <svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </div>
@@ -422,7 +415,7 @@
         else { detalle.classList.add('open'); chevron.classList.add('open'); }
     }
 
-    // --- ACCIONES DE BASE DE DATOS (AHORA DISPARAN EL RENDER AUTOMÁTICO) ---
+    // --- ACCIONES DE PAGOS ---
     function marcarIndividualPagado(eventoId, indexOriginal) {
         db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
@@ -437,14 +430,13 @@
         db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
             list.forEach((j, idx) => {
-                if((j.celular || `sin-celu-${idx}`) === celular) {
-                    j.estado = 'pagado';
-                }
+                if((j.celular || `sin-celu-${idx}`) === celular) j.estado = 'pagado';
             });
             db.ref(`eventos/${eventoId}/inscriptos`).set(list);
         });
     }
 
+    // --- MENÚ BOTTOM SHEET ---
     function abrirMenuOpciones(nombre, celular) {
         actionData = { celular: celular };
         document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${nombre}`;
@@ -466,19 +458,55 @@
         };
 
         document.getElementById('bs-menu').style.display = 'flex';
-        setTimeout(() => {
-            document.getElementById('bs-menu').classList.add('active');
-            document.getElementById('bs-content').classList.add('open');
-        }, 10);
+        setTimeout(() => { document.getElementById('bs-menu').classList.add('active'); document.getElementById('bs-content').classList.add('open'); }, 10);
     }
 
     function cerrarMenuOpciones() {
-        document.getElementById('bs-content').classList.remove('open');
-        document.getElementById('bs-menu').classList.remove('active');
+        document.getElementById('bs-content').classList.remove('open'); document.getElementById('bs-menu').classList.remove('active');
         setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300);
         actionData = null;
     }
 
+    // --- FORMULARIO ANOTAR MANUAL ---
+    function abrirModalAnotar() {
+        document.getElementById('man-nombre').value = '';
+        document.getElementById('man-lugares').value = '1';
+        document.getElementById('man-estado').value = 'pagado';
+        
+        document.getElementById('bs-anotar').style.display = 'flex';
+        setTimeout(() => { document.getElementById('bs-anotar').classList.add('active'); document.getElementById('bs-content-anotar').classList.add('open'); }, 10);
+    }
+
+    function cerrarModalAnotar() {
+        document.getElementById('bs-content-anotar').classList.remove('open'); document.getElementById('bs-anotar').classList.remove('active');
+        setTimeout(() => document.getElementById('bs-anotar').style.display = 'none', 300);
+    }
+
+    function guardarAnotacionManual() {
+        const nombre = document.getElementById('man-nombre').value.trim();
+        const lugares = parseInt(document.getElementById('man-lugares').value) || 1;
+        const estado = document.getElementById('man-estado').value;
+
+        if(!nombre) { alert('Completá el nombre'); return; }
+
+        db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => {
+            let list = s.val() || [];
+            
+            // Creamos un celular falso único para que se agrupen bien internamente
+            const fakeCelu = 'manual-' + Date.now();
+            
+            for(let i=0; i<lugares; i++) {
+                let nombreJug = i === 0 ? nombre : `Amigo de ${nombre}`;
+                list.push({ nombre: nombreJug, celular: fakeCelu, cantidad: 1, estado: estado, fecha: Date.now() });
+            }
+
+            db.ref(`eventos/${panelCanchaId}/inscriptos`).set(list).then(() => {
+                cerrarModalAnotar();
+            });
+        });
+    }
+
+    // --- UTILS ---
     function formatearDiaCorto(fechaStr) {
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const f = new Date(fechaStr + 'T12:00:00');

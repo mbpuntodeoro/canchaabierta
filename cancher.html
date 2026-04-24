@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=26"></script>
+    <script src="app-config.js?v=27"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -56,7 +56,7 @@
         .c-cat-bold { font-weight: 600; color: var(--text-main); }
         #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
 
-        /* --- 3. INSCRIPCIÓN (NUEVO) --- */
+        /* --- 3. INSCRIPCIÓN --- */
         .view-inscripcion {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-base); z-index: 100;
@@ -103,6 +103,9 @@
             background-repeat: no-repeat; background-position: right 12px center;
         }
 
+        /* Animación para nuevos campos */
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
         .total-box {
             display: flex; justify-content: space-between; align-items: center;
             margin-top: 32px; margin-bottom: 24px; padding-top: 16px; border-top: 1px solid var(--border);
@@ -148,7 +151,7 @@
             
             <div class="scarcity-msg">⚡ Esta cancha suele completarse rápido</div>
 
-            <div class="form-title">Completá tus datos para anotarte</div>
+            <div class="form-title">Tus datos (Titular)</div>
             
             <div style="display:flex; gap:12px;">
                 <div class="input-group" style="flex:1;">
@@ -166,8 +169,8 @@
                 <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: 1122334455">
             </div>
 
-            <div class="input-group">
-                <label class="input-label">¿A cuántos jugadores anotás?</label>
+            <div class="input-group" style="margin-top: 24px;">
+                <label class="input-label" style="color: var(--text-sub);">¿A cuántos jugadores anotás?</label>
                 <select id="ins-lugares" class="input-clean" onchange="actualizarTotal()">
                     <option value="1">Solo yo</option>
                     <option value="2">Yo + 1</option>
@@ -175,6 +178,8 @@
                     <option value="4">Yo + 3</option>
                 </select>
             </div>
+
+            <div id="extra-players-container"></div>
 
             <div class="total-box">
                 <div class="t-label">TOTAL</div>
@@ -189,7 +194,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const orgId = urlParams.get('org');
     let dbEvents = [];
-    let currentEventData = null; // Guardamos la data de la cancha clickeada
+    let currentEventData = null;
 
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
@@ -198,102 +203,70 @@
     }
 
     function cargarBase() {
-        // Cargar Header
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = `Organizado por ${cuenta.nombreOrg || "Club"}`;
         });
 
-        // Cargar Cartelera
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             const listContainer = document.getElementById('court-list-container');
             document.getElementById('loading-init').style.display = 'none';
-            
             const hubData = snap.val();
             if (!hubData || !hubData.canchas) {
                 listContainer.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
                 return;
             }
-
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
             dbEvents = [];
             snapshots.forEach(s => { if(s.exists()) dbEvents.push({ id: s.key, ...s.val() }); });
-            
             dbEvents.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
             let htmlAcumulado = "<div class='cartelera-container'>";
             let lastDate = ""; let canchasActivas = 0;
-
             dbEvents.forEach((d) => {
                 const ahora = Date.now();
                 let horaFinReal = d.horaFin || '23:59';
                 let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
                 if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
-
                 if (ahora <= finEvento || d.tipo === 'recurrente') {
                     canchasActivas++;
-                    
                     if (d.fecha !== lastDate) {
                         htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
                         lastDate = d.fecha;
                     }
-                    
                     let tituloCancha = d.organiza || 'Cancha';
-                    let lineaLugar = d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : '';
-
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
-                            <div class="c-line-1">
-                                <span style="padding-right: 15px;">${tituloCancha.toUpperCase()}</span>
-                                <span>${PadelUtils.fmtDinero(d.valor)}</span>
-                            </div>
+                            <div class="c-line-1"><span>${tituloCancha.toUpperCase()}</span><span>${PadelUtils.fmtDinero(d.valor)}</span></div>
                             <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
-                            ${lineaLugar}
+                            ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
                             <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
-                        </div>
-                    `;
+                        </div>`;
                 }
             });
-
-            htmlAcumulado += "</div>";
-            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado;
+            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado + "</div>";
         });
     }
 
-    // --- LÓGICA DE INSCRIPCIÓN (PASO 3) ---
     function abrirInscripcion(id) {
         currentEventData = dbEvents.find(e => e.id === id);
         if(!currentEventData) return;
-
-        // Llenar datos de la tarjeta superior
         document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
-        
-        if(currentEventData.lugar) {
-            document.getElementById('ins-loc-container').style.display = 'flex';
-            document.getElementById('ins-loc').innerText = currentEventData.lugar;
-        } else {
-            document.getElementById('ins-loc-container').style.display = 'none';
-        }
-
+        document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
+        if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
         document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || 'Organizador';
         document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
-
-        // Resetear select y calcular total inicial
         document.getElementById('ins-lugares').value = "1";
         actualizarTotal();
-
-        // Animar entrada
         document.getElementById('view-inscripcion').classList.add('active');
-        
-        // Pequeño hack para que no se superponga el scroll
         document.body.style.overflow = 'hidden'; 
     }
 
     function cerrarInscripcion() {
         document.getElementById('view-inscripcion').classList.remove('active');
-        document.body.style.overflow = ''; // Devolver scroll
+        document.body.style.overflow = '';
         currentEventData = null;
     }
 
@@ -302,23 +275,58 @@
         const lugares = parseInt(document.getElementById('ins-lugares').value) || 1;
         const total = lugares * (currentEventData.valor || 0);
         document.getElementById('ins-total-calc').innerText = PadelUtils.fmtDinero(total);
+        
+        // Renderizar campos extra si corresponde
+        renderExtraPlayers(lugares);
+    }
+
+    function renderExtraPlayers(lugares) {
+        const container = document.getElementById('extra-players-container');
+        container.innerHTML = '';
+        
+        for (let i = 2; i <= lugares; i++) {
+            const div = document.createElement('div');
+            div.style.marginTop = '24px';
+            div.style.animation = 'fadeSlide 0.2s ease';
+            div.innerHTML = `
+                <div class="form-title" style="font-size: 14px; margin-bottom: 12px; color: var(--text-sub);">Datos Jugador ${i}</div>
+                <div style="display:flex; gap:12px;">
+                    <div class="input-group" style="flex:1;">
+                        <label class="input-label">Nombre</label>
+                        <input type="text" class="input-clean extra-nombre" placeholder="Nombre">
+                    </div>
+                    <div class="input-group" style="flex:1;">
+                        <label class="input-label">Apellido</label>
+                        <input type="text" class="input-clean extra-apellido" placeholder="Apellido">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
     }
 
     function avanzarPaso4() {
         const nom = document.getElementById('ins-nombre').value.trim();
         const ape = document.getElementById('ins-apellido').value.trim();
         const celu = document.getElementById('ins-celu').value.trim();
-
+        
         if(!nom || !ape || !celu) {
-            alert("Por favor completá nombre, apellido y celular para avanzar.");
-            return;
+            alert("Completá tus datos para avanzar."); return;
         }
 
-        // Acá en el próximo mensaje armamos el Paso 4
-        alert("Paso 3 completado con éxito. ¡Acá deslizaría el Paso 4 de confirmación de pago!");
+        // Validar jugadores extra
+        const extraNombres = document.querySelectorAll('.extra-nombre');
+        const extraApellidos = document.querySelectorAll('.extra-apellido');
+        for (let i = 0; i < extraNombres.length; i++) {
+            if(!extraNombres[i].value.trim() || !extraApellidos[i].value.trim()) {
+                alert(`Completá los datos del Jugador ${i + 2}`);
+                return;
+            }
+        }
+
+        alert("Paso 3 validado. ¡Vamos a la confirmación de pago!");
     }
 
-    // --- FORMATEADORES DE FECHA ---
     function formatearDiaHeader(fechaStr) {
         const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
         const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
@@ -328,9 +336,8 @@
 
     function formatearDiaCorto(fechaStr) {
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const f = new Date(fechaStr + 'T12:00:00');
-        return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]}`;
+        return `${dias[f.getDay()]} ${f.getDate()}`;
     }
 </script>
 </body>

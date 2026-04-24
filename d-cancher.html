@@ -157,14 +157,35 @@
     let globalOrgId = null;
     let eventosCache = [];
 
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            db.ref('organizadores/' + user.uid).once('value', snap => {
-                globalOrgId = snap.val();
-                if(globalOrgId) cargarPanel(globalOrgId);
-            });
-        }
-    });
+    // --- TRUCO PARA TESTEAR DIRECTO CON EL LINK ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const testOrgId = urlParams.get('org');
+
+    if (testOrgId) {
+        // Entramos en MODO PRUEBA usando el ID del link
+        globalOrgId = testOrgId;
+        cargarPanel(testOrgId);
+    } else {
+        // MODO PRODUCCIÓN: Busca el login normal
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                db.ref('organizadores/' + user.uid).once('value', snap => {
+                    globalOrgId = snap.val();
+                    if(globalOrgId) {
+                        cargarPanel(globalOrgId);
+                    } else {
+                        document.getElementById('loading-init').innerText = "Error: Tu usuario no tiene un club asignado.";
+                    }
+                });
+            } else {
+                document.getElementById('loading-init').innerHTML = `
+                    No estás logueado en esta pestaña.<br><br>
+                    Para probar este diseño, agregá tu ID en la barra de direcciones así:<br>
+                    <b>d-cancher.html?org=ACA_TU_ID</b>
+                `;
+            }
+        });
+    }
 
     function cargarPanel(orgId) {
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
@@ -175,7 +196,11 @@
             const container = document.getElementById('cards-container');
             document.getElementById('loading-init').style.display = 'none';
             const hubData = snap.val();
-            if (!hubData || !hubData.canchas) return;
+            
+            if (!hubData || !hubData.canchas) {
+                container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas activas en tu panel.</div>";
+                return;
+            }
 
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
@@ -219,21 +244,18 @@
         const cancha = eventosCache.find(e => e.id === id);
         if(!cancha) return;
 
-        // Títulos
         document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha';
         document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`;
 
         const inscriptos = cancha.inscriptos || [];
         let ocupados = 0; let recaudado = 0;
 
-        // REGLA 2.2: Agrupar por estado
         const grupos = { pendiente: [], cancha: [], pagado: [] };
 
         inscriptos.forEach(jug => {
             const cant = jug.cantidad || 1;
             ocupados += cant;
             
-            // Fila simplificada (REGLA 3.1)
             let estadoClase = 'pendiente';
             if (jug.estado === 'pagado') { estadoClase = 'pagado'; recaudado += (cancha.valor * cant); }
             else if (jug.estado === 'paga-en-la-cancha') { estadoClase = 'cancha'; }
@@ -245,8 +267,8 @@
                         <span class="dot ${estadoClase}"></span>
                     </div>
                     <div class="acciones">
-                        ${estadoClase !== 'pagado' ? `<button style="background:#E5E7EB; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="alert('Marcar pagado y detener burbuja de evento')">✔</button>` : ''}
-                        <button class="btn-menu" onclick="alert('Abre menú: WhatsApp, Editar, Eliminar')">⋯</button>
+                        ${estadoClase !== 'pagado' ? `<button style="background:#E5E7EB; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="event.stopPropagation(); alert('✔ Marcar pagado')">✔</button>` : ''}
+                        <button class="btn-menu" onclick="event.stopPropagation(); alert('⋯ Menú (WhatsApp, Eliminar)')">⋯</button>
                     </div>
                 </div>
             `;
@@ -259,7 +281,6 @@
         document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`;
         document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
 
-        // REGLA 2.3: Render Bloques
         let htmlLista = '';
         if(grupos.pendiente.length > 0) htmlLista += `<div class="grupo-titulo">Pendientes (${grupos.pendiente.length})</div>` + grupos.pendiente.join('');
         if(grupos.cancha.length > 0) htmlLista += `<div class="grupo-titulo">Pagan en club (${grupos.cancha.length})</div>` + grupos.cancha.join('');
@@ -269,7 +290,6 @@
         
         document.getElementById('lista-jugadores-container').innerHTML = htmlLista;
 
-        // Abrir Modal
         document.getElementById('view-panel-cancha').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -285,7 +305,6 @@
         return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`;
     }
 
-    // Mostrar solo primer nombre y apellido para no saturar
     function jugadorAbreviado(nombreCompleto) {
         if(!nombreCompleto) return 'Jugador';
         const partes = nombreCompleto.split(' ');

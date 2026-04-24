@@ -205,8 +205,9 @@
 <script>
     let globalOrgId = null;
     let eventosCache = [];
-    let panelCanchaId = null; // Saber qué cancha tenemos abierta
-    let actionData = null; // Guardar datos para el menú inferior
+    let panelCanchaId = null; 
+    let actionData = null; 
+    let activeEventRef = null; // 🔥 NUEVO: Referencia para la escucha activa del modal
 
     const urlParams = new URLSearchParams(window.location.search);
     const testOrgId = urlParams.get('org');
@@ -232,73 +233,96 @@
             document.getElementById('t-org-name').innerText = (snap.val() || {}).nombreOrg || "Tu Club";
         });
 
-        // Escucha en vivo de las canchas
+        // Escucha del Dashboard principal
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             const container = document.getElementById('cards-container');
             document.getElementById('loading-init').style.display = 'none';
-            const hubData = snap.val();
-            if (!hubData || !hubData.canchas) return;
+            document.getElementById('main-footer').style.display = 'block';
 
+            const hubData = snap.val();
+            if (!hubData || !hubData.canchas) {
+                container.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
+                return;
+            }
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
             eventosCache = [];
             snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
             eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
 
-            let htmlCards = ''; let totalGlobalRecaudado = 0; const ahora = Date.now();
-
-            eventosCache.forEach(d => {
-                let ocupados = 0; let recaudadoCard = 0;
-                (d.inscriptos || []).forEach(jug => {
-                    const cant = jug.cantidad || 1;
-                    ocupados += cant;
-                    if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant);
-                });
-                totalGlobalRecaudado += recaudadoCard;
-
-                const claseCompleta = (ocupados >= (d.cupo || 0)) ? 'card-completa' : '';
-                let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
-
-                let finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
-                if (d.hora && (d.horaFin || '23:59') < d.hora) finEvento += 86400000;
-
-                if (ahora <= finEvento || d.tipo === 'recurrente') {
-                    htmlCards += `
-                        <div class="card-cancha ${claseCompleta}" onclick="abrirPanelCancha('${d.id}')">
-                            <div class="cc-header"><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora">${d.hora} – ${d.horaFin || '--'}</span></div>
-                            <div class="cc-categoria">${titulo}</div>
-                            <div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div>
-                        </div>`;
-                }
-            });
-            container.innerHTML = htmlCards;
-            document.getElementById('dash-recaudado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
-
-            // Si el modal está abierto, lo actualizamos silenciosamente
-            if (panelCanchaId) {
-                renderizarModalCancha(panelCanchaId);
-            }
+            renderDashboardCards();
         });
     }
 
-    // --- LÓGICA DEL MODAL DE LA CANCHA ---
+    function renderDashboardCards() {
+        const container = document.getElementById('cards-container');
+        let htmlCards = ''; let totalGlobalRecaudado = 0; const ahora = Date.now();
+
+        eventosCache.forEach(d => {
+            let ocupados = 0; let recaudadoCard = 0;
+            (d.inscriptos || []).forEach(jug => {
+                const cant = jug.cantidad || 1;
+                ocupados += cant;
+                if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant);
+            });
+            totalGlobalRecaudado += recaudadoCard;
+
+            const claseCompleta = (ocupados >= (d.cupo || 0)) ? 'card-completa' : '';
+            let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
+
+            let finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
+            if (d.hora && (d.horaFin || '23:59') < d.hora) finEvento += 86400000;
+
+            if (ahora <= finEvento || d.tipo === 'recurrente') {
+                htmlCards += `
+                    <div class="card-cancha ${claseCompleta}" onclick="abrirPanelCancha('${d.id}')">
+                        <div class="cc-header"><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora">${d.hora} – ${d.horaFin || '--'}</span></div>
+                        <div class="cc-categoria">${titulo}</div>
+                        <div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div>
+                    </div>`;
+            }
+        });
+        container.innerHTML = htmlCards;
+        document.getElementById('dash-recaudado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+    }
+
+    // --- LÓGICA DEL MODAL (CORREGIDA PARA ACTUALIZACIÓN EN VIVO) ---
     function abrirPanelCancha(id) {
         panelCanchaId = id;
-        renderizarModalCancha(id);
+        
+        // 🔥 Si ya estábamos escuchando otra cancha, la apagamos
+        if(activeEventRef) activeEventRef.off();
+
+        // 🔥 Ponemos el "oído" en esta cancha específica
+        activeEventRef = db.ref('eventos/' + id);
+        activeEventRef.on('value', snap => {
+            const canchaData = snap.val();
+            if(canchaData) {
+                // Actualizamos el cache local por si acaso
+                const idx = eventosCache.findIndex(e => e.id === id);
+                if(idx !== -1) eventosCache[idx] = { id, ...canchaData };
+                
+                // Re-renderizamos el interior del modal automáticamente
+                renderizarModalCancha(id, canchaData);
+            }
+        });
+
         document.getElementById('view-panel-cancha').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
     function cerrarPanelCancha() {
+        // 🔥 Apagamos la escucha al cerrar para no gastar batería/datos
+        if(activeEventRef) {
+            activeEventRef.off();
+            activeEventRef = null;
+        }
         document.getElementById('view-panel-cancha').classList.remove('active');
         document.body.style.overflow = '';
         panelCanchaId = null;
     }
 
-    function renderizarModalCancha(id) {
-        const cancha = eventosCache.find(e => e.id === id);
-        if(!cancha) return;
-
+    function renderizarModalCancha(id, cancha) {
         document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha';
         document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`;
 
@@ -307,7 +331,7 @@
         const gruposPorCelular = {};
 
         inscriptos.forEach((jug, idx) => {
-            jug.originalIndex = idx; // Clave para modificar Firebase exacto
+            jug.originalIndex = idx;
             const cant = jug.cantidad || 1;
             ocupados += cant;
             if(jug.estado === 'pagado') recaudado += (cancha.valor * cant);
@@ -322,7 +346,6 @@
         Object.keys(gruposPorCelular).forEach(cel => {
             const jugadores = gruposPorCelular[cel];
             const titular = jugadores[0];
-            
             let totalEnGrupo = 0;
             jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1));
             const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1);
@@ -331,27 +354,20 @@
             if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente';
             else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha';
 
-            // Parámetros seguros para inyectar en HTML
             const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'");
 
             if(jugadores.length === 1 && !isLegacyGroup) {
-                // JUGADOR SOLO
                 const jug = jugadores[0];
                 const fila = `
                     <div class="jugador-fila">
-                        <div class="jugador-main">
-                            <span class="nombre">${jugadorAbreviado(jug.nombre)}</span>
-                            <span class="dot ${estadoGrupo}"></span>
-                        </div>
+                        <div class="jugador-main"><span class="nombre">${jugadorAbreviado(jug.nombre)}</span><span class="dot ${estadoGrupo}"></span></div>
                         <div class="acciones">
-                            ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${cancha.id}', ${jug.originalIndex})">✔</button>` : ''}
+                            ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${jug.originalIndex})">✔</button>` : ''}
                             <button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 htmlPorEstado[estadoGrupo].push(fila);
             } else {
-                // GRUPO ("Juan + 2")
                 let subJugadoresHtml = '';
                 if (isLegacyGroup) {
                     subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`;
@@ -362,10 +378,9 @@
                             <div class="sub-fila">
                                 <div class="jugador-main"><span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span><span class="dot ${subClase}" style="width:8px; height:8px;"></span></div>
                                 <div class="acciones">
-                                    ${j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${cancha.id}', ${j.originalIndex})">✔</button>` : ''}
+                                    ${j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${j.originalIndex})">✔</button>` : ''}
                                 </div>
-                            </div>
-                        `;
+                            </div>`;
                     });
                 }
 
@@ -378,13 +393,12 @@
                                 <svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </div>
                             <div class="acciones">
-                                ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${cancha.id}', '${cel}')">✔</button>` : ''}
+                                ${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>` : ''}
                                 <button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button>
                             </div>
                         </div>
                         <div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div>
-                    </div>
-                `;
+                    </div>`;
                 htmlPorEstado[estadoGrupo].push(filaExtendida);
             }
         });
@@ -408,7 +422,7 @@
         else { detalle.classList.add('open'); chevron.classList.add('open'); }
     }
 
-    // --- ACCIONES DE BASE DE DATOS ---
+    // --- ACCIONES DE BASE DE DATOS (AHORA DISPARAN EL RENDER AUTOMÁTICO) ---
     function marcarIndividualPagado(eventoId, indexOriginal) {
         db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
@@ -422,18 +436,15 @@
     function marcarGrupoPagado(eventoId, celular) {
         db.ref(`eventos/${eventoId}/inscriptos`).once('value', s => {
             let list = s.val() || [];
-            let huboCambios = false;
             list.forEach((j, idx) => {
                 if((j.celular || `sin-celu-${idx}`) === celular) {
                     j.estado = 'pagado';
-                    huboCambios = true;
                 }
             });
-            if(huboCambios) db.ref(`eventos/${eventoId}/inscriptos`).set(list);
+            db.ref(`eventos/${eventoId}/inscriptos`).set(list);
         });
     }
 
-    // --- MENÚ BOTTOM SHEET ---
     function abrirMenuOpciones(nombre, celular) {
         actionData = { celular: celular };
         document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${nombre}`;
@@ -444,11 +455,9 @@
         };
 
         document.getElementById('btn-eliminar').onclick = () => {
-            if(!confirm(`¿Seguro que querés eliminar a ${nombre} y liberar su cupo?`)) return;
-            
+            if(!confirm(`¿Seguro que querés eliminar a ${nombre}?`)) return;
             db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => {
                 let list = s.val() || [];
-                // Filtramos y dejamos a todos los que NO coincidan con el celular
                 let nuevaLista = list.filter((j, idx) => (j.celular || `sin-celu-${idx}`) !== actionData.celular);
                 db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nuevaLista).then(() => {
                     cerrarMenuOpciones();
@@ -457,7 +466,6 @@
         };
 
         document.getElementById('bs-menu').style.display = 'flex';
-        // Delay minúsculo para que la animación CSS funcione bien
         setTimeout(() => {
             document.getElementById('bs-menu').classList.add('active');
             document.getElementById('bs-content').classList.add('open');
@@ -471,7 +479,6 @@
         actionData = null;
     }
 
-    // --- UTILS ---
     function formatearDiaCorto(fechaStr) {
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const f = new Date(fechaStr + 'T12:00:00');

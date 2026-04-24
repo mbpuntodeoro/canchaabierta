@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=30"></script>
+    <script src="app-config.js?v=31"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -78,7 +78,7 @@
         }
         .nav-back svg { margin-right: 8px; }
 
-        .content-pad { padding: 24px 16px; }
+        .content-pad { padding: 24px 16px; display: flex; flex-direction: column; min-height: calc(100% - 60px); }
         
         .info-card {
             background: var(--bg-white); border: 1px solid var(--border);
@@ -160,7 +160,7 @@
 
         /* FOOTER BRANDING VIOLETA */
         .branding-footer {
-            font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: 40px;
+            font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px;
         }
         .link-cancher {
             color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px;
@@ -263,10 +263,10 @@
                     <a class="link-sec" onclick="sumarOtroJugador()">Sumar otro jugador</a>
                     <a class="link-sec" onclick="cerrarInscripcion()">Ver más canchas</a>
                 </div>
+            </div>
 
-                <div class="branding-footer" style="padding-bottom: 20px;">
-                    Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
-                </div>
+            <div class="branding-footer">
+                Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
             </div>
 
         </div>
@@ -302,7 +302,7 @@
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             const listContainer = document.getElementById('court-list-container');
             document.getElementById('loading-init').style.display = 'none';
-            document.getElementById('main-footer').style.display = 'block'; // Mostrar el footer
+            document.getElementById('main-footer').style.display = 'block';
 
             const hubData = snap.val();
             if (!hubData || !hubData.canchas) {
@@ -468,7 +468,7 @@
         });
     }
 
-    // --- ACCIONES DEL PASO 4 (WHATSAPP MODIFICADO) ---
+    // --- ACCIONES DEL PASO 4 ---
     function copiarAlias(btn) {
         navigator.clipboard.writeText(document.getElementById('conf-alias').innerText).then(() => {
             const old = btn.innerText; 
@@ -481,7 +481,6 @@
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
         if(!local) return;
 
-        // Formato para WhatsApp: "Dom 27/4"
         const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
         const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
@@ -489,7 +488,6 @@
         let tituloCancha = currentEventData.organiza || 'Cancha';
         let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
 
-        // Texto estructurado exactamente como pediste
         let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
         texto += `Nombre: ${local.nombre}\n`;
         texto += `Personas: ${local.cantidad}\n`;

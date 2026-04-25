@@ -281,7 +281,8 @@
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-   const orgId = urlParams.get('org') || urlParams.get('id');
+   // Ahora el index entiende tanto ?org= como ?id=
+const orgId = urlParams.get('org') || urlParams.get('id');
     let dbEvents = [];
     let currentEventData = null;
 
@@ -346,6 +347,9 @@
                 }
             });
             listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado + "</div>";
+            // Esto apaga el cartel de "Buscando canchas..." pase lo que pase
+    document.getElementById('loading-init').style.display = 'none';
+    document.getElementById('main-footer').style.display = 'block';
         });
     }
 
@@ -442,55 +446,60 @@
         const btn = document.getElementById('btn-submit');
         btn.innerText = "Procesando..."; btn.disabled = true;
 
-       const btn = document.getElementById('btn-submit');
-btn.innerText = "Procesando..."; btn.disabled = true;
+        // --- INICIO DE TRANSACCIÓN (BLINDAJE ANTISOBREVENTA) ---
+        const eventRef = db.ref(`eventos/${currentEventData.id}`);
 
-// 1. Apuntamos al evento completo para validar cupo y anotar en un solo paso
-const eventRef = db.ref(`eventos/${currentEventData.id}`);
+        eventRef.transaction((currentData) => {
+            if (currentData) {
+                if (!currentData.inscriptos) { currentData.inscriptos = []; }
+                const list = currentData.inscriptos;
+                const name = (nom + " " + ape).trim();
 
-eventRef.transaction((currentData) => {
-    if (currentData) {
-        // Inicializamos la lista si no existe
-        if (!currentData.inscriptos) { currentData.inscriptos = []; }
-        
-        const list = currentData.inscriptos;
-        const name = (nom + " " + ape).trim();
+                // 1. Validar duplicados
+                if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) {
+                    return; // Aborta: ya existe
+                }
 
-        // 2. Validación de duplicados (ahora dentro de la transacción)
-        if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) {
-            return; // Aborta la transacción (ya existe)
-        }
+                // 2. Validar cupo real
+                const ocupados = calcularOcupados(list);
+                const cupoMax = currentData.cupo || 99;
 
-        // 3. Validación de cupo real contra la base de datos
-        const ocupados = calcularOcupados(list);
-        const cupoMax = currentData.cupo || 99;
+                if (ocupados + cant > cupoMax) {
+                    return; // Aborta: no hay lugar
+                }
 
-        if (ocupados + cant > cupoMax) {
-            return; // Aborta la transacción (no hay lugar)
-        }
+                // 3. Agregar jugadores de forma segura
+                list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
+                personasExtra.forEach(p => list.push(p));
 
-        // 4. Agregamos los jugadores
-        list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
-        personasExtra.forEach(p => list.push(p));
-
-        currentData.inscriptos = list;
-        return currentData; // Guarda los cambios de forma atómica
-    }
-    return current
-            
-            list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
-            list = list.concat(personasExtra);
-            
-            db.ref(`eventos/${currentEventData.id}/inscriptos`).set(list).then(() => {
+                currentData.inscriptos = list;
+                return currentData; 
+            }
+            return currentData;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                alert("Error de conexión. Intentá de nuevo.");
+                btn.innerText = "Anotarme ahora"; btn.disabled = false;
+            } else if (!committed) {
+                const data = snapshot.val();
+                const ocupadosActuales = calcularOcupados(data ? data.inscriptos : []);
+                if (data && ocupadosActuales + cant > data.cupo) {
+                    alert("¡Cancha llena! No quedan lugares suficientes.");
+                } else {
+                    alert("Ya estás anotado o hubo un error.");
+                }
+                btn.innerText = "Anotarme ahora"; btn.disabled = false;
+            } else {
+                // ÉXITO: Los datos se guardaron correctamente
+                const name = (nom + " " + ape).trim();
                 localStorage.setItem('padelapp_cancha_' + currentEventData.id, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
                 
                 document.getElementById('step-3-form').style.display = 'none';
                 document.getElementById('step-4-success').style.display = 'block';
                 document.getElementById('nav-text').innerText = "Volver al inicio";
                 document.querySelector('.view-inscripcion').scrollTop = 0;
-                
                 btn.innerText = "Anotarme ahora"; btn.disabled = false;
-            });
+            }
         });
     }
 

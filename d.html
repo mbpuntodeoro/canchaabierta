@@ -268,14 +268,51 @@
     else { firebase.auth().onAuthStateChanged(user => { if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); } }); }
 
     function cargarPanel(orgId) {
-        db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
+      function cargarPanel(orgId) {
+    // 1. Descargamos el nodo completo de facturación para tener cuenta y movimientos
+    db.ref(`facturacion/${orgId}`).once('value', snap => {
+        const data = snap.val() || {};
+        const cuenta = data.cuenta || {};
+        const movimientos = data.movimientos || {};
+        
+        // 2. Usamos el motor de PadelSaaS para procesar la realidad de la cuenta
+        const info = PadelSaaS.analizarCuenta(cuenta, movimientos);
+        if(!info) return;
+
+        // 3. Actualizamos el nombre del club y mostramos la tarjeta
+        document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+        document.getElementById('main-status-card').style.display = 'block';
+        
+        // 4. Título dinámico: Fecha real de vencimiento (vencimientoAbono)
+        const vencimientoStr = PadelSaaS.fmtFecha(info.vencimientoAbono);
+        const plan = cuenta.plan ? cuenta.plan.toUpperCase() : (info.enTrial ? 'TRIAL GRATUITO' : 'PLAN ACTIVO');
+        
+        document.getElementById('sc-title').innerText = info.enTrial 
+            ? `Tu prueba vence el ${vencimientoStr}` 
+            : (cuenta.plan === 'pro' ? 'Club Automatizado' : 'Suscripción Activa');
+            
+        document.getElementById('sc-badge').innerText = plan;
+
+        // 5. Subtítulo dinámico: Canchas restantes calculadas automáticamente
+        if (info.enTrial) {
+            const restantes = Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba);
+            document.getElementById('sc-subtitle').innerText = `⏳ Te quedan ${restantes} canchas de prueba`;
+        } else {
+            // Si ya no es trial, muestra si está bloqueado o al día
+            document.getElementById('sc-subtitle').innerText = info.isBlocked ? `⚠️ ${info.msgLocked}` : "✅ Tu cuenta está al día";
+        }
+    });
+
+    // ... (aquí sigue el resto de tu función cargarPanel original que busca los hubs)
+}
             const cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             document.getElementById('main-status-card').style.display = 'block';
             
-            const vencimiento = cuenta.vencimientoPrueba || cuenta.fechaVencimiento || '06-05-2026';
-            const plan = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL GRATUITO';
-            document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Automatizado' : `Tu prueba vence el ${vencimiento}`;
+            // CÓDIGO CORREGIDO PARA d.html
+const vencimiento = PadelSaaS.fmtFecha(cuenta.vencimientoAbono); // Usa el campo correcto y lo formatea
+const plan = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL GRATUITO';
+document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Automatizado' : `Tu prueba vence el ${vencimiento}`;
             document.getElementById('sc-badge').innerText = plan;
             document.getElementById('sc-subtitle').innerText = "⏳ Te quedan 12 días o 3 canchas";
         });

@@ -355,11 +355,17 @@
     }
 
     // --- ACCIONES EXTRAS DEL DASHBOARD ---
-    function copiarLinkCartelera() {
-        let linkApp = window.location.href.replace('d-cancher.html', 'index.html').replace('d.html', 'index.html').split('?')[0];
-        let linkFinal = `${linkApp}?org=${globalOrgId}`;
-        navigator.clipboard.writeText(linkFinal).then(() => alert("¡Link copiado con éxito! Pegalo en tus grupos de WhatsApp."));
-    }
+   function copiarLinkCartelera() {
+    // 1. Obtenemos la base de la URL actual (sin el nombre del archivo ni parámetros)
+    const base = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    
+    // 2. Construimos el link apuntando siempre a index.html (tu cartelera)
+    const linkFinal = `${base}/index.html?org=${globalOrgId}`;
+    
+    navigator.clipboard.writeText(linkFinal).then(() => {
+        alert("¡Link de cartelera copiado! Ya podés pegarlo en WhatsApp.");
+    });
+}
 
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank'); }
 

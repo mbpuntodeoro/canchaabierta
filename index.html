@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-   <script src="app-config.js?v=43"></script>
+    <script src="app-config.js?v=43"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -442,20 +442,41 @@
         const btn = document.getElementById('btn-submit');
         btn.innerText = "Procesando..."; btn.disabled = true;
 
-        db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
-            let list = s.val() || [];
-            const name = (nom + " " + ape).trim();
-            
-            if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) {
-                alert("Ya estás anotado en esta cancha."); 
-                btn.innerText = "Anotarme ahora"; btn.disabled = false; return;
-            }
-            
-            const ocupados = calcularOcupados(list);
-            if (ocupados + cant > (currentEventData.cupo || 99)) {
-                alert("No quedan lugares suficientes."); 
-                btn.innerText = "Anotarme ahora"; btn.disabled = false; return;
-            }
+       const btn = document.getElementById('btn-submit');
+btn.innerText = "Procesando..."; btn.disabled = true;
+
+// 1. Apuntamos al evento completo para validar cupo y anotar en un solo paso
+const eventRef = db.ref(`eventos/${currentEventData.id}`);
+
+eventRef.transaction((currentData) => {
+    if (currentData) {
+        // Inicializamos la lista si no existe
+        if (!currentData.inscriptos) { currentData.inscriptos = []; }
+        
+        const list = currentData.inscriptos;
+        const name = (nom + " " + ape).trim();
+
+        // 2. Validación de duplicados (ahora dentro de la transacción)
+        if (list.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) {
+            return; // Aborta la transacción (ya existe)
+        }
+
+        // 3. Validación de cupo real contra la base de datos
+        const ocupados = calcularOcupados(list);
+        const cupoMax = currentData.cupo || 99;
+
+        if (ocupados + cant > cupoMax) {
+            return; // Aborta la transacción (no hay lugar)
+        }
+
+        // 4. Agregamos los jugadores
+        list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
+        personasExtra.forEach(p => list.push(p));
+
+        currentData.inscriptos = list;
+        return currentData; // Guarda los cambios de forma atómica
+    }
+    return current
             
             list.push({ nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() });
             list = list.concat(personasExtra);

@@ -267,22 +267,20 @@
     if (testOrgId) { globalOrgId = testOrgId; cargarPanel(testOrgId); } 
     else { firebase.auth().onAuthStateChanged(user => { if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); } }); }
 
-    function cargarPanel(orgId) {
-        // 1. Descargamos el nodo completo para sincronizar con Master Hub
+   function cargarPanel(orgId) {
+        // 1. Sincronización financiera con el Master Hub
         db.ref(`facturacion/${orgId}`).once('value', snap => {
             const data = snap.val() || {};
             const cuenta = data.cuenta || {};
             const movimientos = data.movimientos || {};
             
-            // 2. Usamos el motor automático de app-config.js
             const info = PadelSaaS.analizarCuenta(cuenta, movimientos);
             if(!info) return;
 
-            // 3. Actualizamos la interfaz con datos reales
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             document.getElementById('main-status-card').style.display = 'block';
             
-            // Título: Fecha de vencimiento real (mostrará 18-04-2027)
+            // Fecha real de Firebase (mostrará 18-04-2027)
             const vencimientoStr = PadelSaaS.fmtFecha(info.vencimientoAbono);
             const plan = cuenta.plan ? cuenta.plan.toUpperCase() : (info.enTrial ? 'TRIAL GRATUITO' : 'PLAN ACTIVO');
             
@@ -292,7 +290,7 @@
                 
             document.getElementById('sc-badge').innerText = plan;
 
-            // 4. Subtítulo dinámico: Canchas restantes calculadas automáticamente
+            // Cálculo dinámico de canchas restantes
             if (info.enTrial) {
                 const restantes = Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba);
                 document.getElementById('sc-subtitle').innerText = `⏳ Te quedan ${restantes} canchas de prueba`;
@@ -301,7 +299,7 @@
             }
         });
 
-        // 5. Listener para cargar las canchas vigentes
+        // 2. Carga de las canchas del club (Regla de Oro activada)
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             document.getElementById('loading-init').style.display = 'none';
             document.getElementById('dash-actions').style.display = 'flex';
@@ -356,16 +354,15 @@
 
     // --- ACCIONES EXTRAS DEL DASHBOARD ---
    function copiarLinkCartelera() {
-    // 1. Obtenemos la base de la URL actual (sin el nombre del archivo ni parámetros)
-    const base = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-    
-    // 2. Construimos el link apuntando siempre a index.html (tu cartelera)
-    const linkFinal = `${base}/index.html?org=${globalOrgId}`;
-    
-    navigator.clipboard.writeText(linkFinal).then(() => {
-        alert("¡Link de cartelera copiado! Ya podés pegarlo en WhatsApp.");
-    });
-}
+        // Detecta la carpeta actual en GitHub y genera el link al index.html
+        const loc = window.location;
+        const pathBase = loc.pathname.substring(0, loc.pathname.lastIndexOf('/'));
+        const linkFinal = `${loc.origin}${pathBase}/index.html?org=${globalOrgId}`;
+        
+        navigator.clipboard.writeText(linkFinal).then(() => {
+            alert("¡Link de cartelera copiado! Ya podés pegarlo en WhatsApp.");
+        });
+    }
 
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank'); }
 

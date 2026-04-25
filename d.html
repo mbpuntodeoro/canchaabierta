@@ -268,221 +268,128 @@
     else { firebase.auth().onAuthStateChanged(user => { if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); } }); }
 
     function cargarPanel(orgId) {
-      function cargarPanel(orgId) {
-    // 1. Descargamos el nodo completo de facturación para tener cuenta y movimientos
-    db.ref(`facturacion/${orgId}`).once('value', snap => {
-        const data = snap.val() || {};
-        const cuenta = data.cuenta || {};
-        const movimientos = data.movimientos || {};
-        
-        // 2. Usamos el motor de PadelSaaS para procesar la realidad de la cuenta
-        const info = PadelSaaS.analizarCuenta(cuenta, movimientos);
-        if(!info) return;
-
-        // 3. Actualizamos el nombre del club y mostramos la tarjeta
-        document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
-        document.getElementById('main-status-card').style.display = 'block';
-        
-        // 4. Título dinámico: Fecha real de vencimiento (vencimientoAbono)
-        const vencimientoStr = PadelSaaS.fmtFecha(info.vencimientoAbono);
-        const plan = cuenta.plan ? cuenta.plan.toUpperCase() : (info.enTrial ? 'TRIAL GRATUITO' : 'PLAN ACTIVO');
-        
-        document.getElementById('sc-title').innerText = info.enTrial 
-            ? `Tu prueba vence el ${vencimientoStr}` 
-            : (cuenta.plan === 'pro' ? 'Club Automatizado' : 'Suscripción Activa');
+        // 1. Descargamos el nodo completo para sincronizar con Master Hub
+        db.ref(`facturacion/${orgId}`).once('value', snap => {
+            const data = snap.val() || {};
+            const cuenta = data.cuenta || {};
+            const movimientos = data.movimientos || {};
             
-        document.getElementById('sc-badge').innerText = plan;
+            // 2. Usamos el motor automático de app-config.js
+            const info = PadelSaaS.analizarCuenta(cuenta, movimientos);
+            if(!info) return;
 
-        // 5. Subtítulo dinámico: Canchas restantes calculadas automáticamente
-        if (info.enTrial) {
-            const restantes = Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba);
-            document.getElementById('sc-subtitle').innerText = `⏳ Te quedan ${restantes} canchas de prueba`;
-        } else {
-            // Si ya no es trial, muestra si está bloqueado o al día
-            document.getElementById('sc-subtitle').innerText = info.isBlocked ? `⚠️ ${info.msgLocked}` : "✅ Tu cuenta está al día";
-        }
-    });
-
-    // ... (aquí sigue el resto de tu función cargarPanel original que busca los hubs)
-}
-            const cuenta = snap.val() || {};
+            // 3. Actualizamos la interfaz con datos reales
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             document.getElementById('main-status-card').style.display = 'block';
             
-            // CÓDIGO CORREGIDO PARA d.html
-const vencimiento = PadelSaaS.fmtFecha(cuenta.vencimientoAbono); // Usa el campo correcto y lo formatea
-const plan = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL GRATUITO';
-document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Automatizado' : `Tu prueba vence el ${vencimiento}`;
+            // Título: Fecha de vencimiento real (mostrará 18-04-2027)
+            const vencimientoStr = PadelSaaS.fmtFecha(info.vencimientoAbono);
+            const plan = cuenta.plan ? cuenta.plan.toUpperCase() : (info.enTrial ? 'TRIAL GRATUITO' : 'PLAN ACTIVO');
+            
+            document.getElementById('sc-title').innerText = info.enTrial 
+                ? `Tu prueba vence el ${vencimientoStr}` 
+                : (cuenta.plan === 'pro' ? 'Club Automatizado' : 'Suscripción Activa');
+                
             document.getElementById('sc-badge').innerText = plan;
-            document.getElementById('sc-subtitle').innerText = "⏳ Te quedan 12 días o 3 canchas";
+
+            // 4. Subtítulo dinámico: Canchas restantes calculadas automáticamente
+            if (info.enTrial) {
+                const restantes = Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba);
+                document.getElementById('sc-subtitle').innerText = `⏳ Te quedan ${restantes} canchas de prueba`;
+            } else {
+                document.getElementById('sc-subtitle').innerText = info.isBlocked ? `⚠️ ${info.msgLocked}` : "✅ Tu cuenta está al día";
+            }
         });
 
+        // 5. Listener para cargar las canchas vigentes
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             document.getElementById('loading-init').style.display = 'none';
             document.getElementById('dash-actions').style.display = 'flex';
             document.getElementById('dash-footer').style.display = 'block';
 
             const hubData = snap.val();
-            if (!hubData || !hubData.canchas) { document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>"; return; }
+            if (!hubData || !hubData.canchas) { 
+                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>"; 
+                return; 
+            }
             const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
             const snapshots = await Promise.all(promesas);
-            eventosCache = []; snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
+            eventosCache = []; 
+            snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
             eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
             renderDashboardCards();
         });
     }
 
     function renderDashboardCards() {
-    const container = document.getElementById('cards-container');
-    let htmlCards = ''; let totalGlobalRecaudado = 0; let totalGlobalJugadores = 0;
-    
-    // Obtenemos fecha de hoy en formato local YYYY-MM-DD
-    const ahora = new Date();
-    const hoyISO = ahora.toLocaleDateString('sv-SE'); 
+        const container = document.getElementById('cards-container');
+        let htmlCards = ''; let totalGlobalRecaudado = 0; let totalGlobalJugadores = 0;
+        
+        // Obtenemos fecha de hoy segura (YYYY-MM-DD)
+        const hoyISO = new Date().toLocaleDateString('sv-SE'); 
 
-    eventosCache.forEach(d => {
-        // REGLA: Si la fecha es anterior a hoy, la ignoramos. 
-        // El servidor la actualizará a las 3 AM. Mientras tanto, no se muestra.
-        if (d.fecha < hoyISO) return;
+        eventosCache.forEach(d => {
+            // Regla de Oro: No mostrar canchas viejas. El servidor las mueve a las 3 AM.
+            if (d.fecha < hoyISO) return;
 
-        // Si llegamos acá, la cancha es de hoy o del futuro
-        let ocupados = 0; let recaudadoCard = 0;
-        (d.inscriptos || []).forEach(jug => { 
-            const cant = jug.cantidad || 1; 
-            ocupados += cant; 
-            if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); 
+            let ocupados = 0; let recaudadoCard = 0;
+            (d.inscriptos || []).forEach(jug => { 
+                const cant = jug.cantidad || 1; 
+                ocupados += cant; 
+                if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); 
+            });
+
+            totalGlobalRecaudado += recaudadoCard; totalGlobalJugadores += ocupados; 
+            const isSuspended = d.estado === 'suspendido'; 
+            const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; 
+            const claseSusp = isSuspended ? 'card-suspendida' : '';
+            let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
+            let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; 
+            let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
+
+            htmlCards += `<div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">${htmlSusp}<div class="cc-header"><div><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span></div>${badgeRec}</div><div class="cc-categoria">${titulo}</div><div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div></div>`;
         });
-
-        totalGlobalRecaudado += recaudadoCard; 
-        totalGlobalJugadores += ocupados; 
         
-        const isSuspended = d.estado === 'suspendido'; 
-        const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; 
-        const claseSusp = isSuspended ? 'card-suspendida' : '';
-        
-        let titulo = d.organiza || 'Cancha'; 
-        if(d.categorias) titulo += ` · ${d.categorias}`;
-        
-        let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; 
-        let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
-
-        htmlCards += `
-            <div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">
-                ${htmlSusp}
-                <div class="cc-header">
-                    <div>
-                        <span class="cc-dia">${formatearDiaCorto(d.fecha)}</span>
-                        <span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span>
-                    </div>
-                    ${badgeRec}
-                </div>
-                <div class="cc-categoria">${titulo}</div>
-                <div class="cc-footer">
-                    <span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span>
-                    <span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span>
-                </div>
-            </div>`;
-    });
-    
-    container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
-    document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; 
-    document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
-}
+        container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
+        document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+    }
 
     // --- ACCIONES EXTRAS DEL DASHBOARD ---
     function copiarLinkCartelera() {
-        // Obtenemos el link actual y reemplazamos el archivo del panel por la vista de jugadores
         let linkApp = window.location.href.replace('d-cancher.html', 'index.html').replace('d.html', 'index.html').split('?')[0];
         let linkFinal = `${linkApp}?org=${globalOrgId}`;
-        
-        navigator.clipboard.writeText(linkFinal).then(() => {
-            alert("¡Link copiado con éxito! Pegalo en tus grupos de WhatsApp.");
-        });
+        navigator.clipboard.writeText(linkFinal).then(() => alert("¡Link copiado con éxito! Pegalo en tus grupos de WhatsApp."));
     }
 
-    function soporteWhatsapp() {
-        window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank');
-    }
+    function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank'); }
 
     // --- VIEW MOVIMIENTOS B2B ---
-    function abrirViewMovimientos() {
-        document.getElementById('view-movimientos').classList.add('active');
-        document.body.style.overflow = 'hidden';
-        cargarMovimientosB2B();
-    }
-
-    function cerrarViewMovimientos() {
-        document.getElementById('view-movimientos').classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
+    function abrirViewMovimientos() { document.getElementById('view-movimientos').classList.add('active'); document.body.style.overflow = 'hidden'; cargarMovimientosB2B(); }
+    function cerrarViewMovimientos() { document.getElementById('view-movimientos').classList.remove('active'); document.body.style.overflow = ''; }
     function switchTabMov(tab) {
-        if(tab === 'pendientes') {
-            document.getElementById('tab-pendientes').classList.add('active');
-            document.getElementById('tab-historial').classList.remove('active');
-            document.getElementById('mov-pendientes-container').style.display = 'block';
-            document.getElementById('mov-historial-container').style.display = 'none';
-        } else {
-            document.getElementById('tab-pendientes').classList.remove('active');
-            document.getElementById('tab-historial').classList.add('active');
-            document.getElementById('mov-pendientes-container').style.display = 'none';
-            document.getElementById('mov-historial-container').style.display = 'block';
-        }
+        const isPend = tab === 'pendientes';
+        document.getElementById('tab-pendientes').classList.toggle('active', isPend);
+        document.getElementById('tab-historial').classList.toggle('active', !isPend);
+        document.getElementById('mov-pendientes-container').style.display = isPend ? 'block' : 'none';
+        document.getElementById('mov-historial-container').style.display = isPend ? 'none' : 'block';
     }
 
     function cargarMovimientosB2B() {
-        // Lee de la base de facturación real (Organizador <-> Cancher)
         db.ref(`facturacion/${globalOrgId}/movimientos`).once('value', snap => {
             const movs = snap.val() || {};
             const arrMovs = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
-            
-            // Ordenamos por fecha (del más reciente al más antiguo)
             arrMovs.sort((a,b) => (b.fecha || 0) - (a.fecha || 0));
-
-            let htmlPendientes = '';
-            let htmlHistorial = '';
-
+            let htmlPendientes = '', htmlHistorial = '';
             arrMovs.forEach(m => {
-                const isPendiente = m.estado === 'pendiente';
-                const isBonificado = m.estado === 'bonificado';
-                const isPagado = m.estado === 'pagado';
-                
-                let colorMonto = isPendiente ? 'var(--text-main)' : 'var(--brand-green)';
-                
-                // Badges visuales estilo app financiera
-                let badge = '';
-                if (isBonificado) badge = `<div class="mov-badge mb-bonif">BONIFICADO</div>`;
-                if (isPagado) badge = `<div class="mov-badge mb-pagado">PAGADO</div>`;
-                if (isPendiente) badge = `<div class="mov-badge mb-deuda">IMPAGO</div>`;
-
-                const card = `
-                    <div class="mov-card">
-                        <div class="mov-info">
-                            <div class="mov-concepto">${m.concepto || 'Cancha Abierta / Cargo por uso'}</div>
-                            <div class="mov-fecha">${m.fechaStr || '--'}</div>
-                            ${badge}
-                        </div>
-                        <div class="mov-monto-box">
-                            <div class="mov-monto" style="color:${colorMonto}">$${m.monto || 0}</div>
-                        </div>
-                    </div>
-                `;
-
-                if (isPendiente) {
-                    htmlPendientes += card;
-                } else {
-                    htmlHistorial += card;
-                }
+                const isPend = m.estado === 'pendiente';
+                let badge = m.estado === 'bonificado' ? 'mb-bonif' : (m.estado === 'pagado' ? 'mb-pagado' : 'mb-deuda');
+                const card = `<div class="mov-card"><div class="mov-info"><div class="mov-concepto">${m.concepto || 'Cargo por uso'}</div><div class="mov-fecha">${m.fechaStr || '--'}</div><div class="mov-badge ${badge}">${m.estado.toUpperCase()}</div></div><div class="mov-monto-box"><div class="mov-monto" style="color:${isPend ? 'var(--text-main)' : 'var(--brand-green)'}">$${m.monto || 0}</div></div></div>`;
+                if (isPend) htmlPendientes += card; else htmlHistorial += card;
             });
-
-            if (!htmlPendientes) htmlPendientes = "<div style='text-align:center; padding:40px; color:var(--brand-green); font-size:14px; font-weight:600;'>✅ Todo al día. No tenés deudas con Cancher.</div>";
-            if (!htmlHistorial) htmlHistorial = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>Aún no hay historial registrado.</div>";
-
-            document.getElementById('mov-pendientes-container').innerHTML = htmlPendientes;
-            document.getElementById('mov-historial-container').innerHTML = htmlHistorial;
+            document.getElementById('mov-pendientes-container').innerHTML = htmlPendientes || "<div style='text-align:center; padding:40px; color:var(--brand-green);'>✅ Todo al día.</div>";
+            document.getElementById('mov-historial-container').innerHTML = htmlHistorial || "<div style='text-align:center; padding:40px;'>Sin historial.</div>";
         });
     }
-
 
     // --- PANEL CANCHA, BOTTOM SHEETS, ETC (Minimizados) ---
     function abrirPanelCancha(id) { panelCanchaId = id; if(activeEventRef) activeEventRef.off(); activeEventRef = db.ref('eventos/' + id); activeEventRef.on('value', snap => { const canchaData = snap.val(); if(canchaData) { const idx = eventosCache.findIndex(e => e.id === id); if(idx !== -1) eventosCache[idx] = { id, ...canchaData }; renderizarModalCancha(id, canchaData); } }); document.getElementById('view-panel-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
@@ -494,31 +401,36 @@ document.getElementById('sc-title').innerText = cuenta.plan === 'pro' ? 'Club Au
         inscriptos.forEach((jug, idx) => { jug.originalIndex = idx; const cant = jug.cantidad || 1; ocupados += cant; if(jug.estado === 'pagado') recaudado += (cancha.valor * cant); const cel = jug.celular || `sin-celu-${idx}`; if(!gruposPorCelular[cel]) gruposPorCelular[cel] = []; gruposPorCelular[cel].push(jug); });
         const htmlPorEstado = { pagado: [], cancha: [], pendiente: [] };
         Object.keys(gruposPorCelular).forEach(cel => {
-            const jugadores = gruposPorCelular[cel]; const titular = jugadores[0]; let totalEnGrupo = 0; jugadores.forEach(j => totalEnGrupo += (j.cantidad || 1)); const isLegacyGroup = (jugadores.length === 1 && totalEnGrupo > 1); let estadoGrupo = 'pagado'; if (jugadores.some(j => j.estado === 'pendiente')) estadoGrupo = 'pendiente'; else if (jugadores.some(j => j.estado === 'paga-en-la-cancha')) estadoGrupo = 'cancha'; const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'"); const checksHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${jugadores[0].originalIndex})">✔</button>` : ''}`; const checksGrupoHTML = isSuspended ? '' : `${estadoGrupo !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>` : ''}`;
-            if(jugadores.length === 1 && !isLegacyGroup) { htmlPorEstado[estadoGrupo].push(`<div class="jugador-fila"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(jugadores[0].nombre)}</span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checksHTML}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div>`); } else {
-                let pagadosDelGrupo = jugadores.filter(j => j.estado === 'pagado').length; let badgeParcial = (pagadosDelGrupo > 0 && pagadosDelGrupo < jugadores.length && !isLegacyGroup) ? `<span class="badge-parcial">${pagadosDelGrupo}/${jugadores.length} pagos</span>` : ''; let subJugadoresHtml = '';
-                if (isLegacyGroup) { subJugadoresHtml = `<div class="sub-fila" style="color:var(--text-sub); font-size:13px; font-weight:500;">Registro versión anterior (${totalEnGrupo} lugares)</div>`; } else { jugadores.forEach(j => { let subClase = j.estado === 'pagado' ? 'pagado' : (j.estado === 'paga-en-la-cancha' ? 'cancha' : 'pendiente'); subJugadoresHtml += `<div class="sub-fila"><div class="jugador-main"><span class="nombre" style="font-size:14px; font-weight:500;">↳ ${jugadorAbreviado(j.nombre)}</span><span class="dot ${subClase}" style="width:8px; height:8px;"></span></div><div class="acciones">${!isSuspended && j.estado !== 'pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarIndividualPagado('${id}', ${j.originalIndex})">✔</button>` : ''}</div></div>`; }); }
-                htmlPorEstado[estadoGrupo].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="toggleGrupo('${cel}')" style="cursor:pointer;"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span> ${badgeParcial}</span><span class="dot ${estadoGrupo}"></span><svg id="chev-${cel}" class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div><div class="acciones">${checksGrupoHTML}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div><div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div></div>`);
+            const jugadores = gruposPorCelular[cel]; const titular = jugadores[0]; let totalEnGrupo = jugadores.reduce((acc, j) => acc + (j.cantidad || 1), 0);
+            let estadoGrupo = jugadores.some(j => j.estado === 'pendiente') ? 'pendiente' : (jugadores.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
+            const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'");
+            const checkBtn = isSuspended || estadoGrupo === 'pagado' ? '' : `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>`;
+            
+            if(jugadores.length === 1 && totalEnGrupo === 1) {
+                htmlPorEstado[estadoGrupo].push(`<div class="jugador-fila"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(jugadores[0].nombre)}</span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checkBtn}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div>`);
+            } else {
+                let subJugadoresHtml = jugadores.map(j => `<div class="sub-fila"><div class="jugador-main"><span class="nombre">↳ ${jugadorAbreviado(j.nombre)}</span></div></div>`).join('');
+                htmlPorEstado[estadoGrupo].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="toggleGrupo('${cel}')"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span></span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checkBtn}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div><div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div></div>`);
             }
         });
-        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`; document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado); let htmlFinal = ''; if(htmlPorEstado.pagado.length > 0) htmlFinal += `<div class="grupo-titulo">Pagados (${htmlPorEstado.pagado.length})</div>` + htmlPorEstado.pagado.join(''); if(htmlPorEstado.cancha.length > 0) htmlFinal += `<div class="grupo-titulo">Pagan en club (${htmlPorEstado.cancha.length})</div>` + htmlPorEstado.cancha.join(''); if(htmlPorEstado.pendiente.length > 0) htmlFinal += `<div class="grupo-titulo">Pendientes (${htmlPorEstado.pendiente.length})</div>` + htmlPorEstado.pendiente.join(''); document.getElementById('lista-jugadores-container').innerHTML = htmlFinal || '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
+        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`; document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
+        document.getElementById('lista-jugadores-container').innerHTML = (htmlPorEstado.pagado.length ? `<div class="grupo-titulo">Pagados</div>` + htmlPorEstado.pagado.join('') : '') + (htmlPorEstado.cancha.length ? `<div class="grupo-titulo">En club</div>` + htmlPorEstado.cancha.join('') : '') + (htmlPorEstado.pendiente.length ? `<div class="grupo-titulo">Pendientes</div>` + htmlPorEstado.pendiente.join('') : '') || '<div style="text-align:center; padding:20px;">Sin inscriptos.</div>';
     }
 
-    function toggleGrupo(cel) { document.getElementById(`det-${cel}`).classList.toggle('open'); document.getElementById(`chev-${cel}`).classList.toggle('open'); }
-    function marcarIndividualPagado(eId, idx) { db.ref(`eventos/${eId}/inscriptos`).once('value', s => { let l = s.val() || []; if(l[idx]) { l[idx].estado = 'pagado'; db.ref(`eventos/${eId}/inscriptos`).set(l); } }); }
+    function toggleGrupo(cel) { document.getElementById(`det-${cel}`).classList.toggle('open'); }
     function marcarGrupoPagado(eId, cel) { db.ref(`eventos/${eId}/inscriptos`).once('value', s => { let l = s.val() || []; l.forEach((j, i) => { if((j.celular || `sin-celu-${i}`) === cel) j.estado = 'pagado'; }); db.ref(`eventos/${eId}/inscriptos`).set(l); }); }
-    function abrirMenuOpciones(n, c) { actionData = { celular: c }; document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${n}`; document.getElementById('btn-wa').onclick = () => { window.open(`https://wa.me/${c}`, '_blank'); cerrarMenuOpciones(); }; document.getElementById('btn-eliminar').onclick = () => { if(!confirm(`¿Eliminar a ${n}?`)) return; db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let l = s.val() || []; let nL = l.filter((j, i) => (j.celular || `sin-celu-${i}`) !== actionData.celular); db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nL).then(() => { cerrarMenuOpciones(); }); }); }; document.getElementById('bs-menu').style.display = 'flex'; setTimeout(() => { document.getElementById('bs-menu').classList.add('active'); document.getElementById('bs-content').classList.add('open'); }, 10); }
-    function cerrarMenuOpciones() { document.getElementById('bs-content').classList.remove('open'); document.getElementById('bs-menu').classList.remove('active'); setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300); actionData = null; }
-    function abrirModalAnotar() { document.getElementById('man-nombre').value=''; document.getElementById('man-apellido').value=''; document.getElementById('man-celu').value=''; document.getElementById('man-lugares').value='1'; document.getElementById('man-estado').value='pagado'; document.getElementById('bs-anotar').style.display='flex'; setTimeout(() => { document.getElementById('bs-anotar').classList.add('active'); document.getElementById('bs-content-anotar').classList.add('open'); }, 10); }
+    function abrirMenuOpciones(n, c) { actionData = { celular: c }; document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${n}`; document.getElementById('btn-wa').onclick = () => { window.open(`https://wa.me/${c}`, '_blank'); cerrarMenuOpciones(); }; document.getElementById('btn-eliminar').onclick = () => { if(!confirm(`¿Eliminar a ${n}?`)) return; db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let l = s.val() || []; let nL = l.filter((j, i) => (j.celular || `sin-celu-${i}`) !== actionData.celular); db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nL).then(cerrarMenuOpciones); }); }; document.getElementById('bs-menu').style.display = 'flex'; setTimeout(() => { document.getElementById('bs-menu').classList.add('active'); document.getElementById('bs-content').classList.add('open'); }, 10); }
+    function cerrarMenuOpciones() { document.getElementById('bs-content').classList.remove('open'); document.getElementById('bs-menu').classList.remove('active'); setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300); }
+    function abrirModalAnotar() { document.getElementById('man-nombre').value=''; document.getElementById('man-apellido').value=''; document.getElementById('man-celu').value=''; document.getElementById('bs-anotar').style.display='flex'; setTimeout(() => { document.getElementById('bs-anotar').classList.add('active'); document.getElementById('bs-content-anotar').classList.add('open'); }, 10); }
     function cerrarModalAnotar() { document.getElementById('bs-content-anotar').classList.remove('open'); document.getElementById('bs-anotar').classList.remove('active'); setTimeout(() => document.getElementById('bs-anotar').style.display='none', 300); }
-    function guardarAnotacionManual() { const nom=document.getElementById('man-nombre').value.trim(); const ape=document.getElementById('man-apellido').value.trim(); const celu=document.getElementById('man-celu').value.trim(); const lugares=parseInt(document.getElementById('man-lugares').value)||1; const estado=document.getElementById('man-estado').value; if(!nom || !ape) { alert('Completá nombre y apellido'); return; } db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let list = s.val() || []; const finalCelu = celu || ('manual-' + Date.now()); for(let i=0; i<lugares; i++) { list.push({ nombre: i===0 ? `${nom} ${ape}` : `Amigo de ${nom} ${ape}`, celular: finalCelu, cantidad: 1, estado: estado, fecha: Date.now() }); } db.ref(`eventos/${panelCanchaId}/inscriptos`).set(list).then(() => { cerrarModalAnotar(); }); }); }
+    function guardarAnotacionManual() { const nom=document.getElementById('man-nombre').value.trim(), ape=document.getElementById('man-apellido').value.trim(), celu=document.getElementById('man-celu').value.trim(), lugares=parseInt(document.getElementById('man-lugares').value)||1, estado=document.getElementById('man-estado').value; if(!nom || !ape) return alert('Nombre y apellido requeridos'); db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let list = s.val() || []; const fCelu = celu || ('manual-' + Date.now()); for(let i=0; i<lugares; i++) list.push({ nombre: i===0 ? `${nom} ${ape}` : `Amigo de ${nom} ${ape}`, celular: fCelu, cantidad: 1, estado: estado, fecha: Date.now() }); db.ref(`eventos/${panelCanchaId}/inscriptos`).set(list).then(cerrarModalAnotar); }); }
 
-    function abrirFormularioCancha(idEdit = null) { editandoCanchaId = idEdit; const bG = document.getElementById('btn-save-cancha'); const contBtn = document.getElementById('cont-edit-buttons'); const bS = document.getElementById('btn-suspend-cancha'); const tit = document.getElementById('fc-head-title'); if(idEdit) { tit.innerText = "Editar Cancha"; contBtn.style.display = "flex"; bG.innerText = "Guardar Cambios"; const c = eventosCache.find(e => e.id === idEdit); if(c) { document.getElementById('fc-fecha').value = c.fecha || ''; document.getElementById('fc-hora').value = c.hora || ''; document.getElementById('fc-horafin').value = c.horaFin || ''; document.getElementById('fc-titulo').value = c.organiza || ''; document.getElementById('fc-tipo').value = c.tipo || 'unico'; document.getElementById('fc-precio').value = c.valor || ''; document.getElementById('fc-cupo').value = c.cupo || ''; document.getElementById('fc-cat').value = c.categorias || ''; document.getElementById('fc-lugar').value = c.lugar || ''; document.getElementById('fc-alias').value = c.alias || ''; document.getElementById('fc-celu').value = c.celuOrganizador || ''; if (c.estado === 'suspendido') { bS.innerText = "Reactivar"; bS.onclick = reactivarCancha; } else { bS.innerText = "Suspender"; bS.onclick = suspenderCancha; } } } else { tit.innerText = "Nueva Cancha"; contBtn.style.display = "none"; bG.innerText = "Publicar Cancha"; const h = new Date(); document.getElementById('fc-fecha').value = `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}`; document.getElementById('fc-hora').value = '18:00'; document.getElementById('fc-horafin').value = '19:30'; document.getElementById('fc-tipo').value = 'unico'; document.getElementById('fc-titulo').value = ''; document.getElementById('fc-precio').value = ''; document.getElementById('fc-cupo').value = '8'; document.getElementById('fc-cat').value = ''; document.getElementById('fc-lugar').value = ''; if(eventosCache.length > 0) { document.getElementById('fc-alias').value = eventosCache[0].alias || ''; document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || ''; } else { document.getElementById('fc-alias').value = ''; document.getElementById('fc-celu').value = ''; } } document.getElementById('view-form-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
-    function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); if(!panelCanchaId) document.body.style.overflow = ''; editandoCanchaId = null; }
-    function guardarCancha() { const f = document.getElementById('fc-fecha').value; const h = document.getElementById('fc-hora').value; const hF = document.getElementById('fc-horafin').value; const t = document.getElementById('fc-tipo').value; const o = document.getElementById('fc-titulo').value.trim(); const v = parseInt(document.getElementById('fc-precio').value) || 0; const c = parseInt(document.getElementById('fc-cupo').value) || 8; const cat = document.getElementById('fc-cat').value.trim(); const l = document.getElementById('fc-lugar').value.trim(); const a = document.getElementById('fc-alias').value.trim(); const cel = document.getElementById('fc-celu').value.trim(); if(!f || !h || !hF || !o || !v || !cel || !a) { alert("Completá Fecha, Inicio, Fin, Título, Precio, Alias y Celular."); return; } const eD = { fecha:f, hora:h, horaFin:hF, tipo:t, organiza:o, lugar:l, categorias:cat, valor:v, cupo:c, alias:a, celuOrganizador:cel }; if(!editandoCanchaId) eD.estado = 'activo'; const bS = document.getElementById('btn-save-cancha'); bS.innerText = "Guardando..."; bS.disabled = true; if (editandoCanchaId) { db.ref(`eventos/${editandoCanchaId}`).update(eD).then(() => { bS.innerText = "Guardar Cambios"; bS.disabled = false; cerrarFormularioCancha(); }); } else { eD.inscriptos = []; const nR = db.ref('eventos').push(); nR.set(eD).then(() => { db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; li.push(nR.key); db.ref(`hubs/${globalOrgId}/canchas`).set(li).then(() => { bS.innerText = "Publicar Cancha"; bS.disabled = false; cerrarFormularioCancha(); }); }); }); } }
-    function eliminarCancha() { if(!editandoCanchaId) return; if(!confirm("¿Eliminar esta cancha permanentemente?")) return; db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; db.ref(`hubs/${globalOrgId}/canchas`).set(li.filter(cid => cid !== editandoCanchaId)).then(() => { db.ref(`eventos/${editandoCanchaId}`).remove().then(() => { cerrarFormularioCancha(); cerrarPanelCancha(); }); }); }); }
-    function suspenderCancha() { if(!editandoCanchaId) return; if(!confirm("¿Suspender cancha?")) return; db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'suspendido' }).then(() => cerrarFormularioCancha()); }
-    function reactivarCancha() { if(!editandoCanchaId) return; db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'activo' }).then(() => cerrarFormularioCancha()); }
+    function abrirFormularioCancha(idEdit = null) { editandoCanchaId = idEdit; const bG = document.getElementById('btn-save-cancha'), contBtn = document.getElementById('cont-edit-buttons'), bS = document.getElementById('btn-suspend-cancha'), tit = document.getElementById('fc-head-title'); if(idEdit) { tit.innerText = "Editar Cancha"; contBtn.style.display = "flex"; bG.innerText = "Guardar Cambios"; const c = eventosCache.find(e => e.id === idEdit); if(c) { document.getElementById('fc-fecha').value = c.fecha || ''; document.getElementById('fc-hora').value = c.hora || ''; document.getElementById('fc-horafin').value = c.horaFin || ''; document.getElementById('fc-titulo').value = c.organiza || ''; document.getElementById('fc-tipo').value = c.tipo || 'unico'; document.getElementById('fc-precio').value = c.valor || ''; document.getElementById('fc-cupo').value = c.cupo || ''; document.getElementById('fc-cat').value = c.categorias || ''; document.getElementById('fc-lugar').value = c.lugar || ''; document.getElementById('fc-alias').value = c.alias || ''; document.getElementById('fc-celu').value = c.celuOrganizador || ''; bS.innerText = c.estado === 'suspendido' ? "Reactivar" : "Suspender"; bS.onclick = c.estado === 'suspendido' ? reactivarCancha : suspenderCancha; } } else { tit.innerText = "Nueva Cancha"; contBtn.style.display = "none"; bG.innerText = "Publicar Cancha"; const h = new Date(); document.getElementById('fc-fecha').value = h.toLocaleDateString('sv-SE'); document.getElementById('fc-hora').value = '18:00'; document.getElementById('fc-horafin').value = '19:30'; document.getElementById('fc-tipo').value = 'unico'; document.getElementById('fc-titulo').value = ''; document.getElementById('fc-precio').value = ''; document.getElementById('fc-cupo').value = '8'; document.getElementById('fc-cat').value = ''; document.getElementById('fc-lugar').value = ''; if(eventosCache.length > 0) { document.getElementById('fc-alias').value = eventosCache[0].alias || ''; document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || ''; } } document.getElementById('view-form-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); if(!panelCanchaId) document.body.style.overflow = ''; }
+    function guardarCancha() { const f = document.getElementById('fc-fecha').value, h = document.getElementById('fc-hora').value, hF = document.getElementById('fc-horafin').value, t = document.getElementById('fc-tipo').value, o = document.getElementById('fc-titulo').value.trim(), v = parseInt(document.getElementById('fc-precio').value) || 0, c = parseInt(document.getElementById('fc-cupo').value) || 8, cat = document.getElementById('fc-cat').value.trim(), l = document.getElementById('fc-lugar').value.trim(), a = document.getElementById('fc-alias').value.trim(), cel = document.getElementById('fc-celu').value.trim(); if(!f || !h || !hF || !o || !v || !cel || !a) return alert("Faltan campos obligatorios."); const eD = { fecha:f, hora:h, horaFin:hF, tipo:t, organiza:o, lugar:l, categorias:cat, valor:v, cupo:c, alias:a, celuOrganizador:cel }; if(!editandoCanchaId) eD.estado = 'activo'; const bS = document.getElementById('btn-save-cancha'); bS.innerText = "Guardando..."; bS.disabled = true; if (editandoCanchaId) { db.ref(`eventos/${editandoCanchaId}`).update(eD).then(() => { bS.innerText = "Guardar Cambios"; bS.disabled = false; cerrarFormularioCancha(); }); } else { eD.inscriptos = []; const nR = db.ref('eventos').push(); nR.set(eD).then(() => { db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; li.push(nR.key); db.ref(`hubs/${globalOrgId}/canchas`).set(li).then(() => { bS.innerText = "Publicar Cancha"; bS.disabled = false; cerrarFormularioCancha(); }); }); }); } }
+    function eliminarCancha() { if(!editandoCanchaId || !confirm("¿Eliminar cancha permanentemente?")) return; db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; db.ref(`hubs/${globalOrgId}/canchas`).set(li.filter(cid => cid !== editandoCanchaId)).then(() => db.ref(`eventos/${editandoCanchaId}`).remove().then(() => { cerrarFormularioCancha(); cerrarPanelCancha(); })); }); }
+    function suspenderCancha() { if(confirm("¿Suspender cancha?")) db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'suspendido' }).then(cerrarFormularioCancha); }
+    function reactivarCancha() { db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'activo' }).then(cerrarFormularioCancha); }
 
     function formatearDiaCorto(fechaStr) { const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; const f = new Date(fechaStr + 'T12:00:00'); return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`; }
     function jugadorAbreviado(n) { if(!n) return 'Jugador'; let p = n.split(' '); return p.length === 1 ? p[0] : `${p[0]} ${p[1].charAt(0)}.`; }

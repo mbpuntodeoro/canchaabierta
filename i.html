@@ -281,7 +281,7 @@
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const orgId = urlParams.get('org');
+   const orgId = urlParams.get('org') || urlParams.get('id');
     let dbEvents = [];
     let currentEventData = null;
 

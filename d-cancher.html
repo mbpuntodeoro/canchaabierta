@@ -296,34 +296,61 @@
     }
 
     function renderDashboardCards() {
-        const container = document.getElementById('cards-container');
-        let htmlCards = ''; let totalGlobalRecaudado = 0; let totalGlobalJugadores = 0; const ahora = Date.now();
-        
-        eventosCache.forEach(d => {
-            let finEvento = new Date(d.fecha + 'T' + (d.horaFin || '23:59')).getTime();
-            if (d.hora && (d.horaFin || '23:59') < d.hora) finEvento += 86400000;
+    const container = document.getElementById('cards-container');
+    let htmlCards = ''; let totalGlobalRecaudado = 0; let totalGlobalJugadores = 0;
+    
+    // Obtenemos fecha de hoy en formato local YYYY-MM-DD
+    const ahora = new Date();
+    const hoyISO = ahora.toLocaleDateString('sv-SE'); 
 
-            if (d.tipo === 'recurrente' && ahora > finEvento) {
-                let fDate = new Date(d.fecha + 'T12:00:00'); fDate.setDate(fDate.getDate() + 7);
-                const nextFechaStr = `${fDate.getFullYear()}-${String(fDate.getMonth() + 1).padStart(2, '0')}-${String(fDate.getDate()).padStart(2, '0')}`;
-                db.ref(`eventos/${d.id}`).update({ fecha: nextFechaStr, inscriptos: [], estado: 'activo' }); return;
-            }
+    eventosCache.forEach(d => {
+        // REGLA: Si la fecha es anterior a hoy, la ignoramos. 
+        // El servidor la actualizará a las 3 AM. Mientras tanto, no se muestra.
+        if (d.fecha < hoyISO) return;
 
-            if (ahora <= finEvento || d.tipo === 'recurrente') {
-                let ocupados = 0; let recaudadoCard = 0;
-                (d.inscriptos || []).forEach(jug => { const cant = jug.cantidad || 1; ocupados += cant; if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); });
-                totalGlobalRecaudado += recaudadoCard; totalGlobalJugadores += ocupados; 
-                const isSuspended = d.estado === 'suspendido'; const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; const claseSusp = isSuspended ? 'card-suspendida' : '';
-                let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
-                let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
-
-                htmlCards += `<div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">${htmlSusp}<div class="cc-header"><div><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span></div>${badgeRec}</div><div class="cc-categoria">${titulo}</div><div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div></div>`;
-            }
+        // Si llegamos acá, la cancha es de hoy o del futuro
+        let ocupados = 0; let recaudadoCard = 0;
+        (d.inscriptos || []).forEach(jug => { 
+            const cant = jug.cantidad || 1; 
+            ocupados += cant; 
+            if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); 
         });
+
+        totalGlobalRecaudado += recaudadoCard; 
+        totalGlobalJugadores += ocupados; 
         
-        container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
-        document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
-    }
+        const isSuspended = d.estado === 'suspendido'; 
+        const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; 
+        const claseSusp = isSuspended ? 'card-suspendida' : '';
+        
+        let titulo = d.organiza || 'Cancha'; 
+        if(d.categorias) titulo += ` · ${d.categorias}`;
+        
+        let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; 
+        let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
+
+        htmlCards += `
+            <div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">
+                ${htmlSusp}
+                <div class="cc-header">
+                    <div>
+                        <span class="cc-dia">${formatearDiaCorto(d.fecha)}</span>
+                        <span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span>
+                    </div>
+                    ${badgeRec}
+                </div>
+                <div class="cc-categoria">${titulo}</div>
+                <div class="cc-footer">
+                    <span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span>
+                    <span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span>
+                </div>
+            </div>`;
+    });
+    
+    container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
+    document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; 
+    document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+}
 
     // --- ACCIONES EXTRAS DEL DASHBOARD ---
     function copiarLinkCartelera() {

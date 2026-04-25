@@ -320,17 +320,21 @@
             let lastDate = ""; let canchasActivas = 0;
             
             dbEvents.forEach((d) => {
-                const ahora = Date.now();
-                let horaFinReal = d.horaFin || '23:59';
-                let finEvento = new Date(d.fecha + 'T' + horaFinReal).getTime();
-                if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
-                
-                if (ahora <= finEvento || d.tipo === 'recurrente') {
-                    canchasActivas++;
-                    if (d.fecha !== lastDate) {
-                        htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
-                        lastDate = d.fecha;
-                    }
+    // 1. Obtenemos la fecha de hoy en formato local (YYYY-MM-DD)
+    const ahora = new Date();
+    const hoyISO = ahora.toLocaleDateString('sv-SE'); // Formato estándar "2026-04-25"
+
+    // 2. REGLA DE ORO: Si la fecha de la cancha es de hoy o del futuro, se muestra.
+    // Si la fecha es anterior a hoy, la ignoramos (el servidor la actualizará a las 3 AM).
+    if (d.fecha >= hoyISO) {
+        canchasActivas++;
+        
+        if (d.fecha !== lastDate) {
+            htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
+            lastDate = d.fecha;
+        }
+
+        // ... (Acá sigue tu código normal que dibuja la card) ...
                     let tituloCancha = d.organiza || 'Cancha';
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">

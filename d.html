@@ -647,7 +647,7 @@
             if (data.tipo === 'recurrente') {
                 db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
-                db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
+               // db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
             } else if (data.tipo === 'unico' && !data.cobrado) {
                 db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
                 db.ref('eventos/' + id).update({ cobrado: true });

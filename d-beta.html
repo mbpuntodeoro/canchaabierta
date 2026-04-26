@@ -1,884 +1,487 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard - PadelApp</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Panel Cancher</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=22"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="app-config.js?v=43"></script>
+    
     <style>
-        :root {
-            --bg-main: #F2F2F7; --bg-card: #FFFFFF; --bg-dark: #1C1C1E;
-            --text-primary: #1C1C1E; --text-secondary: #8E8E93; --text-inverse: #FFFFFF;
-            --blue: #007AFF; --green: #34C759; --orange: #FF9F0A; --red: #FF3B30;
-            --blue-grad: linear-gradient(180deg, #0A84FF, #007AFF);
-            --green-grad: linear-gradient(180deg, #34C759, #30B350);
-            --border: #E5E5EA; --gray-1: #F9F9FB; --gray-2: #E5E5EA;
-            --s1: 8px; --s2: 12px; --s3: 16px; --s4: 20px; --s5: 24px;
-            --r-lg: 24px; --r-md: 16px;
-            --anim-fast: 150ms; --anim-normal: 220ms; --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+        :root { 
+            --bg-base: #F3F4F6; --bg-white: #FFFFFF;
+            --text-main: #111111; --text-sub: #6B7280;
+            --border: #E5E7EB;
+            --brand-purple: #7C3AED; --brand-green: #10B981; --brand-red: #EF4444; --brand-orange: #F59E0B;
         }
 
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-main); color: var(--text-primary); margin: 0; padding: var(--s3); -webkit-tap-highlight-color: transparent; }
-        .h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0; }
-        .label { font-size: 11px; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .text { font-size: 15px; font-weight: 600; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        #boot-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* HEADER */
+        .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .header-brand { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-org { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
 
-        .container { max-width: 500px; margin: auto; padding-bottom: 50px; display: none; }
-        .flex { display: flex; } .space-between { justify-content: space-between; } .center { align-items: center; }
-        .mt-1 { margin-top: var(--s1); } .mt-2 { margin-top: var(--s2); } .mt-3 { margin-top: var(--s3); }
-        .text-center { text-align: center; }
+        .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
-        .card { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02);}
-        .card-dark { background: var(--bg-dark); color: var(--text-inverse); border-radius: var(--r-lg); padding: var(--s5); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        /* PREMIUM CARD */
+        .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
+        .dsc-title { font-size: 16px; font-weight: 700; letter-spacing: -0.3px;}
+        .dsc-badge { background: rgba(255,255,255,0.15); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .dsc-subtitle { font-size: 13px; color: #A1A1AA; margin-bottom: 20px; font-weight: 500;}
+        .dsc-impact-box { border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); border-radius: 12px; padding: 16px; }
+        .dsc-impact-title { font-size: 11px; font-weight: 800; color: #10B981; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .dsc-metrics { display: flex; justify-content: space-between; }
+        .dsc-metric { flex: 1; }
+        .dsc-metric-label { font-size: 11px; color: #A1A1AA; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;}
+        .dsc-metric-val { font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;}
+        .dsc-actions { margin-top: 16px; display: flex; gap: 12px; }
+        .btn-dark-outline { flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.1s;}
+        .btn-dark-outline:active { background: rgba(255,255,255,0.1); }
+
+        /* CARDS CANCHA */
+        .cards-wrapper { padding: 0 16px; }
+        .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; transition: transform 0.1s ease; }
+        .card-cancha:active { transform: scale(0.98); }
+        .card-completa { border: 1px solid var(--brand-green); }
+        .card-suspendida { opacity: 0.6; border: 1px solid var(--border); }
+        .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
+        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
+        .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
+        .cc-dinero { color: var(--brand-green); }
+        .badge-rec { font-size:10px; background:var(--text-main); color:var(--bg-white); padding:2px 6px; border-radius:4px; font-weight:700; margin-left: 6px;}
+        .badge-susp { font-size:11px; background:#FEE2E2; color:var(--brand-red); padding:4px 8px; border-radius:4px; font-weight:800; display: inline-block; margin-bottom: 8px; letter-spacing: 0.5px;}
+
+        .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 90; transition: transform 0.1s ease;}
+        .fab-crear:active { transform: scale(0.9); }
+
+        /* EXTRA BUTTONS & FOOTER */
+        .dashboard-actions { padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+        .btn-action-dash { width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; border: none; transition: transform 0.1s ease;}
+        .btn-action-dash:active { transform: scale(0.98); }
+        .btn-link { background: var(--bg-white); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-wsp { background: #25D366; color: #FFF; }
+        .branding-footer { text-align: center; padding: 24px 16px; font-size: 11px; font-weight: 600; color: var(--text-sub); }
+
+        /* VIEWS (MODALES) */
+        .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1); overflow-y: auto; padding-bottom: 40px; }
+        .view-modal.active { transform: translateX(0); }
+        .nav-modal { padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110; }
+        .nav-back-btn { font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center;}
+        .nav-back-btn svg { margin-right: 8px; }
+        .btn-config { font-size: 20px; background: none; border: none; cursor: pointer; color: var(--text-sub); }
+
+        .modal-content { padding: 16px; max-width: 600px; margin: 0 auto;}
+        .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; }
+        .modal-subtitle { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 20px; }
+
+        .action-row { display: flex; gap: 12px; margin-bottom: 24px; }
+        .btn-black-modal { flex: 1; background: var(--text-main); color: var(--bg-white); height: 44px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.1s ease; }
         
-        #login-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 90vh; }
-        .login-card { max-width: 350px; width: 100%; box-sizing: border-box; }
-
-        .financial { display: flex; gap: var(--s2); margin-top: var(--s3); }
-        .metric-box { flex: 1; background: #2C2C2E; border-radius: var(--r-md); padding: var(--s3); text-align: center; }
-        .metric-label { font-size: 10px; color: #8E8E93; font-weight: 800; text-transform: uppercase; }
-        .metric-value { font-size: 18px; font-weight: 900; margin-top: 4px; color: var(--text-inverse); }
-
-        .btn { border: none; border-radius: var(--r-md); padding: 16px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; width: 100%; transition: transform var(--anim-fast) var(--ease-out), box-shadow var(--anim-fast); box-sizing: border-box; font-family: inherit; letter-spacing: 0.5px;}
-        .btn:active { transform: scale(0.96); }
-        .btn-primary { background: var(--blue-grad); box-shadow: 0 6px 14px rgba(0,122,255,0.25); color: white; }
-        .btn-primary:active { box-shadow: 0 2px 8px rgba(0,122,255,0.2); }
-        .btn-dark { background: #111; color: white; }
-        .btn-light { background: var(--bg-main); color: var(--text-primary); }
-        .btn-outline { background: transparent; color: var(--text-primary); border: 1.5px solid var(--border); }
-
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;}
-        .badge-ok { background: rgba(52,199,89,0.15); color: var(--green); }
-        .badge-warning { background: rgba(255,159,10,0.15); color: var(--orange); }
-        .badge-error { background: rgba(255,59,48,0.15); color: var(--red); }
-        .badge-cat { font-size: 10px; color: var(--blue); background: rgba(0,122,255,0.1); padding: 6px 12px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-left: 10px; }
-
-        .item { background: var(--bg-card); border-radius: var(--r-lg); padding: var(--s4); margin-bottom: var(--s2); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.02); transition: transform var(--anim-fast) var(--ease-out); }
-        .item:active { transform: scale(0.98); }
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
-        .item-title { font-weight: 900; font-size: 18px; text-transform: uppercase; margin: 0; line-height: 1.2;}
-        .item-meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
-        .item-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
-
-        .fade-in { opacity: 0; transform: translateY(10px); animation: fadeSlide var(--anim-normal) var(--ease-out) forwards; }
-        @keyframes fadeSlide { to { opacity: 1; transform: translateY(0); } }
-
-        .input-std { width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border); margin-bottom: var(--s2); outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; font-weight: 600; transition: border-color 0.2s;}
-        .input-std:focus { border-color: var(--blue); }
+        .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border); }
+        .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; letter-spacing: 0.5px;}
         
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: var(--s3); }
-        .modal-content { background: var(--bg-card); width: 100%; max-width: 500px; padding: var(--s4); border-radius: var(--r-lg); max-height: 90vh; overflow-y: auto; animation: pop 250ms var(--ease-out); }
-        @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        /* Listas Jugadores */
+        .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); transition: all 0.2s ease; }
+        .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
+        .grupo-expandible .jugador-fila { margin-bottom: 0; border: none; border-radius: 0; }
+        .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
+        .grupo-detalle.open { max-height: 500px; }
+        .sub-fila { padding: 12px 16px 12px 32px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px;}
+        .icon-chevron { color: var(--text-sub); transition: transform 0.2s ease; margin-left: 4px; }
+        .icon-chevron.open { transform: rotate(180deg); }
 
-        /* --- 🔥 ESTILOS SISTEMA COLAPSABLE Y SWIPE --- */
-        .player-group { background: white; border-radius: 18px; margin-bottom: 12px; border: 1px solid var(--gray-2); overflow: hidden; transition: transform 0.1s ease; }
-        .player-group:active { transform: scale(0.99); }
-        .player-group.estado-ok { border-left: 5px solid var(--green); background: rgba(52,199,89,0.06); }
-        .player-group.estado-mixto { border-left: 5px solid var(--orange); background: rgba(255,159,10,0.06); }
-        .player-group.estado-pendiente { border-left: 5px solid var(--red); background: rgba(255,59,48,0.06); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.pendiente { background: var(--brand-red); }
+        .dot.cancha { background: var(--brand-orange); }
+        .dot.pagado { background: var(--brand-green); }
+        .badge-parcial { font-size:11px; background:#D1FAE5; color:#065F46; padding:2px 6px; border-radius:4px; font-weight:700;}
 
-        .swipe-container { position: relative; width: 100%; overflow: hidden; background: #E5E5EA; }
-        .swipe-bg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 0 20px; font-weight: 900; color: white; font-size: 14px; z-index: 0; }
-        .left-action { left: 0; right: 50%; background: var(--blue); justify-content: flex-start; }
+        .acciones { display: flex; gap: 12px; align-items: center; }
+        .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; color: var(--text-main); transition: 0.1s; }
+        .btn-menu { background: none; border: none; font-size: 18px; color: var(--text-sub); font-weight: bold; padding-bottom: 6px; cursor: pointer;}
 
-        .swipe-content { position: relative; z-index: 1; background: transparent; transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
-        .swipe-content.no-transition { transition: none; }
-
-        .player-main { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: inherit; }
-        .player-child-row { padding: 12px 16px 12px 32px; position: relative; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.04); background: inherit; }
-        .player-child-row::before { content: ''; position: absolute; left: 18px; top: 50%; width: 8px; height: 1px; background: #C7C7CC; }
-
-        .player-name-box { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        .player-name-box .extra-tag { color: var(--blue); font-weight: 800; font-size: 13px; }
-        .player-phone-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
-        .player-actions-box { display: flex; align-items: center; gap: 10px; }
+        /* --- TABS & MOVIMIENTOS B2B --- */
+        .tabs-mov { display: flex; background: #F3F4F6; border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+        .tab-mov { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text-sub); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .tab-mov.active { background: var(--bg-white); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
-        .player-children-box { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.2s ease; }
-        .player-group.open .player-children-box { max-height: 1000px; opacity: 1; }
-        .child-name-text { font-size: 14px; font-weight: 500; color: #555; }
+        .mov-card { background: var(--bg-white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+        .mov-info { flex: 1; padding-right: 12px; }
+        .mov-concepto { font-size: 13px; font-weight: 700; color: var(--text-main); line-height: 1.3; margin-bottom: 6px;}
+        .mov-fecha { font-size: 11px; color: var(--text-sub); font-weight: 600;}
+        .mov-monto-box { text-align: right; }
+        .mov-monto { font-size: 16px; font-weight: 800; letter-spacing: -0.5px;}
+        .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block;}
+        .mb-bonif { background: #D1FAE5; color: #065F46; }
+        .mb-pagado { background: #E0E7FF; color: #3730A3; }
+        .mb-deuda { background: #FEE2E2; color: #991B1B; }
 
-        .chevron { font-size: 11px; color: #888; transition: transform 0.2s ease; margin-left: 4px; }
-        .player-group.open .chevron { transform: rotate(180deg); }
+        /* BOTTOM SHEETS */
+        .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; opacity: 0; transition: opacity 0.2s ease; }
+        .bs-overlay.active { opacity: 1; }
+        .bs-content { width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0; padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        .bs-content.open { transform: translateY(0); }
+        .bs-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
+        .bs-title { font-size: 13px; font-weight: 700; color: var(--text-sub); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .bs-btn { width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .bs-btn-danger { color: var(--brand-red); background: #FEE2E2; }
+        .bs-btn-cancel { background: transparent; color: var(--text-main); border: 1px solid var(--border); font-weight: 600; font-size: 15px; width: 100%; cursor: pointer;}
+        .bs-btn-clean { background: transparent; color: var(--text-sub); margin-top: 8px; border: none; font-weight: 600; font-size: 15px; width: 100%; cursor: pointer;}
 
-        .badge-status-btn { padding: 6px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; min-width: 85px; text-align: center; border: none; cursor: pointer; transition: transform 0.1s ease;}
-        .badge-status-btn:active { transform: scale(0.95); }
-        .st-pendiente { background: var(--red); } .st-paga-en-la-cancha { background: var(--orange); } .st-pagado { background: var(--green); }
-        .badge-status-btn.small { font-size: 9px; padding: 4px 8px; min-width: 75px; }
-        .delete-btn-icon { color: #D1D1D6; font-size: 18px; font-weight: 900; padding: 5px; cursor: pointer; }
-
-        /* ESTADOS VISUALES DE CANCHA */
-        .item.estado-ok { border-left: 6px solid var(--green); background: linear-gradient(0deg, rgba(52,199,89,0.05), transparent); }
-        .item.estado-warning { border-left: 6px solid var(--orange); background: linear-gradient(0deg, rgba(255,159,10,0.05), transparent); }
-        .item.estado-error { border-left: 6px solid var(--red); background: linear-gradient(0deg, rgba(255,59,48,0.05), transparent); }
-
-        .day-check { display: none; }
-        .day-label { flex: 1; background: var(--bg-main); color: var(--text-secondary); padding: 10px 0; text-align: center; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s;}
-        .day-check:checked + .day-label { background: var(--blue); color: white; }
-        .footer-pro { text-align: center; margin-top: 40px; padding: 20px 0 40px; width: 100%; }
-        .footer-brand { font-size: 10px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
-        .footer-divider { border: 0; border-top: 1.5px dashed var(--border); margin: 0 auto 24px; width: 100%; }
-        .footer-title { font-size: 16px; font-weight: 900; color: var(--text-primary); margin: 0 0 4px 0; letter-spacing: -0.3px; }
-        .footer-subtitle { font-size: 16px; font-weight: 900; color: var(--orange); margin: 0 0 20px 0; letter-spacing: -0.3px; }
-        .btn-sales { background: var(--orange); color: white; text-decoration: none; padding: 18px 20px; border-radius: 18px; font-weight: 800; font-size: 15px; display: block; transition: transform 150ms var(--ease-out), box-shadow 150ms; box-shadow: 0 8px 20px rgba(255, 159, 10, 0.25); cursor: pointer; }
-        .btn-sales:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 159, 10, 0.2); }
+        .input-group { margin-bottom: 16px; }
+        .input-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
+        .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; font-weight: 500; font-family: inherit;}
+        select.input-clean { appearance: none; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        #loading-init { text-align: center; padding: 40px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
     </style>
 </head>
 <body>
 
-    <div id="boot-screen">
-        <div class="spinner"></div>
-        <h2 class="h1" style="font-size: 20px; color: var(--text-secondary);">Verificando sesión...</h2>
-    </div>
-
-    <div id="login-screen">
-        <div class="card login-card fade-in">
-            <h1 class="h1" style="margin-bottom: 5px;">PadelApp</h1>
-            <p class="label" style="margin-bottom: 25px;">Acceso Organizador</p>
-            <input id="log-email" type="email" class="input-std" placeholder="Correo electrónico">
-            <input id="log-pass" type="password" class="input-std" placeholder="Contraseña">
-            <button class="btn btn-dark mt-2" onclick="iniciarSesion()">INGRESAR</button>
-            <p id="log-error" style="color: var(--red); font-size: 12px; font-weight: 800; margin-top: 15px; display: none;">Credenciales incorrectas.</p>
+    <header class="header-global">
+        <div>
+            <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple); text-transform: uppercase; font-weight: 800;">Panel</span></div>
+            <div class="header-org" id="t-org-name">Cargando...</div>
         </div>
-    </div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="firebase.auth().signOut().then(() => location.reload())">Salir</div>
+    </header>
 
-    <div id="app-content">
-        <div class="container fade-in" id="main-container">
-            <header class="flex space-between center section" style="margin-bottom: 20px;">
-                <div>
-                    <h1 id="org-name-disp" class="h1">Cargando datos...</h1>
-                    <span id="badge-client-fundador" style="display:none; background:#fff9e6; color:#856404; font-size:10px; font-weight:900; text-transform: uppercase; padding:4px 8px; border-radius:6px; border:1px solid #ffeeba; margin-top:6px; letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">⭐ Top 10 · Miembro Fundador</span>
-                </div>
-                <button onclick="cerrarSesion()" style="background:none; border:none; color:var(--red); font-weight:800; cursor:pointer; font-size: 12px; font-family: inherit;">SALIR</button>
-            </header>
-
-            <div id="aviso-aumento" style="display:none; background: rgba(255,159,10,0.1); border: 1px solid var(--orange); border-radius: 12px; padding: 12px; margin-bottom: 15px; color: var(--orange); font-size: 12px; font-weight: 700;"></div>
-
-            <div class="card-dark section fade-in">
-                <div class="flex space-between center">
-                    <div style="font-size: 14px; font-weight: 600;" id="lbl-vencimiento">Tu abono vence el <b id="txt-venc-abono">--/--/----</b></div>
-                    <div id="badge-abono" class="badge badge-ok">AL DÍA</div>
-                </div>
-                <div id="txt-dias-trial" style="font-size: 12px; color: #4DA8DA; font-weight: 800; margin-top: 4px; display: none;"></div>
-                
-                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-                
-                <div id="container-financials">
-                    <div class="label" style="color: #8E8E93;">CONSUMO DE CANCHAS</div>
-                    <div class="financial">
-                        <div class="metric-box">
-                            <div class="metric-label">USADOS</div>
-                            <div class="metric-value" id="txt-deuda-canchas">$0</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-label">DISPONIBLE</div>
-                            <div class="metric-value" id="txt-disponible">$0</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                    <div style="font-size: 13px; color: #8E8E93; font-weight: 600;" id="txt-consumo-total"></div>
-                    <div id="txt-canchas-restantes" style="color: var(--green); font-size: 11px; font-weight: 800; margin-top: 6px; text-transform: uppercase;"></div>
-                </div>
-                
-                <div id="box-resumen-uso" class="mt-3" style="background: rgba(255,255,255,0.06); padding: var(--s2); border-radius: var(--r-md);">
-                    <div class="label" style="margin-bottom: 4px; color: #8E8E93;">RESUMEN DE USO:</div>
-                    <div style="font-size: 13px; font-weight: 600; color: white;" id="txt-detalle-canchas"></div>
-                </div>
+    <main class="app-container">
+        
+        <div class="status-card" id="main-status-card" style="display:none;">
+            <div class="dsc-header">
+                <div class="dsc-title" id="sc-title">Cargando suscripción...</div>
+                <div class="dsc-badge" id="sc-badge">--</div>
             </div>
-
-            <div class="section fade-in" style="animation-delay: 100ms; margin-top: 20px; margin-bottom: 20px;">
-                <button class="btn btn-outline" style="margin-bottom: var(--s2);" onclick="abrirDetalle()">📋 VER HISTORIAL DE MOVIMIENTOS</button>
-                <button class="btn btn-primary" onclick="copiarMiLink()">🔗 COPIAR LINK CARTELERA</button>
-            </div>
-
-            <div id="canchas-list" class="section"></div>
-
-            <div class="section fade-in" style="animation-delay: 150ms;">
-                <button id="btn-toggle-pasadas" class="btn btn-light" style="color:var(--blue); display:none;" onclick="togglePasadas()">📂 VER INFO DE CANCHAS ANTERIORES</button>
-                <div id="canchas-pasadas-list" style="display:none; margin-top:var(--s2);"></div>
-            </div>
-
-            <button id="btn-add-cancha" class="btn btn-dark mt-2 fade-in" style="padding: 20px; font-size: 14px; animation-delay: 200ms;" onclick="abrirNuevaCancha()">➕ AGREGAR NUEVA CANCHA</button>
-            <p id="msg-locked" style="display:none; color:var(--red); font-size:11px; font-weight:800; text-align:center; margin-top:10px;"></p>
-
-            <div class="footer-pro fade-in" style="animation-delay: 300ms;">
-                <div class="footer-brand">Desarrollado por Mariano Blumenfeld</div>
-                <hr class="footer-divider">
-                <h3 class="footer-title">¿Tu Cancha Abierta es un caos de mensajes?</h3>
-                <p class="footer-subtitle">Pasala a piloto automático.</p>
-                <a href="https://wa.me/5491166463800?text=Hola%20Mariano" class="btn-sales">Mariano, ayudame con mi cancha abierta 🎾</a>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-detalle" class="modal">
-        <div class="modal-content">
-            <h2 class="h1" style="margin-bottom: var(--s3); font-size: 22px;">📋 Mis Movimientos</h2>
-            <div class="flex" style="gap:8px; background: var(--bg-main); padding: 4px; border-radius: 14px; margin-bottom: var(--s3);">
-                <button id="tab-pend" class="btn btn-primary" style="padding:10px;" onclick="cambiarTab('pendiente')">PENDIENTES</button>
-                <button id="tab-pag" class="btn" style="padding:10px; background:transparent; color:var(--text-secondary);" onclick="cambiarTab('pagado')">HISTORIAL</button>
-            </div>
-            <div id="lista-movimientos-det" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR DETALLE</button>
-        </div>
-    </div>
-
-    <div id="modal-players" class="modal">
-        <div class="modal-content" style="padding: 15px;">
-            <h2 class="h1 text-center" style="margin-bottom: 15px; font-size: 22px;">👥 Jugadores</h2>
-            <input type="hidden" id="pl-id">
+            <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando cuenta...</div>
             
-            <div class="financial" style="margin-top:0; margin-bottom:8px; gap: 8px;">
-                <div class="metric-box" style="background:var(--bg-main); padding:12px;">
-                    <span class="label">CUPO TOTAL</span>&nbsp;&nbsp;<b id="st-total" class="metric-value" style="color:var(--text-primary); font-size:18px;">0</b>
-                </div>
-                <div class="metric-box" style="background:rgba(0,122,255,0.1); padding:12px;">
-                    <span class="label" style="color:var(--blue)">LIBRES</span>&nbsp;&nbsp;<b id="st-lib" class="metric-value" style="color:var(--blue); font-size:18px;">0</b>
-                </div>
-            </div>
-
-            <div class="flex" style="gap: 5px; margin-bottom:15px; background:var(--gray-1); padding:10px; border-radius:12px; border:1px solid var(--gray-2);">
-                <div style="flex:1; text-align:center;">
-                    <div class="label" style="font-size:9px;">Pagaron</div>
-                    <b id="st-pag" style="color:var(--green); font-size:16px;">0</b>
-                </div>
-                <div style="flex:1; text-align:center; border-left:1px solid #ddd; border-right:1px solid #ddd;">
-                    <div class="label" style="font-size:9px;">En cancha</div>
-                    <b id="st-enc" style="color:var(--orange); font-size:16px;">0</b>
-                </div>
-                <div style="flex:1; text-align:center;">
-                    <div class="label" style="font-size:9px;">Pendientes</div>
-                    <b id="st-pen" style="color:var(--red); font-size:16px;">0</b>
+            <div class="dsc-impact-box">
+                <div class="dsc-impact-title">🚀 Impacto del Piloto Automático</div>
+                <div class="dsc-metrics">
+                    <div class="dsc-metric"><div class="dsc-metric-label">Jugadores</div><div class="dsc-metric-val" id="sc-jugadores">0</div></div>
+                    <div class="dsc-metric"><div class="dsc-metric-label">Gestionado</div><div class="dsc-metric-val" id="sc-gestionado">$0</div></div>
                 </div>
             </div>
+            
+            <div class="dsc-actions">
+                <button class="btn-dark-outline" onclick="abrirViewMovimientos()">📋 Mis Movimientos (Cargos)</button>
+            </div>
+        </div>
 
-            <div style="text-align:center; font-size:11px; color:var(--text-secondary); margin-bottom:10px; font-weight:600;">
-                💡 Deslizá a la derecha para cobrar
+        <div id="loading-init">Cargando tu panel...</div>
+        <div class="cards-wrapper" id="cards-container"></div>
+
+        <div class="dashboard-actions" id="dash-actions" style="display:none;">
+            <button class="btn-action-dash btn-link" onclick="copiarLinkCartelera()">🔗 Copiar Link de mi Cartelera</button>
+            <button class="btn-action-dash btn-wsp" onclick="soporteWhatsapp()">💬 Soporte WhatsApp</button>
+        </div>
+
+        <div class="branding-footer" id="dash-footer" style="display:none;">
+            Organizado con Cancher · Panel de Gestión
+        </div>
+    </main>
+
+    <div class="fab-crear" onclick="abrirFormularioCancha(null)">+</div>
+
+    <div id="view-movimientos" class="view-modal">
+        <div class="nav-modal">
+            <div class="nav-back-btn" onclick="cerrarViewMovimientos()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Atrás
+            </div>
+            <div style="font-weight: 700; font-size: 15px;">Mis Movimientos</div>
+        </div>
+        <div class="modal-content">
+            
+            <div class="tabs-mov">
+                <div class="tab-mov active" id="tab-pendientes" onclick="switchTabMov('pendientes')">PENDIENTES</div>
+                <div class="tab-mov" id="tab-historial" onclick="switchTabMov('historial')">HISTORIAL</div>
             </div>
 
-            <div id="players-list"></div>
-            <button class="btn btn-dark mt-3" onclick="cerrarModals()">CERRAR</button>
+            <div id="mov-pendientes-container">
+                <div style="text-align:center; padding:40px; color:var(--text-sub);">Calculando saldo...</div>
+            </div>
+            <div id="mov-historial-container" style="display:none;">
+                <div style="text-align:center; padding:40px; color:var(--text-sub);">Buscando historial...</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="view-panel-cancha" class="view-modal">
+        <div class="nav-modal">
+            <div class="nav-back-btn" onclick="cerrarPanelCancha()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Atrás
+            </div>
+            <button class="btn-config" onclick="abrirFormularioCancha(panelCanchaId)">⚙️</button>
+        </div>
+        <div class="modal-content">
+            <div id="pc-status-badge"></div>
+            <div class="modal-title" id="pc-titulo">--</div>
+            <div class="modal-subtitle" id="pc-fecha">--</div>
+            <div class="action-row" id="pc-action-btn-container"><button class="btn-black-modal" onclick="abrirModalAnotar()">+ Anotar Jugador</button></div>
+            <div class="mj-resumen"><div id="pc-cupos">0 / 0 lugares</div><div style="color: var(--brand-green);" id="pc-recaudado">$0</div></div>
+            <div id="lista-jugadores-container"><div style="text-align:center; padding:20px;">Cargando jugadores...</div></div>
+        </div>
+    </div>
+
+    <div id="view-form-cancha" class="view-modal" style="z-index: 120;">
+        <div class="nav-modal">
+            <div class="nav-back-btn" onclick="cerrarFormularioCancha()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg> Cancelar</div>
+            <div style="font-weight: 700; font-size: 15px;" id="fc-head-title">Nueva Cancha</div>
+        </div>
+        <div class="modal-content">
+            <div style="display:flex; gap:8px;">
+                <div class="input-group" style="flex:2;"><label class="input-label">Fecha</label><input type="date" id="fc-fecha" class="input-clean" style="padding:10px 8px;"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Inicio</label><input type="time" id="fc-hora" class="input-clean" style="padding:10px 8px;"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Fin</label><input type="time" id="fc-horafin" class="input-clean" style="padding:10px 8px;"></div>
+            </div>
+            <div class="input-group"><label class="input-label">Título del evento</label><input type="text" id="fc-titulo" class="input-clean" placeholder="Ej: Mixta Distrito Pasco"></div>
+            <div class="input-group"><label class="input-label">Tipo de Evento</label><select id="fc-tipo" class="input-clean"><option value="unico">Evento Único</option><option value="recurrente">Fijo (Semanal)</option></select></div>
+            <div style="display:flex; gap:12px;"><div class="input-group" style="flex:1;"><label class="input-label">Valor p/jugador ($)</label><input type="number" id="fc-precio" class="input-clean" placeholder="Ej: 5000"></div><div class="input-group" style="flex:1;"><label class="input-label">Cupos Totales</label><input type="number" id="fc-cupo" class="input-clean" value="8"></div></div>
+            <div class="input-group"><label class="input-label">Categorías (Opcional)</label><input type="text" id="fc-cat" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Sede / Ubicación</label><input type="text" id="fc-lugar" class="input-clean"></div>
+            <hr style="border:0; border-top:1px solid var(--border); margin:24px 0;">
+            <div class="input-group"><label class="input-label">Tu Alias / CBU</label><input type="text" id="fc-alias" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Tu WhatsApp</label><input type="tel" id="fc-celu" class="input-clean"></div>
+            <button class="btn-black-modal" style="width:100%; margin-top:16px; height:50px; font-size:16px;" onclick="guardarCancha()" id="btn-save-cancha">Publicar Cancha</button>
+            <div id="cont-edit-buttons" style="display:none; gap:12px; margin-top:16px;"><button class="bs-btn-cancel" style="flex:1; margin-top:0;" id="btn-suspend-cancha">Suspender</button><button class="bs-btn-danger" style="flex:1; border:none; border-radius:12px; font-weight:600; font-size:15px; cursor:pointer;" onclick="eliminarCancha()">Eliminar</button></div>
+        </div>
+    </div>
+
+    <div id="bs-menu" class="bs-overlay">
+        <div class="bs-content" id="bs-content">
+            <div class="bs-handle"></div>
+            <div class="bs-title" id="bs-nombre-jugador">Opciones</div>
+            <button class="bs-btn" id="btn-wa">💬 Enviar WhatsApp</button>
+            <button class="bs-btn" id="btn-revertir" style="color: var(--brand-orange);">🏟️ Cambiar a: Paga en Club</button>
+            <button class="bs-btn bs-btn-danger" id="btn-eliminar">🗑️ Eliminar</button>
+            <button class="bs-btn-clean" onclick="cerrarMenuOpciones()">Cancelar</button>
         </div>
     </div>
     
-    <div id="modal-config" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title" class="h1" style="margin-bottom: var(--s3); font-size: 22px;">⚙️ Configuración</h2>
-            <input type="hidden" id="ed-id">
-            
-            <button id="btn-suspender" class="btn" style="background: rgba(255,159,10,0.1); color: var(--orange); margin-bottom: var(--s3); display:none; flex-direction: column; height: auto; padding: 12px; gap:4px;" onclick="abrirModalSuspension()">
-                <span style="font-weight: 900;">🚫 SUSPENDER EVENTO</span>
-                <span style="font-size: 10px; font-weight: 700; text-transform: none; opacity: 0.8; letter-spacing: 0;">Cancelación gratuita hasta 1 hora antes del evento</span>
-            </button>
-            
-            <label>Tipo de Evento</label>
-            <select id="ed-tipo" class="input-std" onchange="validarRecurrencia()">
-                <option value="unico">Evento Único</option>
-                <option value="recurrente">Todas las semanas</option>
-            </select>
-            
-            <div id="days-container" style="display:none">
-                <label>Días que se repite</label>
-                <div class="flex space-between" style="gap:4px; margin-bottom:var(--s2);">
-                    <input type="checkbox" id="d-MO" class="day-check" onchange="validarRecurrencia()"><label for="d-MO" class="day-label">L</label>
-                    <input type="checkbox" id="d-TU" class="day-check" onchange="validarRecurrencia()"><label for="d-TU" class="day-label">M</label>
-                    <input type="checkbox" id="d-WE" class="day-check" onchange="validarRecurrencia()"><label for="d-WE" class="day-label">Mi</label>
-                    <input type="checkbox" id="d-TH" class="day-check" onchange="validarRecurrencia()"><label for="d-TH" class="day-label">J</label>
-                    <input type="checkbox" id="d-FR" class="day-check" onchange="validarRecurrencia()"><label for="d-FR" class="day-label">V</label>
-                    <input type="checkbox" id="d-SA" class="day-check" onchange="validarRecurrencia()"><label for="d-SA" class="day-label">S</label>
-                    <input type="checkbox" id="d-SU" class="day-check" onchange="validarRecurrencia()"><label for="d-SU" class="day-label">D</label>
-                </div>
-            </div>
-            
-            <div id="msg-error-rec" style="background:rgba(255,59,48,0.1); color:var(--red); padding:10px; border-radius:10px; font-size:11px; font-weight:800; margin-bottom:10px; display:none;">⚠️ La fecha no coincide con el día marcado</div>
-            
-            <label>Nombre Cancha</label><input id="ed-org" class="input-std">
-            <label>Organizador</label><input id="ed-owner" class="input-std">
-            <label>WhatsApp</label><input id="ed-celu" class="input-std">
-            <label>Sede</label><input id="ed-lug" class="input-std">
-            <label>🏷️ Categoría</label><input id="ed-cat" class="input-std">
-            
-            <div class="flex" style="gap:10px">
-                <div style="flex:1"><label>Fecha</label><input id="ed-fec" type="date" class="input-std" onchange="validarRecurrencia()"></div>
-                <div style="flex:1"><label>Cupo</label><input id="ed-cup" type="number" class="input-std"></div>
-            </div>
-            <div class="flex" style="gap:10px">
-                <div style="flex:1"><label>Inicio</label><input id="ed-h1" type="time" class="input-std"></div>
-                <div style="flex:1"><label>Fin</label><input id="ed-h2" type="time" class="input-std"></div>
-            </div>
-            
-            <label>Precio ($)</label><input id="ed-val" type="number" class="input-std">
-            <label>Alias</label><input id="ed-ali" class="input-std">
-            
-            <button id="btn-save-config" class="btn btn-primary mt-2" onclick="guardarConfig()">GUARDAR CAMBIOS</button>
-            <button class="btn btn-light mt-2" onclick="cerrarModals()">CANCELAR</button>
-            <button id="btn-borrar-cancha" class="btn mt-2" style="background: rgba(255,59,48,0.1); color: var(--red); display:none;" onclick="borrarCancha()">🗑️ ELIMINAR CANCHA DEFINITIVAMENTE</button>
-        </div>
-    </div>
-    
-    <div id="modal-suspension" class="modal">
-        <div class="modal-content text-center">
-            <h2 class="h1" style="margin-bottom: var(--s1); font-size: 22px;">🚫 Suspender Evento</h2>
-            <p class="text" style="margin-bottom: var(--s1);">Esta acción no genera cargos de sistema.</p>
-            <p class="label" style="margin-bottom: var(--s4);">¿Qué desea hacer con esta cancha?</p>
-            <button class="btn btn-primary mt-2" style="background: var(--green-grad);" onclick="confirmarSuspension(true)">REPROGRAMAR PARA LA SEMANA QUE VIENE</button>
-            <button class="btn mt-2" style="background: var(--red); color:white;" onclick="confirmarSuspension(false)">ELIMINAR LA CANCHA</button>
-            <button class="btn btn-light mt-2" onclick="document.getElementById('modal-suspension').style.display='none'">VOLVER ATRÁS</button>
-        </div>
-    </div>
+    <div id="bs-anotar" class="bs-overlay"><div class="bs-content" id="bs-content-anotar"><div class="bs-handle"></div><div class="bs-title">Anotar Jugador</div><div style="display:flex; gap:12px;"><div class="input-group" style="flex:1;"><input type="text" id="man-nombre" class="input-clean" placeholder="Nombre"></div><div class="input-group" style="flex:1;"><input type="text" id="man-apellido" class="input-clean" placeholder="Apellido"></div></div><div class="input-group"><input type="tel" id="man-celu" class="input-clean" placeholder="WhatsApp (Ej: 1122334455)"></div><div style="display:flex; gap:12px;"><div class="input-group" style="flex:1;"><select id="man-lugares" class="input-clean"><option value="1">1 lugar</option><option value="2">2 lugares</option><option value="3">3 lugares</option><option value="4">4 lugares</option></select></div><div class="input-group" style="flex:1;"><select id="man-estado" class="input-clean"><option value="pagado">Ya pagó</option><option value="paga-en-la-cancha">Paga en club</option><option value="pendiente">Debe</option></select></div></div><button class="bs-btn" style="background:var(--text-main); color:var(--bg-white); margin-top:8px;" onclick="guardarAnotacionManual()">Guardar</button><button class="bs-btn-clean" onclick="cerrarModalAnotar()">Cancelar</button></div></div>
 
 <script>
-    let orgId = new URLSearchParams(window.location.search).get('org');
-    let courtData = {}, cuentaInfo = {}, isAccountBlocked = false, playersListener = null;
-    let isNew = false; window.movimientos = []; let isInitialized = false, oldDeuda = 0, oldDisp = 0;
-    window.defaultData = { owner: "", celu: "", alias: "" };
+    let globalOrgId = null; let eventosCache = []; let panelCanchaId = null; let actionData = null; let activeEventRef = null; let editandoCanchaId = null;
 
-    // --- 🔥 BLINDAJE ANTI-FIREBASE (Repara datos corruptos) ---
-    function safeArray(data) {
-        if (!data) return [];
-        return Array.isArray(data) ? data : Object.values(data);
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const testOrgId = urlParams.get('org');
 
-    // --- UTILS & MODELO DE DATOS ---
-    function calcularOcupados(list) {
-        const arr = safeArray(list);
-        if (arr.length === 0) return 0;
-        return arr.reduce((acc, p) => p.cantidad ? acc + p.cantidad : acc + 1, 0);
-    }
+    if (testOrgId) { globalOrgId = testOrgId; cargarPanel(testOrgId); } 
+    else { firebase.auth().onAuthStateChanged(user => { if (user) { db.ref('organizadores/' + user.uid).once('value', snap => { globalOrgId = snap.val(); if(globalOrgId) cargarPanel(globalOrgId); }); } }); }
 
-    function agruparPorCelular(list) {
-        const arr = safeArray(list);
-        const grupos = {};
-        arr.forEach((p, idx) => {
-            const key = p.celular ? String(p.celular).trim() : `sin-celular-${idx}`;
-            if (!grupos[key]) grupos[key] = [];
-            grupos[key].push({ ...p, originalIndex: idx, fechaSegura: p.fecha || 0 });
-        });
-        return Object.values(grupos);
-    }
-
-    function calcularEstadoCancha(inscriptos) {
-        const arr = safeArray(inscriptos);
-        if (arr.length === 0) return "error";
-        let total = 0, pagados = 0, parcial = false;
-        arr.forEach(p => {
-            const cant = p.cantidad || 1; total += cant;
-            if (p.estado === "pagado") pagados += cant;
-            if (p.estado === "paga-en-la-cancha") parcial = true;
-        });
-        if (pagados === total) return "ok";
-        if (pagados > 0 || parcial) return "warning";
-        return "error";
-    }
-
-    function obtenerEstadoGrupo(grupo) {
-        const estados = grupo.map(p => p.estado);
-        if (estados.every(e => e === 'pagado')) return 0;
-        if (estados.every(e => e === 'pendiente')) return 2;
-        return 1;
-    }
-
-    function animateValue(el, start, end, duration = 400) {
-        if (start === end) { el.innerText = PadelUtils.fmtDinero(end); return; }
-        let startTime = null;
-        function step(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const progress = Math.min((timestamp - startTime) / duration, 1);
-            const value = Math.floor(progress * (end - start) + start);
-            el.innerText = PadelUtils.fmtDinero(value);
-            if (progress < 1) requestAnimationFrame(step); else el.innerText = PadelUtils.fmtDinero(end);
-        }
-        requestAnimationFrame(step);
-    }
-
-    // --- AUTH & INIT ---
-    const auth = firebase.auth();
-    let activeListeners = {}; // Para manejar la memoria inteligente de Firebase
-
-    auth.onAuthStateChanged(user => {
-        document.getElementById('boot-screen').style.display = 'none';
-        if (user) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-container').style.display = 'block'; 
-            if (!orgId) {
-                document.getElementById('org-name-disp').innerText = "Buscando datos...";
-                db.ref('facturacion').once('value').then(snap => {
-                    let foundOrg = null; const data = snap.val() || {}; const emailLimpio = user.email.trim().toLowerCase();
-                    for (let id in data) { if (data[id].cuenta && data[id].cuenta.emailOrganizador?.trim().toLowerCase() === emailLimpio) { foundOrg = id; break; } }
-                    if (foundOrg) { orgId = foundOrg; window.history.replaceState(null, null, `?org=${orgId}`); if(!isInitialized) { init(); isInitialized = true; } } 
-                    else { alert(`Tu usuario no tiene club asignado.`); cerrarSesion(); }
-                }).catch(err => alert("Error de permisos Firebase."));
-            } else { if(!isInitialized) { init(); isInitialized = true; } }
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('main-container').style.display = 'none';
-            isInitialized = false;
-        }
-    });
-
-    function iniciarSesion() { const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value; document.getElementById('log-error').style.display = 'none'; auth.signInWithEmailAndPassword(e, p).catch(err => { document.getElementById('log-error').style.display = 'block'; document.getElementById('log-error').innerText = "Credenciales incorrectas."; }); }
-    function cerrarSesion() { auth.signOut().then(() => { window.location.reload(); }); }
-    function formatFec(f) { if(!f) return '--'; const [y, m, d] = f.split('-'); return `${d}-${m}-${y}`; }
-    window.copiarMiLink = function() { PadelUtils.copiarLink(cuentaInfo.linkCorto ? cuentaInfo.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${orgId}`); };
-
-    function init() {
-        if(!orgId) return;
-        const errorHandler = (err) => { console.error("Error Firebase:", err); };
-        
-        db.ref(`facturacion/${orgId}/cuenta`).on('value', s => { 
-            cuentaInfo = s.val() || {};
-            if (cuentaInfo.fechaAplicacionPrecios && Date.now() >= cuentaInfo.fechaAplicacionPrecios) {
-                if (!cuentaInfo.esFundador) { db.ref(`facturacion/${orgId}/cuenta`).update({ abonoMensual: cuentaInfo.proximoAbonoMensual, costoPorCancha: cuentaInfo.proximoCostoPorCancha, proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } 
-                else { db.ref(`facturacion/${orgId}/cuenta`).update({ proximoAbonoMensual: null, proximoCostoPorCancha: null, fechaAplicacionPrecios: null }); } return;
-            }
-            document.getElementById('org-name-disp').innerText = cuentaInfo.nombreOrg || orgId;
-            window.defaultData = { owner: cuentaInfo.nombreContacto || "", celu: cuentaInfo.celularContacto || "", alias: cuentaInfo.aliasPredeterminado || "" };
-            calculateFinancials();
-        }, errorHandler);
-
-        db.ref(`facturacion/${orgId}/movimientos`).on('value', s => {
-            const movs = s.val() || {}; 
-            if (cuentaInfo.enTrial) {
-                let updates = {}; for (let k in movs) { if (movs[k].estado === 'pendiente' && movs[k].tipo === 'turno') updates[`${k}/estado`] = 'bonificado'; }
-                if (Object.keys(updates).length > 0) { db.ref(`facturacion/${orgId}/movimientos`).update(updates); return; }
-            }
-            window.movimientos = Object.keys(movs).map(k => ({id: k, ...movs[k]})); calculateFinancials();
-        }, errorHandler);
-
-        db.ref('hubs/'+orgId).on('value', snap => {
-            const ids = snap.val()?.canchas || [];
+    function cargarPanel(orgId) {
+        // 1. Sincronización financiera con el Master Hub
+        db.ref(`facturacion/${orgId}`).once('value', snap => {
+            const data = snap.val() || {};
+            const cuenta = data.cuenta || {};
+            const movimientos = data.movimientos || {};
             
-            // Limpieza inteligente de memoria
-            Object.keys(activeListeners).forEach(id => {
-                if(!ids.includes(id)) {
-                    db.ref('eventos/'+id).off('value', activeListeners[id]);
-                    delete activeListeners[id];
-                    delete courtData[id];
-                }
-            });
+            const info = PadelSaaS.analizarCuenta(cuenta, movimientos);
+            if(!info) return;
 
-            if (ids.length === 0) renderizarCanchas();
-
-            ids.forEach(id => {
-                if(!activeListeners[id]) {
-                    const listener = db.ref('eventos/'+id).on('value', evS => {
-                        const d = evS.val(); 
-                        if(d) { checkAndRollover(id, d); courtData[id] = { id, ...d }; } 
-                        else { delete courtData[id]; } 
-                        renderizarCanchas();
-                    }, errorHandler);
-                    activeListeners[id] = listener;
-                }
-            });
-        }, errorHandler);
-    }
-
-  function calculateFinancials() {
-        if (typeof PadelSaaS === 'undefined' || Object.keys(cuentaInfo).length === 0) return; 
-
-        if (cuentaInfo.esFundador) {
-            document.getElementById('badge-client-fundador').style.display = 'inline-block';
-        } else {
-            document.getElementById('badge-client-fundador').style.display = 'none';
-        }
-
-        const avisoAumento = document.getElementById('aviso-aumento');
-        if (cuentaInfo.fechaAplicacionPrecios && cuentaInfo.proximoAbonoMensual && !cuentaInfo.esFundador) {
-            avisoAumento.style.display = 'block';
-            avisoAumento.innerHTML = `⚠️ A partir del ${PadelSaaS.fmtFecha(cuentaInfo.fechaAplicacionPrecios)} tu abono se actualizará a ${PadelUtils.fmtDinero(cuentaInfo.proximoAbonoMensual)}.`;
-        } else {
-            avisoAumento.style.display = 'none';
-        }
-
-        const res = PadelSaaS.analizarCuenta(cuentaInfo, window.movimientos);
-        if (!res) return;
-
-        const lblVencimiento = document.getElementById('lbl-vencimiento');
-        const txtDiasTrial = document.getElementById('txt-dias-trial');
-        const elRestantes = document.getElementById('txt-canchas-restantes');
-        const badge = document.getElementById('badge-abono');
-        const panelInfo = document.getElementById('txt-consumo-total');
-        
-        // Usamos la fecha de Firebase directo por si la librería se confunde
-        const fechaVencimiento = cuentaInfo.vencimientoAbono || res.vencimientoAbono;
-        const fechaStr = PadelSaaS.fmtFecha(fechaVencimiento);
-        const diasFaltantes = Math.ceil((fechaVencimiento - Date.now()) / (1000 * 60 * 60 * 24));
-        
-        badge.className = "badge"; 
-        
-        // 🔥 LA LLAVE DE JUDO: Leemos la verdad absoluta de Firebase (cuentaInfo.enTrial)
-        if (cuentaInfo.enTrial === true) {
-            lblVencimiento.innerHTML = `Tu prueba vence el <b style="color:white">${fechaStr}</b>`;
-            badge.innerText = "TRIAL GRATUITO"; badge.style.background = "rgba(0,122,255,0.2)"; badge.style.color = "var(--blue)";
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+            document.getElementById('main-status-card').style.display = 'block';
             
-            let textoTrial = `⏳ Te queda${diasFaltantes !== 1 ? 'n' : ''} ${Math.max(0, diasFaltantes)} día${diasFaltantes !== 1 ? 's' : ''}`;
+            // Fecha real de Firebase (mostrará 18-04-2027)
+            const vencimientoStr = PadelSaaS.fmtFecha(info.vencimientoAbono);
+            const plan = cuenta.plan ? cuenta.plan.toUpperCase() : (info.enTrial ? 'TRIAL GRATUITO' : 'PLAN ACTIVO');
             
-            if (!cuentaInfo.esTrialLargo) {
-                const limite = cuentaInfo.limiteCanchasTrial || 10;
-                const usadas = res.canchasUsadasEnPrueba || 0;
-                const canchasRestantes = limite - usadas;
-                textoTrial += ` o ${canchasRestantes} cancha${canchasRestantes !== 1 ? 's' : ''}`;
-            }
-            txtDiasTrial.innerText = textoTrial;
-            txtDiasTrial.style.display = 'block';
+            document.getElementById('sc-title').innerText = info.enTrial 
+                ? `Tu prueba vence el ${vencimientoStr}` 
+                : (cuenta.plan === 'pro' ? 'Club Automatizado' : 'Suscripción Activa');
+                
+            document.getElementById('sc-badge').innerText = plan;
 
-            let totalJugadores = 0; let totalDinero = 0;
-            Object.values(courtData).forEach(c => {
-                const cant = calcularOcupados(c.inscriptos);
-                totalJugadores += cant;
-                totalDinero += (cant * (c.valor || 0));
-            });
-
-            document.getElementById('container-financials').style.display = 'none';
-            document.getElementById('box-resumen-uso').style.display = 'none';
-            
-            panelInfo.innerHTML = `
-                <div style="background: rgba(52,199,89,0.1); border: 1px solid var(--green); border-radius: 18px; padding: 15px; margin-top: 10px; text-align: left; animation: fadeSlide 0.5s ease-out;">
-                    <div style="font-size: 10px; font-weight: 800; color: var(--green); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">🚀 Impacto de tu piloto automático</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">JUGADORES</span><br><b style="color:white; font-size:18px;">${totalJugadores}</b></div>
-                        <div><span style="font-size: 10px; color: var(--text-secondary); font-weight: 700;">GESTIONADO</span><br><b style="color:white; font-size:18px;">${PadelUtils.fmtDinero(totalDinero)}</b></div>
-                    </div>
-                    <p style="font-size: 11px; color: var(--blue); font-weight: 700; margin: 12px 0 0 0; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
-                        ${cuentaInfo.esTrialLargo ? '✨ Plan de Cortesía Activado' : '¡Seguí así para automatizar tu club!'}
-                    </p>
-                </div>
-            `;
-            elRestantes.style.display = 'none';
-        
-        } else {
-            // MODO ABONO NORMAL PAGO
-            lblVencimiento.innerHTML = `Tu abono vence el <b id="txt-venc-abono">${fechaStr}</b>`;
-            txtDiasTrial.style.display = 'none'; document.getElementById('container-financials').style.display = 'block'; document.getElementById('box-resumen-uso').style.display = 'block';
-            
-            animateValue(document.getElementById('txt-deuda-canchas'), oldDeuda, res.deudaCanchas); oldDeuda = res.deudaCanchas;
-            animateValue(document.getElementById('txt-disponible'), oldDisp, res.disponible); oldDisp = res.disponible;
-            
-            panelInfo.innerHTML = `<b style="color:white; font-size: 16px;">${PadelUtils.fmtDinero(res.deudaCanchas)} usados</b> de <span>${PadelUtils.fmtDinero(cuentaInfo.limiteCredito || 0)}</span>`;
-
-            const costoCancha = cuentaInfo.costoPorCancha || 0;
-            if (costoCancha > 0) {
-                const restantes = Math.floor(res.disponible / costoCancha);
-                elRestantes.innerText = `Podés crear aprox. ${restantes} cancha${restantes !== 1 ? 's' : ''} más`;
-                elRestantes.style.color = "var(--green)"; elRestantes.style.display = 'block';
+            // Cálculo dinámico de canchas restantes
+            if (info.enTrial) {
+                const restantes = Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba);
+                document.getElementById('sc-subtitle').innerText = `⏳ Te quedan ${restantes} canchas de prueba`;
             } else {
-                elRestantes.style.display = 'none';
+                document.getElementById('sc-subtitle').innerText = info.isBlocked ? `⚠️ ${info.msgLocked}` : "✅ Tu cuenta está al día";
             }
+        });
 
-            document.getElementById('txt-detalle-canchas').innerHTML = `Incluye: &bull; ${res.cantTurnosPendientes || 0} cancha${res.cantTurnosPendientes !== 1 ? 's' : ''} &rarr; ${PadelUtils.fmtDinero(res.deudaCanchas)}`;
+        // 2. Carga de las canchas del club (Regla de Oro activada)
+        db.ref('hubs/' + orgId).on('value', async (snap) => {
+            document.getElementById('loading-init').style.display = 'none';
+            document.getElementById('dash-actions').style.display = 'flex';
+            document.getElementById('dash-footer').style.display = 'block';
 
-            const porcentajeUso = cuentaInfo.limiteCredito > 0 ? (res.deudaCanchas / cuentaInfo.limiteCredito) : 0;
+            const hubData = snap.val();
+            if (!hubData || !hubData.canchas) { 
+                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No tenés canchas publicadas.</div>"; 
+                return; 
+            }
+            const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
+            const snapshots = await Promise.all(promesas);
+            eventosCache = []; 
+            snapshots.forEach(s => { if(s.exists()) eventosCache.push({ id: s.key, ...s.val() }); });
+            eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+            renderDashboardCards();
+        });
+    }
 
-            if (res.bloqueadoAbono) {
-                badge.innerText = "ABONO VENCIDO"; badge.classList.add('badge-error'); document.getElementById('txt-venc-abono').style.color = "var(--red)";
-            } else if (res.bloqueadoLimite) {
-                badge.innerText = "LÍMITE ALCANZADO"; badge.classList.add('badge-error');
-            } else if (porcentajeUso >= 0.8) {
-                badge.innerText = "CERCA DEL LÍMITE"; badge.classList.add('badge-warning');
-            } else if (diasFaltantes <= 5) {
-                badge.innerText = "ABONO POR VENCER"; badge.classList.add('badge-warning'); document.getElementById('txt-venc-abono').style.color = "var(--orange)";
+    function renderDashboardCards() {
+        const container = document.getElementById('cards-container');
+        let htmlCards = ''; let totalGlobalRecaudado = 0; let totalGlobalJugadores = 0;
+        
+        // Obtenemos fecha de hoy segura (YYYY-MM-DD)
+        const hoyISO = new Date().toLocaleDateString('sv-SE'); 
+
+        eventosCache.forEach(d => {
+            // Regla de Oro: No mostrar canchas viejas. El servidor las mueve a las 3 AM.
+            if (d.fecha < hoyISO) return;
+
+            let ocupados = 0; let recaudadoCard = 0;
+            (d.inscriptos || []).forEach(jug => { 
+                const cant = jug.cantidad || 1; 
+                ocupados += cant; 
+                if(jug.estado === 'pagado') recaudadoCard += (d.valor * cant); 
+            });
+
+            totalGlobalRecaudado += recaudadoCard; totalGlobalJugadores += ocupados; 
+            const isSuspended = d.estado === 'suspendido'; 
+            const claseCompleta = (ocupados >= (d.cupo || 0) && !isSuspended) ? 'card-completa' : ''; 
+            const claseSusp = isSuspended ? 'card-suspendida' : '';
+            let titulo = d.organiza || 'Cancha'; if(d.categorias) titulo += ` · ${d.categorias}`;
+            let badgeRec = d.tipo === 'recurrente' ? `<span class="badge-rec">FIJO</span>` : ''; 
+            let htmlSusp = isSuspended ? `<div class="badge-susp">SUSPENDIDA</div>` : '';
+
+            htmlCards += `<div class="card-cancha ${claseCompleta} ${claseSusp}" onclick="abrirPanelCancha('${d.id}')">${htmlSusp}<div class="cc-header"><div><span class="cc-dia">${formatearDiaCorto(d.fecha)}</span><span class="cc-hora" style="margin-left:6px;">${d.hora} – ${d.horaFin || '--'}</span></div>${badgeRec}</div><div class="cc-categoria">${titulo}</div><div class="cc-footer"><span class="cc-cupos">👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudadoCard)}</span></div></div>`;
+        });
+        
+        container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px; color:var(--text-sub);'>No hay canchas para mostrar.</div>";
+        document.getElementById('sc-jugadores').innerText = totalGlobalJugadores; document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalGlobalRecaudado);
+    }
+
+    function copiarLinkCartelera() {
+        const loc = window.location;
+        const pathBase = loc.pathname.substring(0, loc.pathname.lastIndexOf('/'));
+        const linkFinal = `${loc.origin}${pathBase}/index.html?org=${globalOrgId}`;
+        navigator.clipboard.writeText(linkFinal).then(() => alert("¡Link de cartelera copiado! Ya podés pegarlo en WhatsApp."));
+    }
+
+    function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Hola%20Cancher,%20necesito%20ayuda%20con%20mi%20panel', '_blank'); }
+
+    function abrirViewMovimientos() { document.getElementById('view-movimientos').classList.add('active'); document.body.style.overflow = 'hidden'; cargarMovimientosB2B(); }
+    function cerrarViewMovimientos() { document.getElementById('view-movimientos').classList.remove('active'); document.body.style.overflow = ''; }
+    function switchTabMov(tab) {
+        const isPend = tab === 'pendientes';
+        document.getElementById('tab-pendientes').classList.toggle('active', isPend);
+        document.getElementById('tab-historial').classList.toggle('active', !isPend);
+        document.getElementById('mov-pendientes-container').style.display = isPend ? 'block' : 'none';
+        document.getElementById('mov-historial-container').style.display = isPend ? 'none' : 'block';
+    }
+
+    function cargarMovimientosB2B() {
+        db.ref(`facturacion/${globalOrgId}/movimientos`).once('value', snap => {
+            const movs = snap.val() || {};
+            const arrMovs = Object.keys(movs).map(k => ({id: k, ...movs[k]}));
+            arrMovs.sort((a,b) => (b.fecha || 0) - (a.fecha || 0));
+            let htmlPendientes = '', htmlHistorial = '';
+            arrMovs.forEach(m => {
+                const isPend = m.estado === 'pendiente';
+                let badge = m.estado === 'bonificado' ? 'mb-bonif' : (m.estado === 'pagado' ? 'mb-pagado' : 'mb-deuda');
+                const card = `<div class="mov-card"><div class="mov-info"><div class="mov-concepto">${m.concepto || 'Cargo por uso'}</div><div class="mov-fecha">${m.fechaStr || '--'}</div><div class="mov-badge ${badge}">${m.estado.toUpperCase()}</div></div><div class="mov-monto-box"><div class="mov-monto" style="color:${isPend ? 'var(--text-main)' : 'var(--brand-green)'}">$${m.monto || 0}</div></div></div>`;
+                if (isPend) htmlPendientes += card; else htmlHistorial += card;
+            });
+            document.getElementById('mov-pendientes-container').innerHTML = htmlPendientes || "<div style='text-align:center; padding:40px; color:var(--brand-green);'>✅ Todo al día.</div>";
+            document.getElementById('mov-historial-container').innerHTML = htmlHistorial || "<div style='text-align:center; padding:40px;'>Sin historial.</div>";
+        });
+    }
+
+    function abrirPanelCancha(id) { panelCanchaId = id; if(activeEventRef) activeEventRef.off(); activeEventRef = db.ref('eventos/' + id); activeEventRef.on('value', snap => { const canchaData = snap.val(); if(canchaData) { const idx = eventosCache.findIndex(e => e.id === id); if(idx !== -1) eventosCache[idx] = { id, ...canchaData }; renderizarModalCancha(id, canchaData); } }); document.getElementById('view-panel-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function cerrarPanelCancha() { if(activeEventRef) { activeEventRef.off(); activeEventRef = null; } document.getElementById('view-panel-cancha').classList.remove('active'); document.body.style.overflow = ''; panelCanchaId = null; }
+
+    function renderizarModalCancha(id, cancha) {
+        document.getElementById('pc-titulo').innerText = cancha.organiza || 'Cancha'; document.getElementById('pc-fecha').innerText = `📅 ${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} a ${cancha.horaFin || '--'}`; const isSuspended = cancha.estado === 'suspendido'; document.getElementById('pc-status-badge').innerHTML = isSuspended ? `<div class="badge-susp">CANCHA SUSPENDIDA</div>` : ''; document.getElementById('pc-action-btn-container').style.display = isSuspended ? 'none' : 'flex';
+        const inscriptos = cancha.inscriptos || []; let ocupados = 0; let recaudado = 0; const gruposPorCelular = {};
+        inscriptos.forEach((jug, idx) => { jug.originalIndex = idx; const cant = jug.cantidad || 1; ocupados += cant; if(jug.estado === 'pagado') recaudado += (cancha.valor * cant); const cel = jug.celular || `sin-celu-${idx}`; if(!gruposPorCelular[cel]) gruposPorCelular[cel] = []; gruposPorCelular[cel].push(jug); });
+        const htmlPorEstado = { pagado: [], cancha: [], pendiente: [] };
+        Object.keys(gruposPorCelular).forEach(cel => {
+            const jugadores = gruposPorCelular[cel]; const titular = jugadores[0]; let totalEnGrupo = jugadores.reduce((acc, j) => acc + (j.cantidad || 1), 0);
+            let estadoGrupo = jugadores.some(j => j.estado === 'pendiente') ? 'pendiente' : (jugadores.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
+            const nomSeguro = (titular.nombre || '').replace(/'/g, "\\'");
+            const checkBtn = isSuspended || estadoGrupo === 'pagado' ? '' : `<button class="btn-check" onclick="event.stopPropagation(); marcarGrupoPagado('${id}', '${cel}')">✔</button>`;
+            
+            if(jugadores.length === 1 && totalEnGrupo === 1) {
+                htmlPorEstado[estadoGrupo].push(`<div class="jugador-fila"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(jugadores[0].nombre)}</span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checkBtn}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div>`);
             } else {
-                badge.innerText = "AL DÍA"; badge.classList.add('badge-ok'); document.getElementById('txt-venc-abono').style.color = "var(--green)";
+                let subJugadoresHtml = jugadores.map(j => `<div class="sub-fila"><div class="jugador-main"><span class="nombre">↳ ${jugadorAbreviado(j.nombre)}</span></div></div>`).join('');
+                htmlPorEstado[estadoGrupo].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="toggleGrupo('${cel}')"><div class="jugador-main"><span class="nombre">${jugadorAbreviado(titular.nombre)} <span style="color:var(--text-sub);">+${totalEnGrupo-1}</span></span><span class="dot ${estadoGrupo}"></span></div><div class="acciones">${checkBtn}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${nomSeguro}', '${cel}')">⋯</button></div></div><div class="grupo-detalle" id="det-${cel}">${subJugadoresHtml}</div></div>`);
             }
-        }
-
-        isAccountBlocked = res.isBlocked; document.getElementById('btn-add-cancha').style.opacity = isAccountBlocked ? '0.3' : '1';
-        const msgLocked = document.getElementById('msg-locked');
-        if (isAccountBlocked) { msgLocked.style.display = 'block'; msgLocked.innerText = res.msgLocked; } else { msgLocked.style.display = 'none'; }
-    }
-
-    function abrirDetalle() { currentMovsData = [...window.movimientos].sort((a, b) => b.fecha - a.fecha); cambiarTab('pendiente'); document.getElementById('modal-detalle').style.display = 'flex'; }
-   function cambiarTab(estadoFiltro) {
-        const btnPend = document.getElementById('tab-pend'); const btnPag = document.getElementById('tab-pag');
-        if(estadoFiltro === 'pendiente') {
-            btnPend.className = "btn btn-primary"; btnPag.className = "btn"; btnPag.style.background = "transparent"; btnPag.style.color = "var(--text-secondary)";
-        } else {
-            btnPag.className = "btn btn-primary"; btnPend.className = "btn"; btnPend.style.background = "transparent"; btnPend.style.color = "var(--text-secondary)";
-        }
-        const lista = document.getElementById('lista-movimientos-det'); lista.innerHTML = "";
-        
-        // 🔥 CORRECCIÓN: 'bonificado' (trial) ahora va al Historial, no genera deuda visual
-        const filtrados = currentMovsData.filter(m => estadoFiltro === 'pendiente' ? m.estado === 'pendiente' : (m.estado === 'pagado' || m.estado === 'bonificado'));
-
-        if(filtrados.length === 0) {
-            lista.innerHTML = `<p class="text-center mt-3 label">No hay movimientos para mostrar.</p>`;
-        } else {
-            filtrados.forEach((m, index) => {
-                const dateObj = new Date(m.fecha);
-                const dStr = PadelSaaS.fmtFecha(m.fecha) + ' - ' + dateObj.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) + ' hs';
-                let badgeHtml = '';
-                if (m.estado === 'pendiente') badgeHtml = '<span class="badge badge-error">PENDIENTE</span>';
-                else if (m.estado === 'bonificado') badgeHtml = '<span class="badge badge-ok">BONIFICADO</span>';
-                else badgeHtml = '<span class="badge badge-ok" style="background:#eef6ff; color:var(--blue);">PAGADO</span>';
-
-                lista.innerHTML += `
-                    <div class="flex space-between center fade-in" style="padding:15px 0; border-bottom:1px solid var(--border); animation-delay:${index * 50}ms;">
-                        <div style="flex:1; padding-right:15px;">
-                            <strong style="display:block; font-size:13px; margin-bottom: 4px;">${m.descripcion}</strong><span class="label">${dStr}</span>
-                        </div>
-                        <div class="text-center">
-                            <strong style="display:block; font-size:15px; margin-bottom:6px;">${PadelUtils.fmtDinero(m.monto)}</strong>${badgeHtml}
-                        </div>
-                    </div>`;
-            });
-        }
-    }
-
- function checkAndRollover(id, data) {
-        const ahora = Date.now();
-        let eventEnd = new Date(`${data.fecha || '1970-01-01'}T${data.horaFin || '23:59'}`).getTime();
-        if (data.horaFin && data.hora && data.horaFin < data.hora) { eventEnd += 86400000; }
-        
-        if (ahora > eventEnd && data.estado !== 'suspendida') {
-            const desc = `Cancha: ${data.organiza} (${formatFec(data.fecha)}) | ${data.hora} hs`;
-            const estadoMovimiento = cuentaInfo.enTrial ? 'bonificado' : 'pendiente';
-            
-            // 🔥 LA MAGIA: ID Determinista. Evita duplicados si hay múltiples sesiones abiertas.
-            const movId = `turno_${id}_${data.fecha}`;
-
-            if (data.tipo === 'recurrente') {
-                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
-                const nextDate = PadelUtils.calcularSiguienteFecha(data.fecha, data.diasRecurrencia);
-                // db.ref('eventos/' + id).update({ fecha: nextDate, inscriptos: [] });
-            } else if (data.tipo === 'unico' && !data.cobrado) {
-                db.ref(`facturacion/${orgId}/movimientos/${movId}`).update({ tipo: 'turno', descripcion: "Cancha Única: " + desc, monto: cuentaInfo.costoPorCancha || 0, estado: estadoMovimiento, fecha: ahora });
-                db.ref('eventos/' + id).update({ cobrado: true });
-            }
-        }
-    }
-
-    function renderizarCanchas() {
-        if(cuentaInfo.enTrial) calculateFinancials();
-        const listActivas = document.getElementById('canchas-list'), listPasadas = document.getElementById('canchas-pasadas-list'), btnPasadas = document.getElementById('btn-toggle-pasadas');
-        const prioridadEstado = { ok: 1, warning: 2, error: 3 };
-        const sorted = Object.values(courtData).map(c => ({ ...c, estadoVisual: calcularEstadoCancha(c.inscriptos) })).sort((a, b) => {
-            const pA = prioridadEstado[a.estadoVisual] || 3; const pB = prioridadEstado[b.estadoVisual] || 3;
-            if (pA !== pB) return pA - pB;
-            const dateA = new Date(`${a.fecha || '1970-01-01'}T${a.hora || '00:00'}`).getTime() || 0;
-            const dateB = new Date(`${b.fecha || '1970-01-01'}T${b.hora || '00:00'}`).getTime() || 0;
-            return dateA - dateB;
         });
-        
-        listActivas.innerHTML = ""; listPasadas.innerHTML = ""; let countActivas = 0, countPasadas = 0; const ahora = Date.now();
-
-        sorted.forEach((d) => {
-            const insArr = safeArray(d.inscriptos);
-            const listaConfirmados = insArr.filter(p => p.estado !== 'pendiente');
-            const conf = calcularOcupados(listaConfirmados);
-            const totalAnotados = calcularOcupados(insArr);
-            const pagados = calcularOcupados(insArr.filter(p => p.estado === 'pagado'));
-            const faltanPagar = totalAnotados - pagados;
-
-            let textoOcupacion = `👥 <b>${totalAnotados} / ${d.cupo || 0} Anotados</b>`;
-            if ((totalAnotados - conf) > 0) { textoOcupacion += ` <span style="color:var(--red); font-size:12px; font-weight:700;">(${totalAnotados - conf} pendientes)</span>`; }
-
-            let textoEstado = "";
-            if (totalAnotados === 0) { textoEstado = "⚪ Sin inscriptos"; } 
-            else if (pagados === totalAnotados) { textoEstado = "🟢 Todo pagado"; } 
-            else if (pagados === 0) { textoEstado = `🔴 Nadie pagó (${faltanPagar} a cobrar)`; } 
-            else { textoEstado = `🟡 ${pagados} pagaron • ${faltanPagar} a cobrar`; }
-
-            let horaFinReal = d.horaFin || '23:59'; 
-            let finEvento = new Date(`${d.fecha || '1970-01-01'}T${horaFinReal}`).getTime() || 0;
-            if (d.hora && horaFinReal < d.hora) finEvento += 86400000;
-            const esPasada = ahora > finEvento && d.tipo === 'unico'; 
-            
-            const htmlCard = `
-                <div class="item fade-in estado-${d.estadoVisual}" style="${esPasada ? 'opacity:0.6;filter:grayscale(50%);' : ''}">
-                    <div class="item-header"><div class="item-title">🎾 ${d.organiza || 'Cancha'}</div><span class="badge-cat">${d.categorias || ''}</span></div>
-                    <div class="item-meta" style="margin-bottom: 6px;">📅 ${formatFec(d.fecha)} | 🕒 ${d.hora || '--'}</div>
-                    <div class="item-meta" style="font-size: 14px;">${textoOcupacion}</div>
-                    <div class="item-meta" style="font-weight:800; font-size: 13px; margin-top:2px;">${textoEstado}</div>
-                    <div class="item-actions">
-                        <button class="btn btn-light" onclick="abrirConfig('${d.id}')">⚙️ CONFIG</button>
-                        <button class="btn btn-dark" onclick="window.abrirJugadores('${d.id}')">👥 JUGADORES</button>
-                    </div>
-                    <button class="btn mt-2" style="background: rgba(0,122,255,0.1); color: var(--blue);" onclick="window.open('v.html?id=${d.id}&org=${orgId}&admin=true', '_blank')">➕ ANOTAR JUGADOR</button>
-                </div>
-            `;
-            if (esPasada) { listPasadas.innerHTML += htmlCard; countPasadas++; } else { listActivas.innerHTML += htmlCard; countActivas++; }
-        });
-
-        if (countActivas === 0) listActivas.innerHTML = "<div class='label text-center mt-3'>No hay canchas activas.</div>";
-        if (countPasadas > 0) { btnPasadas.style.display = 'block'; btnPasadas.innerText = `📂 VER CANCHAS ANTERIORES (${countPasadas})`; } else { btnPasadas.style.display = 'none'; listPasadas.style.display = 'none'; }
+        document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`; document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
+        document.getElementById('lista-jugadores-container').innerHTML = (htmlPorEstado.pagado.length ? `<div class="grupo-titulo">Pagados</div>` + htmlPorEstado.pagado.join('') : '') + (htmlPorEstado.cancha.length ? `<div class="grupo-titulo">En club</div>` + htmlPorEstado.cancha.join('') : '') + (htmlPorEstado.pendiente.length ? `<div class="grupo-titulo">Pendientes</div>` + htmlPorEstado.pendiente.join('') : '') || '<div style="text-align:center; padding:20px;">Sin inscriptos.</div>';
     }
 
-    function togglePasadas() { const list = document.getElementById('canchas-pasadas-list'), btn = document.getElementById('btn-toggle-pasadas'); if (list.style.display === 'none') { list.style.display = 'block'; btn.innerText = `📂 OCULTAR CANCHAS ANTERIORES`; } else { list.style.display = 'none'; btn.innerText = `📂 VER CANCHAS ANTERIORES`; } }
-
-    function abrirNuevaCancha() {
-        if(isAccountBlocked) return alert("Cuenta bloqueada. Regularice su pago.");
-        isNew = true; document.getElementById('modal-title').innerText = "➕ Nueva Cancha"; document.getElementById('btn-suspender').style.display = 'none'; document.getElementById('btn-borrar-cancha').style.display = 'none'; 
-        document.getElementById('ed-id').value = ""; document.getElementById('ed-tipo').value = "unico"; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => document.getElementById('d-'+d).checked = false);
-        document.getElementById('ed-org').value = ""; document.getElementById('ed-owner').value = window.defaultData.owner; document.getElementById('ed-celu').value = window.defaultData.celu; document.getElementById('ed-ali').value = window.defaultData.alias; document.getElementById('ed-cat').value = "Todas las categorías"; document.getElementById('ed-fec').value = ""; document.getElementById('ed-h1').value = "15:00"; document.getElementById('ed-h2').value = "16:30"; document.getElementById('ed-cup').value = 12; document.getElementById('ed-val').value = 0; document.getElementById('modal-config').style.display = 'flex'; validarRecurrencia();
-    }
-
-    function abrirConfig(id) {
-        isNew = false; const d = courtData[id]; document.getElementById('modal-title').innerText = "⚙️ Configuración"; document.getElementById('ed-id').value = id; document.getElementById('ed-tipo').value = d.tipo || "unico";
-        ['MO','TU','WE','TH','FR','SA','SU'].forEach(day => { if(document.getElementById('d-'+day)) document.getElementById('d-'+day).checked = d.diasRecurrencia?.includes(day); });
-        document.getElementById('ed-org').value = d.organiza || ""; document.getElementById('ed-owner').value = d.nombreOrganizador || ""; document.getElementById('ed-celu').value = d.celuOrganizador || ""; document.getElementById('ed-lug').value = d.lugar || ""; document.getElementById('ed-cat').value = d.categorias || ""; document.getElementById('ed-fec').value = d.fecha || ""; document.getElementById('ed-h1').value = d.hora || ""; document.getElementById('ed-h2').value = d.horaFin || ""; document.getElementById('ed-cup').value = d.cupo || 0; document.getElementById('ed-val').value = d.valor || 0; document.getElementById('ed-ali').value = d.alias || ""; document.getElementById('btn-suspender').style.display = PadelUtils.puedeSuspender(d.fecha, d.hora) ? 'flex' : 'none'; document.getElementById('btn-borrar-cancha').style.display = 'block';
-        validarRecurrencia(); document.getElementById('modal-config').style.display = 'flex';
-    }
-
-    function abrirModalSuspension() { document.getElementById('modal-suspension').style.display = 'flex'; }
-    function confirmarSuspension(reprogramar) { const id = document.getElementById('ed-id').value, d = courtData[id]; if (reprogramar) { const nf = PadelUtils.calcularSiguienteFecha(d.fecha, d.diasRecurrencia); db.ref('eventos/' + id).update({ fecha: nf, inscriptos: [] }).then(() => { cerrarModals(); }); } else { db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { cerrarModals(); }); }); } }
-    function borrarCancha() { const id = document.getElementById('ed-id').value; if (!confirm("¿Eliminar cancha definitivamente?")) return; db.ref('hubs/' + orgId + '/canchas').once('value', s => { let c = s.val() || []; c = c.filter(cid => cid !== id); db.ref('hubs/' + orgId + '/canchas').set(c); db.ref('eventos/' + id).remove().then(() => { delete courtData[id]; renderizarCanchas(); cerrarModals(); }); }); }
+    function toggleGrupo(cel) { document.getElementById(`det-${cel}`).classList.toggle('open'); }
+    function marcarGrupoPagado(eId, cel) { db.ref(`eventos/${eId}/inscriptos`).once('value', s => { let l = s.val() || []; l.forEach((j, i) => { if((j.celular || `sin-celu-${i}`) === cel) j.estado = 'pagado'; }); db.ref(`eventos/${eId}/inscriptos`).set(l); }); }
     
-    function guardarConfig() {
-        let id = document.getElementById('ed-id').value; const dias = []; ['MO','TU','WE','TH','FR','SA','SU'].forEach(d => { if(document.getElementById('d-'+d).checked) dias.push(d); });
-        const upd = { tipo: document.getElementById('ed-tipo').value, diasRecurrencia: dias, organiza: document.getElementById('ed-org').value, nombreOrganizador: document.getElementById('ed-owner').value, celuOrganizador: document.getElementById('ed-celu').value, lugar: document.getElementById('ed-lug').value, categorias: document.getElementById('ed-cat').value, fecha: document.getElementById('ed-fec').value, hora: document.getElementById('ed-h1').value, horaFin: document.getElementById('ed-h2').value, cupo: parseInt(document.getElementById('ed-cup').value), valor: parseInt(document.getElementById('ed-val').value), alias: document.getElementById('ed-ali').value };
-        if(isNew) { const newRef = db.ref('eventos').push(); id = newRef.key; upd.inscriptos = []; db.ref('eventos/'+id).set(upd).then(() => { db.ref('hubs/'+orgId+'/canchas').once('value', s => { let c = s.val() || []; c.push(id); db.ref('hubs/'+orgId+'/canchas').set(c); }); }); } else { db.ref('eventos/'+id).update(upd); }
-        cerrarModals();
+    function abrirMenuOpciones(n, c) { 
+        actionData = { celular: c }; 
+        document.getElementById('bs-nombre-jugador').innerText = `Gestionar a ${n}`; 
+        
+        document.getElementById('btn-wa').onclick = () => { 
+            window.open(`https://wa.me/${c}`, '_blank'); 
+            cerrarMenuOpciones(); 
+        }; 
+
+        document.getElementById('btn-revertir').onclick = () => {
+            db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => {
+                let l = s.val() || [];
+                l.forEach((j, i) => {
+                    if((j.celular || `sin-celu-${i}`) === actionData.celular) {
+                        j.estado = 'paga-en-la-cancha'; 
+                    }
+                });
+                db.ref(`eventos/${panelCanchaId}/inscriptos`).set(l).then(() => {
+                    cerrarMenuOpciones();
+                });
+            });
+        };
+
+        document.getElementById('btn-eliminar').onclick = () => { 
+            if(!confirm(`¿Eliminar a ${n}?`)) return; 
+            db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { 
+                let l = s.val() || []; 
+                let nL = l.filter((j, i) => (j.celular || `sin-celu-${i}`) !== actionData.celular); 
+                db.ref(`eventos/${panelCanchaId}/inscriptos`).set(nL).then(cerrarMenuOpciones); 
+            }); 
+        }; 
+
+        document.getElementById('bs-menu').style.display = 'flex'; 
+        setTimeout(() => { 
+            document.getElementById('bs-menu').classList.add('active'); 
+            document.getElementById('bs-content').classList.add('open'); 
+        }, 10); 
     }
 
-    function validarRecurrencia() { const tipo = document.getElementById('ed-tipo').value, inputFecha = document.getElementById('ed-fec').value, errorMsj = document.getElementById('msg-error-rec'), btnSave = document.getElementById('btn-save-config'); document.getElementById('days-container').style.display = (tipo === 'recurrente') ? 'block' : 'none'; if (tipo === 'recurrente' && inputFecha) { const diaElegido = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][new Date(inputFecha + 'T00:00:00').getDay()]; const seleccionados = ['MO','TU','WE','TH','FR','SA','SU'].filter(d => document.getElementById('d-'+d).checked); if (seleccionados.length > 0 && !seleccionados.includes(diaElegido)) { errorMsj.style.display = 'block'; btnSave.style.opacity = '0.5'; btnSave.style.pointerEvents = 'none'; } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } } else { errorMsj.style.display = 'none'; btnSave.style.opacity = '1'; btnSave.style.pointerEvents = 'auto'; } }
-
-    // --- 🔥 RENDER JUGADORES AGRUPADOS COLAPSABLES ---
-    // --- 🔥 LÓGICA DE CLIC SEGURA ---
-    window.handleGroupClick = function(el) {
-        if(typeof hasSwiped !== 'undefined' && hasSwiped) { hasSwiped = false; return; }
-        const group = el.closest('.player-group');
-        // Chequeo directo: si tiene la clase, se abre.
-        if(group.classList.contains('has-children')) {
-            group.classList.toggle('open');
-        }
-    };
-
-    window.abrirJugadores = function(id) {
-        document.getElementById('pl-id').value = id;
-        if(playersListener) db.ref('eventos/'+id).off('value', playersListener);
-        
-        playersListener = db.ref('eventos/'+id).on('value', s => {
-            const d = s.val(); if(!d) return;
-            // Usamos safeArray por si Firebase corrompe la lista
-            const insArr = safeArray(d.inscriptos);
-            
-            document.getElementById('st-total').innerText = d.cupo || 0; 
-            document.getElementById('st-lib').innerText = Math.max(0, (d.cupo || 0) - calcularOcupados(insArr));
-            document.getElementById('st-pag').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pagado')); 
-            document.getElementById('st-enc').innerText = calcularOcupados(insArr.filter(p => p.estado === 'paga-en-la-cancha'));
-            document.getElementById('st-pen').innerText = calcularOcupados(insArr.filter(p => p.estado === 'pendiente')); 
-            
-            const list = document.getElementById('players-list'); list.innerHTML = "";
-            let grupos = agruparPorCelular(insArr);
-
-            grupos.sort((a, b) => obtenerEstadoGrupo(a) - obtenerEstadoGrupo(b));
-
-            grupos.forEach(grupo => {
-                grupo.sort((a,b) => { if (a.fechaSegura !== b.fechaSegura) return a.fechaSegura - b.fechaSegura; return a.originalIndex - b.originalIndex; });
-                
-                const t = grupo[0]; const invitados = grupo.slice(1);
-                
-                // 🔥 DETECTAMOS SI DEBE TENER FUELLE (Tiene invitados o es una reserva vieja de +X)
-                const hasChildren = invitados.length > 0 || t.cantidad > 1;
-                const labelExtra = hasChildren ? `<span class="extra-tag">+${invitados.length || (t.cantidad - 1)}</span> <span style="font-size:10px; margin-left:4px; color:#888;">▼</span>` : '';
-                
-                const estadoGrupo = obtenerEstadoGrupo(grupo);
-                let claseEstado = 'estado-mixto';
-                if (estadoGrupo === 0) claseEstado = 'estado-ok';
-                if (estadoGrupo === 2) claseEstado = 'estado-pendiente';
-
-                // Le inyectamos la clase 'has-children' al div principal para que el clic funcione
-                let htmlGrupo = `
-                    <div class="player-group ${claseEstado} ${hasChildren ? 'has-children' : ''}">
-                        <div class="swipe-container" data-idx="${t.originalIndex}">
-                            <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
-                            <div class="swipe-content player-main" onclick="handleGroupClick(this)">
-                                <div><div class="player-name-box">${t.nombre} ${labelExtra}</div><div class="player-phone-label">📱 ${t.celular || 'Sin celular'}</div></div>
-                                <div class="player-actions-box">
-                                    <button class="badge-status-btn st-${t.estado}" onclick="event.stopPropagation(); window.togglePago(${t.originalIndex})">${t.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                    <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${t.originalIndex})">✕</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="player-children-box">
-                `;
-                
-                // Llenamos la caja del fuelle
-                if (invitados.length > 0) {
-                    invitados.forEach(inv => {
-                        htmlGrupo += `
-                            <div class="swipe-container" data-idx="${inv.originalIndex}">
-                                <div class="swipe-bg left-action">💸 CAMBIAR ESTADO</div>
-                                <div class="swipe-content player-child-row">
-                                    <div class="child-name-text">↳ ${inv.nombre}</div>
-                                    <div class="player-actions-box">
-                                        <button class="badge-status-btn small st-${inv.estado}" onclick="event.stopPropagation(); window.togglePago(${inv.originalIndex})">${inv.estado.replace(/-/g,' ').toUpperCase()}</button>
-                                        <span class="delete-btn-icon" onclick="event.stopPropagation(); window.borrarP(${inv.originalIndex})">✕</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else if (t.cantidad > 1) {
-                    // 🔥 Si es una reserva vieja, ponemos este cartel. Así la caja NO queda vacía y se abre perfecto.
-                    htmlGrupo += `
-                        <div class="player-child-row" style="justify-content: center; color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 12px;">
-                            Reserva agrupada (formato anterior)
-                        </div>
-                    `;
-                }
-
-                htmlGrupo += `</div></div>`; list.innerHTML += htmlGrupo;
-            });
-            
-            if (insArr.length === 0) list.innerHTML = "<p class='text-center label' style='padding:20px;'>No hay inscriptos.</p>";
-            document.getElementById('modal-players').style.display = 'flex';
-        });
-    };
-
-    window.togglePago = function(idx) { const id = document.getElementById('pl-id').value; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).once('value', s => { const ests = ["pendiente", "paga-en-la-cancha", "pagado"]; db.ref(`eventos/${id}/inscriptos/${idx}/estado`).set(ests[(ests.indexOf(s.val()) + 1) % 3]); }); };
+    function cerrarMenuOpciones() { document.getElementById('bs-content').classList.remove('open'); document.getElementById('bs-menu').classList.remove('active'); setTimeout(() => document.getElementById('bs-menu').style.display = 'none', 300); }
+    function abrirModalAnotar() { document.getElementById('man-nombre').value=''; document.getElementById('man-apellido').value=''; document.getElementById('man-celu').value=''; document.getElementById('bs-anotar').style.display='flex'; setTimeout(() => { document.getElementById('bs-anotar').classList.add('active'); document.getElementById('bs-content-anotar').classList.add('open'); }, 10); }
+    function cerrarModalAnotar() { document.getElementById('bs-content-anotar').classList.remove('open'); document.getElementById('bs-anotar').classList.remove('active'); setTimeout(() => document.getElementById('bs-anotar').style.display='none', 300); }
     
-    window.borrarP = function(idx) { 
-        if(!confirm("⚠️ ATENCIÓN\n\n¿Estás seguro que querés eliminar a este jugador?\nEsta acción liberará su cupo y no se puede deshacer.")) return; 
-        const id = document.getElementById('pl-id').value; 
-        db.ref(`eventos/${id}/inscriptos`).once('value', s => { 
-            let ins = safeArray(s.val()); 
-            ins.splice(idx, 1); 
-            db.ref(`eventos/${id}/inscriptos`).set(ins); 
-        }); 
-    };
+    function guardarAnotacionManual() { const nom=document.getElementById('man-nombre').value.trim(), ape=document.getElementById('man-apellido').value.trim(), celu=document.getElementById('man-celu').value.trim(), lugares=parseInt(document.getElementById('man-lugares').value)||1, estado=document.getElementById('man-estado').value; if(!nom || !ape) return alert('Nombre y apellido requeridos'); db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => { let list = s.val() || []; const fCelu = celu || ('manual-' + Date.now()); for(let i=0; i<lugares; i++) list.push({ nombre: i===0 ? `${nom} ${ape}` : `Amigo de ${nom} ${ape}`, celular: fCelu, cantidad: 1, estado: estado, fecha: Date.now() }); db.ref(`eventos/${panelCanchaId}/inscriptos`).set(list).then(cerrarModalAnotar); }); }
 
-    window.cerrarModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); if(playersListener) { db.ref('eventos/'+document.getElementById('pl-id').value).off('value', playersListener); playersListener = null; } };
+    function abrirFormularioCancha(idEdit = null) { editandoCanchaId = idEdit; const bG = document.getElementById('btn-save-cancha'), contBtn = document.getElementById('cont-edit-buttons'), bS = document.getElementById('btn-suspend-cancha'), tit = document.getElementById('fc-head-title'); if(idEdit) { tit.innerText = "Editar Cancha"; contBtn.style.display = "flex"; bG.innerText = "Guardar Cambios"; const c = eventosCache.find(e => e.id === idEdit); if(c) { document.getElementById('fc-fecha').value = c.fecha || ''; document.getElementById('fc-hora').value = c.hora || ''; document.getElementById('fc-horafin').value = c.horaFin || ''; document.getElementById('fc-titulo').value = c.organiza || ''; document.getElementById('fc-tipo').value = c.tipo || 'unico'; document.getElementById('fc-precio').value = c.valor || ''; document.getElementById('fc-cupo').value = c.cupo || ''; document.getElementById('fc-cat').value = c.categorias || ''; document.getElementById('fc-lugar').value = c.lugar || ''; document.getElementById('fc-alias').value = c.alias || ''; document.getElementById('fc-celu').value = c.celuOrganizador || ''; bS.innerText = c.estado === 'suspendido' ? "Reactivar" : "Suspender"; bS.onclick = c.estado === 'suspendido' ? reactivarCancha : suspenderCancha; } } else { tit.innerText = "Nueva Cancha"; contBtn.style.display = "none"; bG.innerText = "Publicar Cancha"; const h = new Date(); document.getElementById('fc-fecha').value = h.toLocaleDateString('sv-SE'); document.getElementById('fc-hora').value = '18:00'; document.getElementById('fc-horafin').value = '19:30'; document.getElementById('fc-tipo').value = 'unico'; document.getElementById('fc-titulo').value = ''; document.getElementById('fc-precio').value = ''; document.getElementById('fc-cupo').value = '8'; document.getElementById('fc-cat').value = ''; document.getElementById('fc-lugar').value = ''; if(eventosCache.length > 0) { document.getElementById('fc-alias').value = eventosCache[0].alias || ''; document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || ''; } } document.getElementById('view-form-cancha').classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); if(!panelCanchaId) document.body.style.overflow = ''; }
+    
+    function guardarCancha() { const f = document.getElementById('fc-fecha').value, h = document.getElementById('fc-hora').value, hF = document.getElementById('fc-horafin').value, t = document.getElementById('fc-tipo').value, o = document.getElementById('fc-titulo').value.trim(), v = parseInt(document.getElementById('fc-precio').value) || 0, c = parseInt(document.getElementById('fc-cupo').value) || 8, cat = document.getElementById('fc-cat').value.trim(), l = document.getElementById('fc-lugar').value.trim(), a = document.getElementById('fc-alias').value.trim(), cel = document.getElementById('fc-celu').value.trim(); if(!f || !h || !hF || !o || !v || !cel || !a) return alert("Faltan campos obligatorios."); const eD = { fecha:f, hora:h, horaFin:hF, tipo:t, organiza:o, lugar:l, categorias:cat, valor:v, cupo:c, alias:a, celuOrganizador:cel }; if(!editandoCanchaId) eD.estado = 'activo'; const bS = document.getElementById('btn-save-cancha'); bS.innerText = "Guardando..."; bS.disabled = true; if (editandoCanchaId) { db.ref(`eventos/${editandoCanchaId}`).update(eD).then(() => { bS.innerText = "Guardar Cambios"; bS.disabled = false; cerrarFormularioCancha(); }); } else { eD.inscriptos = []; const nR = db.ref('eventos').push(); nR.set(eD).then(() => { db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; li.push(nR.key); db.ref(`hubs/${globalOrgId}/canchas`).set(li).then(() => { bS.innerText = "Publicar Cancha"; bS.disabled = false; cerrarFormularioCancha(); }); }); }); } }
+    
+    function eliminarCancha() { if(!editandoCanchaId || !confirm("¿Eliminar cancha permanentemente?")) return; db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => { let li = sn.val() || []; db.ref(`hubs/${globalOrgId}/canchas`).set(li.filter(cid => cid !== editandoCanchaId)).then(() => db.ref(`eventos/${editandoCanchaId}`).remove().then(() => { cerrarFormularioCancha(); cerrarPanelCancha(); })); }); }
+    function suspenderCancha() { if(confirm("¿Suspender cancha?")) db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'suspendido' }).then(cerrarFormularioCancha); }
+    function reactivarCancha() { db.ref(`eventos/${editandoCanchaId}`).update({ estado: 'activo' }).then(cerrarFormularioCancha); }
 
-    // --- 🔥 MOTOR GESTOS SWIPE (Solo Derecha) ---
-    let startX = 0, startY = 0, currentX = 0, isDragging = false, swipeEl = null;
-
-    document.addEventListener('touchstart', e => {
-        const el = e.target.closest('.swipe-content'); if(!el) return;
-        swipeEl = el; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-        isDragging = true; hasSwiped = false; swipeEl.classList.add('no-transition');
-    }, {passive: true});
-
-    document.addEventListener('touchmove', e => {
-        if(!isDragging || !swipeEl) return;
-        const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY;
-        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(currentX) < 10) { isDragging = false; swipeEl.style.transform = `translateX(0)`; swipeEl = null; return; }
-        if (diffX < 0) { currentX = 0; } else { currentX = diffX; }
-        if(Math.abs(currentX) > 10) hasSwiped = true;
-        const moveX = currentX > 100 ? 100 + (currentX - 100) * 0.2 : currentX;
-        swipeEl.style.transform = `translateX(${moveX}px)`;
-        if(e.cancelable && currentX > 0) e.preventDefault();
-    }, {passive: false});
-
-    document.addEventListener('touchend', e => {
-        if(!isDragging || !swipeEl) return;
-        isDragging = false; swipeEl.classList.remove('no-transition');
-        const idx = swipeEl.parentElement.dataset.idx; const thresh = 80;
-        if (currentX > thresh) {
-            swipeEl.style.transform = `translateX(100%)`;
-            setTimeout(() => { window.togglePago(idx); if(swipeEl) swipeEl.style.transform = 'translateX(0)'; }, 200);
-            if(navigator.vibrate) navigator.vibrate(50);
-        } else { swipeEl.style.transform = `translateX(0)`; }
-        currentX = 0; setTimeout(() => { swipeEl = null; }, 250);
-    });
+    function formatearDiaCorto(fechaStr) { const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; const f = new Date(fechaStr + 'T12:00:00'); return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`; }
+    function jugadorAbreviado(n) { if(!n) return 'Jugador'; let p = n.split(' '); return p.length === 1 ? p[0] : `${p[0]} ${p[1].charAt(0)}.`; }
 </script>
 </body>
 </html>

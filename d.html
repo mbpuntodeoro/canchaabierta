@@ -48,7 +48,7 @@
         .cards-wrapper { padding: 0 16px; }
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
-        .card-suspendida { opacity: 0.6; }
+        .card-suspendida { opacity: 0.6; border: 1px solid var(--border); }
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
         .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
@@ -84,9 +84,11 @@
         .dot.cancha { background: var(--brand-orange); }
         .dot.pagado { background: var(--brand-green); }
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .btn-menu { background: none; border: none; font-size: 22px; color: var(--text-sub); cursor: pointer; }
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border); }
         .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; }
+        .icon-chevron { transition: transform 0.2s; }
+        .icon-chevron.open { transform: rotate(180deg); }
 
         /* BOTTOM SHEETS */
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; opacity: 0; transition: opacity 0.2s ease; }
@@ -96,7 +98,9 @@
         .bs-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
         .bs-btn { width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
         .bs-btn-danger { color: var(--brand-red); background: #FEE2E2; }
-        .btn-black-modal { width: 100%; height: 48px; background: #111; color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .bs-btn-clean { background: transparent; color: var(--text-sub); margin-top: 8px; border: none; font-weight: 600; width: 100%; }
+
+        .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 16px; margin-top: 20px;}
 
         .dashboard-actions { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .btn-action-dash { width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
@@ -177,24 +181,26 @@
     <div id="view-form-cancha" class="view-modal" style="z-index: 150;">
         <div class="nav-modal">
             <div class="nav-back-btn" onclick="cerrarFormularioCancha()">✕ Cancelar</div>
-            <div id="fc-head-title" style="font-weight: 700;">Nueva Cancha</div>
+            <div id="fc-head-title" style="font-weight: 700;">Configurar Cancha</div>
         </div>
         <div class="modal-content">
-            <div class="input-group"><label class="input-label">Fecha</label><input type="date" id="fc-fecha" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Fecha del partido</label><input type="date" id="fc-fecha" class="input-clean"></div>
             <div style="display:flex; gap:8px;">
-                <div class="input-group" style="flex:1;"><label class="input-label">Inicio</label><input type="time" id="fc-hora" class="input-clean"></div>
-                <div class="input-group" style="flex:1;"><label class="input-label">Fin</label><input type="time" id="fc-horafin" class="input-clean"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Hora Inicio</label><input type="time" id="fc-hora" class="input-clean"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Hora Fin</label><input type="time" id="fc-horafin" class="input-clean"></div>
             </div>
-            <div class="input-group"><label class="input-label">Título del evento</label><input type="text" id="fc-titulo" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Título (Ej: Mixta 5ta)</label><input type="text" id="fc-titulo" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Sede / Ubicación</label><input type="text" id="fc-lugar" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Categorías (Opcional)</label><input type="text" id="fc-cat" class="input-clean"></div>
             <div style="display:flex; gap:8px;">
-                <div class="input-group" style="flex:1;"><label class="input-label">Precio ($)</label><input type="number" id="fc-precio" class="input-clean"></div>
-                <div class="input-group" style="flex:1;"><label class="input-label">Cupos</label><input type="number" id="fc-cupo" class="input-clean"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Precio por persona ($)</label><input type="number" id="fc-precio" class="input-clean"></div>
+                <div class="input-group" style="flex:1;"><label class="input-label">Cupos totales</label><input type="number" id="fc-cupo" class="input-clean"></div>
             </div>
-            <div class="input-group"><label class="input-label">Alias / CBU</label><input type="text" id="fc-alias" class="input-clean"></div>
-            <div class="input-group"><label class="input-label">WhatsApp Organizador</label><input type="tel" id="fc-celu" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Tu Alias / CBU para cobros</label><input type="text" id="fc-alias" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Tu WhatsApp de contacto</label><input type="tel" id="fc-celu" class="input-clean"></div>
             
             <button class="btn-black-modal" onclick="guardarCancha()" id="btn-save-cancha">Guardar Cambios</button>
-            <button class="bs-btn bs-btn-danger" style="margin-top:12px; width:100%; border-radius:10px;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
+            <button class="bs-btn bs-btn-danger" style="margin-top:16px; width:100%; border-radius:12px;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar cancha permanentemente</button>
         </div>
     </div>
 
@@ -233,8 +239,9 @@
         db.ref('hubs/' + orgId).on('value', async (snap) => {
             document.getElementById('loading-init').style.display = 'none';
             document.getElementById('dash-actions').style.display = 'flex';
+            document.getElementById('dash-footer').style.display = 'block';
             const hubData = snap.val();
-            if (!hubData || !hubData.canchas) { document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px;'>No tenés canchas.</div>"; return; }
+            if (!hubData || !hubData.canchas) { document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px;'>No tenés canchas creadas aún.</div>"; return; }
             const snapshots = await Promise.all(hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value')));
             eventosCache = snapshots.filter(s => s.exists()).map(s => ({ id: s.key, ...s.val() }));
             eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
@@ -251,16 +258,16 @@
             let ocupados = (d.inscriptos || []).reduce((acc, j) => acc + (j.cantidad || 1), 0);
             let recaudado = (d.inscriptos || []).filter(j => j.estado === 'pagado').reduce((acc, j) => acc + (d.valor * (j.cantidad || 1)), 0);
             totalRec += recaudado; totalJug += ocupados;
-            htmlCards += `<div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${d.estado==='suspendido'?'card-suspendida':''}" onclick="abrirPanelCancha('${d.id}')"><div class="cc-header"><div>${formatearDiaCorto(d.fecha)} · ${d.hora}</div></div><div class="cc-categoria">${d.organiza || 'Cancha'}</div><div class="cc-footer"><span>👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">$${recaudado}</span></div></div>`;
+            const isSusp = d.estado === 'suspendido';
+            htmlCards += `<div class="card-cancha ${ocupados >= (d.cupo||0) && !isSusp ? 'card-completa' : ''} ${isSusp ? 'card-suspendida' : ''}" onclick="abrirPanelCancha('${d.id}')">${isSusp ? '<div class="badge-susp">SUSPENDIDA</div>' : ''}<div class="cc-header"><div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs</div></div><div class="cc-categoria">${d.organiza || 'Cancha'}</div><div class="cc-footer"><span>👥 ${ocupados} / ${d.cupo || '--'}</span><span class="cc-dinero">${PadelUtils.fmtDinero(recaudado)}</span></div></div>`;
         });
-        container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px;'>Sin canchas hoy.</div>";
+        container.innerHTML = htmlCards || "<div style='text-align:center; padding:40px;'>No hay canchas vigentes.</div>";
         document.getElementById('sc-jugadores').innerText = totalJug;
-        document.getElementById('sc-gestionado').innerText = `$${totalRec}`;
+        document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(totalRec);
     }
 
     function abrirPanelCancha(id) { 
-        panelCanchaId = id; if(activeEventRef) activeEventRef.off(); 
-        activeEventRef = db.ref('eventos/' + id);
+        panelCanchaId = id; if(activeEventRef) activeEventRef.off(); activeEventRef = db.ref('eventos/' + id);
         activeEventRef.on('value', snap => { if(snap.val()) renderizarModalCancha(id, snap.val()); });
         document.getElementById('btn-edit-gear').onclick = () => abrirFormularioCancha(id);
         document.getElementById('view-panel-cancha').classList.add('active'); 
@@ -273,27 +280,30 @@
         document.getElementById('pc-fecha').innerText = `${formatearDiaCorto(cancha.fecha)} · ${cancha.hora} hs`;
         const inscriptos = cancha.inscriptos || [];
         let ocupados = 0; let recaudado = 0; const grupos = {};
+
         inscriptos.forEach((jug, idx) => {
             jug.originalIndex = idx; ocupados += (jug.cantidad || 1);
             if(jug.estado === 'pagado') recaudado += (cancha.valor * (jug.cantidad || 1));
             const cel = jug.celular || `sin-celu-${idx}`;
             if(!grupos[cel]) grupos[cel] = []; grupos[cel].push(jug);
         });
+
         const htmlEs = { pagado: [], cancha: [], pendiente: [] };
         Object.keys(grupos).forEach(cel => {
             const jgs = grupos[cel]; const tit = jgs[0]; let totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
             let estG = jgs.some(j => j.estado === 'pendiente') ? 'pendiente' : (jgs.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
+
             if(jgs.length === 1 && totG === 1) {
                 const btn = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); marcarPagado(${tit.originalIndex})">✔</button>` : '';
                 htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)}</span><span class="dot ${tit.estado}"></span></div><div class="acciones">${btn}<button class="btn-menu" onclick="event.stopPropagation(); abrirMenuOpciones('${tit.nombre}', ${tit.originalIndex}, '${tit.celular}')">⋯</button></div></div>`);
             } else {
                 let sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${jugadorAbreviado(j.nombre)} <span class="dot ${j.estado}" style="width:8px; height:8px;"></span></div><div class="acciones">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); marcarPagado(${j.originalIndex})">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); abrirMenuOpciones('${j.nombre}', ${j.originalIndex}, '${j.celular}')">⋯</button></div></div>`).join('');
-                htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><span class="dot ${estG}"></span></div><div class="acciones">⋯</div></div><div class="grupo-detalle">${sub}</div></div>`);
+                htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><span class="dot ${estG}"></span></div><div class="acciones"><svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="grupo-detalle">${sub}</div></div>`);
             }
         });
         document.getElementById('pc-cupos').innerText = `${ocupados} / ${cancha.cupo || '--'} lugares`;
-        document.getElementById('pc-recaudado').innerText = `$${recaudado}`;
-        document.getElementById('lista-jugadores-container').innerHTML = (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>'+htmlEs.pagado.join('') : '') + (htmlEs.cancha.length ? '<div class="grupo-titulo">En club</div>'+htmlEs.cancha.join('') : '') + (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>'+htmlEs.pendiente.join('') : '');
+        document.getElementById('pc-recaudado').innerText = PadelUtils.fmtDinero(recaudado);
+        document.getElementById('lista-jugadores-container').innerHTML = (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>'+htmlEs.pagado.join('') : '') + (htmlEs.cancha.length ? '<div class="grupo-titulo">En club</div>'+htmlEs.cancha.join('') : '') + (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>'+htmlEs.pendiente.join('') : '') || '<div style="text-align:center; padding:20px; color:var(--text-sub);">Sin inscriptos aún.</div>';
     }
 
     function marcarPagado(idx) { db.ref(`eventos/${panelCanchaId}/inscriptos/${idx}`).update({ estado: 'pagado' }); }
@@ -322,6 +332,8 @@
             document.getElementById('fc-hora').value = c.hora;
             document.getElementById('fc-horafin').value = c.horaFin || "";
             document.getElementById('fc-titulo').value = c.organiza;
+            document.getElementById('fc-lugar').value = c.lugar || "";
+            document.getElementById('fc-cat').value = c.categorias || "";
             document.getElementById('fc-precio').value = c.valor;
             document.getElementById('fc-cupo').value = c.cupo;
             document.getElementById('fc-alias').value = c.alias || "";
@@ -330,6 +342,10 @@
             tit.innerText = "Nueva Cancha";
             btnEliminar.style.display = "none";
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
+            if(eventosCache.length > 0) {
+                document.getElementById('fc-alias').value = eventosCache[0].alias || "";
+                document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || "";
+            }
         }
         document.getElementById('view-form-cancha').classList.add('active');
     }
@@ -342,6 +358,8 @@
             hora: document.getElementById('fc-hora').value,
             horaFin: document.getElementById('fc-horafin').value,
             organiza: document.getElementById('fc-titulo').value,
+            lugar: document.getElementById('fc-lugar').value,
+            categorias: document.getElementById('fc-cat').value,
             valor: parseInt(document.getElementById('fc-precio').value),
             cupo: parseInt(document.getElementById('fc-cupo').value),
             alias: document.getElementById('fc-alias').value,
@@ -361,7 +379,7 @@
     }
 
     function eliminarCancha() {
-        if(!confirm("¿Eliminar esta cancha y a todos sus inscriptos?")) return;
+        if(!confirm("¿Eliminar cancha permanentemente?")) return;
         db.ref(`hubs/${globalOrgId}/canchas`).once('value', sn => {
             let c = sn.val() || [];
             db.ref(`hubs/${globalOrgId}/canchas`).set(c.filter(id => id !== editandoCanchaId)).then(() => {
@@ -374,7 +392,7 @@
 
     function copiarLinkCartelera() {
         const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-        navigator.clipboard.writeText(`${window.location.origin}${path}/index.html?org=${globalOrgId}`).then(() => alert("¡Link copiado!"));
+        navigator.clipboard.writeText(`${window.location.origin}${path}/index.html?org=${globalOrgId}`).then(() => alert("¡Link de cartelera copiado!"));
     }
 
     function abrirViewMovimientos() { document.getElementById('view-movimientos').classList.add('active'); cargarMovimientosB2B(); }
@@ -395,12 +413,12 @@
                 const card = `<div class="mov-card"><div class="mov-info"><div class="mov-concepto">${m.concepto || 'Cargo por uso'}</div><div class="mov-fecha">${m.fechaStr || '--'}</div><div class="mov-badge ${m.estado === 'bonificado' ? 'mb-bonif' : (m.estado === 'pagado' ? 'mb-pagado' : 'mb-deuda')}">${m.estado.toUpperCase()}</div></div><div style="font-weight:800; font-size:16px;">$${m.monto || 0}</div></div>`;
                 if(m.estado === 'pendiente') htmlP += card; else htmlH += card;
             });
-            document.getElementById('mov-pendientes-container').innerHTML = htmlP || "<div style='text-align:center; padding:40px;'>✅ Al día.</div>";
-            document.getElementById('mov-historial-container').innerHTML = htmlH || "<div style='text-align:center; padding:40px;'>Sin historial.</div>";
+            document.getElementById('mov-pendientes-container').innerHTML = htmlP || "<div style='text-align:center; padding:40px; color:var(--brand-green);'>✅ Sin deudas pendientes.</div>";
+            document.getElementById('mov-historial-container').innerHTML = htmlH || "<div style='text-align:center; padding:40px;'>Sin historial registrado.</div>";
         });
     }
 
-    function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
+    function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Hola%20ayuda%20con%20mi%20panel', '_blank'); }
     function formatearDiaCorto(f) { const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; const date = new Date(f + 'T12:00:00'); return `${dias[date.getDay()]} ${date.getDate()}/${date.getMonth()+1}`; }
     function jugadorAbreviado(n) { if(!n) return 'Jugador'; let p = n.split(' '); return p.length === 1 ? p[0] : `${p[0]} ${p[1].charAt(0)}.`; }
 </script>

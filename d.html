@@ -27,20 +27,20 @@
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
-        .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; }
         .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
-        .dsc-title { font-size: 16px; font-weight: 700; }
+        .dsc-title { font-size: 15px; font-weight: 700; }
         .dsc-badge { background: rgba(255,255,255,0.15); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;}
-        .dsc-subtitle { font-size: 13px; color: #A1A1AA; margin-bottom: 20px; font-weight: 500;}
+        .dsc-subtitle { font-size: 13px; color: #A1A1AA; margin-bottom: 16px; font-weight: 500;}
         .dsc-impact-box { border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); border-radius: 12px; padding: 16px; }
-        .dsc-metrics { display: flex; justify-content: space-between; }
-        .dsc-metric-label { font-size: 11px; color: #A1A1AA; font-weight: 600; margin-bottom: 4px; text-transform: uppercase;}
-        .dsc-metric-val { font-size: 22px; font-weight: 800; color: #FFFFFF;}
+        .dsc-metrics { display: flex; justify-content: space-between; gap: 10px; }
+        .dsc-metric-label { font-size: 10px; color: #A1A1AA; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;}
+        .dsc-metric-val { font-size: 20px; font-weight: 800; color: #FFFFFF;}
 
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
-        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; }
+        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
         .cc-dinero { color: var(--brand-green); }
 
@@ -49,8 +49,14 @@
         .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; padding-bottom: 40px; }
         .view-modal.active { transform: translateX(0); }
         .nav-modal { padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110; }
+        .nav-back-btn { font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         
         .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
+        .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
+        .grupo-detalle.open { max-height: 1000px; }
+        .sub-fila { padding: 12px 16px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; }
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
         .dot.pendiente { background: var(--brand-red); }
         .dot.pagado { background: var(--brand-green); }
@@ -60,7 +66,7 @@
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
         
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .grupo-titulo { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin: 20px 0 8px 0; }
+        .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 0.5px; }
 
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px;}
@@ -69,11 +75,14 @@
         .bs-overlay.active { display: flex; }
         .bs-content { width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0; padding: 24px; max-width: 600px; margin: 0 auto; }
         .bs-btn { width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
+        
+        .mov-card { background: var(--bg-white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+        .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block; text-transform: uppercase;}
+        .mb-pagado { background: #E0E7FF; color: #3730A3; }
+        .mb-deuda { background: #FEE2E2; color: #991B1B; }
 
-        #loading-init { text-align: center; padding: 40px; font-weight: 600; color: var(--text-sub); }
-        .dashboard-actions { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .btn-action-dash { width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; text-decoration: none; text-align: center; color: #111; background: #fff; border: 1px solid var(--border); font-size: 14px;}
-        .btn-wsp { background: #25D366; color: #FFF; border: none;}
+        .icon-chevron { transition: transform 0.2s; }
+        .icon-chevron.open { transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -87,7 +96,7 @@
     </header>
 
     <main class="app-container">
-        <div class="status-card" id="main-status-card" style="display:none;">
+        <div class="status-card" id="main-status-card">
             <div class="dsc-header">
                 <div class="dsc-title" id="sc-title">Suscripción</div>
                 <div class="dsc-badge" id="sc-badge">TRIAL</div>
@@ -112,8 +121,8 @@
         <div id="cards-container"></div>
 
         <div class="dashboard-actions" id="dash-actions" style="display:none;">
-            <button class="btn-action-dash" onclick="copiarLinkCartelera()">🔗 Copiar Link de mi Cartelera</button>
-            <button class="btn-action-dash btn-wsp" onclick="soporteWhatsapp()">💬 Soporte WhatsApp</button>
+            <button class="btn-action-dash" onclick="copiarLinkCartelera()" style="width:100%; padding:14px; border-radius:10px; font-weight:600; background:#fff; border:1px solid var(--border); cursor:pointer;">🔗 Copiar Link de mi Cartelera</button>
+            <button class="btn-action-dash" onclick="soporteWhatsapp()" style="width:100%; padding:14px; border-radius:10px; font-weight:600; background:#25D366; color:#fff; border:none; cursor:pointer;">💬 Soporte WhatsApp</button>
         </div>
     </main>
 
@@ -146,7 +155,7 @@
             <input type="text" id="fc-alias" class="input-clean" placeholder="Alias">
             <input type="tel" id="fc-celu" class="input-clean" placeholder="WhatsApp">
             <button class="btn-black-modal" onclick="guardarCancha()">Guardar Cancha</button>
-            <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none;" onclick="eliminarCancha()">Eliminar Cancha</button>
+            <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
         </div>
     </div>
 
@@ -158,15 +167,14 @@
     <div id="bs-menu" class="bs-overlay" onclick="if(event.target===this) cerrarMenuOpciones()">
         <div class="bs-content">
             <div id="bs-nombre-jugador" style="text-align:center; font-weight:700; margin-bottom:20px;">Opciones</div>
-            <button class="bs-btn" id="btn-wa">💬 WhatsApp</button>
-            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange)">🏟️ Cambiar a Paga en Club</button>
-            <button class="bs-btn" style="color:var(--brand-red)" id="btn-eliminar">🗑️ Eliminar Jugador</button>
-            <button class="bs-btn" style="background:none;" onclick="cerrarMenuOpciones()">Cancelar</button>
+            <button class="bs-btn" id="btn-wa" style="width:100%;">💬 WhatsApp</button>
+            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🏟️ Cambiar a Paga en Club</button>
+            <button class="bs-btn" style="color:var(--brand-red); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
+            <button class="bs-btn" style="background:none; width:100%;" onclick="cerrarMenuOpciones()">Cancelar</button>
         </div>
     </div>
 
 <script>
-    // USAMOS EL DB GLOBAL (YA DECLARADO EN app-config.js)
     var globalOrgId = null; 
     var eventosCache = []; 
     var activeEventRef = null;
@@ -194,7 +202,6 @@
     });
 
     function iniciarProceso(orgId) {
-        // Carga Facturación y Status
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
             var cuenta = data.cuenta || {};
@@ -205,11 +212,10 @@
                 var info = PadelSaaS.analizarCuenta(cuenta, data.movimientos || {});
                 document.getElementById('sc-title').innerText = info.enTrial ? "Prueba vence: " + PadelSaaS.fmtFecha(info.vencimientoAbono) : 'Suscripción Activa';
                 document.getElementById('sc-badge').innerText = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL';
-                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Al día";
+                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         });
 
-        // Carga Canchas del Hub
         db.ref('hubs/' + orgId).on('value', function(snap) {
             var hubData = snap.val();
             if (!hubData || !hubData.canchas) {
@@ -218,19 +224,14 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-
             var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {
                 eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
-                    var val = s.val();
-                    val.id = s.key;
-                    return val;
+                    var val = s.val(); val.id = s.key; return val;
                 });
-                
                 eventosCache.sort(function(a,b) { return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora); });
-                
                 document.getElementById('loading-init').style.display = 'none';
                 document.getElementById('dash-actions').style.display = 'flex';
                 renderDashboard();
@@ -268,23 +269,43 @@
         if(activeEventRef) activeEventRef.off();
         activeEventRef = db.ref('eventos/' + id);
         activeEventRef.on('value', function(snap) {
-            var c = snap.val();
-            if(!c) return;
+            var c = snap.val(); if(!c) return;
             document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
             document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
             
             var inscriptos = c.inscriptos || [];
-            var htmlList = '';
-            inscriptos.forEach(function(j, idx) {
-                var btnOk = j.estado !== 'pagado' ? '<button class="btn-check" onclick="event.stopPropagation(); setPago('+idx+', \'pagado\')">✔</button>' : '';
-                htmlList += '<div class="jugador-fila">' +
-                    '<div class="jugador-main"><span>' + jugadorAbreviado(j.nombre) + '</span><div class="dot ' + j.estado + '"></div></div>' +
-                    '<div style="display:flex; gap:10px; align-items:center;">' + btnOk + '<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador(\''+j.nombre+'\', '+idx+', \''+j.celular+'\')">⋯</button></div>' +
-                '</div>';
+            var ocupados = 0; var recaudado = 0; var grupos = {};
+
+            inscriptos.forEach(function(jug, idx) {
+                jug.originalIndex = idx;
+                ocupados += (jug.cantidad || 1);
+                if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
+                var cel = jug.celular || `sin-celu-${idx}`;
+                if(!grupos[cel]) grupos[cel] = [];
+                grupos[cel].push(jug);
             });
-            document.getElementById('lista-jugadores-container').innerHTML = htmlList || "<div style='text-align:center; padding:20px;'>Sin inscriptos.</div>";
-            document.getElementById('pc-cupos').innerText = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0) + ' / ' + (c.cupo || '--');
-            document.getElementById('pc-recaudado').innerText = '$' + inscriptos.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { return acc + (c.valor * (j.cantidad || 1)); }, 0);
+
+            var htmlEs = { pendiente: [], cancha: [], pagado: [] };
+            Object.keys(grupos).forEach(function(cel) {
+                var jgs = grupos[cel]; var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
+                var estG = jgs.some(j => j.estado === 'pendiente' || !j.estado) ? 'pendiente' : (jgs.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
+
+                if(jgs.length === 1 && totG === 1) {
+                    var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago(${tit.originalIndex}, 'pagado')">✔</button>` : '';
+                    htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)}</span><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', ${tit.originalIndex}, '${tit.celular}')">⋯</button></div></div>`);
+                } else {
+                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${jugadorAbreviado(j.nombre)} <div class="dot ${j.estado || 'pendiente'}" style="width:8px; height:8px;"></div></div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago(${j.originalIndex}, 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', ${j.originalIndex}, '${j.celular}')">⋯</button></div></div>`).join('');
+                    htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><div class="dot ${estG}"></div></div><div class="acciones"><svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="grupo-detalle">${sub}</div></div>`);
+                }
+            });
+
+            document.getElementById('lista-jugadores-container').innerHTML = 
+                (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') +
+                (htmlEs.cancha.length ? '<div class="grupo-titulo">En Club</div>' + htmlEs.cancha.join('') : '') +
+                (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado.</div>';
+            
+            document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
+            document.getElementById('pc-recaudado').innerText = '$' + recaudado;
         });
         document.getElementById('btn-edit-gear').onclick = function() { abrirFormularioCancha(id); };
         document.getElementById('view-panel-cancha').classList.add('active');
@@ -359,7 +380,7 @@
     }
 
     function eliminarCancha() {
-        if(confirm('¿Eliminar?')) {
+        if(confirm('¿Eliminar definitivamente?')) {
             db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
                 var filtrado = (s.val()||[]).filter(function(i) { return i !== editandoCanchaId; });
                 db.ref('hubs/' + globalOrgId + '/canchas').set(filtrado);
@@ -377,8 +398,7 @@
     function abrirViewMovimientos() {
         document.getElementById('view-movimientos').classList.add('active');
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', function(snap) {
-            var m = snap.val() || {};
-            var html = '';
+            var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(function(k) {
                 html += '<div class="mov-card"><div class="mov-info"><div style="font-weight:700">' + m[k].concepto + '</div><div class="mov-badge ' + (m[k].estado==='pagado'?'mb-pagado':'mb-deuda') + '">' + m[k].estado + '</div></div><div style="font-weight:800">$' + m[k].monto + '</div></div>';
             });

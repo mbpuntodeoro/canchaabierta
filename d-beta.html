@@ -22,7 +22,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .header-brand { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
@@ -33,7 +33,7 @@
         .login-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
         .login-subtitle { font-size: 14px; color: var(--text-sub); margin-bottom: 24px; }
 
-        /* VISTA DASHBOARD (OCULTA POR DEFECTO) */
+        /* VISTA DASHBOARD */
         #view-dashboard { display: none; }
 
         .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -50,7 +50,6 @@
 
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
-        .card-suspendida { opacity: 0.6; border: 1px solid var(--border); }
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
         .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
@@ -77,11 +76,9 @@
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
         
-        .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 0.5px; }
-
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
+        .btn-black-modal:disabled { background: #6B7280; }
 
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; }
         .bs-overlay.active { display: flex; }
@@ -94,10 +91,13 @@
         .btn-link { background: var(--bg-white); border: 1px solid var(--border); color: #111; }
         .btn-wsp { background: #25D366; color: #FFF; }
         
+        .mov-card { background: var(--bg-white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+        .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block; text-transform: uppercase;}
+        .mb-pagado { background: #E0E7FF; color: #3730A3; }
+        .mb-deuda { background: #FEE2E2; color: #991B1B; }
+
         .icon-chevron { transition: transform 0.2s; }
         .icon-chevron.open { transform: rotate(180deg); }
-        .badge-susp { background: #FEE2E2; color: #EF4444; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px;}
-        .badge-susp-grande { background: #FEE2E2; color: #EF4444; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 12px;}
     </style>
 </head>
 <body>
@@ -112,10 +112,10 @@
     <main id="view-login" class="app-container">
         <div class="login-box">
             <div class="login-title">Bienvenido, Cancher</div>
-            <div class="login-subtitle">Ingresá tus credenciales para gestionar tu club.</div>
-            <input type="email" id="login-email" class="input-clean" placeholder="Email de organizador">
+            <div class="login-subtitle">Ingresá tus datos para gestionar tu club.</div>
+            <input type="email" id="login-email" class="input-clean" placeholder="Email">
             <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña">
-            <button class="btn-black-modal" onclick="iniciarSesion()">Entrar al Panel</button>
+            <button class="btn-black-modal" id="btn-login-main" onclick="iniciarSesion()">Entrar al Panel</button>
         </div>
     </main>
 
@@ -165,7 +165,7 @@
             <div id="pc-status-tag"></div>
             <div id="pc-titulo" style="font-size:20px; font-weight:800; text-transform:uppercase;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
-            <div class="mj-resumen">
+            <div style="display:flex; justify-content:space-between; background:#fff; padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; font-weight:700;">
                 <div id="pc-cupos">0 / 0</div>
                 <div id="pc-recaudado" style="color:var(--brand-green);">$0</div>
             </div>
@@ -176,9 +176,9 @@
     <div id="view-cambiar-pass" class="view-modal" style="z-index: 160;">
         <div class="nav-modal"><div class="nav-back-btn" onclick="cerrarModalPassword()">✕ Cancelar</div><div style="font-weight: 700;">Seguridad</div></div>
         <div class="modal-content" style="padding:16px;">
-            <p style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">Escribí tu nueva contraseña de acceso. Mínimo 6 caracteres.</p>
+            <p style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">Escribí tu nueva contraseña. Mínimo 6 caracteres.</p>
             <input type="password" id="new-password" class="input-clean" placeholder="Nueva contraseña">
-            <input type="password" id="confirm-password" class="input-clean" placeholder="Confirmar nueva contraseña">
+            <input type="password" id="confirm-password" class="input-clean" placeholder="Confirmar contraseña">
             <button class="btn-black-modal" onclick="actualizarPassword()">Actualizar ahora</button>
         </div>
     </div>
@@ -215,6 +215,7 @@
     </div>
 
 <script>
+    // USAMOS EL DB QUE YA VIENE DE app-config.js
     var globalOrgId = null; 
     var eventosCache = []; 
     var activeEventRef = null;
@@ -224,54 +225,54 @@
         firebase.auth().onAuthStateChanged(function(user) {
             document.getElementById('loading-global').style.display = 'none';
             if (user) {
-                // LOGUEADO: Buscar su OrgId
+                // SI HAY USUARIO, BUSCAR SU CLUB
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
                     globalOrgId = snap.val();
                     if (globalOrgId) {
-                        mostrarDashboard();
+                        document.getElementById('view-login').style.display = 'none';
+                        document.getElementById('view-dashboard').style.display = 'block';
+                        document.getElementById('btn-header-action').innerHTML = '<div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>';
+                        document.getElementById('fab-container').innerHTML = '<div class="fab-crear" onclick="abrirFormularioCancha(null)">+</div>';
                         iniciarPanel(globalOrgId);
                     } else {
-                        alert("Tu usuario no tiene un club asignado.");
+                        alert("Error: No tenés club asignado.");
                         cerrarSesion();
                     }
                 });
             } else {
-                // NO LOGUEADO: Mostrar formulario de login
-                mostrarLogin();
+                // SI NO HAY USUARIO, MOSTRAR LOGIN
+                document.getElementById('view-login').style.display = 'block';
+                document.getElementById('view-dashboard').style.display = 'none';
+                document.getElementById('btn-header-action').innerHTML = '';
+                document.getElementById('fab-container').innerHTML = '';
             }
         });
     });
 
-    function mostrarLogin() {
-        document.getElementById('view-login').style.display = 'block';
-        document.getElementById('view-dashboard').style.display = 'none';
-        document.getElementById('btn-header-action').innerHTML = '';
-        document.getElementById('fab-container').innerHTML = '';
-    }
-
-    function mostrarDashboard() {
-        document.getElementById('view-login').style.display = 'none';
-        document.getElementById('view-dashboard').style.display = 'block';
-        document.getElementById('btn-header-action').innerHTML = '<div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>';
-        document.getElementById('fab-container').innerHTML = '<div class="fab-crear" onclick="abrirFormularioCancha(null)">+</div>';
-    }
-
     function iniciarSesion() {
-        var email = document.getElementById('login-email').value;
-        var pass = document.getElementById('login-pass').value;
-        if(!email || !pass) return alert("Completá todos los campos.");
+        var email = document.getElementById('login-email').value.trim();
+        var pass = document.getElementById('login-pass').value.trim();
+        var btn = document.getElementById('btn-login-main');
+
+        if(!email || !pass) return alert("Completá email y contraseña.");
         
+        btn.disabled = true;
+        btn.innerText = "Entrando...";
+
         firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(error) {
             alert("Error: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "Entrar al Panel";
         });
     }
 
     function cerrarSesion() {
         firebase.auth().signOut().then(function() {
-            window.location.href = window.location.pathname; // Recarga limpia
+            window.location.href = window.location.pathname;
         });
     }
 
+    // EL RESTO DE LA LÓGICA (PANEL, CANCHAS, ETC) SE MANTIENE IGUAL
     function iniciarPanel(orgId) {
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
@@ -288,7 +289,7 @@
         db.ref('hubs/' + orgId).on('value', function(snap) {
             var hubData = snap.val();
             if (!hubData || !hubData.canchas) {
-                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:#6B7280;'>No hay canchas creadas.</div>";
+                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:#6B7280;'>No tenés canchas creadas.</div>";
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
@@ -358,7 +359,7 @@
                     htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><div class="dot ${estG}"></div></div><div class="acciones"><svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="grupo-detalle">${sub}</div></div>`);
                 }
             });
-            document.getElementById('lista-jugadores-container').innerHTML = (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') + (htmlEs.cancha.length ? '<div class="grupo-titulo">En Club</div>' + htmlEs.cancha.join('') : '') + (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado.</div>';
+            document.getElementById('lista-jugadores-container').innerHTML = (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') + (htmlEs.cancha.length ? '<div class="grupo-titulo">En Club</div>' + htmlEs.cancha.join('') : '') + (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;
         });

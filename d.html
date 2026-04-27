@@ -285,7 +285,8 @@
                 grupos[cel].push(jug);
             });
 
-            var htmlEs = { pendiente: [], cancha: [], pagado: [] };
+            // LÓGICA DE ORDEN SOLICITADA POR EL USUARIO
+            var htmlEs = { pagado: [], cancha: [], pendiente: [] };
             Object.keys(grupos).forEach(function(cel) {
                 var jgs = grupos[cel]; var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
                 var estG = jgs.some(j => j.estado === 'pendiente' || !j.estado) ? 'pendiente' : (jgs.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
@@ -299,10 +300,11 @@
                 }
             });
 
+            // ORDEN: PAGADOS -> EN CLUB -> PENDIENTES
             document.getElementById('lista-jugadores-container').innerHTML = 
-                (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') +
+                (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') +
                 (htmlEs.cancha.length ? '<div class="grupo-titulo">En Club</div>' + htmlEs.cancha.join('') : '') +
-                (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado.</div>';
+                (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
             
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;

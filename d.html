@@ -24,7 +24,6 @@
 
         .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .header-brand { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-        .header-org { font-size: 13px; color: var(--text-sub); }
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
@@ -61,7 +60,7 @@
         .dot.pagado { background: var(--brand-green); }
         .btn-check { background: #E5E7EB; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 12px; }
+        .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 12px; font-family: inherit;}
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px;}
 
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; }
@@ -75,6 +74,11 @@
         .btn-link { background: var(--bg-white); border: 1px solid var(--border); color: #111; }
         .btn-wsp { background: #25D366; color: #FFF; }
         .badge-rec { font-size:9px; background:#111; color:#fff; padding:2px 5px; border-radius:4px; margin-left:5px;}
+        
+        .mov-card { background: var(--bg-white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+        .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block; text-transform: uppercase;}
+        .mb-pagado { background: #E0E7FF; color: #3730A3; }
+        .mb-deuda { background: #FEE2E2; color: #991B1B; }
     </style>
 </head>
 <body>
@@ -82,7 +86,7 @@
     <header class="header-global">
         <div>
             <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple);">Panel</span></div>
-            <div class="header-org" id="t-org-name">Verificando...</div>
+            <div class="header-org" id="t-org-name" style="font-size: 13px; color: var(--text-sub);">Cargando...</div>
         </div>
         <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="firebase.auth().signOut().then(() => location.reload())">Salir</div>
     </header>
@@ -90,10 +94,10 @@
     <main class="app-container">
         <div class="status-card" id="main-status-card">
             <div class="dsc-header">
-                <div class="dsc-title" id="sc-title">Cargando suscripción...</div>
+                <div class="dsc-title" id="sc-title">--</div>
                 <div class="dsc-badge" id="sc-badge">--</div>
             </div>
-            <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando datos...</div>
+            <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando...</div>
             <div class="dsc-impact-box">
                 <div class="dsc-metrics">
                     <div style="flex:1">
@@ -171,120 +175,103 @@
     </div>
 
 <script>
-    // 1. INICIO SEGURO
-    let db = null;
-    let globalOrgId = null; 
-    let eventosCache = []; 
-    let activeEventRef = null;
-    let editandoCanchaId = null;
+    // NOTA: 'db' ya está declarado en app-config.js, así que no usamos 'const' ni 'let' aquí.
+    var globalOrgId = null; 
+    var eventosCache = []; 
+    var activeEventRef = null;
+    var editandoCanchaId = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            db = firebase.database();
-            const urlParams = new URLSearchParams(window.location.search);
-            // IMPORTANTE: Busca tanto ?org como ?id
-            const idDetectado = urlParams.get('org') || urlParams.get('id');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtenemos ID de la URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var idDetectado = urlParams.get('org') || urlParams.get('id');
 
-            if (idDetectado) {
-                globalOrgId = idDetectado;
-                console.log("ID detectado:", globalOrgId);
-                cargarPanel(globalOrgId);
-            } else {
-                firebase.auth().onAuthStateChanged(user => {
-                    if (user) {
-                        db.ref('organizadores/' + user.uid).once('value', snap => {
-                            globalOrgId = snap.val();
-                            if (globalOrgId) cargarPanel(globalOrgId);
-                        });
-                    } else {
-                        document.getElementById('loading-init').innerText = "Iniciá sesión para entrar.";
-                    }
-                });
-            }
-        } catch (e) {
-            document.getElementById('loading-init').innerText = "Error crítico de conexión.";
+        if (idDetectado) {
+            // Limpiamos el ID por si tiene espacios (ej: sergio wini)
+            globalOrgId = decodeURIComponent(idDetectado);
+            console.log("Iniciando con ID:", globalOrgId);
+            cargarPanel(globalOrgId);
+        } else {
+            // Si no hay ID, probamos con el login
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    db.ref('organizadores/' + user.uid).once('value', function(snap) {
+                        globalOrgId = snap.val();
+                        if (globalOrgId) cargarPanel(globalOrgId);
+                    });
+                } else {
+                    document.getElementById('loading-init').innerText = "Iniciá sesión o usá un enlace válido.";
+                }
+            });
         }
     });
 
-    // 2. CARGA DE DATOS
     function cargarPanel(orgId) {
-        // Carga Facturación (Resiliente)
-        db.ref(`facturacion/${orgId}`).on('value', snap => {
-            const data = snap.val() || {};
-            const cuenta = data.cuenta || {};
-            const movs = data.movimientos || {};
+        // Info de la Cuenta
+        db.ref('facturacion/' + orgId).on('value', function(snap) {
+            var data = snap.val() || {};
+            var cuenta = data.cuenta || {};
             
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             document.getElementById('main-status-card').style.display = 'block';
 
             if (typeof PadelSaaS !== 'undefined') {
-                const info = PadelSaaS.analizarCuenta(cuenta, movs);
-                document.getElementById('sc-title').innerText = info.enTrial ? `Prueba vence: ${PadelSaaS.fmtFecha(info.vencimientoAbono)}` : 'Suscripción Activa';
+                var info = PadelSaaS.analizarCuenta(cuenta, data.movimientos || {});
+                document.getElementById('sc-title').innerText = info.enTrial ? "Prueba vence: " + PadelSaaS.fmtFecha(info.vencimientoAbono) : 'Suscripción Activa';
                 document.getElementById('sc-badge').innerText = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL';
-                document.getElementById('sc-subtitle').innerText = info.enTrial ? `⏳ Quedan ${Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba)} canchas` : "✅ Cuenta al día";
-            } else {
-                document.getElementById('sc-title').innerText = "Panel de Gestión";
-                document.getElementById('sc-badge').innerText = "ACTIVO";
-                document.getElementById('sc-subtitle').innerText = "✅ Conectado";
+                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         });
 
-        // Carga Hub de Canchas
-        db.ref('hubs/' + orgId).on('value', async (snap) => {
-            const hubData = snap.val();
-            const loader = document.getElementById('loading-init');
-            const container = document.getElementById('cards-container');
-
+        // Hub de Canchas
+        db.ref('hubs/' + orgId).on('value', function(snap) {
+            var hubData = snap.val();
             if (!hubData || !hubData.canchas) {
-                loader.style.display = 'none';
-                container.innerHTML = "<div style='text-align:center; padding:40px; color:#6B7280;'>No tenés canchas creadas.</div>";
+                document.getElementById('loading-init').style.display = 'none';
+                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:#6B7280;'>No tenés canchas creadas.</div>";
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
 
-            try {
-                const ids = Object.values(hubData.canchas);
-                const snaps = await Promise.all(ids.map(id => db.ref('eventos/' + id).once('value')));
-                eventosCache = snaps.filter(s => s.exists()).map(s => ({ id: s.key, ...s.val() }));
-                eventosCache.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
+            var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
+
+            Promise.all(promesas).then(function(snapshots) {
+                eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
+                    return Object.assign({ id: s.key }, s.val());
+                });
                 
-                loader.style.display = 'none';
+                eventosCache.sort(function(a,b) { return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora); });
+                
+                document.getElementById('loading-init').style.display = 'none';
                 document.getElementById('dash-actions').style.display = 'flex';
                 document.getElementById('dash-footer').style.display = 'block';
                 renderDashboard();
-            } catch (err) {
-                loader.innerText = "Error cargando lista de canchas.";
-            }
+            });
         });
     }
 
-    // 3. RENDERIZADO
     function renderDashboard() {
-        const container = document.getElementById('cards-container');
-        let html = ''; let tRec = 0; let tJug = 0;
-        const hoy = new Date().toLocaleDateString('sv-SE');
+        var container = document.getElementById('cards-container');
+        var html = ''; var tRec = 0; var tJug = 0;
+        var hoy = new Date().toLocaleDateString('sv-SE');
 
-        eventosCache.forEach(d => {
+        eventosCache.forEach(function(d) {
             if (d.fecha < hoy) return;
-            const inscriptos = d.inscriptos || [];
-            const ocupados = inscriptos.reduce((acc, j) => acc + (j.cantidad || 1), 0);
-            const recaudado = inscriptos.filter(j => j.estado === 'pagado').reduce((acc, j) => acc + (d.valor * (j.cantidad || 1)), 0);
+            var inscriptos = d.inscriptos || [];
+            var ocupados = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
+            var recaudado = inscriptos.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { 
+                return acc + (d.valor * (j.cantidad || 1)); 
+            }, 0);
             tRec += recaudado; tJug += ocupados;
 
-            html += `
-                <div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${d.estado==='suspendido'?'card-suspendida':''}" onclick="abrirCancha('${d.id}')">
-                    <div class="cc-header">
-                        <div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs</div>
-                        ${d.tipo==='recurrente'?'<span class="badge-rec">FIJO</span>':''}
-                    </div>
-                    <div class="cc-categoria">${d.organiza || 'Cancha'}</div>
-                    <div class="cc-footer">
-                        <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
-                        <span class="cc-dinero">$${recaudado}</span>
-                    </div>
-                </div>`;
+            html += '<div class="card-cancha ' + (ocupados >= (d.cupo||0) ? 'card-completa' : '') + ' ' + (d.estado==='suspendido'?'card-suspendida':'') + '" onclick="abrirCancha(\''+d.id+'\')">' +
+                '<div class="cc-header"><div>' + formatearDiaCorto(d.fecha) + ' · ' + d.hora + ' hs</div>' + (d.tipo==='recurrente'?'<span class="badge-rec">FIJO</span>':'') + '</div>' +
+                '<div class="cc-categoria">' + (d.organiza || 'Cancha') + '</div>' +
+                '<div class="cc-footer"><span>👥 ' + ocupados + ' / ' + (d.cupo || '--') + '</span><span class="cc-dinero">$' + recaudado + '</span></div>' +
+            '</div>';
         });
-        container.innerHTML = html || "<div style='text-align:center; padding:40px;'>No hay canchas para hoy.</div>";
+        container.innerHTML = html || "<div style='text-align:center; padding:40px;'>Sin canchas para hoy.</div>";
         document.getElementById('sc-jugadores').innerText = tJug;
         document.getElementById('sc-gestionado').innerText = '$' + tRec;
     }
@@ -293,48 +280,40 @@
         panelCanchaId = id;
         if(activeEventRef) activeEventRef.off();
         activeEventRef = db.ref('eventos/' + id);
-        activeEventRef.on('value', snap => {
-            const c = snap.val();
+        activeEventRef.on('value', function(snap) {
+            var c = snap.val();
             if(!c) return;
             document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
-            document.getElementById('pc-fecha').innerText = `${formatearDiaCorto(c.fecha)} · ${c.hora} hs`;
+            document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
             
-            const inscriptos = c.inscriptos || [];
-            let htmlList = '';
-            inscriptos.forEach((j, idx) => {
-                const btnOk = j.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago(${idx}, 'pagado')">✔</button>` : '';
-                htmlList += `
-                    <div class="jugador-fila">
-                        <div class="jugador-main">
-                            <div style="font-size:15px; font-weight:600;">${jugadorAbreviado(j.nombre)}</div>
-                            <div class="dot ${j.estado}"></div>
-                        </div>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            ${btnOk}
-                            <button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', ${idx}, '${j.celular}')">⋯</button>
-                        </div>
-                    </div>`;
+            var inscriptos = c.inscriptos || [];
+            var htmlList = '';
+            inscriptos.forEach(function(j, idx) {
+                var btnOk = j.estado !== 'pagado' ? '<button class="btn-check" onclick="event.stopPropagation(); setPago('+idx+', \'pagado\')">✔</button>' : '';
+                htmlList += '<div class="jugador-fila">' +
+                    '<div class="jugador-main"><div style="font-size:15px; font-weight:600;">' + jugadorAbreviado(j.nombre) + '</div><div class="dot ' + j.estado + '"></div></div>' +
+                    '<div style="display:flex; gap:10px; align-items:center;">' + btnOk + '<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador(\''+j.nombre+'\', '+idx+', \''+j.celular+'\')">⋯</button></div>' +
+                '</div>';
             });
-            document.getElementById('lista-jugadores-container').innerHTML = htmlList || "<div style='text-align:center; padding:20px; color:#6B7280;'>Nadie anotado todavía.</div>";
-            document.getElementById('pc-cupos').innerText = inscriptos.reduce((acc, j) => acc + (j.cantidad || 1), 0) + ' / ' + (c.cupo || '--');
-            document.getElementById('pc-recaudado').innerText = '$' + inscriptos.filter(j => j.estado === 'pagado').reduce((acc, j) => acc + (c.valor * (j.cantidad || 1)), 0);
+            document.getElementById('lista-jugadores-container').innerHTML = htmlList || "<div style='text-align:center; padding:20px; color:#6B7280;'>Nadie anotado.</div>";
+            document.getElementById('pc-cupos').innerText = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0) + ' / ' + (c.cupo || '--');
+            document.getElementById('pc-recaudado').innerText = '$' + inscriptos.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { return acc + (c.valor * (j.cantidad || 1)); }, 0);
         });
-        document.getElementById('btn-edit-gear').onclick = () => abrirFormularioCancha(id);
+        document.getElementById('btn-edit-gear').onclick = function() { abrirFormularioCancha(id); };
         document.getElementById('view-panel-cancha').classList.add('active');
     }
 
-    // 4. ACCIONES
-    function setPago(idx, estado) { db.ref(`eventos/${panelCanchaId}/inscriptos/${idx}`).update({ estado: estado }); }
+    function setPago(idx, estado) { db.ref('eventos/' + panelCanchaId + '/inscriptos/' + idx).update({ estado: estado }); }
 
     function opcionesJugador(nombre, idx, celular) {
         document.getElementById('bs-nombre-jugador').innerText = nombre;
-        document.getElementById('btn-wa').onclick = () => window.open(`https://wa.me/${celular}`, '_blank');
-        document.getElementById('btn-revertir').onclick = () => { setPago(idx, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
-        document.getElementById('btn-eliminar').onclick = () => {
-            if(confirm('¿Eliminar a ' + nombre + '?')) {
-                db.ref(`eventos/${panelCanchaId}/inscriptos`).once('value', s => {
-                    let l = s.val() || []; l.splice(idx, 1);
-                    db.ref(`eventos/${panelCanchaId}/inscriptos`).set(l).then(cerrarMenuOpciones);
+        document.getElementById('btn-wa').onclick = function() { window.open('https://wa.me/' + celular, '_blank'); };
+        document.getElementById('btn-revertir').onclick = function() { setPago(idx, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
+        document.getElementById('btn-eliminar').onclick = function() {
+            if(confirm('¿Eliminar?')) {
+                db.ref('eventos/' + panelCanchaId + '/inscriptos').once('value', function(s) {
+                    var l = s.val() || []; l.splice(idx, 1);
+                    db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(cerrarMenuOpciones);
                 });
             }
         };
@@ -346,14 +325,11 @@
 
     function abrirFormularioCancha(id) {
         editandoCanchaId = id;
-        const btnEliminar = document.getElementById('btn-eliminar-cancha');
-        const btnSave = document.getElementById('btn-save-main');
-        
+        var btnEliminar = document.getElementById('btn-eliminar-cancha');
         if(id) {
-            const c = eventosCache.find(e => e.id === id);
+            var c = eventosCache.find(function(e) { return e.id === id; });
             document.getElementById('fc-head-title').innerText = "Editar Cancha";
             btnEliminar.style.display = "block";
-            btnSave.innerText = "Guardar Cambios";
             document.getElementById('fc-fecha').value = c.fecha;
             document.getElementById('fc-hora').value = c.hora;
             document.getElementById('fc-horafin').value = c.horaFin || "";
@@ -367,12 +343,7 @@
         } else {
             document.getElementById('fc-head-title').innerText = "Nueva Cancha";
             btnEliminar.style.display = "none";
-            btnSave.innerText = "Publicar Cancha";
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
-            if(eventosCache.length > 0) {
-                document.getElementById('fc-alias').value = eventosCache[0].alias || "";
-                document.getElementById('fc-celu').value = eventosCache[0].celuOrganizador || "";
-            }
         }
         document.getElementById('view-form-cancha').classList.add('active');
     }
@@ -380,7 +351,7 @@
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 
     function guardarCancha() {
-        const d = {
+        var d = {
             fecha: document.getElementById('fc-fecha').value,
             hora: document.getElementById('fc-hora').value,
             horaFin: document.getElementById('fc-horafin').value,
@@ -392,66 +363,49 @@
             alias: document.getElementById('fc-alias').value,
             celuOrganizador: document.getElementById('fc-celu').value
         };
-        
-        if(!d.fecha || !d.hora || !d.organiza) return alert("Faltan datos.");
-
-        if(editandoCanchaId) {
-            db.ref('eventos/'+editandoCanchaId).update(d).then(cerrarFormularioCancha);
-        } else {
-            const ref = db.ref('eventos').push();
-            ref.set({...d, estado:'activo', inscriptos:[]}).then(() => {
-                db.ref(`hubs/${globalOrgId}/canchas`).once('value', s => {
-                    let l = Array.isArray(s.val()) ? s.val() : [];
-                    l.push(ref.key);
-                    db.ref(`hubs/${globalOrgId}/canchas`).set(l).then(cerrarFormularioCancha);
+        if(editandoCanchaId) db.ref('eventos/'+editandoCanchaId).update(d).then(cerrarFormularioCancha);
+        else {
+            var ref = db.ref('eventos').push();
+            ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
+                db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
+                    var l = s.val() || []; l.push(ref.key);
+                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
                 });
             });
         }
     }
 
     function eliminarCancha() {
-        if(confirm('¿Eliminar definitivamente?')) {
-            db.ref(`hubs/${globalOrgId}/canchas`).once('value', s => {
-                const filtrado = (s.val()||[]).filter(i => i !== editandoCanchaId);
-                db.ref(`hubs/${globalOrgId}/canchas`).set(filtrado);
-                db.ref('eventos/'+editandoCanchaId).remove().then(() => { 
-                    cerrarFormularioCancha(); 
-                    cerrarPanelCancha(); 
-                });
+        if(confirm('¿Eliminar?')) {
+            db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
+                var filtrado = (s.val()||[]).filter(function(i) { return i !== editandoCanchaId; });
+                db.ref('hubs/' + globalOrgId + '/canchas').set(filtrado);
+                db.ref('eventos/'+editandoCanchaId).remove().then(function() { cerrarFormularioCancha(); cerrarPanelCancha(); });
             });
         }
     }
 
+    function copiarLinkCartelera() {
+        var path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        var link = window.location.origin + path + '/index.html?org=' + encodeURIComponent(globalOrgId);
+        navigator.clipboard.writeText(link).then(function() { alert("¡Link copiado!"); });
+    }
+
     function abrirViewMovimientos() {
         document.getElementById('view-movimientos').classList.add('active');
-        db.ref(`facturacion/${globalOrgId}/movimientos`).once('value', snap => {
-            const m = snap.val() || {};
-            let html = '';
-            Object.keys(m).forEach(k => {
-                html += `
-                    <div class="mov-card">
-                        <div class="mov-info">
-                            <div style="font-weight:700">${m[k].concepto}</div>
-                            <div class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</div>
-                        </div>
-                        <div style="font-weight:800">$${m[k].monto}</div>
-                    </div>`;
+        db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', function(snap) {
+            var m = snap.val() || {};
+            var html = '';
+            Object.keys(m).forEach(function(k) {
+                html += '<div class="mov-card"><div class="mov-info"><div>' + m[k].concepto + '</div><div class="mov-badge ' + (m[k].estado==='pagado'?'mb-pagado':'mb-deuda') + '">' + m[k].estado + '</div></div><div style="font-weight:800">$' + m[k].monto + '</div></div>';
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });
     }
-
     function cerrarViewMovimientos() { document.getElementById('view-movimientos').classList.remove('active'); }
-    
-    function copiarLinkCartelera() {
-        const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-        const link = window.location.origin + path + '/index.html?org=' + globalOrgId;
-        navigator.clipboard.writeText(link).then(() => alert("¡Link copiado!"));
-    }
-
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
-    function formatearDiaCorto(f) { const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; const d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
-    function jugadorAbreviado(n) { if(!n) return 'Jugador'; const p=n.split(' '); return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; }
+    function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
+    function jugadorAbreviado(n) { if(!n) return 'Jugador'; var p=n.split(' '); return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; }
 </script>
 </body>
 </html>

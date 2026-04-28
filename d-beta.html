@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=57"></script>
+    <script src="app-config.js?v=58"></script>
     
     <style>
         :root { 
@@ -439,6 +439,12 @@
                 
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;
+            
+            // RUEDITA ARREGLADA: Le pasamos los datos frescos para que nunca tire error
+            document.getElementById('btn-edit-gear').onclick = function() { 
+                c.id = id; 
+                abrirFormularioCancha(id, c); 
+            };
         });
         
         document.getElementById('view-panel-cancha').classList.add('active');
@@ -466,29 +472,35 @@
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
-    function abrirFormularioCancha(id) {
+    // RUEDITA ARREGLADA: Usa los datosF que recibe de abrirCancha en vez del caché
+    function abrirFormularioCancha(id, datosF) {
         editandoCanchaId = id; 
         var btnEliminar = document.getElementById('btn-eliminar-cancha'); 
         var btnSusp = document.getElementById('btn-suspender-cancha');
         
         if(id) {
-            var c = eventosCache.find(function(e) { return e.id === id; });
+            var c = datosF || eventosCache.find(function(e) { return e.id === id; });
+            if(!c) return; // Protección anti-errores
+            
             btnEliminar.style.display = "block"; 
+            btnSusp.style.display = "block";
             btnSusp.innerText = c.estado === 'suspendido' ? "Reactivar Cancha" : "Suspender Cancha";
+            
             document.getElementById('fc-tipo').value = c.tipo || 'unica';
             document.getElementById('fc-organizador').value = c.organiza || "";
-            document.getElementById('fc-fecha').value = c.fecha;
-            document.getElementById('fc-hora').value = c.hora;
+            document.getElementById('fc-fecha').value = c.fecha || "";
+            document.getElementById('fc-hora').value = c.hora || "";
             document.getElementById('fc-horafin').value = c.horaFin || "";
             document.getElementById('fc-lugar').value = c.lugar || "";
             document.getElementById('fc-cat').value = c.categorias || "";
-            document.getElementById('fc-precio').value = c.valor || "";
-            document.getElementById('fc-cupo').value = c.cupo || "";
+            document.getElementById('fc-precio').value = c.valor || 0;
+            document.getElementById('fc-cupo').value = c.cupo || 8;
             document.getElementById('fc-alias').value = c.alias || "";
             document.getElementById('fc-celu').value = c.celuOrganizador || "";
         } else {
             btnEliminar.style.display = "none"; 
-            btnSusp.innerText = "Suspender Cancha";
+            btnSusp.style.display = "none";
+            
             document.getElementById('fc-tipo').value = 'unica'; 
             document.getElementById('fc-organizador').value = "";
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
@@ -504,35 +516,36 @@
     
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 
-    // CANCELACIÓN DE CANCHAS Y COBRO EXACTO SEGÚN EL MASTER
+    // SUSPENSIÓN CON LECTURA DESDE MASTER DE FORMA SEGURA
     function toggleSuspension() {
-        var c = eventosCache.find(function(e) { return e.id === editandoCanchaId; });
-        var nuevo = c.estado === 'suspendido' ? 'activo' : 'suspendido';
-        
-        if (nuevo === 'suspendido') {
-            var horaPartido = new Date(c.fecha + 'T' + c.hora);
-            var ahora = new Date();
-            var diferenciaHoras = (horaPartido - ahora) / 1000 / 60 / 60;
+        db.ref('eventos/' + editandoCanchaId).once('value', function(snap) {
+            var c = snap.val();
+            if(!c) return;
+            var nuevo = c.estado === 'suspendido' ? 'activo' : 'suspendido';
             
-            // Si falta menos de 1 hora o pasaron hasta 2 horas
-            if (diferenciaHoras < 1 && diferenciaHoras > -2) {
-                // CONEXIÓN CON EL MASTER: Usamos costoPorCancha
-                var valorCancelacion = globalCuenta.costoPorCancha || 0;
+            if (nuevo === 'suspendido') {
+                var horaPartido = new Date(c.fecha + 'T' + c.hora);
+                var ahora = new Date();
+                var diferenciaHoras = (horaPartido - ahora) / 1000 / 60 / 60;
                 
-                if (valorCancelacion > 0) {
-                    alert("Aviso: Como suspendés con tan poca anticipación, se generó un cargo por el valor de la cancha ($" + valorCancelacion + ").");
-                    db.ref('facturacion/' + globalOrgId + '/movimientos').push({ 
-                        concepto: "Cancelación tardía: " + (c.lugar || "Cancha"), 
-                        monto: valorCancelacion, 
-                        estado: "pendiente", 
-                        tipo: "turno", // Fundamental para que el botón "COBRAR" del Master lo agrupe y salde
-                        fecha: Date.now() 
-                    });
+                if (diferenciaHoras < 1 && diferenciaHoras > -2) {
+                    var valorCancelacion = globalCuenta.costoPorCancha || 0;
+                    
+                    if (valorCancelacion > 0) {
+                        alert("Aviso: Como suspendés con tan poca anticipación, se generó un cargo por el valor de la cancha ($" + valorCancelacion + ").");
+                        db.ref('facturacion/' + globalOrgId + '/movimientos').push({ 
+                            concepto: "Cancelación tardía: " + (c.lugar || "Cancha"), 
+                            monto: valorCancelacion, 
+                            estado: "pendiente", 
+                            tipo: "turno", 
+                            fecha: Date.now() 
+                        });
+                    }
                 }
             }
-        }
-        db.ref('eventos/' + editandoCanchaId).update({ estado: nuevo }).then(function() {
-            cerrarFormularioCancha();
+            db.ref('eventos/' + editandoCanchaId).update({ estado: nuevo }).then(function() {
+                cerrarFormularioCancha();
+            });
         });
     }
 
@@ -557,10 +570,8 @@
             var ref = db.ref('eventos').push();
             ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
                 db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    var v = s.val(); 
-                    var l = Array.isArray(v) ? v : (v ? Object.values(v) : []);
-                    l.push(ref.key); 
-                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
+                    var v = s.val(); var l = Array.isArray(v) ? v : (v ? Object.values(v) : []);
+                    l.push(ref.key); db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
                 });
             });
         }
@@ -582,8 +593,7 @@
     function abrirViewMovimientos() {
         document.getElementById('view-movimientos').classList.add('active');
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', function(snap) {
-            var m = snap.val() || {}; 
-            var html = '';
+            var m = snap.val() || {}; var html = '';
             Object.keys(m).sort(function(a,b) { return m[b].fecha - m[a].fecha; }).forEach(function(k) {
                 html += `
                 <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">

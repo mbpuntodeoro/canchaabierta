@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=48"></script>
+    <script src="app-config.js?v=49"></script>
     
     <style>
         :root { 
@@ -22,16 +22,14 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        /* HEADER */
         .header-global { background: var(--bg-white); padding: 16px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; height: 60px; }
         .header-brand { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
-        /* LOGIN & DASHBOARD WRAPPERS */
         #view-login, #view-dashboard { display: none; }
 
-        /* CARDS */
+        /* DASHBOARD CARDS */
         .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
         .dsc-title { font-size: 15px; font-weight: 700; }
@@ -41,13 +39,15 @@
         .dsc-metric-label { font-size: 10px; color: #A1A1AA; font-weight: 600; text-transform: uppercase;}
         .dsc-metric-val { font-size: 20px; font-weight: 800; color: #FFFFFF;}
 
-        .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; position: relative; }
+        .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         .card-suspendida { opacity: 0.6; border: 1px solid var(--border); }
-        .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
-        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; }
-        .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
+        .cc-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .cc-lugar { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+        .cc-info-sub { font-size: 13px; color: var(--text-sub); font-weight: 500; }
+        .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f3f3f3; }
         .badge-rec { font-size: 9px; background: #111; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .badge-susp { background: #FEE2E2; color: #EF4444; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 8px; display: inline-block; }
 
         .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: none; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 90; cursor: pointer; }
 
@@ -55,13 +55,14 @@
         .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; padding-bottom: 40px; }
         .view-modal.active { transform: translateX(0); }
         .nav-modal { padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110; }
-        
+        .nav-back-btn { font-weight: 600; font-size: 16px; cursor: pointer; }
+
+        /* FORMULARIOS */
         .input-group { margin-bottom: 16px; }
         .input-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; font-family: inherit;}
-        
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
-        
+
         /* FILAS JUGADORES */
         .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
@@ -70,9 +71,11 @@
         .dot.cancha { background: var(--brand-orange); }
         .btn-check { background: #E5E7EB; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        #loading-global { text-align: center; padding: 100px 20px; font-weight: 700; color: var(--text-sub); }
-        .badge-susp { background: #FEE2E2; color: #EF4444; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px;}
-        .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; }
+        .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
+        .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
+        .grupo-detalle.open { max-height: 1000px; }
+        .sub-fila { padding: 12px 16px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .grupo-titulo { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 8px 0; }
     </style>
 </head>
 <body>
@@ -87,8 +90,7 @@
     <main id="view-login" class="app-container">
         <div style="background: #fff; padding: 32px 24px; border-radius: 20px; margin: 40px 16px; text-align: center; border: 1px solid var(--border);">
             <div style="font-size: 22px; font-weight: 800; margin-bottom: 8px;">Acceso Organizadores</div>
-            <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 24px;">Gestioná tus canchas y cobros.</p>
-            <input type="email" id="login-email" class="input-clean" placeholder="Email">
+            <input type="email" id="login-email" class="input-clean" placeholder="Email" style="margin-top:20px;">
             <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña" style="margin-top:12px;">
             <button class="btn-black-modal" onclick="iniciarSesion()" style="margin-top:20px;">Entrar al Panel</button>
         </div>
@@ -103,21 +105,19 @@
                 <div class="dsc-badge" id="sc-badge">--</div>
             </div>
             <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando datos...</div>
-            <div class="dsc-impact-box">
-                <div class="dsc-metrics">
-                    <div style="flex:1">
-                        <div class="dsc-metric-label">Jugadores</div>
-                        <div class="dsc-metric-val" id="sc-jugadores">0</div>
-                    </div>
-                    <div style="flex:1">
-                        <div class="dsc-metric-label">Gestionado</div>
-                        <div class="dsc-metric-val" id="sc-gestionado">$0</div>
-                    </div>
+            <div class="dsc-metrics">
+                <div style="flex:1">
+                    <div class="dsc-metric-label">Jugadores</div>
+                    <div class="dsc-metric-val" id="sc-jugadores">0</div>
+                </div>
+                <div style="flex:1">
+                    <div class="dsc-metric-label">Gestionado</div>
+                    <div class="dsc-metric-val" id="sc-gestionado">$0</div>
                 </div>
             </div>
             <div style="margin-top:15px; display:flex; gap:8px;">
-                <button onclick="abrirViewMovimientos()" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">📋 MOVIMIENTOS</button>
-                <button onclick="abrirModalPassword()" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">🔐 CLAVE</button>
+                <button onclick="abrirViewMovimientos()" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">MOVIMIENTOS</button>
+                <button onclick="abrirModalPassword()" style="flex:1; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">SEGURIDAD</button>
             </div>
         </div>
 
@@ -132,47 +132,29 @@
     <div class="fab-crear" id="btn-fab" onclick="abrirFormularioCancha(null)">+</div>
 
     <div id="view-form-cancha" class="view-modal" style="z-index: 150;">
-        <div class="nav-modal"><div onclick="cerrarFormularioCancha()" style="cursor:pointer; font-weight:600;">✕ Cancelar</div><div id="fc-head-title" style="font-weight: 700;">Configurar Cancha</div></div>
+        <div class="nav-modal"><div onclick="cerrarFormularioCancha()" style="cursor:pointer; font-weight:600;">✕ Cancelar</div><div style="font-weight: 700;">Configurar Cancha</div></div>
         <div class="modal-content" style="padding:16px;">
-            
             <div class="input-group">
                 <label class="input-label">Tipo de Cancha</label>
-                <select id="fc-tipo" class="input-clean">
-                    <option value="unica">Cancha Única</option>
-                    <option value="recurrente">Turno Fijo (Semanal)</option>
-                </select>
+                <select id="fc-tipo" class="input-clean"><option value="unica">Cancha Única</option><option value="recurrente">Turno Fijo (Semanal)</option></select>
             </div>
-
-            <div class="input-group">
-                <label class="input-label">Nombre del Organizador</label>
-                <input type="text" id="fc-organizador" class="input-clean" placeholder="Ej: Sergio Wini">
-            </div>
-
-            <div class="input-group">
-                <label class="input-label">Fecha del partido</label>
-                <input type="date" id="fc-fecha" class="input-clean">
-            </div>
-
+            <div class="input-group"><label class="input-label">Nombre Organizador</label><input type="text" id="fc-organizador" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Fecha</label><input type="date" id="fc-fecha" class="input-clean"></div>
             <div style="display:flex; gap:8px;">
                 <div class="input-group" style="flex:1;"><label class="input-label">Inicio</label><input type="time" id="fc-hora" class="input-clean"></div>
                 <div class="input-group" style="flex:1;"><label class="input-label">Fin</label><input type="time" id="fc-horafin" class="input-clean"></div>
             </div>
-
-            <div class="input-group"><label class="input-label">Título / Sede</label><input type="text" id="fc-lugar" class="input-clean" placeholder="Ej: Pasco Padel"></div>
-            
-            <div class="input-group"><label class="input-label">Categorías</label><input type="text" id="fc-cat" class="input-clean" placeholder="Ej: 5ta Damas"></div>
-
+            <div class="input-group"><label class="input-label">Sede / Título</label><input type="text" id="fc-lugar" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">Categorías</label><input type="text" id="fc-cat" class="input-clean"></div>
             <div style="display:flex; gap:8px;">
                 <div class="input-group" style="flex:1;"><label class="input-label">Precio ($)</label><input type="number" id="fc-precio" class="input-clean"></div>
                 <div class="input-group" style="flex:1;"><label class="input-label">Cupos</label><input type="number" id="fc-cupo" class="input-clean"></div>
             </div>
-
-            <div class="input-group"><label class="input-label">Alias transferencia</label><input type="text" id="fc-alias" class="input-clean"></div>
-            <div class="input-group"><label class="input-label">WhatsApp contacto</label><input type="tel" id="fc-celu" class="input-clean"></div>
-
+            <div class="input-group"><label class="input-label">Alias</label><input type="text" id="fc-alias" class="input-clean"></div>
+            <div class="input-group"><label class="input-label">WhatsApp</label><input type="tel" id="fc-celu" class="input-clean"></div>
             <button class="btn-black-modal" onclick="guardarCancha()">Guardar Cambios</button>
             <button class="btn-black-modal" id="btn-suspender-cancha" style="background:#fff; color:#111; border:1px solid var(--border); margin-top:20px;" onclick="toggleSuspension()">Suspender Cancha</button>
-            <button class="bs-btn" style="color:var(--brand-red); margin-top:12px; width:100%; display:none; background:#FEE2E2;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
+            <button class="bs-btn" style="color:var(--brand-red); margin-top:12px; width:100%; display:none; background:#FEE2E2; border-radius:12px;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
         </div>
     </div>
 
@@ -180,25 +162,23 @@
         <div class="nav-modal"><div onclick="cerrarPanelCancha()" style="cursor:pointer; font-weight:600;">✕ Atrás</div><button id="btn-edit-gear" style="background:none; border:none; font-size:22px;">⚙️</button></div>
         <div class="modal-content" style="padding:16px;">
             <div id="pc-status-tag"></div>
-            <div id="pc-titulo" style="font-size:20px; font-weight:800; text-transform:uppercase;">--</div>
+            <div id="pc-titulo" style="font-size:22px; font-weight:800; text-transform:uppercase;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             <div style="display:flex; justify-content:space-between; background:#fff; padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; font-weight:700;">
-                <div id="pc-cupos">0 / 0</div><div id="pc-recaudado" style="color:var(--brand-green);">$0</div>
+                <div id="pc-cupos">0 / 0</div><div id="pc-recaudado" style="color:var(--brand-green); font-size:18px;">$0</div>
             </div>
             <div id="lista-jugadores-container"></div>
         </div>
     </div>
 
     <div id="view-cambiar-pass" class="view-modal" style="z-index: 160;">
-        <div class="nav-modal"><div onclick="cerrarModalPassword()" style="cursor:pointer; font-weight:600;">✕ Cancelar</div><div style="font-weight:700;">Seguridad</div></div>
+        <div class="nav-modal"><div onclick="cerrarModalPassword()" style="cursor:pointer; font-weight:600;">✕</div><div style="font-weight:700;">Seguridad</div></div>
         <div class="modal-content" style="padding:16px;"><input type="password" id="new-password" class="input-clean" placeholder="Nueva clave"><button class="btn-black-modal" onclick="actualizarPassword()" style="margin-top:20px;">Cambiar ahora</button></div>
     </div>
-
     <div id="view-movimientos" class="view-modal">
-        <div class="nav-modal"><div onclick="cerrarViewMovimientos()" style="cursor:pointer; font-weight:600;">✕ Atrás</div><div style="font-weight:700;">Movimientos</div></div>
+        <div class="nav-modal"><div onclick="cerrarViewMovimientos()" style="cursor:pointer; font-weight:600;">✕</div><div style="font-weight:700;">Movimientos</div></div>
         <div class="modal-content" style="padding:16px;" id="mov-container"></div>
     </div>
-
     <div id="bs-menu" class="bs-overlay" onclick="if(event.target===this) cerrarMenuOpciones()">
         <div class="bs-content"><div id="bs-nombre-jugador" style="text-align:center; font-weight:700; margin-bottom:20px;">Opciones</div><button class="bs-btn" id="btn-wa">💬 WhatsApp</button><button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange);">🏟️ En Club</button><button class="bs-btn" style="color:var(--brand-red);" id="btn-eliminar">🗑️ Eliminar</button></div>
     </div>
@@ -223,10 +203,8 @@
             if (user) {
                 db.ref('organizadores/' + user.uid).once('value').then(function(snap) {
                     globalOrgId = snap.val();
-                    if (globalOrgId) {
-                        activarVista('view-dashboard');
-                        iniciarPanel(globalOrgId);
-                    } else { cerrarSesion(); }
+                    if (globalOrgId) { activarVista('view-dashboard'); iniciarPanel(globalOrgId); }
+                    else { cerrarSesion(); }
                 });
             } else { activarVista('view-login'); }
         });
@@ -241,44 +219,33 @@
     }
 
     function iniciarSesion() {
-        var email = document.getElementById('login-email').value.trim();
-        var pass = document.getElementById('login-pass').value.trim();
-        if(!email || !pass) return alert("Completá email y clave.");
-        firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(error) { alert("Error: " + error.message); });
+        var e = document.getElementById('login-email').value; var p = document.getElementById('login-pass').value;
+        firebase.auth().signInWithEmailAndPassword(e, p).catch(function(err) { alert(err.message); });
     }
 
     function cerrarSesion() { firebase.auth().signOut().then(function() { window.location.reload(); }); }
 
     function iniciarPanel(orgId) {
         db.ref('facturacion/' + orgId).on('value', function(snap) {
-            var data = snap.val() || {};
-            var cuenta = data.cuenta || {};
+            var data = snap.val() || {}; var cuenta = data.cuenta || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
             if (typeof PadelSaaS !== 'undefined') {
                 var info = PadelSaaS.analizarCuenta(cuenta, data.movimientos || {});
                 document.getElementById('sc-title').innerText = info.enTrial ? "Vence: " + PadelSaaS.fmtFecha(info.vencimientoAbono) : 'Suscripción Activa';
                 document.getElementById('sc-badge').innerText = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL';
-                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
+                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Al día";
             }
         });
 
         db.ref('hubs/' + orgId).on('value', function(snap) {
-            var hubData = snap.val();
-            if (!hubData || !hubData.canchas) {
-                document.getElementById('cards-container').innerHTML = "<div style='text-align:center; padding:40px; color:#6B7280;'>No hay canchas.</div>";
-                return;
-            }
+            var hubData = snap.val(); if (!hubData || !hubData.canchas) return;
             var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
-            var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
-
-            Promise.all(promesas).then(function(snapshots) {
-                eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
+            Promise.all(ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); })).then(function(snaps) {
+                eventosCache = snaps.filter(function(s) { return s.exists(); }).map(function(s) {
                     var val = s.val(); val.id = s.key; return val;
                 });
                 eventosCache.sort(function(a,b) { return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora); });
                 document.getElementById('dash-actions').style.display = 'flex';
-                
-                // REPROGRAMACIÓN AUTOMÁTICA
                 verificarReprogramacionAutomatica(eventosCache);
                 renderDashboard();
             });
@@ -289,19 +256,19 @@
         var hoy = new Date();
         lista.forEach(function(c) {
             var fechaPartido = new Date(c.fecha + 'T' + c.hora);
-            // Si el partido pasó hace más de 2 horas y es fijo
             if (c.tipo === 'recurrente' && (hoy - fechaPartido) > (2 * 60 * 60 * 1000) && !c.autoReprogramada) {
                 db.ref('eventos/' + c.id).update({ autoReprogramada: true });
                 var nuevaFecha = new Date(fechaPartido.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                var dataNueva = {
+                var ref = db.ref('eventos').push();
+                ref.set({
                     tipo: 'recurrente', organiza: c.organiza, fecha: nuevaFecha, hora: c.hora, horaFin: c.horaFin || "",
                     lugar: c.lugar, categorias: c.categorias || "", valor: c.valor, cupo: c.cupo, alias: c.alias,
                     celuOrganizador: c.celuOrganizador, estado: 'activo', inscriptos: []
-                };
-                var ref = db.ref('eventos').push();
-                ref.set(dataNueva).then(function() {
+                }).then(function() {
                     db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                        var l = Array.isArray(s.val()) ? s.val() : []; l.push(ref.key);
+                        var val = s.val();
+                        var l = Array.isArray(val) ? val : (val ? Object.values(val) : []);
+                        l.push(ref.key);
                         db.ref('hubs/' + globalOrgId + '/canchas').set(l);
                     });
                 });
@@ -310,8 +277,7 @@
     }
 
     function renderDashboard() {
-        var container = document.getElementById('cards-container');
-        var html = ''; var tRec = 0; var tJug = 0;
+        var container = document.getElementById('cards-container'); var html = ''; var tRec = 0; var tJug = 0;
         var hoy = new Date().toLocaleDateString('sv-SE');
         eventosCache.forEach(function(d) {
             if (d.fecha < hoy) return;
@@ -322,7 +288,8 @@
             html += '<div class="card-cancha ' + (ocupados >= (d.cupo||0) ? 'card-completa' : '') + ' ' + (d.estado==='suspendido'?'card-suspendida':'') + '" onclick="abrirCancha(\''+d.id+'\')">' +
                 (d.estado==='suspendido' ? '<div class="badge-susp">SUSPENDIDA</div>' : '') +
                 '<div class="cc-header"><div>' + formatearDiaCorto(d.fecha) + ' · ' + d.hora + ' hs</div>' + (d.tipo==='recurrente' ? '<span class="badge-rec">FIJO</span>' : '') + '</div>' +
-                '<div class="cc-categoria">' + (d.organiza || 'Organizador') + '</div>' +
+                '<div class="cc-lugar">' + (d.lugar || 'Sede sin nombre') + '</div>' +
+                '<div class="cc-info-sub">' + (d.organiza || 'Admin') + ' · ' + (d.categorias || 'General') + '</div>' +
                 '<div class="cc-footer"><span>👥 ' + ocupados + ' / ' + (d.cupo || '--') + '</span><span style="color:var(--brand-green);">$'+recaudado+'</span></div>' +
             '</div>';
         });
@@ -336,16 +303,14 @@
         activeEventRef = db.ref('eventos/' + id);
         activeEventRef.on('value', function(snap) {
             var c = snap.val(); if(!c) return;
-            document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
+            document.getElementById('pc-titulo').innerText = c.lugar || 'Cancha';
             document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
             document.getElementById('pc-status-tag').innerHTML = c.estado === 'suspendido' ? '<div class="badge-susp">SUSPENDIDA</div>' : '';
-            var inscriptos = c.inscriptos || [];
-            var ocupados = 0; var recaudado = 0; var grupos = {};
+            var inscriptos = c.inscriptos || []; var ocupados = 0; var recaudado = 0; var grupos = {};
             inscriptos.forEach(function(jug, idx) {
                 jug.originalIndex = idx; ocupados += (jug.cantidad || 1);
                 if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
-                var cel = jug.celular || `sin-celu-${idx}`;
-                if(!grupos[cel]) grupos[cel] = []; grupos[cel].push(jug);
+                var cel = jug.celular || `sin-celu-${idx}`; if(!grupos[cel]) grupos[cel] = []; grupos[cel].push(jug);
             });
             var htmlEs = { pagado: [], cancha: [], pendiente: [] };
             Object.keys(grupos).forEach(function(cel) {
@@ -368,41 +333,29 @@
     }
 
     function setPago(idx, estado) { db.ref('eventos/' + panelCanchaId + '/inscriptos/' + idx).update({ estado: estado }); }
-
-    function opcionesJugador(nombre, idx, celular) {
-        document.getElementById('bs-nombre-jugador').innerText = nombre;
-        document.getElementById('btn-wa').onclick = function() { window.open('https://wa.me/' + celular, '_blank'); };
-        document.getElementById('btn-revertir').onclick = function() { setPago(idx, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
-        document.getElementById('btn-eliminar').onclick = function() {
-            if(confirm('¿Eliminar?')) {
-                db.ref('eventos/' + panelCanchaId + '/inscriptos').once('value', function(s) {
-                    var l = s.val() || []; l.splice(idx, 1);
-                    db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(cerrarMenuOpciones);
-                });
-            }
-        };
+    function opcionesJugador(n, i, c) {
+        document.getElementById('bs-nombre-jugador').innerText = n;
+        document.getElementById('btn-wa').onclick = function() { window.open('https://wa.me/' + c, '_blank'); };
+        document.getElementById('btn-revertir').onclick = function() { setPago(i, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
+        document.getElementById('btn-eliminar').onclick = function() { if(confirm('¿Eliminar?')) { db.ref('eventos/' + panelCanchaId + '/inscriptos').once('value', function(s) { var l = s.val() || []; l.splice(i, 1); db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(cerrarMenuOpciones); }); } };
         document.getElementById('bs-menu').classList.add('active');
     }
-
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
     function abrirModalPassword() { document.getElementById('view-cambiar-pass').classList.add('active'); }
     function cerrarModalPassword() { document.getElementById('view-cambiar-pass').classList.remove('active'); }
     function actualizarPassword() {
-        var p1 = document.getElementById('new-password').value;
-        if(p1.length < 6) return alert("Mínimo 6 caracteres.");
-        firebase.auth().currentUser.updatePassword(p1).then(function() { alert("¡Clave cambiada!"); cerrarModalPassword(); }).catch(function(e) { alert("Error: " + e.message); });
+        var p = document.getElementById('new-password').value; if(p.length < 6) return alert("Mínimo 6 caracteres.");
+        firebase.auth().currentUser.updatePassword(p).then(function() { alert("¡Clave cambiada!"); cerrarModalPassword(); }).catch(function(e) { alert(e.message); });
     }
 
     function abrirFormularioCancha(id) {
-        editandoCanchaId = id;
-        var btnEliminar = document.getElementById('btn-eliminar-cancha');
-        var btnSusp = document.getElementById('btn-suspender-cancha');
+        editandoCanchaId = id; var btnE = document.getElementById('btn-eliminar-cancha'); var btnS = document.getElementById('btn-suspender-cancha');
         if(id) {
             var c = eventosCache.find(function(e) { return e.id === id; });
-            btnEliminar.style.display = "block"; btnSusp.style.display = "block";
-            btnSusp.innerText = c.estado === 'suspendido' ? "Reactivar Cancha" : "Suspender Cancha";
+            btnE.style.display = "block"; btnS.style.display = "block";
+            btnS.innerText = c.estado === 'suspendido' ? "Reactivar Cancha" : "Suspender Cancha";
             document.getElementById('fc-tipo').value = c.tipo || 'unica';
             document.getElementById('fc-organizador').value = c.organiza || "";
             document.getElementById('fc-fecha').value = c.fecha;
@@ -415,14 +368,11 @@
             document.getElementById('fc-alias').value = c.alias || "";
             document.getElementById('fc-celu').value = c.celuOrganizador || "";
         } else {
-            btnEliminar.style.display = "none"; btnSusp.style.display = "none";
-            document.getElementById('fc-tipo').value = 'unica';
-            document.getElementById('fc-organizador').value = "";
-            document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
+            btnE.style.display = "none"; btnS.style.display = "none";
+            document.getElementById('fc-tipo').value = 'unica'; document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
         }
         document.getElementById('view-form-cancha').classList.add('active');
     }
-
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 
     function toggleSuspension() {
@@ -450,8 +400,8 @@
             var ref = db.ref('eventos').push();
             ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
                 db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    var l = Array.isArray(s.val()) ? s.val() : []; l.push(ref.key);
-                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
+                    var v = s.val(); var l = Array.isArray(v) ? v : (v ? Object.values(v) : []);
+                    l.push(ref.key); db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
                 });
             });
         }

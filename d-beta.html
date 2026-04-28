@@ -36,12 +36,12 @@
         .dsc-metric-label { font-size: 10px; color: #A1A1AA; font-weight: 600; text-transform: uppercase;}
         .dsc-metric-val { font-size: 20px; font-weight: 800; color: #FFFFFF;}
 
-        /* CARDS DE CANCHAS */
+        /* CARDS DE CANCHAS (DASHBOARD PANEL) */
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         .card-suspendida { opacity: 0.6; border: 1px solid var(--border); }
         .cc-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .cc-lugar { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 4px 0; }
+        .cc-lugar { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 4px 0; text-transform: uppercase; }
         .cc-info-sub { font-size: 13px; color: var(--text-sub); font-weight: 500; }
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f3f3f3; }
         .badge-rec { font-size: 9px; background: #111; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px;}
@@ -138,8 +138,18 @@
             </div>
             
             <div class="input-group">
-                <label class="input-label">Nombre del Organizador</label>
-                <input type="text" id="fc-organizador" class="input-clean" placeholder="Ej: Sergio Wini">
+                <label class="input-label">Título del Evento (Ej: Miércoles - Matutina)</label>
+                <input type="text" id="fc-titulo" class="input-clean" placeholder="Título">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Nombre del Organizador (Responsable)</label>
+                <input type="text" id="fc-organizador" class="input-clean" placeholder="Ej: Wini">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Sede / Dirección (📍)</label>
+                <input type="text" id="fc-lugar" class="input-clean" placeholder="Ej: Lasaigues - Galván 3920">
             </div>
 
             <div class="input-group">
@@ -157,14 +167,9 @@
                     <input type="time" id="fc-horafin" class="input-clean">
                 </div>
             </div>
-
-            <div class="input-group">
-                <label class="input-label">Sede / Título</label>
-                <input type="text" id="fc-lugar" class="input-clean" placeholder="Ej: Pasco Padel">
-            </div>
             
             <div class="input-group">
-                <label class="input-label">Categorías</label>
+                <label class="input-label">Categorías (Opcional)</label>
                 <input type="text" id="fc-cat" class="input-clean" placeholder="Ej: 5ta Damas">
             </div>
 
@@ -305,7 +310,8 @@
                 var refNuevaCancha = db.ref('eventos').push();
                 refNuevaCancha.set({
                     tipo: 'recurrente', 
-                    organiza: c.organiza || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "", 
+                    organiza: c.organiza || "", // Titulo
+                    nombreOrganizador: c.nombreOrganizador || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "", 
                     fecha: nuevaFechaStr, hora: c.hora, horaFin: c.horaFin || "",
                     lugar: c.lugar || "", categorias: c.categorias || "", valor: c.valor || 0, cupo: c.cupo || 8,
                     alias: c.alias || "", celuOrganizador: c.celuOrganizador || "", estado: 'activo', inscriptos: []
@@ -338,8 +344,8 @@
             tRec += recaudado; 
             tJug += ocupados;
             
-            // TOMAR EL ORGANIZADOR DE LA BD, O SINO EL DEL MASTER
-            var nombreResponsable = d.organiza || globalCuenta.nombreContacto || globalCuenta.nombreOrg || 'Organizador';
+            var nombreResponsable = d.nombreOrganizador || globalCuenta.nombreContacto || globalCuenta.nombreOrg || 'Organizador';
+            var tituloCancha = d.organiza || 'Cancha';
 
             html += `
             <div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${d.estado==='suspendido'?'card-suspendida':''}" onclick="abrirCancha('${d.id}')">
@@ -348,8 +354,9 @@
                     <div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs</div>
                     ${d.tipo === 'recurrente' ? '<span class="badge-rec">FIJO</span>' : ''}
                 </div>
-                <div class="cc-lugar">${d.lugar || 'Cancha sin título'}</div>
-                <div class="cc-info-sub">${nombreResponsable} · ${d.categorias || 'Categoría libre'}</div>
+                <div class="cc-lugar">${tituloCancha}</div>
+                <div class="cc-info-sub">📍 ${d.lugar || 'Sin Sede'}</div>
+                <div class="cc-info-sub" style="margin-top:4px;">👤 ${nombreResponsable}</div>
                 <div class="cc-footer">
                     <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
                     <span style="color:var(--brand-green);">$${recaudado}</span>
@@ -371,7 +378,7 @@
             var c = snap.val(); 
             if(!c) return;
             
-            document.getElementById('pc-titulo').innerText = c.lugar || 'Cancha';
+            document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
             document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
             document.getElementById('pc-status-tag').innerHTML = c.estado === 'suspendido' ? '<div class="badge-susp">SUSPENDIDA</div>' : '';
             
@@ -490,7 +497,8 @@
             btnSusp.innerText = c.estado === 'suspendido' ? "Reactivar Cancha" : "Suspender Cancha";
             
             document.getElementById('fc-tipo').value = c.tipo || 'unica';
-            document.getElementById('fc-organizador').value = c.organiza || "";
+            document.getElementById('fc-titulo').value = c.organiza || ""; // Antiguo organiza es el Título
+            document.getElementById('fc-organizador').value = c.nombreOrganizador || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "";
             document.getElementById('fc-fecha').value = c.fecha || "";
             document.getElementById('fc-hora').value = c.hora || "";
             document.getElementById('fc-horafin').value = c.horaFin || "";
@@ -505,10 +513,8 @@
             btnSusp.style.display = "none";
             
             document.getElementById('fc-tipo').value = 'unica'; 
-            
-            // TOMAR RESPONSABLE DEL MASTER POR DEFECTO PARA NUEVAS CANCHAS
+            document.getElementById('fc-titulo').value = "";
             document.getElementById('fc-organizador').value = globalCuenta.nombreContacto || globalCuenta.nombreOrg || "";
-            
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
             document.getElementById('fc-hora').value = "";
             document.getElementById('fc-horafin').value = "";
@@ -535,15 +541,11 @@
                 
                 if (diferenciaHoras < 1 && diferenciaHoras > -2) {
                     var valorCancelacion = globalCuenta.costoPorCancha || 0;
-                    
                     if (valorCancelacion > 0) {
                         alert("Aviso: Como suspendés con tan poca anticipación, se generó un cargo por el valor de la cancha ($" + valorCancelacion + ").");
                         db.ref('facturacion/' + globalOrgId + '/movimientos').push({ 
-                            concepto: "Cancelación tardía: " + (c.lugar || "Cancha"), 
-                            monto: valorCancelacion, 
-                            estado: "pendiente", 
-                            tipo: "turno", 
-                            fecha: Date.now() 
+                            concepto: "Cancelación tardía: " + (c.organiza || "Cancha"), 
+                            monto: valorCancelacion, estado: "pendiente", tipo: "turno", fecha: Date.now() 
                         });
                     }
                 }
@@ -557,10 +559,8 @@
     function guardarCancha() {
         var d = {
             tipo: document.getElementById('fc-tipo').value,
-            
-            // Si lo deja vacío, fuerza a usar el nombre del Master
-            organiza: document.getElementById('fc-organizador').value || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "",
-            
+            organiza: document.getElementById('fc-titulo').value, // Título legacy
+            nombreOrganizador: document.getElementById('fc-organizador').value || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "",
             fecha: document.getElementById('fc-fecha').value,
             hora: document.getElementById('fc-hora').value,
             horaFin: document.getElementById('fc-horafin').value,
@@ -621,7 +621,6 @@
     function copiarLinkCartelera() {
         var linkAcortado = globalCuenta.linkCorto;
         var linkFinal = "";
-
         if (linkAcortado) {
             linkFinal = linkAcortado.startsWith('http') ? linkAcortado : 'https://' + linkAcortado;
         } else {
@@ -629,27 +628,12 @@
             var rutaLimpia = urlBase.substring(0, urlBase.lastIndexOf('/'));
             linkFinal = rutaLimpia + '/index.html?org=' + encodeURIComponent(globalOrgId);
         }
-
-        navigator.clipboard.writeText(linkFinal).then(function() { 
-            alert("¡Link copiado!\n\n" + linkFinal); 
-        }).catch(function(err) {
-            prompt("Copiá tu link manualmente:", linkFinal);
-        });
+        navigator.clipboard.writeText(linkFinal).then(function() { alert("¡Link copiado!\n\n" + linkFinal); }).catch(function(err) { prompt("Copiá tu link manualmente:", linkFinal); });
     }
     
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
-    
-    function formatearDiaCorto(f) { 
-        var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; 
-        var d=new Date(f+'T12:00:00'); 
-        return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); 
-    }
-    
-    function jugadorAbreviado(n) { 
-        if(!n) return 'Jugador'; 
-        var p=n.split(' '); 
-        return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; 
-    }
+    function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
+    function jugadorAbreviado(n) { if(!n) return 'Jugador'; var p=n.split(' '); return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; }
 </script>
 </body>
 </html>

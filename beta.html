@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cancher.App</title>
     
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script src="[https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js)"></script>
-    <script src="[https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js](https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js)"></script>
-    <script src="app-config.js?v=61"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js?v=62"></script>
     
     <style>
-        /* --- SISTEMA DE DISEÑO CANCHER - REPLICANDO IMAGEN 1 --- */
+        /* --- SISTEMA DE DISEÑO CANCHER --- */
         :root { 
             --bg-base: #F7F7F7;
             --bg-white: #FFFFFF;
@@ -45,29 +45,22 @@
         }
 
         /* --- 2. CARTELERA --- */
-        #app-content { background: var(--bg-base); min-height: 100vh; }
-        .cartelera-container { padding: 16px; }
-        
+        #app-content { background: var(--bg-white); min-height: 100vh; }
+        .cartelera-container { padding-bottom: 10px; }
         .day-header {
-            color: #374151; font-size: 13px; font-weight: 700; text-transform: uppercase;
-            padding: 10px 0; margin-top: 10px;
+            background: #F3F4F6; color: #374151; font-size: 13px; font-weight: 600; text-transform: uppercase;
+            padding: 10px 16px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            position: sticky; top: 65px; z-index: 40;
         }
-        
-        /* ESTILOS VISUALES DE LA CARD (IMAGEN 1) */
         .court-item {
-            padding: 20px; border-radius: 16px; margin-bottom: 16px; cursor: pointer;
-            display: block; background: var(--bg-white); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid var(--border);
-            transition: transform 0.1s ease;
+            padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+            display: block; background: var(--bg-white); transition: background 0.1s ease;
         }
-        .court-item:active { transform: scale(0.98); }
-        
-        /* Estilos específicos para los textos dentro de la card basándonos en Imagen 1 */
-        .card-title { font-size: 17px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; line-height: 1.2; }
-        .card-row { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
-        .card-row-last { margin-bottom: 12px; }
-        .card-price { font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 8px; }
-
+        .court-item:active { background: #F9FAFB; }
+        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+        .c-line-3 { font-size: 13px; color: var(--text-sub); }
+        .c-cat-bold { font-weight: 600; color: var(--text-main); }
         #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
 
         /* --- 3. INSCRIPCIÓN Y NAVEGACIÓN --- */
@@ -135,11 +128,15 @@
         .btn-black:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* --- 4. CONFIRMACIÓN Y PAGO --- */
-        .success-icon { font-size: 40px; line-height: 1; margin-bottom: 12px; }
+        .success-icon {
+            font-size: 40px; line-height: 1; margin-bottom: 12px;
+        }
         .s-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.5px; }
         .s-subtitle { font-size: 15px; font-weight: 500; color: var(--text-sub); margin-bottom: 32px; }
         
-        .pay-block { background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center; }
+        .pay-block {
+            background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center;
+        }
         .p-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
         .p-monto { font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; margin-bottom: 24px; }
         .p-alias { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; word-break: break-all; }
@@ -153,13 +150,22 @@
 
         .s-microcopy { font-size: 13px; color: var(--text-sub); font-weight: 500; margin-bottom: 24px; text-align: center; }
 
-        .links-secundarios { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; text-align: center; }
-        .link-sec { font-size: 14px; font-weight: 600; color: var(--text-sub); text-decoration: none; cursor: pointer; padding: 8px 0; }
+        .links-secundarios {
+            display: flex; flex-direction: column; gap: 16px; margin-top: 24px; text-align: center;
+        }
+        .link-sec {
+            font-size: 14px; font-weight: 600; color: var(--text-sub); text-decoration: none; cursor: pointer;
+            padding: 8px 0;
+        }
         .link-sec:active { color: var(--text-main); }
 
         /* FOOTER BRANDING VIOLETA */
-        .branding-footer { font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px; }
-        .link-cancher { color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px; }
+        .branding-footer {
+            font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px;
+        }
+        .link-cancher {
+            color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px;
+        }
     </style>
 </head>
 <body>
@@ -177,7 +183,7 @@
         <div id="court-list-container"></div>
         
         <div class="branding-footer" id="main-footer" style="display:none; padding-bottom: 30px;">
-            Organizado con <a href="[https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas](https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas)." target="_blank" class="link-cancher">Cancher</a>
+            Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
         </div>
     </main>
 
@@ -263,7 +269,7 @@
             </div>
 
             <div class="branding-footer">
-                Organizado con <a href="[https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas](https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas)." target="_blank" class="link-cancher">Cancher</a>
+                Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
             </div>
 
         </div>
@@ -329,35 +335,21 @@
                         lastDate = d.fecha;
                     }
 
-                    // Título y Organizador real mapeados correctamente para el diseño gráfico
+                    // VARIABLES CORRECTAS (Panel D)
                     let tituloEvento = d.organiza || 'Cancha Abierta'; // Título del evento
-                    let sede = d.lugar || '';
-                    let organizadorReal = d.nombreOrganizador || nombreClubGlobal; // Nombre de la persona/club que organiza
+                    let sede = d.lugar || ''; // Lugar / Dirección
+                    let categoria = d.categorias || 'Todas las categorías'; // Nivel
                     
-                    // DISEÑO GRÁFICO CALCADO A IMAGEN 1 (USANDO CLASES CSS)
+                    // DISEÑO EXACTO A TU CÓDIGO ORIGINAL (IGUAL A IMAGEN 1 Y 3)
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
-                            <div class="card-title">${tituloEvento}</div>
-                            
-                            <div class="card-row">
-                                <span style="color: #6B7280;">📅</span>
-                                <span>${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</span>
+                            <div class="c-line-1">
+                                <span>${tituloEvento.toUpperCase()}</span>
+                                <span>$ ${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
-                            
-                            ${sede ? `
-                            <div class="card-row">
-                                <span style="color: #6B7280;">📍</span>
-                                <span>${sede}</span>
-                            </div>` : ''}
-                            
-                            <div class="card-row card-row-last">
-                                <span style="color: #6B7280;">👤</span>
-                                <span>Organiza: ${organizadorReal}</span>
-                            </div>
-                            
-                            <div class="card-price">
-                                $ ${PadelUtils.fmtDinero(d.valor)} por jugador
-                            </div>
+                            <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            ${sede ? `<div class="c-line-2">📍 ${sede}</div>` : ''}
+                            <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${categoria}</span></div>
                         </div>`;
                 }
             });
@@ -375,16 +367,17 @@
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        // LLENADO DEL PASO 3 (Siguiendo Imagen 1)
+        // LLENADO DEL PASO 3 (Lectura correcta de base de datos)
         document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha Abierta';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         
         document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
         if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
         
+        // AQUÍ SE IMPRIME LA PERSONA (Dato: nombreOrganizador o nombreClubGlobal)
         document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || nombreClubGlobal;
         
-        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)} por jugador`;
+        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)}`;
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar por privado';
 
         document.getElementById('ins-lugares').value = "1";

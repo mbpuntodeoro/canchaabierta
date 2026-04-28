@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=58"></script>
+    <script src="app-config.js?v=59"></script>
     
     <style>
         :root { 
@@ -304,7 +304,9 @@
                 var nuevaFechaStr = nuevaFechaObj.toISOString().split('T')[0];
                 var refNuevaCancha = db.ref('eventos').push();
                 refNuevaCancha.set({
-                    tipo: 'recurrente', organiza: c.organiza || "", fecha: nuevaFechaStr, hora: c.hora, horaFin: c.horaFin || "",
+                    tipo: 'recurrente', 
+                    organiza: c.organiza || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "", 
+                    fecha: nuevaFechaStr, hora: c.hora, horaFin: c.horaFin || "",
                     lugar: c.lugar || "", categorias: c.categorias || "", valor: c.valor || 0, cupo: c.cupo || 8,
                     alias: c.alias || "", celuOrganizador: c.celuOrganizador || "", estado: 'activo', inscriptos: []
                 }).then(function() {
@@ -336,6 +338,9 @@
             tRec += recaudado; 
             tJug += ocupados;
             
+            // TOMAR EL ORGANIZADOR DE LA BD, O SINO EL DEL MASTER
+            var nombreResponsable = d.organiza || globalCuenta.nombreContacto || globalCuenta.nombreOrg || 'Organizador';
+
             html += `
             <div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${d.estado==='suspendido'?'card-suspendida':''}" onclick="abrirCancha('${d.id}')">
                 ${d.estado === 'suspendido' ? '<div class="badge-susp">SUSPENDIDA</div>' : ''}
@@ -344,7 +349,7 @@
                     ${d.tipo === 'recurrente' ? '<span class="badge-rec">FIJO</span>' : ''}
                 </div>
                 <div class="cc-lugar">${d.lugar || 'Cancha sin título'}</div>
-                <div class="cc-info-sub">${d.organiza || 'Organizador'} · ${d.categorias || 'Categoría libre'}</div>
+                <div class="cc-info-sub">${nombreResponsable} · ${d.categorias || 'Categoría libre'}</div>
                 <div class="cc-footer">
                     <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
                     <span style="color:var(--brand-green);">$${recaudado}</span>
@@ -440,7 +445,6 @@
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;
             
-            // RUEDITA ARREGLADA: Le pasamos los datos frescos para que nunca tire error
             document.getElementById('btn-edit-gear').onclick = function() { 
                 c.id = id; 
                 abrirFormularioCancha(id, c); 
@@ -472,7 +476,6 @@
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
-    // RUEDITA ARREGLADA: Usa los datosF que recibe de abrirCancha en vez del caché
     function abrirFormularioCancha(id, datosF) {
         editandoCanchaId = id; 
         var btnEliminar = document.getElementById('btn-eliminar-cancha'); 
@@ -480,7 +483,7 @@
         
         if(id) {
             var c = datosF || eventosCache.find(function(e) { return e.id === id; });
-            if(!c) return; // Protección anti-errores
+            if(!c) return; 
             
             btnEliminar.style.display = "block"; 
             btnSusp.style.display = "block";
@@ -502,7 +505,10 @@
             btnSusp.style.display = "none";
             
             document.getElementById('fc-tipo').value = 'unica'; 
-            document.getElementById('fc-organizador').value = "";
+            
+            // TOMAR RESPONSABLE DEL MASTER POR DEFECTO PARA NUEVAS CANCHAS
+            document.getElementById('fc-organizador').value = globalCuenta.nombreContacto || globalCuenta.nombreOrg || "";
+            
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
             document.getElementById('fc-hora').value = "";
             document.getElementById('fc-horafin').value = "";
@@ -516,7 +522,6 @@
     
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 
-    // SUSPENSIÓN CON LECTURA DESDE MASTER DE FORMA SEGURA
     function toggleSuspension() {
         db.ref('eventos/' + editandoCanchaId).once('value', function(snap) {
             var c = snap.val();
@@ -552,7 +557,10 @@
     function guardarCancha() {
         var d = {
             tipo: document.getElementById('fc-tipo').value,
-            organiza: document.getElementById('fc-organizador').value,
+            
+            // Si lo deja vacío, fuerza a usar el nombre del Master
+            organiza: document.getElementById('fc-organizador').value || globalCuenta.nombreContacto || globalCuenta.nombreOrg || "",
+            
             fecha: document.getElementById('fc-fecha').value,
             hora: document.getElementById('fc-hora').value,
             horaFin: document.getElementById('fc-horafin').value,

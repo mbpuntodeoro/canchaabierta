@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cancher.App</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
     
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=60"></script>
+    <script src="[https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js)"></script>
+    <script src="[https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js](https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js)"></script>
+    <script src="app-config.js?v=61"></script>
     
     <style>
-        /* --- SISTEMA DE DISEÑO CANCHER --- */
+        /* --- SISTEMA DE DISEÑO CANCHER - REPLICANDO IMAGEN 1 --- */
         :root { 
             --bg-base: #F7F7F7;
             --bg-white: #FFFFFF;
@@ -53,6 +53,7 @@
             padding: 10px 0; margin-top: 10px;
         }
         
+        /* ESTILOS VISUALES DE LA CARD (IMAGEN 1) */
         .court-item {
             padding: 20px; border-radius: 16px; margin-bottom: 16px; cursor: pointer;
             display: block; background: var(--bg-white); 
@@ -61,6 +62,12 @@
         }
         .court-item:active { transform: scale(0.98); }
         
+        /* Estilos específicos para los textos dentro de la card basándonos en Imagen 1 */
+        .card-title { font-size: 17px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; line-height: 1.2; }
+        .card-row { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px; }
+        .card-row-last { margin-bottom: 12px; }
+        .card-price { font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 8px; }
+
         #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
 
         /* --- 3. INSCRIPCIÓN Y NAVEGACIÓN --- */
@@ -170,7 +177,7 @@
         <div id="court-list-container"></div>
         
         <div class="branding-footer" id="main-footer" style="display:none; padding-bottom: 30px;">
-            Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+            Organizado con <a href="[https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas](https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas)." target="_blank" class="link-cancher">Cancher</a>
         </div>
     </main>
 
@@ -187,7 +194,7 @@
                     <div class="i-row">📅 <span id="ins-date">--</span></div>
                     <div class="i-row" id="ins-loc-container">📍 <span id="ins-loc">--</span></div>
                     
-                    <div class="i-row">👤 <span>Organiza: <span id="ins-org">--</span></span></div>
+                    <div class="i-row">👤 <span>Organiza: <span id="ins-org" style="font-weight:600; color:var(--text-main);">--</span></span></div>
                     
                     <div class="i-price" id="ins-price">-- por jugador</div>
                 </div>
@@ -256,7 +263,7 @@
             </div>
 
             <div class="branding-footer">
-                Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+                Organizado con <a href="[https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas](https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas)." target="_blank" class="link-cancher">Cancher</a>
             </div>
 
         </div>
@@ -322,32 +329,33 @@
                         lastDate = d.fecha;
                     }
 
-                    // Título (organiza) y Organizador real (nombreOrganizador)
-                    let tituloEvento = d.organiza || 'Cancha Abierta';
+                    // Título y Organizador real mapeados correctamente para el diseño gráfico
+                    let tituloEvento = d.organiza || 'Cancha Abierta'; // Título del evento
                     let sede = d.lugar || '';
-                    let organizadorReal = d.nombreOrganizador || nombreClubGlobal; 
+                    let organizadorReal = d.nombreOrganizador || nombreClubGlobal; // Nombre de la persona/club que organiza
                     
-                    // DISEÑO EXACTO A LA IMAGEN 1
+                    // DISEÑO GRÁFICO CALCADO A IMAGEN 1 (USANDO CLASES CSS)
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
-                            <div style="font-size: 17px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; line-height: 1.2;">
-                                ${tituloEvento}
-                            </div>
+                            <div class="card-title">${tituloEvento}</div>
                             
-                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px;">
-                                <span>📅</span> <span>${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</span>
+                            <div class="card-row">
+                                <span style="color: #6B7280;">📅</span>
+                                <span>${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</span>
                             </div>
                             
                             ${sede ? `
-                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px;">
-                                <span>📍</span> <span>${sede}</span>
+                            <div class="card-row">
+                                <span style="color: #6B7280;">📍</span>
+                                <span>${sede}</span>
                             </div>` : ''}
                             
-                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
-                                <span>👤</span> <span>Organiza: ${organizadorReal}</span>
+                            <div class="card-row card-row-last">
+                                <span style="color: #6B7280;">👤</span>
+                                <span>Organiza: ${organizadorReal}</span>
                             </div>
                             
-                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 8px;">
+                            <div class="card-price">
                                 $ ${PadelUtils.fmtDinero(d.valor)} por jugador
                             </div>
                         </div>`;
@@ -367,7 +375,7 @@
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        // LLENADO DEL PASO 3
+        // LLENADO DEL PASO 3 (Siguiendo Imagen 1)
         document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha Abierta';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         
@@ -376,7 +384,7 @@
         
         document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || nombreClubGlobal;
         
-        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)}`;
+        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)} por jugador`;
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar por privado';
 
         document.getElementById('ins-lugares').value = "1";

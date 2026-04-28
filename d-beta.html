@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=54"></script>
+    <script src="app-config.js?v=56"></script>
     
     <style>
         :root { 
@@ -56,7 +56,7 @@
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; font-family: inherit;}
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
         
-        /* FILAS DE JUGADORES */
+        /* FILAS JUGADORES */
         .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
         .dot.pendiente { background: var(--brand-red); }
@@ -191,7 +191,7 @@
 
             <button class="btn-black-modal" onclick="guardarCancha()">Guardar Cambios</button>
             <button class="btn-black-modal" id="btn-suspender-cancha" style="background:#fff; color:#111; border:1px solid var(--border); margin-top:20px;" onclick="toggleSuspension()">Suspender Cancha</button>
-            <button class="bs-btn" style="color:var(--brand-red); margin-top:12px; display:none; background:#FEE2E2;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar Cancha Permanentemente</button>
+            <button class="bs-btn" style="color:var(--brand-red); margin-top:12px; display:none; background:#FEE2E2; padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer;" id="btn-eliminar-cancha" onclick="eliminarCancha()">Eliminar Cancha Permanentemente</button>
         </div>
     </div>
 
@@ -233,14 +233,13 @@
     </div>
 
 <script>
-    // VARIABLES GLOBALES
     var globalOrgId = null; 
+    var globalCuenta = {}; 
     var eventosCache = []; 
     var activeEventRef = null; 
     var editandoCanchaId = null; 
     var panelCanchaId = null;
 
-    // INICIO
     window.onload = function() {
         var urlParams = new URLSearchParams(window.location.search);
         var idDetectado = urlParams.get('org') || urlParams.get('id');
@@ -249,25 +248,24 @@
             globalOrgId = decodeURIComponent(idDetectado); 
             iniciarPanel(globalOrgId); 
         } else { 
-            document.getElementById('loading-init').innerText = "Acceso denegado: Falta el parámetro del organizador en la URL."; 
+            document.getElementById('loading-init').innerText = "Falta el parámetro ?org= en la URL."; 
         }
     };
 
     function iniciarPanel(orgId) {
-        // Cargar datos de Facturación / Plan
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var d = snap.val() || {}; 
-            document.getElementById('t-org-header').innerText = (d.cuenta && d.cuenta.nombreOrg) ? d.cuenta.nombreOrg : orgId;
+            globalCuenta = d.cuenta || {}; 
+            document.getElementById('t-org-header').innerText = globalCuenta.nombreOrg || orgId;
             
             if (typeof PadelSaaS !== 'undefined') {
-                var info = PadelSaaS.analizarCuenta(d.cuenta || {}, d.movimientos || {});
+                var info = PadelSaaS.analizarCuenta(globalCuenta, d.movimientos || {});
                 document.getElementById('sc-title').innerText = info.enTrial ? "Vence: " + PadelSaaS.fmtFecha(info.vencimientoAbono) : 'Suscripción Activa';
-                document.getElementById('sc-badge').innerText = (d.cuenta && d.cuenta.plan) ? d.cuenta.plan.toUpperCase() : 'TRIAL';
+                document.getElementById('sc-badge').innerText = globalCuenta.plan ? globalCuenta.plan.toUpperCase() : 'TRIAL';
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Al día";
             }
         });
 
-        // Cargar lista de Canchas (Hubs)
         db.ref('hubs/' + orgId).on('value', function(snap) {
             var hubData = snap.val(); 
             if (!hubData || !hubData.canchas) {
@@ -298,39 +296,20 @@
         });
     }
 
-    // LÓGICA DE REPROGRAMACIÓN AUTOMÁTICA
     function verificarReprogramacionAutomatica(lista) {
         var hoy = new Date();
         lista.forEach(function(c) {
             var fechaPartido = new Date(c.fecha + 'T' + c.hora);
-            
-            // Si es recurrente, ya pasó hace más de 2 horas y no fue clonada aún
             if (c.tipo === 'recurrente' && (hoy - fechaPartido) > (2 * 60 * 60 * 1000) && !c.autoReprogramada) {
-                // Marcamos la actual para no repetir
                 db.ref('eventos/' + c.id).update({ autoReprogramada: true });
-                
-                // Calculamos +7 días
                 var nuevaFechaObj = new Date(fechaPartido.getTime() + 7 * 24 * 60 * 60 * 1000);
                 var nuevaFechaStr = nuevaFechaObj.toISOString().split('T')[0];
-                
-                // Creamos la copia
                 var refNuevaCancha = db.ref('eventos').push();
                 refNuevaCancha.set({
-                    tipo: 'recurrente',
-                    organiza: c.organiza || "",
-                    fecha: nuevaFechaStr,
-                    hora: c.hora,
-                    horaFin: c.horaFin || "",
-                    lugar: c.lugar || "",
-                    categorias: c.categorias || "",
-                    valor: c.valor || 0,
-                    cupo: c.cupo || 8,
-                    alias: c.alias || "",
-                    celuOrganizador: c.celuOrganizador || "",
-                    estado: 'activo',
-                    inscriptos: [] // Inscriptos limpios
+                    tipo: 'recurrente', organiza: c.organiza || "", fecha: nuevaFechaStr, hora: c.hora, horaFin: c.horaFin || "",
+                    lugar: c.lugar || "", categorias: c.categorias || "", valor: c.valor || 0, cupo: c.cupo || 8,
+                    alias: c.alias || "", celuOrganizador: c.celuOrganizador || "", estado: 'activo', inscriptos: []
                 }).then(function() {
-                    // Agregamos el nuevo ID al Hub
                     db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
                         var val = s.val(); 
                         var arrayHub = Array.isArray(val) ? val : (val ? Object.values(val) : []);
@@ -342,7 +321,6 @@
         });
     }
 
-    // RENDERIZAR DASHBOARD
     function renderDashboard() {
         var container = document.getElementById('cards-container'); 
         var html = ''; 
@@ -351,7 +329,7 @@
         var hoyStr = new Date().toLocaleDateString('sv-SE');
         
         eventosCache.forEach(function(d) {
-            if (d.fecha < hoyStr) return; // No mostrar las viejas
+            if (d.fecha < hoyStr) return; 
             
             var inscriptos = d.inscriptos || [];
             var ocupados = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
@@ -368,7 +346,7 @@
                     ${d.tipo === 'recurrente' ? '<span class="badge-rec">FIJO</span>' : ''}
                 </div>
                 <div class="cc-lugar">${d.lugar || 'Cancha sin título'}</div>
-                <div class="cc-info-sub">${d.organiza || 'Admin'} · ${d.categorias || 'Categoría libre'}</div>
+                <div class="cc-info-sub">${d.organiza || 'Organizador'} · ${d.categorias || 'Categoría libre'}</div>
                 <div class="cc-footer">
                     <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
                     <span style="color:var(--brand-green);">$${recaudado}</span>
@@ -381,7 +359,6 @@
         document.getElementById('sc-gestionado').innerText = '$' + tRec;
     }
 
-    // ABRIR DETALLE DE CANCHA (LISTA DE JUGADORES)
     function abrirCancha(id) {
         panelCanchaId = id; 
         if(activeEventRef) activeEventRef.off();
@@ -473,36 +450,24 @@
         db.ref('eventos/' + panelCanchaId + '/inscriptos/' + idx).update({ estado: estado }); 
     }
 
-    // ACCIONES DE LOS 3 PUNTITOS
     function opcionesJugador(nombre, index, celular) {
         document.getElementById('bs-nombre-jugador').innerText = nombre;
-        
         document.getElementById('btn-opt-wa').onclick = function() { window.open('https://wa.me/' + celular, '_blank'); };
-        
-        document.getElementById('btn-opt-club').onclick = function() { 
-            setPago(index, 'paga-en-la-cancha'); 
-            cerrarMenuOpciones(); 
-        };
-        
+        document.getElementById('btn-opt-club').onclick = function() { setPago(index, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
         document.getElementById('btn-opt-del').onclick = function() { 
             if(confirm('¿Seguro que querés eliminar a ' + nombre + ' de la lista?')) { 
                 db.ref('eventos/' + panelCanchaId + '/inscriptos').once('value', function(s) { 
-                    var l = s.val() || []; 
-                    l.splice(index, 1); 
-                    db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(function() {
-                        cerrarMenuOpciones();
-                    }); 
+                    var l = s.val() || []; l.splice(index, 1); 
+                    db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(function() { cerrarMenuOpciones(); }); 
                 }); 
             } 
         };
-        
         document.getElementById('bs-menu').classList.add('active');
     }
 
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
-    // FORMULARIO DE CANCHA
     function abrirFormularioCancha(id) {
         editandoCanchaId = id; 
         var btnEliminar = document.getElementById('btn-eliminar-cancha'); 
@@ -511,9 +476,7 @@
         if(id) {
             var c = eventosCache.find(function(e) { return e.id === id; });
             btnEliminar.style.display = "block"; 
-            
             btnSusp.innerText = c.estado === 'suspendido' ? "Reactivar Cancha" : "Suspender Cancha";
-            
             document.getElementById('fc-tipo').value = c.tipo || 'unica';
             document.getElementById('fc-organizador').value = c.organiza || "";
             document.getElementById('fc-fecha').value = c.fecha;
@@ -528,7 +491,6 @@
         } else {
             btnEliminar.style.display = "none"; 
             btnSusp.innerText = "Suspender Cancha";
-            
             document.getElementById('fc-tipo').value = 'unica'; 
             document.getElementById('fc-organizador').value = "";
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
@@ -553,20 +515,18 @@
             var ahora = new Date();
             var diferenciaHoras = (horaPartido - ahora) / 1000 / 60 / 60;
             
-            // Multa por suspender a menos de 1 hora y hasta 2 horas pasado
             if (diferenciaHoras < 1 && diferenciaHoras > -2) {
-                alert("Aviso: Como suspendés con tan poca anticipación, se generó un cargo por cancelación.");
-                db.ref('facturacion/' + globalOrgId + '/movimientos').push({ 
-                    concepto: "Cancelación tardía: " + (c.lugar || "Cancha"), 
-                    monto: 1000, 
-                    estado: "pendiente", 
-                    fecha: Date.now() 
-                });
+                var valorCancelacion = globalCuenta.precioCancha || globalCuenta.valorCancha || globalCuenta.precioPorCancha || globalCuenta.precio || 0;
+                if (valorCancelacion > 0) {
+                    alert("Aviso: Como suspendés con tan poca anticipación, se generó un cargo por el valor de la cancha configurado en el sistema.");
+                    db.ref('facturacion/' + globalOrgId + '/movimientos').push({ 
+                        concepto: "Cancelación tardía: " + (c.lugar || "Cancha"), 
+                        monto: valorCancelacion, estado: "pendiente", fecha: Date.now() 
+                    });
+                }
             }
         }
-        db.ref('eventos/' + editandoCanchaId).update({ estado: nuevo }).then(function() {
-            cerrarFormularioCancha();
-        });
+        db.ref('eventos/' + editandoCanchaId).update({ estado: nuevo }).then(function() { cerrarFormularioCancha(); });
     }
 
     function guardarCancha() {
@@ -590,10 +550,8 @@
             var ref = db.ref('eventos').push();
             ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
                 db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    var v = s.val(); 
-                    var l = Array.isArray(v) ? v : (v ? Object.values(v) : []);
-                    l.push(ref.key); 
-                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
+                    var v = s.val(); var l = Array.isArray(v) ? v : (v ? Object.values(v) : []);
+                    l.push(ref.key); db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
                 });
             });
         }
@@ -604,10 +562,7 @@
             db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
                 var l = (Array.isArray(s.val()) ? s.val() : []).filter(function(i) { return i !== editandoCanchaId; });
                 db.ref('hubs/' + globalOrgId + '/canchas').set(l);
-                db.ref('eventos/'+editandoCanchaId).remove().then(function() { 
-                    cerrarFormularioCancha(); 
-                    cerrarPanelCancha(); 
-                });
+                db.ref('eventos/'+editandoCanchaId).remove().then(function() { cerrarFormularioCancha(); cerrarPanelCancha(); });
             });
         }
     }
@@ -615,15 +570,11 @@
     function abrirViewMovimientos() {
         document.getElementById('view-movimientos').classList.add('active');
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', function(snap) {
-            var m = snap.val() || {}; 
-            var html = '';
+            var m = snap.val() || {}; var html = '';
             Object.keys(m).sort(function(a,b) { return m[b].fecha - m[a].fecha; }).forEach(function(k) {
                 html += `
                 <div style="background:#fff; padding:15px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-weight:700">${m[k].concepto}</div>
-                        <div style="font-size:10px; font-weight:800; text-transform:uppercase; color:${m[k].estado==='pagado'?'var(--brand-green)':'var(--brand-red)'}">${m[k].estado}</div>
-                    </div>
+                    <div><div style="font-weight:700">${m[k].concepto}</div><div style="font-size:10px; font-weight:800; text-transform:uppercase; color:${m[k].estado==='pagado'?'var(--brand-green)':'var(--brand-red)'}">${m[k].estado}</div></div>
                     <div style="font-weight:800">$${m[k].monto}</div>
                 </div>`;
             });
@@ -633,23 +584,39 @@
     
     function cerrarViewMovimientos() { document.getElementById('view-movimientos').classList.remove('active'); }
     
+    // ACÁ ESTÁ CORREGIDA LA FUNCIÓN DEL LINK
     function copiarLinkCartelera() {
-        var link = window.location.origin + window.location.pathname.replace('d.html', 'index.html') + '?org=' + encodeURIComponent(globalOrgId);
-        navigator.clipboard.writeText(link).then(function() { alert("¡Link copiado al portapapeles!"); });
+        // Prioridad 1: Link personalizado del Master
+        var linkAcortado = globalCuenta.linkAcortado || globalCuenta.linkCorto || globalCuenta.linkPersonalizado || globalCuenta.aliasCartelera;
+        var linkFinal = "";
+
+        if (linkAcortado) {
+            // Asegurar que tenga https:// si es un link acortado
+            linkFinal = linkAcortado.startsWith('http') ? linkAcortado : 'https://' + linkAcortado;
+        } else {
+            // Prioridad 2: Si no tiene link corto, se arma el link robusto al index.html
+            var urlBase = window.location.href.split('?')[0]; // quita todo lo que está después del ?
+            var rutaLimpia = urlBase.substring(0, urlBase.lastIndexOf('/')); // quita d.html (o d, o d.htm)
+            linkFinal = rutaLimpia + '/index.html?org=' + encodeURIComponent(globalOrgId);
+        }
+
+        navigator.clipboard.writeText(linkFinal).then(function() { 
+            alert("¡Link copiado!\n\n" + linkFinal); 
+        }).catch(function(err) {
+            // Fallback por si el celular bloquea el portapapeles automático
+            prompt("Copiá tu link manualmente:", linkFinal);
+        });
     }
     
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
     
     function formatearDiaCorto(f) { 
-        var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; 
-        var d=new Date(f+'T12:00:00'); 
+        var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); 
         return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); 
     }
     
     function jugadorAbreviado(n) { 
-        if(!n) return 'Jugador'; 
-        var p=n.split(' '); 
-        return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; 
+        if(!n) return 'Jugador'; var p=n.split(' '); return p.length===1 ? p[0] : p[0]+' '+p[1].charAt(0)+'.'; 
     }
 </script>
 </body>

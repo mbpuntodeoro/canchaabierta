@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=44"></script>
+    <script src="app-config.js?v=60"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -45,22 +45,22 @@
         }
 
         /* --- 2. CARTELERA --- */
-        #app-content { background: var(--bg-white); min-height: 100vh; }
-        .cartelera-container { padding-bottom: 10px; }
+        #app-content { background: var(--bg-base); min-height: 100vh; }
+        .cartelera-container { padding: 16px; }
+        
         .day-header {
-            background: #F3F4F6; color: #374151; font-size: 13px; font-weight: 600; text-transform: uppercase;
-            padding: 10px 16px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-            position: sticky; top: 65px; z-index: 40;
+            color: #374151; font-size: 13px; font-weight: 700; text-transform: uppercase;
+            padding: 10px 0; margin-top: 10px;
         }
+        
         .court-item {
-            padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer;
-            display: block; background: var(--bg-white); transition: background 0.1s ease;
+            padding: 20px; border-radius: 16px; margin-bottom: 16px; cursor: pointer;
+            display: block; background: var(--bg-white); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid var(--border);
+            transition: transform 0.1s ease;
         }
-        .court-item:active { background: #F9FAFB; }
-        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
-        .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
-        .c-line-3 { font-size: 13px; color: var(--text-sub); }
-        .c-cat-bold { font-weight: 600; color: var(--text-main); }
+        .court-item:active { transform: scale(0.98); }
+        
         #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
 
         /* --- 3. INSCRIPCIÓN Y NAVEGACIÓN --- */
@@ -128,15 +128,11 @@
         .btn-black:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* --- 4. CONFIRMACIÓN Y PAGO --- */
-        .success-icon {
-            font-size: 40px; line-height: 1; margin-bottom: 12px;
-        }
+        .success-icon { font-size: 40px; line-height: 1; margin-bottom: 12px; }
         .s-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.5px; }
         .s-subtitle { font-size: 15px; font-weight: 500; color: var(--text-sub); margin-bottom: 32px; }
         
-        .pay-block {
-            background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center;
-        }
+        .pay-block { background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center; }
         .p-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
         .p-monto { font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; margin-bottom: 24px; }
         .p-alias { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; word-break: break-all; }
@@ -150,22 +146,13 @@
 
         .s-microcopy { font-size: 13px; color: var(--text-sub); font-weight: 500; margin-bottom: 24px; text-align: center; }
 
-        .links-secundarios {
-            display: flex; flex-direction: column; gap: 16px; margin-top: 24px; text-align: center;
-        }
-        .link-sec {
-            font-size: 14px; font-weight: 600; color: var(--text-sub); text-decoration: none; cursor: pointer;
-            padding: 8px 0;
-        }
+        .links-secundarios { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; text-align: center; }
+        .link-sec { font-size: 14px; font-weight: 600; color: var(--text-sub); text-decoration: none; cursor: pointer; padding: 8px 0; }
         .link-sec:active { color: var(--text-main); }
 
         /* FOOTER BRANDING VIOLETA */
-        .branding-footer {
-            font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px;
-        }
-        .link-cancher {
-            color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px;
-        }
+        .branding-footer { font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px; }
+        .link-cancher { color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px; }
     </style>
 </head>
 <body>
@@ -200,9 +187,9 @@
                     <div class="i-row">📅 <span id="ins-date">--</span></div>
                     <div class="i-row" id="ins-loc-container">📍 <span id="ins-loc">--</span></div>
                     
-                    <div class="i-row">👤 <span>Organiza: <span id="ins-org" style="font-weight:600; color:var(--text-main);">--</span></span></div>
+                    <div class="i-row">👤 <span>Organiza: <span id="ins-org">--</span></span></div>
                     
-                    <div class="i-price"><span id="ins-price">--</span> por jugador</div>
+                    <div class="i-price" id="ins-price">-- por jugador</div>
                 </div>
                 
                 <div class="scarcity-msg">⚡ Esta cancha suele completarse rápido</div>
@@ -286,7 +273,7 @@
     const orgId = urlParams.get('org') || urlParams.get('id');
     let dbEvents = [];
     let currentEventData = null;
-    let nombreClubGlobal = "Club"; // Variable de respaldo si la cancha no tiene organizador
+    let nombreClubGlobal = "Club"; 
 
     if(!orgId) {
         document.getElementById('loading-init').innerText = "Enlace incompleto.";
@@ -335,15 +322,34 @@
                         lastDate = d.fecha;
                     }
 
-                    let tituloSede = d.lugar || 'Cancha';
-                    let organizadorReal = d.organiza || nombreClubGlobal; // ACÁ LEE EL NUEVO CAMPO "organiza"
+                    // Título (organiza) y Organizador real (nombreOrganizador)
+                    let tituloEvento = d.organiza || 'Cancha Abierta';
+                    let sede = d.lugar || '';
+                    let organizadorReal = d.nombreOrganizador || nombreClubGlobal; 
                     
+                    // DISEÑO EXACTO A LA IMAGEN 1
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
-                            <div class="c-line-1"><span>${tituloSede.toUpperCase()}</span><span>${PadelUtils.fmtDinero(d.valor)}</span></div>
-                            <div class="c-line-2">👤 Organiza: ${organizadorReal}</div>
-                            <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
-                            <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
+                            <div style="font-size: 17px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; line-height: 1.2;">
+                                ${tituloEvento}
+                            </div>
+                            
+                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px;">
+                                <span>📅</span> <span>${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</span>
+                            </div>
+                            
+                            ${sede ? `
+                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display:flex; align-items:center; gap:8px;">
+                                <span>📍</span> <span>${sede}</span>
+                            </div>` : ''}
+                            
+                            <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+                                <span>👤</span> <span>Organiza: ${organizadorReal}</span>
+                            </div>
+                            
+                            <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 8px;">
+                                $ ${PadelUtils.fmtDinero(d.valor)} por jugador
+                            </div>
                         </div>`;
                 }
             });
@@ -361,14 +367,16 @@
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        document.getElementById('ins-title').innerText = currentEventData.lugar || 'Cancha';
+        // LLENADO DEL PASO 3
+        document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha Abierta';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
-        document.getElementById('ins-loc-container').style.display = 'none'; // El lugar ya es el título
         
-        // ACÁ ACTUALIZA EL ORGANIZADOR EN EL PASO 3
-        document.getElementById('ins-org').innerText = currentEventData.organiza || nombreClubGlobal;
+        document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
+        if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
         
-        document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
+        document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || nombreClubGlobal;
+        
+        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)}`;
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar por privado';
 
         document.getElementById('ins-lugares').value = "1";
@@ -515,8 +523,8 @@
         const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
 
-        let tituloCancha = currentEventData.lugar || 'Cancha';
-        let sede = currentEventData.organiza ? ` - Org: ${currentEventData.organiza}` : '';
+        let tituloCancha = currentEventData.organiza || 'Cancha Abierta';
+        let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
 
         let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
         texto += `Nombre: ${local.nombre}\n`;

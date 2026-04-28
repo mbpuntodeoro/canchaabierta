@@ -9,7 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="app-config.js?v=62"></script>
+    <script src="app-config.js?v=63"></script>
     
     <style>
         /* --- SISTEMA DE DISEÑO CANCHER --- */
@@ -57,7 +57,7 @@
             display: block; background: var(--bg-white); transition: background 0.1s ease;
         }
         .court-item:active { background: #F9FAFB; }
-        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; line-height: 1.2; }
         .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
         .c-line-3 { font-size: 13px; color: var(--text-sub); }
         .c-cat-bold { font-weight: 600; color: var(--text-main); }
@@ -202,7 +202,7 @@
                     
                     <div class="i-row">👤 <span>Organiza: <span id="ins-org" style="font-weight:600; color:var(--text-main);">--</span></span></div>
                     
-                    <div class="i-price" id="ins-price">-- por jugador</div>
+                    <div class="i-price"><span id="ins-price">--</span> por jugador</div>
                 </div>
                 
                 <div class="scarcity-msg">⚡ Esta cancha suele completarse rápido</div>
@@ -335,17 +335,17 @@
                         lastDate = d.fecha;
                     }
 
-                    // VARIABLES CORRECTAS (Panel D)
-                    let tituloEvento = d.organiza || 'Cancha Abierta'; // Título del evento
-                    let sede = d.lugar || ''; // Lugar / Dirección
-                    let categoria = d.categorias || 'Todas las categorías'; // Nivel
+                    // VARIABLES LIMPIAS
+                    let tituloEvento = d.organiza || 'Cancha Abierta'; // Este es el título principal
+                    let sede = d.lugar || '';
+                    let categoria = d.categorias || 'Todas las categorías';
                     
-                    // DISEÑO EXACTO A TU CÓDIGO ORIGINAL (IGUAL A IMAGEN 1 Y 3)
+                    // DISEÑO ORIGINAL (Título y Precio en la misma línea superior, sin el dólar extra)
                     htmlAcumulado += `
                         <div class="court-item" onclick="abrirInscripcion('${d.id}')">
                             <div class="c-line-1">
                                 <span>${tituloEvento.toUpperCase()}</span>
-                                <span>$ ${PadelUtils.fmtDinero(d.valor)}</span>
+                                <span>${PadelUtils.fmtDinero(d.valor)}</span>
                             </div>
                             <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
                             ${sede ? `<div class="c-line-2">📍 ${sede}</div>` : ''}
@@ -367,17 +367,18 @@
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        // LLENADO DEL PASO 3 (Lectura correcta de base de datos)
+        // LLENADO DEL PASO 3 (SIN DÓLAR EXTRA)
         document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha Abierta';
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         
         document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
         if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
         
-        // AQUÍ SE IMPRIME LA PERSONA (Dato: nombreOrganizador o nombreClubGlobal)
         document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || nombreClubGlobal;
         
-        document.getElementById('ins-price').innerText = `$ ${PadelUtils.fmtDinero(currentEventData.valor)}`;
+        // PadelUtils.fmtDinero ya devuelve "$ 20.000", no hace falta sumarle otro $
+        document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
+        
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar por privado';
 
         document.getElementById('ins-lugares').value = "1";

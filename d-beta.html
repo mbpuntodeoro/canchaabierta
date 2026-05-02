@@ -39,6 +39,11 @@
 
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
+        
+        /* NUEVO: ESTILO PARA CANCHAS PASADAS */
+        .card-pasada { background: #E5E7EB !important; opacity: 0.6; border: 1px solid var(--border); }
+        .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
+
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
         .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
@@ -117,10 +122,10 @@
             <button onclick="abrirViewMovimientos()" style="width:100%; margin-top:15px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">📋 Ver Movimientos</button>
         </div>
 
-        <div id="loading-init">Buscando tus canchas...</div>
+        <div id="loading-init" style="text-align: center; padding: 40px; color: #666;">Buscando tus canchas...</div>
         <div id="cards-container"></div>
 
-        <div class="dashboard-actions" id="dash-actions" style="display:none; gap:10px; margin: 0 16px;">
+        <div class="dashboard-actions" id="dash-actions" style="display:none; gap:10px; flex-direction:row; margin: 0 16px;">
             <button class="btn-action-dash" onclick="copiarLinkCartelera()" style="flex:1; padding:14px; border-radius:10px; font-weight:600; background:#fff; border:1px solid var(--border); cursor:pointer;">🔗 Copiar Link</button>
             <button class="btn-action-dash" onclick="soporteWhatsapp()" style="flex:1; padding:14px; border-radius:10px; font-weight:600; background:#25D366; color:#fff; border:none; cursor:pointer;">💬 Soporte</button>
         </div>
@@ -137,7 +142,7 @@
             <div id="pc-titulo" style="font-size:20px; font-weight:800; text-transform:uppercase;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             
-            <button id="btn-clonar-semana" style="width: 100%; height: 50px; background: var(--text-main); color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button id="btn-clonar-semana" style="width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <span>🗓️</span> Duplicar para la próxima semana
             </button>
 
@@ -236,7 +241,10 @@
                 eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
                     var val = s.val(); val.id = s.key; return val;
                 });
-                eventosCache.sort(function(a,b) { return new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora); });
+                
+                // ORDEN INVERTIDO: MÁS NUEVA ARRIBA (DESCENDENTE)
+                eventosCache.sort(function(a,b) { return new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora); });
+                
                 document.getElementById('loading-init').style.display = 'none';
                 document.getElementById('dash-actions').style.display = 'flex';
                 renderDashboard();
@@ -247,22 +255,30 @@
     function renderDashboard() {
         var container = document.getElementById('cards-container');
         var html = ''; var tRec = 0; var tJug = 0;
-        var hoy = new Date().toLocaleDateString('sv-SE');
+        var hoyStr = new Date().toLocaleDateString('sv-SE');
 
         eventosCache.forEach(function(d) {
             
-            // LA LÍNEA DEL FILTRO DE FECHA ESTÁ ANULADA A PROPÓSITO:
-            // if (d.fecha < hoy) return; 
+            // LÓGICA DE CANCHAS PASADAS EN GRIS
+            var esPasada = d.fecha < hoyStr;
 
             var inscriptos = d.inscriptos || [];
             var ocupados = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
             var recaudado = inscriptos.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { 
                 return acc + (d.valor * (j.cantidad || 1)); 
             }, 0);
-            tRec += recaudado; tJug += ocupados;
+            
+            // Solo suma a la "Billetera" si NO es una cancha vieja
+            if (!esPasada) {
+                tRec += recaudado; 
+                tJug += ocupados;
+            }
 
-            html += '<div class="card-cancha ' + (ocupados >= (d.cupo||0) ? 'card-completa' : '') + '" onclick="abrirCancha(\''+d.id+'\')">' +
-                '<div class="cc-header"><div>' + formatearDiaCorto(d.fecha) + ' · ' + d.hora + ' hs</div></div>' +
+            var claseGris = esPasada ? 'card-pasada' : '';
+            var badgeGris = esPasada ? '<span class="badge-pasada">PASADA</span>' : '';
+
+            html += '<div class="card-cancha ' + claseGris + ' ' + (ocupados >= (d.cupo||0) ? 'card-completa' : '') + '" onclick="abrirCancha(\''+d.id+'\')">' +
+                '<div class="cc-header"><div>' + formatearDiaCorto(d.fecha) + ' · ' + d.hora + ' hs' + badgeGris + '</div></div>' +
                 '<div class="cc-categoria">' + (d.organiza || 'Cancha') + '</div>' +
                 '<div class="cc-footer"><span>👥 ' + ocupados + ' / ' + (d.cupo || '--') + '</span><span class="cc-dinero">$' + recaudado + '</span></div>' +
             '</div>';
@@ -325,12 +341,12 @@
     function clonarCancha(c) {
         if(!confirm('¿Crear copia de esta cancha para la semana que viene? (La lista empezará vacía)')) return;
         
-        var fechaActual = new Date(c.fecha + 'T12:00:00');
-        fechaActual.setDate(fechaActual.getDate() + 7);
-        var nuevaFechaStr = fechaActual.toISOString().split('T')[0];
+        var fObj = new Date(c.fecha + 'T12:00:00');
+        fObj.setDate(fObj.getDate() + 7);
+        var nuevaF = fObj.toISOString().split('T')[0];
 
-        var nuevaCancha = {
-            fecha: nuevaFechaStr,
+        var nc = {
+            fecha: nuevaF,
             hora: c.hora,
             horaFin: c.horaFin || "",
             organiza: c.organiza || "",
@@ -344,12 +360,12 @@
         };
 
         var ref = db.ref('eventos').push();
-        ref.set(nuevaCancha).then(function() {
+        ref.set(nc).then(function() {
             db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
                 var l = Array.isArray(s.val()) ? s.val() : (s.val() ? Object.values(s.val()) : []);
                 l.push(ref.key);
                 db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(function() {
-                    alert("Cancha clonada con éxito.");
+                    alert('Cancha clonada con éxito.');
                     cerrarPanelCancha();
                 });
             });

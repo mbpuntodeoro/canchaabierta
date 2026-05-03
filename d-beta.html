@@ -40,7 +40,6 @@
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         
-        /* ESTILO PARA CANCHAS PASADAS EN GRIS */
         .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
         .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
 
@@ -267,9 +266,11 @@
         pasadas.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
 
         function armarCard(d, esPasada) {
-            var inscriptos = d.inscriptos || [];
-            var ocupados = inscriptos.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
-            var recaudado = inscriptos.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { 
+            var inscriptosObj = d.inscriptos || {};
+            var inscriptosArr = Array.isArray(inscriptosObj) ? inscriptosObj : Object.values(inscriptosObj);
+            
+            var ocupados = inscriptosArr.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
+            var recaudado = inscriptosArr.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { 
                 return acc + (d.valor * (j.cantidad || 1)); 
             }, 0);
             
@@ -298,6 +299,7 @@
         document.getElementById('sc-gestionado').innerText = '$' + tRec;
     }
 
+    // --- LECTURA MEJORADA: ACEPTA ARRAYS Y OBJETOS ---
     function abrirCancha(id) {
         panelCanchaId = id;
         if(activeEventRef) activeEventRef.off();
@@ -313,14 +315,15 @@
             btnClonar.disabled = false;
             btnClonar.onclick = function() { clonarCancha(c); };
 
-            var inscriptos = c.inscriptos || [];
+            var inscriptosObj = c.inscriptos || {};
             var ocupados = 0; var recaudado = 0; var grupos = {};
 
-            inscriptos.forEach(function(jug, idx) {
-                jug.originalIndex = idx;
+            Object.keys(inscriptosObj).forEach(function(playerKey) {
+                var jug = inscriptosObj[playerKey];
+                jug.originalIndex = playerKey; // Esto guarda el ID único
                 ocupados += (jug.cantidad || 1);
                 if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
-                var cel = jug.celular || `sin-celu-${idx}`;
+                var cel = jug.celular || `sin-celu-${playerKey}`;
                 if(!grupos[cel]) grupos[cel] = [];
                 grupos[cel].push(jug);
             });
@@ -331,10 +334,10 @@
                 var estG = jgs.some(j => j.estado === 'pendiente' || !j.estado) ? 'pendiente' : (jgs.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
 
                 if(jgs.length === 1 && totG === 1) {
-                    var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago(${tit.originalIndex}, 'pagado')">✔</button>` : '';
-                    htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)}</span><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', ${tit.originalIndex}, '${tit.celular}')">⋯</button></div></div>`);
+                    var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago('${tit.originalIndex}', 'pagado')">✔</button>` : '';
+                    htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)}</span><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', '${tit.originalIndex}', '${tit.celular}')">⋯</button></div></div>`);
                 } else {
-                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${jugadorAbreviado(j.nombre)} <div class="dot ${j.estado || 'pendiente'}" style="width:8px; height:8px;"></div></div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago(${j.originalIndex}, 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', ${j.originalIndex}, '${j.celular}')">⋯</button></div></div>`).join('');
+                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${jugadorAbreviado(j.nombre)} <div class="dot ${j.estado || 'pendiente'}" style="width:8px; height:8px;"></div></div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">⋯</button></div></div>`).join('');
                     htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><div class="dot ${estG}"></div></div><div class="acciones"><svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="grupo-detalle">${sub}</div></div>`);
                 }
             });
@@ -373,8 +376,8 @@
             alias: c.alias || "",
             celuOrganizador: c.celuOrganizador || "",
             estado: 'activo',
-            tipo: 'unica', // MATA RECURRENCIA FANTASMA
-            inscriptos: []
+            tipo: 'unica',
+            inscriptos: {} // EMPIEZA COMO OBJETO
         };
 
         var ref = db.ref('eventos').push();
@@ -391,10 +394,9 @@
         });
     }
 
-    // --- ACÁ ESTÁ EL BOTÓN DE GUARDAR ARREGLADO ---
     function guardarCancha() {
         var d = {
-            tipo: 'unica', // SOBREESCRIBE RECURRENCIA
+            tipo: 'unica', 
             fecha: document.getElementById('fc-fecha').value || "",
             hora: document.getElementById('fc-hora').value || "",
             horaFin: document.getElementById('fc-horafin').value || "",
@@ -418,9 +420,8 @@
             }).catch(function(e) { alert("Error: " + e.message); btnSave.disabled = false; });
         } else {
             var ref = db.ref('eventos').push();
-            ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
+            ref.set(Object.assign(d, {estado:'activo', inscriptos:{}})).then(function() {
                 db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    // ESTA LÍNEA EVITA EL ERROR DE LISTA QUE FRENABA EL BOTÓN
                     var l = Array.isArray(s.val()) ? s.val() : (s.val() ? Object.values(s.val()) : []);
                     l.push(ref.key);
                     db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(function() {
@@ -433,18 +434,22 @@
         }
     }
 
-    function setPago(idx, estado) { db.ref('eventos/' + panelCanchaId + '/inscriptos/' + idx).update({ estado: estado }); }
+    // --- MANEJO DE ESTADOS CON IDs ÚNICOS ---
+    function setPago(playerKey, estado) { 
+        db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).update({ estado: estado }); 
+    }
 
-    function opcionesJugador(nombre, idx, celular) {
+    function opcionesJugador(nombre, playerKey, celular) {
         document.getElementById('bs-nombre-jugador').innerText = nombre;
         document.getElementById('btn-wa').onclick = function() { window.open('https://wa.me/' + celular, '_blank'); };
-        document.getElementById('btn-revertir').onclick = function() { setPago(idx, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
+        document.getElementById('btn-revertir').onclick = function() { setPago(playerKey, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
+        
+        // BORRADO ATÓMICO: SOLO TOCA AL JUGADOR ESPECÍFICO
         document.getElementById('btn-eliminar').onclick = function() {
             if(confirm('¿Eliminar jugador?')) {
-                db.ref('eventos/' + panelCanchaId + '/inscriptos').once('value', function(s) {
-                    var l = s.val() || []; l.splice(idx, 1);
-                    db.ref('eventos/' + panelCanchaId + '/inscriptos').set(l).then(cerrarMenuOpciones);
-                });
+                db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).remove().then(function() {
+                    cerrarMenuOpciones();
+                }).catch(err => alert("Error al borrar: " + err.message));
             }
         };
         document.getElementById('bs-menu').classList.add('active');
@@ -518,6 +523,8 @@
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
     function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
     function obtenerNombreDia(f) { var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]; }
+    
+    // --- FUNCIÓN ABREVIADO MODIFICADA PARA NO CORTAR APELLIDOS ---
     function jugadorAbreviado(n) { return n || 'Jugador'; }
 </script>
 </body>

@@ -40,7 +40,7 @@
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         
-        /* ESTILO PARA CANCHAS PASADAS EN GRIS */
+        /* CANCHAS PASADAS EN GRIS */
         .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
         .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
 
@@ -62,11 +62,12 @@
         .sub-fila { padding: 12px 16px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; }
         
+        /* COLORES DE LOS PUNTITOS */
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
         .dot.pendiente { background: var(--brand-red); }
         .dot.pagado { background: var(--brand-green); }
         .dot.cancha { background: var(--brand-orange); }
-        .dot.paga-en-la-cancha { background: var(--brand-orange); } /* ARREGLO: COLOR NARANJA PARA LOS QUE PAGAN EN CLUB */
+        .dot.paga-en-la-cancha { background: var(--brand-orange); }
 
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
@@ -91,9 +92,6 @@
         .mov-badge { font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; margin-top: 6px; display: inline-block; text-transform: uppercase;}
         .mb-pagado { background: #E0E7FF; color: #3730A3; }
         .mb-deuda { background: #FEE2E2; color: #991B1B; }
-
-        .icon-chevron { transition: transform 0.2s; }
-        .icon-chevron.open { transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -113,18 +111,24 @@
                 <div class="dsc-badge" id="sc-badge">TRIAL</div>
             </div>
             <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando...</div>
+            
             <div class="dsc-impact-box">
                 <div class="dsc-metrics">
                     <div style="flex:1">
-                        <div class="dsc-metric-label">Jugadores</div>
-                        <div class="dsc-metric-val" id="sc-jugadores">0</div>
+                        <div class="dsc-metric-label">Anotados</div>
+                        <div class="dsc-metric-val" style="font-size: 18px;" id="sc-jugadores">0</div>
                     </div>
                     <div style="flex:1">
-                        <div class="dsc-metric-label">Gestionado</div>
-                        <div class="dsc-metric-val" id="sc-gestionado">$0</div>
+                        <div class="dsc-metric-label">Pagaron</div>
+                        <div class="dsc-metric-val" style="font-size: 18px; color: var(--brand-green);" id="sc-pagados">0</div>
+                    </div>
+                    <div style="flex:1">
+                        <div class="dsc-metric-label">Cobrado</div>
+                        <div class="dsc-metric-val" style="font-size: 18px;" id="sc-gestionado">$0</div>
                     </div>
                 </div>
             </div>
+            
             <button onclick="abrirViewMovimientos()" style="width:100%; margin-top:15px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">📋 Ver Movimientos</button>
         </div>
 
@@ -259,9 +263,9 @@
 
     function renderDashboard() {
         var container = document.getElementById('cards-container');
-        var html = ''; var tRec = 0; var tJug = 0;
+        var html = ''; var tRec = 0; var tJug = 0; var tPagados = 0;
         
-        // ARREGLO: FÓRMULA INFALIBLE PARA LA FECHA DE HOY (Soporta todos los celulares)
+        // FÓRMULA INFALIBLE PARA LA FECHA DE HOY
         var dObj = new Date();
         var hoyStr = dObj.getFullYear() + "-" + String(dObj.getMonth() + 1).padStart(2, '0') + "-" + String(dObj.getDate()).padStart(2, '0');
 
@@ -276,11 +280,16 @@
             var inscriptosArr = Array.isArray(inscriptosObj) ? inscriptosObj : Object.values(inscriptosObj);
             
             var ocupados = inscriptosArr.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
-            var recaudado = inscriptosArr.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { 
-                return acc + (d.valor * (j.cantidad || 1)); 
-            }, 0);
             
-            if(!esPasada) { tRec += recaudado; tJug += ocupados; }
+            // LA MATEMÁTICA DE LAS 3 COLUMNAS
+            var pagadosCount = inscriptosArr.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
+            var recaudado = pagadosCount * (d.valor || 0);
+            
+            if(!esPasada) { 
+                tRec += recaudado; 
+                tJug += ocupados; 
+                tPagados += pagadosCount; 
+            }
 
             return `<div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${esPasada ? 'card-pasada' : ''}" onclick="abrirCancha('${d.id}')">
                 <div class="cc-header">
@@ -301,10 +310,17 @@
         }
 
         container.innerHTML = html;
+        
+        // ACTUALIZAMOS LAS 3 COLUMNAS DEL STATUS CARD
         document.getElementById('sc-jugadores').innerText = tJug;
-        document.getElementById('sc-gestionado').innerText = '$' + tRec;
+        document.getElementById('sc-pagados').innerText = tPagados;
+        
+        // Formato lindo de plata para el Total Cobrado
+        var formatPlata = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(tRec);
+        document.getElementById('sc-gestionado').innerText = formatPlata;
     }
 
+    // --- LECTURA MEJORADA CON OBJETOS / IDs UNICOS ---
     function abrirCancha(id) {
         panelCanchaId = id;
         if(activeEventRef) activeEventRef.off();
@@ -323,6 +339,7 @@
             var inscriptosObj = c.inscriptos || {};
             var ocupados = 0; var recaudado = 0; var grupos = {};
 
+            // ACÁ USAMOS LAS LLAVES ÚNICAS (playerKey)
             Object.keys(inscriptosObj).forEach(function(playerKey) {
                 var jug = inscriptosObj[playerKey];
                 jug.originalIndex = playerKey; // Esto guarda el ID único
@@ -359,6 +376,7 @@
         document.getElementById('view-panel-cancha').classList.add('active');
     }
 
+    // --- CLONADO SEGURO (OBJETO VACÍO Y TIPO UNICA) ---
     function clonarCancha(c) {
         if(!confirm('¿Querés duplicar esta cancha para la próxima semana? (La lista empezará vacía)')) return;
         
@@ -382,7 +400,7 @@
             celuOrganizador: c.celuOrganizador || "",
             estado: 'activo',
             tipo: 'unica',
-            inscriptos: {} 
+            inscriptos: {} // EMPIEZA COMO OBJETO VACIO SEGURO
         };
 
         var ref = db.ref('eventos').push();
@@ -399,6 +417,7 @@
         });
     }
 
+    // --- GUARDADO SEGURO (OBJETO VACÍO Y TIPO UNICA) ---
     function guardarCancha() {
         var d = {
             tipo: 'unica', 
@@ -439,6 +458,7 @@
         }
     }
 
+    // --- MODIFICACIONES ATÓMICAS EN BASE A IDs ÚNICOS ---
     function setPago(playerKey, estado) { 
         db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).update({ estado: estado }); 
     }
@@ -450,6 +470,7 @@
         
         document.getElementById('btn-eliminar').onclick = function() {
             if(confirm('¿Eliminar jugador?')) {
+                // Borrado atómico, solo toca la rama de este ID
                 db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).remove().then(function() {
                     cerrarMenuOpciones();
                 }).catch(err => alert("Error al borrar: " + err.message));

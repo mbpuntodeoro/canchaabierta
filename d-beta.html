@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=44"></script>
+    <script src="app-config.js?v=46"></script>
     
     <style>
         :root { 
@@ -39,6 +39,11 @@
 
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
+        
+        /* ESTILO PARA CANCHAS PASADAS EN GRIS */
+        .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
+        .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
+
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
         .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
@@ -68,10 +73,11 @@
         .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 0.5px; }
 
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
-        .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
         
-        /* BOTON CLONAR MEJORADO */
-        .btn-copy-week { width: 100%; height: 50px; background: var(--brand-purple); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 14px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
+        .btn-black-modal:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .btn-copy-week { width: 100%; height: 50px; background: var(--brand-purple); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-copy-week:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .bs-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; }
@@ -84,9 +90,8 @@
         .mb-pagado { background: #E0E7FF; color: #3730A3; }
         .mb-deuda { background: #FEE2E2; color: #991B1B; }
 
-        /* CANCHAS PASADAS GRIS */
-        .card-pasada { background: #E5E7EB !important; opacity: 0.7; }
-        .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
+        .icon-chevron { transition: transform 0.2s; }
+        .icon-chevron.open { transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -124,7 +129,7 @@
         <div id="loading-init" style="text-align: center; padding: 40px; color: var(--text-sub);">Buscando tus canchas...</div>
         <div id="cards-container"></div>
 
-        <div class="dashboard-actions" id="dash-actions" style="display:none; gap:10px; margin: 0 16px;">
+        <div class="dashboard-actions" id="dash-actions" style="display:none; gap:10px; flex-direction:row; margin: 0 16px;">
             <button class="btn-action-dash" onclick="copiarLinkCartelera()" style="flex:1; padding:14px; border-radius:10px; font-weight:600; background:#fff; border:1px solid var(--border); cursor:pointer;">🔗 Copiar Link</button>
             <button class="btn-action-dash" onclick="soporteWhatsapp()" style="flex:1; padding:14px; border-radius:10px; font-weight:600; background:#25D366; color:#fff; border:none; cursor:pointer;">💬 Soporte</button>
         </div>
@@ -142,7 +147,7 @@
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             
             <button class="btn-copy-week" id="btn-clonar-semana">
-                <span>🗓️</span> Duplicar para el próximo sábado
+                <span>🗓️</span> Duplicar para la próxima semana
             </button>
 
             <div class="mj-resumen">
@@ -156,16 +161,15 @@
     <div id="view-form-cancha" class="view-modal" style="z-index: 150;">
         <div class="nav-modal"><div onclick="cerrarFormularioCancha()" style="cursor:pointer; font-weight:600;">✕ Cancelar</div><div style="font-weight: 700;">Configurar Cancha</div></div>
         <div class="modal-content" style="padding:16px;">
-            
             <input type="date" id="fc-fecha" class="input-clean">
             <div style="display:flex; gap:8px;"><input type="time" id="fc-hora" class="input-clean"><input type="time" id="fc-horafin" class="input-clean"></div>
-            <input type="text" id="fc-titulo" class="input-clean" placeholder="Título">
+            <input type="text" id="fc-titulo" class="input-clean" placeholder="Título de la cancha">
             <input type="text" id="fc-lugar" class="input-clean" placeholder="Sede">
             <div style="display:flex; gap:8px;"><input type="number" id="fc-precio" class="input-clean" placeholder="Precio"><input type="number" id="fc-cupo" class="input-clean" placeholder="Cupos"></div>
-            <input type="text" id="fc-alias" class="input-clean" placeholder="Alias">
+            <input type="text" id="fc-alias" class="input-clean" placeholder="Alias CBU">
             <input type="tel" id="fc-celu" class="input-clean" placeholder="WhatsApp">
             
-            <button class="btn-black-modal" onclick="guardarCancha()">Guardar Cancha</button>
+            <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Guardar Cancha</button>
             <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
         </div>
     </div>
@@ -256,11 +260,9 @@
         var html = ''; var tRec = 0; var tJug = 0;
         var hoyStr = new Date().toLocaleDateString('sv-SE');
 
-        // SEPARAMOS CANCHAS ACTIVAS DE LAS PASADAS
         var futuras = eventosCache.filter(e => e.fecha >= hoyStr);
         var pasadas = eventosCache.filter(e => e.fecha < hoyStr);
 
-        // ORDEN: MÁS NUEVA ARRIBA (DESCENDENTE)
         futuras.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
         pasadas.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
 
@@ -286,7 +288,6 @@
         }
 
         futuras.forEach(d => html += armarCard(d, false));
-        
         if(pasadas.length > 0) {
             html += '<div class="grupo-titulo" style="margin-left:16px;">Anteriores</div>';
             pasadas.forEach(d => html += armarCard(d, true));
@@ -306,7 +307,6 @@
             document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
             document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
             
-            // CONFIGURAR BOTON CLONAR
             var btnClonar = document.getElementById('btn-clonar-semana');
             var proximoDia = obtenerNombreDia(c.fecha);
             btnClonar.innerHTML = `<span>🗓️</span> Duplicar para el próximo ${proximoDia}`;
@@ -352,11 +352,11 @@
     }
 
     function clonarCancha(c) {
-        if(!confirm('¿Querés duplicar esta cancha para la semana que viene? (La lista empezará vacía)')) return;
+        if(!confirm('¿Querés duplicar esta cancha para la próxima semana? (La lista empezará vacía)')) return;
         
         var btn = document.getElementById('btn-clonar-semana');
         btn.disabled = true;
-        btn.innerText = "⏳ Duplicando...";
+        btn.innerHTML = "⏳ Duplicando...";
 
         var fObj = new Date(c.fecha + 'T12:00:00');
         fObj.setDate(fObj.getDate() + 7);
@@ -373,7 +373,7 @@
             alias: c.alias || "",
             celuOrganizador: c.celuOrganizador || "",
             estado: 'activo',
-            tipo: 'unica', // <--- ESTO MATA A LA RECURRENCIA FANTASMA
+            tipo: 'unica', // MATA RECURRENCIA FANTASMA
             inscriptos: []
         };
 
@@ -385,33 +385,51 @@
                 db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(function() {
                     alert('Cancha clonada con éxito.');
                     cerrarPanelCancha();
+                    btn.disabled = false;
                 });
             });
         });
     }
 
+    // --- ACÁ ESTÁ EL BOTÓN DE GUARDAR ARREGLADO ---
     function guardarCancha() {
         var d = {
-            tipo: 'unica', // <--- ESTO MATA A LA RECURRENCIA FANTASMA SI EDITÁS UNA VIEJA
-            fecha: document.getElementById('fc-fecha').value,
-            hora: document.getElementById('fc-hora').value,
-            horaFin: document.getElementById('fc-horafin').value,
-            organiza: document.getElementById('fc-titulo').value,
-            lugar: document.getElementById('fc-lugar').value,
+            tipo: 'unica', // SOBREESCRIBE RECURRENCIA
+            fecha: document.getElementById('fc-fecha').value || "",
+            hora: document.getElementById('fc-hora').value || "",
+            horaFin: document.getElementById('fc-horafin').value || "",
+            organiza: document.getElementById('fc-titulo').value || "",
+            lugar: document.getElementById('fc-lugar').value || "",
             valor: parseInt(document.getElementById('fc-precio').value) || 0,
             cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
-            alias: document.getElementById('fc-alias').value,
-            celuOrganizador: document.getElementById('fc-celu').value
+            alias: document.getElementById('fc-alias').value || "",
+            celuOrganizador: document.getElementById('fc-celu').value || ""
         };
-        if(editandoCanchaId) db.ref('eventos/'+editandoCanchaId).update(d).then(cerrarFormularioCancha);
-        else {
+
+        var btnSave = document.getElementById('btn-save-form');
+        btnSave.innerText = "Guardando...";
+        btnSave.disabled = true;
+
+        if(editandoCanchaId) {
+            db.ref('eventos/'+editandoCanchaId).update(d).then(function() {
+                btnSave.innerText = "Guardar Cancha";
+                btnSave.disabled = false;
+                cerrarFormularioCancha();
+            }).catch(function(e) { alert("Error: " + e.message); btnSave.disabled = false; });
+        } else {
             var ref = db.ref('eventos').push();
             ref.set(Object.assign(d, {estado:'activo', inscriptos:[]})).then(function() {
                 db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    var l = s.val() || []; l.push(ref.key);
-                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(cerrarFormularioCancha);
+                    // ESTA LÍNEA EVITA EL ERROR DE LISTA QUE FRENABA EL BOTÓN
+                    var l = Array.isArray(s.val()) ? s.val() : (s.val() ? Object.values(s.val()) : []);
+                    l.push(ref.key);
+                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(function() {
+                        btnSave.innerText = "Guardar Cancha";
+                        btnSave.disabled = false;
+                        cerrarFormularioCancha();
+                    });
                 });
-            });
+            }).catch(function(e) { alert("Error: " + e.message); btnSave.disabled = false; });
         }
     }
 
@@ -444,15 +462,21 @@
             document.getElementById('fc-fecha').value = c.fecha;
             document.getElementById('fc-hora').value = c.hora;
             document.getElementById('fc-horafin').value = c.horaFin || "";
-            document.getElementById('fc-titulo').value = c.organiza;
+            document.getElementById('fc-titulo').value = c.organiza || "";
             document.getElementById('fc-lugar').value = c.lugar || "";
-            document.getElementById('fc-precio').value = c.valor;
-            document.getElementById('fc-cupo').value = c.cupo;
+            document.getElementById('fc-precio').value = c.valor || "";
+            document.getElementById('fc-cupo').value = c.cupo || "";
             document.getElementById('fc-alias').value = c.alias || "";
             document.getElementById('fc-celu').value = c.celuOrganizador || "";
         } else {
             btnEliminar.style.display = "none";
             document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
+            document.getElementById('fc-hora').value = "";
+            document.getElementById('fc-horafin').value = "";
+            document.getElementById('fc-titulo').value = "";
+            document.getElementById('fc-lugar').value = "";
+            document.getElementById('fc-precio').value = "";
+            document.getElementById('fc-cupo').value = "";
         }
         document.getElementById('view-form-cancha').classList.add('active');
     }
@@ -460,11 +484,15 @@
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 
     function eliminarCancha() {
-        if(confirm('¿Eliminar definitivamente?')) {
+        if(confirm('¿Eliminar definitivamente esta cancha? (No se puede deshacer)')) {
             db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                var filtrado = (s.val()||[]).filter(function(i) { return i !== editandoCanchaId; });
-                db.ref('hubs/' + globalOrgId + '/canchas').set(filtrado);
-                db.ref('eventos/'+editandoCanchaId).remove().then(function() { cerrarFormularioCancha(); cerrarPanelCancha(); });
+                var filtrado = (Array.isArray(s.val()) ? s.val() : Object.values(s.val() || {})).filter(function(i) { return i !== editandoCanchaId; });
+                db.ref('hubs/' + globalOrgId + '/canchas').set(filtrado).then(function() {
+                    db.ref('eventos/'+editandoCanchaId).remove().then(function() { 
+                        cerrarFormularioCancha(); 
+                        cerrarPanelCancha(); 
+                    });
+                });
             });
         }
     }

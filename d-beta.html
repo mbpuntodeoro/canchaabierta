@@ -40,6 +40,7 @@
         .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
         .card-completa { border: 1px solid var(--brand-green); }
         
+        /* ESTILO PARA CANCHAS PASADAS EN GRIS */
         .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
         .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
 
@@ -60,10 +61,12 @@
         .grupo-detalle.open { max-height: 1000px; }
         .sub-fila { padding: 12px 16px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
         .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
         .dot.pendiente { background: var(--brand-red); }
         .dot.pagado { background: var(--brand-green); }
         .dot.cancha { background: var(--brand-orange); }
+        .dot.paga-en-la-cancha { background: var(--brand-orange); } /* ARREGLO: COLOR NARANJA PARA LOS QUE PAGAN EN CLUB */
 
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
@@ -257,7 +260,10 @@
     function renderDashboard() {
         var container = document.getElementById('cards-container');
         var html = ''; var tRec = 0; var tJug = 0;
-        var hoyStr = new Date().toLocaleDateString('sv-SE');
+        
+        // ARREGLO: FÓRMULA INFALIBLE PARA LA FECHA DE HOY (Soporta todos los celulares)
+        var dObj = new Date();
+        var hoyStr = dObj.getFullYear() + "-" + String(dObj.getMonth() + 1).padStart(2, '0') + "-" + String(dObj.getDate()).padStart(2, '0');
 
         var futuras = eventosCache.filter(e => e.fecha >= hoyStr);
         var pasadas = eventosCache.filter(e => e.fecha < hoyStr);
@@ -299,7 +305,6 @@
         document.getElementById('sc-gestionado').innerText = '$' + tRec;
     }
 
-    // --- LECTURA MEJORADA: ACEPTA ARRAYS Y OBJETOS ---
     function abrirCancha(id) {
         panelCanchaId = id;
         if(activeEventRef) activeEventRef.off();
@@ -377,7 +382,7 @@
             celuOrganizador: c.celuOrganizador || "",
             estado: 'activo',
             tipo: 'unica',
-            inscriptos: {} // EMPIEZA COMO OBJETO
+            inscriptos: {} 
         };
 
         var ref = db.ref('eventos').push();
@@ -434,7 +439,6 @@
         }
     }
 
-    // --- MANEJO DE ESTADOS CON IDs ÚNICOS ---
     function setPago(playerKey, estado) { 
         db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).update({ estado: estado }); 
     }
@@ -444,7 +448,6 @@
         document.getElementById('btn-wa').onclick = function() { window.open('https://wa.me/' + celular, '_blank'); };
         document.getElementById('btn-revertir').onclick = function() { setPago(playerKey, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
         
-        // BORRADO ATÓMICO: SOLO TOCA AL JUGADOR ESPECÍFICO
         document.getElementById('btn-eliminar').onclick = function() {
             if(confirm('¿Eliminar jugador?')) {
                 db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).remove().then(function() {
@@ -523,8 +526,6 @@
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
     function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
     function obtenerNombreDia(f) { var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]; }
-    
-    // --- FUNCIÓN ABREVIADO MODIFICADA PARA NO CORTAR APELLIDOS ---
     function jugadorAbreviado(n) { return n || 'Jugador'; }
 </script>
 </body>

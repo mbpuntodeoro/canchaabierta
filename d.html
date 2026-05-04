@@ -201,44 +201,45 @@
     var editandoCanchaId = null;
     var panelCanchaId = null;
 
-    // FIX: Función salir blindada para mobile
+    // FIX 1: Limpiamos la URL para salir completamente y no quedar trabados en modo espectador
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
-            firebase.auth().signOut().then(() => location.reload());
+            firebase.auth().signOut().then(() => {
+                window.location.href = window.location.pathname; // Esto quita el ?org=ID
+            });
         }
     }
 
+    // FIX 2: Esperar el Auth ANTES de intentar descargar datos (Esto salva al móvil)
     document.addEventListener('DOMContentLoaded', function() {
-        var urlParams = new URLSearchParams(window.location.search);
-        var idDetectado = urlParams.get('org') || urlParams.get('id');
-        if (idDetectado) {
-            globalOrgId = decodeURIComponent(idDetectado);
-            iniciarProceso(globalOrgId);
-        } else {
-            firebase.auth().onAuthStateChanged(function(user) {
-                if (user) {
-                    db.ref('organizadores/' + user.uid).once('value', function(snap) {
-                        globalOrgId = snap.val();
-                        if (globalOrgId) iniciarProceso(globalOrgId);
-                    });
-                } else {
-                    document.getElementById('loading-init').innerText = "Acceso denegado.";
-                }
-            });
-        }
+        firebase.auth().onAuthStateChanged(function(user) {
+            var urlParams = new URLSearchParams(window.location.search);
+            var idDetectado = urlParams.get('org') || urlParams.get('id');
+            
+            if (user) {
+                db.ref('organizadores/' + user.uid).once('value', function(snap) {
+                    globalOrgId = snap.val() || (idDetectado ? decodeURIComponent(idDetectado) : null);
+                    if (globalOrgId) iniciarProceso(globalOrgId);
+                });
+            } else if (idDetectado) {
+                globalOrgId = decodeURIComponent(idDetectado);
+                iniciarProceso(globalOrgId);
+            } else {
+                document.getElementById('loading-init').innerText = "Acceso denegado. Inicia sesión.";
+            }
+        });
     });
 
     function iniciarProceso(orgId) {
         // 1. Cargamos el NOMBRE (Ruta pública, carga siempre)
-        db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
-            var cuenta = snap.val() || {};
-            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+        db.ref('facturacion/' + orgId + '/cuenta/nombreOrg').on('value', function(snap) {
+            document.getElementById('t-org-name').innerText = snap.val() || "Tu Club";
         });
 
         // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            if (!data.cuenta) return;
+            if (!data.cuenta) return; 
 
             var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
@@ -250,7 +251,7 @@
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         }, function(error) {
-            console.log("Error de permisos en métricas:", error);
+            console.log("Métricas ocultas (modo espectador):", error);
             document.getElementById('main-status-card').style.display = 'none';
         });
 
@@ -263,7 +264,9 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
+            
+            // FIX 3: Solo descargar los últimos 50 IDs para que el móvil no agote la memoria
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas.slice(-50) : Object.values(hubData.canchas).slice(-50);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {
@@ -502,7 +505,7 @@
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
+                html += `<div class="mov-card"><div><strong>${m[k].concepto}</strong><br><span class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</span></div><div style="font-weight:800">$${m[k].monto}</div></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });

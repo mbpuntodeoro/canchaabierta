@@ -219,10 +219,18 @@
     });
 
     function iniciarProceso(orgId) {
+        // 1. Cargamos el NOMBRE (Ruta pública, carga siempre)
+        db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
+            var cuenta = snap.val() || {};
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+        });
+
+        // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            var cuenta = data.cuenta || {};
-            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
+            if (!data.cuenta) return; // Si no hay datos, no mostramos la tarjeta aún
+
+            var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
 
             if (typeof PadelSaaS !== 'undefined') {
@@ -231,8 +239,13 @@
                 document.getElementById('sc-badge').innerText = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL';
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
+        }, function(error) {
+            console.log("Error de permisos en métricas:", error);
+            // Si falla por permisos, ocultamos la tarjeta negra pero el resto sigue andando
+            document.getElementById('main-status-card').style.display = 'none';
         });
 
+        // 3. Cargamos las CANCHAS
         db.ref('hubs/' + orgId).on('value', function(snap) {
             var hubData = snap.val();
             if (!hubData || !hubData.canchas) {

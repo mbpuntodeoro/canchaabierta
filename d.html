@@ -201,56 +201,78 @@
     var editandoCanchaId = null;
     var panelCanchaId = null;
 
-    // FIX: Limpia la URL para evitar recargas infinitas buscando un ID inexistente
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
-            firebase.auth().signOut().then(() => {
-                location.reload(); // <-- ACÁ ESTÁ LA MAGIA: Recarga sin borrar la URL
-            });
+            // Al salir, recargamos la página limpia sin parámetros
+            firebase.auth().signOut().then(() => window.location.href = window.location.pathname);
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         var urlParams = new URLSearchParams(window.location.search);
         var idDetectado = urlParams.get('org') || urlParams.get('id');
-        
+
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
+                // Usuario logueado: Buscamos a qué club pertenece
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
-                    globalOrgId = snap.val();
-                    if (globalOrgId) iniciarProceso(globalOrgId);
+                    var myOrgId = snap.val();
+                    
+                    // LÓGICA DE REDIRECCIÓN AUTOMÁTICA
+                    // Si entró "pelado" (sin ID en la URL) pero ya está logueado, lo mandamos a su panel
+                    if (myOrgId && !idDetectado) {
+                        window.location.replace('?org=' + myOrgId);
+                        return;
+                    }
+
+                    globalOrgId = myOrgId || (idDetectado ? decodeURIComponent(idDetectado) : null);
+                    
+                    if (globalOrgId) {
+                        iniciarProceso(globalOrgId);
+                    } else {
+                        document.getElementById('loading-init').innerHTML = "Tu cuenta no tiene un club asignado.";
+                    }
                 });
             } else {
-                // INTEGRACIÓN DEL LOGIN DIRECTO EN D.HTML
-                document.getElementById('t-org-name').innerText = "Panel de Gestión";
-                document.getElementById('loading-init').innerHTML = `
-                    <div style="background: var(--bg-white); padding: 24px; border-radius: 16px; border: 1px solid var(--border); max-width: 320px; margin: 40px auto; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                        <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Iniciar Sesión</div>
-                        <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Ingresá para gestionar tus canchas.</div>
-                        
-                        <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block;">Email</label>
-                        <input type="email" id="login-email" class="input-clean" placeholder="club@mail.com" style="margin-bottom: 12px;">
-                        
-                        <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block;">Contraseña</label>
-                        <input type="password" id="login-pass" class="input-clean" placeholder="••••••••" style="margin-bottom: 20px;">
-                        
-                        <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top: 0; height: 44px;">Ingresar</button>
-                        <div id="login-error" style="color: var(--brand-red); font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
-                    </div>
-                `;
+                // NO ESTÁ LOGUEADO
+                if (idDetectado) {
+                    // Modo Espectador (si alguien entra con el link del club pero sin contraseña)
+                    globalOrgId = decodeURIComponent(idDetectado);
+                    iniciarProceso(globalOrgId);
+                    document.getElementById('main-status-card').style.display = 'none'; // Ocultamos finanzas
+                    document.querySelector('.header-global > div:last-child').outerHTML = '<div style="font-size: 12px; font-weight: 700; color: var(--brand-purple); cursor: pointer;" onclick="window.location.href=window.location.pathname">Ingresar</div>';
+                } else {
+                    // Entró pelado y sin loguearse -> Mostrar Formulario de Login
+                    document.getElementById('t-org-name').innerText = "Acceso Organizadores";
+                    document.getElementById('cards-container').style.display = 'none';
+                    document.querySelector('.header-global > div:last-child').style.display = 'none'; // Oculta "Salir"
+                    
+                    document.getElementById('loading-init').innerHTML = `
+                        <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--border); max-width:320px; margin:20px auto; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                            <div style="font-size:18px; font-weight:800; margin-bottom:20px;">Iniciar Sesión</div>
+                            <input type="email" id="login-email" class="input-clean" placeholder="Email" style="margin-bottom:12px;">
+                            <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña" style="margin-bottom:20px;">
+                            <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top:0;">Ingresar</button>
+                            <div id="login-error" style="color:var(--brand-red); font-size:13px; margin-top:12px; text-align:center; font-weight:600;"></div>
+                        </div>`;
+                }
             }
         });
     });
 
-    // FUNCIÓN DE LOGIN
     window.hacerLogin = function(btn) {
         var e = document.getElementById('login-email').value;
         var p = document.getElementById('login-pass').value;
-        if(!e || !p) { document.getElementById('login-error').innerText = "Completá todos los datos."; return; }
+        if(!e || !p) return;
         
         btn.innerText = "Cargando...";
-        firebase.auth().signInWithEmailAndPassword(e, p).then(() => {
-            location.reload(); // <-- ACÁ TAMBIÉN: Conserva el ?org=ID
+        firebase.auth().signInWithEmailAndPassword(e, p).then((cred) => {
+            // LOGIN ÉXITOSO: Buscamos su ID y lo redirigimos a SU URL automáticamente
+            db.ref('organizadores/' + cred.user.uid).once('value', function(snap) {
+                var oid = snap.val();
+                if(oid) window.location.replace('?org=' + oid); // Acá se completa la magia de la URL
+                else location.reload();
+            });
         }).catch(err => {
             btn.innerText = "Ingresar";
             document.getElementById('login-error').innerText = "Usuario o contraseña incorrectos.";
@@ -267,7 +289,7 @@
         // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            if (!data.cuenta) return;
+            if (!data.cuenta) return; // Si no hay datos, no mostramos la tarjeta aún
 
             var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
@@ -279,7 +301,7 @@
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         }, function(error) {
-            console.log("Error de permisos en métricas:", error);
+            console.log("Error de permisos en métricas (modo espectador):", error);
             document.getElementById('main-status-card').style.display = 'none';
         });
 
@@ -299,9 +321,15 @@
                 eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
                     var val = s.val(); val.id = s.key; return val;
                 });
-                renderDashboard();
+                
+                try {
+                    renderDashboard();
+                } catch(e) { console.error(e); }
+
                 document.getElementById('loading-init').style.display = 'none';
                 document.getElementById('dash-actions').style.display = 'flex';
+            }).catch(function(e) {
+                console.error(e);
             });
         });
     }
@@ -451,6 +479,7 @@
         if(!editandoCanchaId) return;
         var c = eventosCache.find(e => e.id === editandoCanchaId);
         var nuevoEstado = (c.estado === 'suspendido') ? 'activo' : 'suspendido';
+
         var ahora = new Date();
         var inicioCancha = new Date(c.fecha + 'T' + c.hora);
         var diferenciaHoras = (inicioCancha - ahora) / (1000 * 60 * 60);
@@ -461,8 +490,11 @@
                 monto: 500, tipo: 'cancha', estado: 'pendiente', fecha: ahora.toISOString()
             };
             db.ref('facturacion/' + globalOrgId + '/movimientos').push(penalizacion);
-            alert("⚠️ Cargo aplicado por suspensión tardía.");
+            alert("⚠️ Cancha suspendida. Se aplicó un cargo por suspensión tardía (menos de 1h).");
+        } else if (nuevoEstado === 'suspendido') {
+            alert("✅ Cancha suspendida sin cargos adicionales.");
         }
+
         db.ref('eventos/' + editandoCanchaId).update({ estado: nuevoEstado }).then(() => {
             cerrarFormularioCancha(); cerrarPanelCancha();
         });
@@ -531,7 +563,7 @@
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
+                html += `<div class="mov-card"><div><strong>${m[k].concepto}</strong><br><span class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</span></div><div style="font-weight:800">$${m[k].monto}</div></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });

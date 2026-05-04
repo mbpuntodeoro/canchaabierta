@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=47"></script>
+    <script src="app-config.js?v=55"></script>
     
     <style>
         :root { 
@@ -85,6 +85,9 @@
         .bs-overlay.active { display: flex; }
         .bs-content { width: 100%; background: var(--bg-white); border-radius: 20px 20px 0 0; padding: 24px; max-width: 600px; margin: 0 auto; }
         .bs-btn { width: 100%; padding: 16px; background: var(--bg-base); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
+
+        .icon-chevron { transition: transform 0.2s; }
+        .icon-chevron.open { transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -94,7 +97,7 @@
             <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple);">Panel</span></div>
             <div id="t-org-name" style="font-size: 13px; color: var(--text-sub);">Cargando...</div>
         </div>
-        <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="firebase.auth().signOut().then(() => location.reload())">Salir</div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>
     </header>
 
     <main class="app-container">
@@ -198,6 +201,13 @@
     var editandoCanchaId = null;
     var panelCanchaId = null;
 
+    // FIX: Función salir blindada para mobile
+    function cerrarSesion() {
+        if(confirm("¿Seguro que querés salir?")) {
+            firebase.auth().signOut().then(() => location.reload());
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         var urlParams = new URLSearchParams(window.location.search);
         var idDetectado = urlParams.get('org') || urlParams.get('id');
@@ -228,7 +238,7 @@
         // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            if (!data.cuenta) return; // Si no hay datos, no mostramos la tarjeta aún
+            if (!data.cuenta) return;
 
             var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
@@ -241,7 +251,6 @@
             }
         }, function(error) {
             console.log("Error de permisos en métricas:", error);
-            // Si falla por permisos, ocultamos la tarjeta negra pero el resto sigue andando
             document.getElementById('main-status-card').style.display = 'none';
         });
 
@@ -409,32 +418,22 @@
         }
     }
 
-    // --- LÓGICA DE SUSPENSIÓN CON REGLA DE 1 HORA ---
     function toggleSuspender() {
         if(!editandoCanchaId) return;
         var c = eventosCache.find(e => e.id === editandoCanchaId);
         var nuevoEstado = (c.estado === 'suspendido') ? 'activo' : 'suspendido';
-
-        // Verificamos el tiempo
         var ahora = new Date();
         var inicioCancha = new Date(c.fecha + 'T' + c.hora);
         var diferenciaHoras = (inicioCancha - ahora) / (1000 * 60 * 60);
 
-        // Si suspende con menos de 1 hora de antelación
         if (nuevoEstado === 'suspendido' && diferenciaHoras < 1) {
             const penalizacion = {
                 concepto: "Penalización: Suspensión tardía (" + c.fecha + " " + c.hora + ")",
-                monto: 500, // Ajustar valor según tu fee
-                tipo: 'cancha',
-                estado: 'pendiente',
-                fecha: ahora.toISOString()
+                monto: 500, tipo: 'cancha', estado: 'pendiente', fecha: ahora.toISOString()
             };
             db.ref('facturacion/' + globalOrgId + '/movimientos').push(penalizacion);
-            alert("⚠️ Cancha suspendida. Se aplicó un cargo por suspensión tardía (menos de 1h).");
-        } else if (nuevoEstado === 'suspendido') {
-            alert("✅ Cancha suspendida sin cargos adicionales.");
+            alert("⚠️ Cargo aplicado por suspensión tardía.");
         }
-
         db.ref('eventos/' + editandoCanchaId).update({ estado: nuevoEstado }).then(() => {
             cerrarFormularioCancha(); cerrarPanelCancha();
         });
@@ -503,7 +502,7 @@
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div class="mov-card"><div><strong>${m[k].concepto}</strong><br><span class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</span></div><div style="font-weight:800">$${m[k].monto}</div></div>`;
+                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });

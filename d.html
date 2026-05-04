@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=62"></script>
+    <script src="app-config.js?v=63"></script>
     
     <style>
         :root { 
@@ -97,7 +97,7 @@
             <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple);">Panel</span></div>
             <div id="t-org-name" style="font-size: 13px; color: var(--text-sub);">Cargando...</div>
         </div>
-        <div style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>
+        <div id="btn-header-accion" style="font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>
     </header>
 
     <main class="app-container">
@@ -204,68 +204,98 @@
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
             firebase.auth().signOut().then(() => {
-                window.location.href = window.location.pathname; // Limpia la URL sin recargar en loop
+                window.location.href = window.location.pathname; 
             });
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var urlParams = new URLSearchParams(window.location.search);
-        var idDetectado = urlParams.get('org') || urlParams.get('id');
+    // MAGIA DE LOGIN: Muestra el form sin cambiar la URL
+    window.mostrarLogin = function() {
+        document.getElementById('t-org-name').innerText = "Acceso Organizadores";
+        
+        var cards = document.getElementById('cards-container');
+        if(cards) cards.style.display = 'none';
+        var dash = document.getElementById('dash-actions');
+        if(dash) dash.style.display = 'none';
+        var headerBtn = document.getElementById('btn-header-accion');
+        if(headerBtn) headerBtn.style.display = 'none';
+        
+        var init = document.getElementById('loading-init');
+        init.style.display = 'block';
+        init.innerHTML = `
+            <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--border); max-width:320px; margin:20px auto; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                <div style="font-size:18px; font-weight:800; margin-bottom:20px;">Iniciar Sesión</div>
+                <input type="email" id="login-email" class="input-clean" placeholder="Email" style="margin-bottom:12px;">
+                <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña" style="margin-bottom:20px;">
+                <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top:0;">Ingresar</button>
+                <div id="login-error" style="color:var(--brand-red); font-size:13px; margin-top:12px; text-align:center; font-weight:600;"></div>
+            </div>`;
+    };
 
+    document.addEventListener('DOMContentLoaded', function() {
         firebase.auth().onAuthStateChanged(function(user) {
+            var urlParams = new URLSearchParams(window.location.search);
+            var idDetectado = urlParams.get('org') || urlParams.get('id');
+
             if (user) {
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
                     var myOrgId = snap.val();
 
-                    // Magia Invisible: Si es primera vez y entró con el link de su club, lo vinculamos
-                    if (!myOrgId && idDetectado) {
-                        myOrgId = decodeURIComponent(idDetectado);
-                        db.ref('organizadores/' + user.uid).set(myOrgId);
+                    if (!myOrgId) {
+                        if (idDetectado) {
+                            // PRIMERA VEZ: Agarra el ID de la URL y lo vincula
+                            myOrgId = decodeURIComponent(idDetectado);
+                            db.ref('organizadores/' + user.uid).set(myOrgId).then(() => {
+                                window.location.replace('?org=' + myOrgId);
+                            });
+                            return;
+                        } else {
+                            // Error: Se logueó pero en una URL vacía
+                            firebase.auth().signOut().then(() => {
+                                document.getElementById('loading-init').innerHTML = `
+                                    <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--brand-red); max-width:320px; margin:40px auto; text-align:center;">
+                                        <div style="font-size:18px; font-weight:800; color:var(--brand-red); margin-bottom:10px;">¡Falta el Club!</div>
+                                        <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px;">Por ser tu primera vez, tenés que entrar usando el link personalizado de tu club.</p>
+                                        <button onclick="window.location.reload()" class="btn-black-modal">Entendido</button>
+                                    </div>`;
+                            });
+                            return;
+                        }
                     }
 
-                    // Si entró "pelado" pero ya tiene club, lo mandamos a su panel
-                    if (myOrgId && !idDetectado) {
+                    // Ya tiene club asignado
+                    if (!idDetectado) {
                         window.location.replace('?org=' + myOrgId);
                         return;
                     }
 
-                    // Si no tiene club ni puso link, mostramos cartel de error para cortar el bucle
-                    if (!myOrgId && !idDetectado) {
-                        document.getElementById('t-org-name').innerText = "Falta Club";
-                        document.getElementById('loading-init').innerHTML = `
-                            <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--brand-red); max-width:320px; margin:40px auto; text-align:center;">
-                                <div style="font-size:18px; font-weight:800; color:var(--brand-red); margin-bottom:10px;">¡Casi listo!</div>
-                                <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px;">Como es la primera vez que entrás, necesitamos que uses el link personalizado de tu club (ejemplo: <b>d.html?org=tu_club</b>).</p>
-                                <button onclick="cerrarSesion()" class="btn-black-modal">Volver a intentar</button>
-                            </div>`;
-                        return;
-                    }
-
-                    globalOrgId = myOrgId || decodeURIComponent(idDetectado);
+                    globalOrgId = myOrgId;
                     iniciarProceso(globalOrgId);
+                    
+                    // Asegurar que diga "Salir"
+                    var headerBtn = document.getElementById('btn-header-accion');
+                    if(headerBtn) {
+                        headerBtn.style.display = 'block';
+                        headerBtn.innerText = "Salir";
+                        headerBtn.style.color = "var(--brand-red)";
+                        headerBtn.onclick = cerrarSesion;
+                    }
                 });
             } else {
                 if (idDetectado) {
-                    // Modo Visitante
+                    // Modo Visitante (Muestra botón Ingresar arriba a la derecha)
                     globalOrgId = decodeURIComponent(idDetectado);
                     iniciarProceso(globalOrgId);
                     document.getElementById('main-status-card').style.display = 'none';
-                    document.querySelector('.header-global > div:last-child').outerHTML = '<div style="font-size: 12px; font-weight: 700; color: var(--brand-purple); cursor: pointer;" onclick="window.location.href=window.location.pathname">Ingresar</div>';
-                } else {
-                    // Muestra el Login normal (sin auto-recargarse)
-                    document.getElementById('t-org-name').innerText = "Acceso Organizadores";
-                    document.getElementById('cards-container').style.display = 'none';
-                    document.querySelector('.header-global > div:last-child').style.display = 'none';
                     
-                    document.getElementById('loading-init').innerHTML = `
-                        <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--border); max-width:320px; margin:20px auto; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-                            <div style="font-size:18px; font-weight:800; margin-bottom:20px;">Iniciar Sesión</div>
-                            <input type="email" id="login-email" class="input-clean" placeholder="Email" style="margin-bottom:12px;">
-                            <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña" style="margin-bottom:20px;">
-                            <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top:0;">Ingresar</button>
-                            <div id="login-error" style="color:var(--brand-red); font-size:13px; margin-top:12px; text-align:center; font-weight:600;"></div>
-                        </div>`;
+                    var headerBtn = document.getElementById('btn-header-accion');
+                    if(headerBtn) {
+                        headerBtn.innerText = "Ingresar";
+                        headerBtn.style.color = "var(--brand-purple)";
+                        headerBtn.onclick = mostrarLogin; // <--- LA SOLUCIÓN
+                    }
+                } else {
+                    mostrarLogin();
                 }
             }
         });
@@ -277,7 +307,7 @@
         if(!e || !p) { document.getElementById('login-error').innerText = "Completá email y contraseña."; return; }
         
         btn.innerText = "Cargando...";
-        // El login ya no recarga la página. AuthStateChanged (arriba) detecta el ingreso automáticamente.
+        // El login ya NO recarga la página, lo detecta AuthStateChanged
         firebase.auth().signInWithEmailAndPassword(e, p).catch(err => {
             btn.innerText = "Ingresar";
             document.getElementById('login-error').innerText = "Usuario o contraseña incorrectos.";
@@ -285,13 +315,13 @@
     };
 
     function iniciarProceso(orgId) {
-        // 1. Cargamos el NOMBRE
+        // 1. Cargamos el NOMBRE (Ruta pública, carga siempre)
         db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
             var cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
         });
 
-        // 2. Cargamos las MÉTRICAS
+        // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
             if (!data.cuenta) return;
@@ -318,7 +348,7 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas.slice(-50) : Object.values(hubData.canchas).slice(-50);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {
@@ -561,7 +591,7 @@
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div class="mov-card"><div><strong>${m[k].concepto}</strong><br><span class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</span></div><div style="font-weight:800">$${m[k].monto}</div></div>`;
+                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });

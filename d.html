@@ -201,45 +201,73 @@
     var editandoCanchaId = null;
     var panelCanchaId = null;
 
-    // FIX 1: Limpiamos la URL para salir completamente y no quedar trabados en modo espectador
+    // FIX: Limpia la URL para evitar recargas infinitas buscando un ID inexistente
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
             firebase.auth().signOut().then(() => {
-                window.location.href = window.location.pathname; // Esto quita el ?org=ID
+                window.location.href = window.location.pathname; 
             });
         }
     }
 
-    // FIX 2: Esperar el Auth ANTES de intentar descargar datos (Esto salva al móvil)
     document.addEventListener('DOMContentLoaded', function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var idDetectado = urlParams.get('org') || urlParams.get('id');
+        
         firebase.auth().onAuthStateChanged(function(user) {
-            var urlParams = new URLSearchParams(window.location.search);
-            var idDetectado = urlParams.get('org') || urlParams.get('id');
-            
             if (user) {
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
-                    globalOrgId = snap.val() || (idDetectado ? decodeURIComponent(idDetectado) : null);
+                    globalOrgId = snap.val();
                     if (globalOrgId) iniciarProceso(globalOrgId);
                 });
-            } else if (idDetectado) {
-                globalOrgId = decodeURIComponent(idDetectado);
-                iniciarProceso(globalOrgId);
             } else {
-                document.getElementById('loading-init').innerText = "Acceso denegado. Inicia sesión.";
+                // INTEGRACIÓN DEL LOGIN DIRECTO EN D.HTML
+                document.getElementById('t-org-name').innerText = "Panel de Gestión";
+                document.getElementById('loading-init').innerHTML = `
+                    <div style="background: var(--bg-white); padding: 24px; border-radius: 16px; border: 1px solid var(--border); max-width: 320px; margin: 40px auto; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                        <div style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Iniciar Sesión</div>
+                        <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">Ingresá para gestionar tus canchas.</div>
+                        
+                        <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block;">Email</label>
+                        <input type="email" id="login-email" class="input-clean" placeholder="club@mail.com" style="margin-bottom: 12px;">
+                        
+                        <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block;">Contraseña</label>
+                        <input type="password" id="login-pass" class="input-clean" placeholder="••••••••" style="margin-bottom: 20px;">
+                        
+                        <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top: 0; height: 44px;">Ingresar</button>
+                        <div id="login-error" style="color: var(--brand-red); font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600;"></div>
+                    </div>
+                `;
             }
         });
     });
 
+    // FUNCIÓN DE LOGIN
+    window.hacerLogin = function(btn) {
+        var e = document.getElementById('login-email').value;
+        var p = document.getElementById('login-pass').value;
+        if(!e || !p) { document.getElementById('login-error').innerText = "Completá todos los datos."; return; }
+        
+        btn.innerText = "Cargando...";
+        firebase.auth().signInWithEmailAndPassword(e, p).then(() => {
+            window.location.href = window.location.pathname; 
+        }).catch(err => {
+            btn.innerText = "Ingresar";
+            document.getElementById('login-error').innerText = "Usuario o contraseña incorrectos.";
+        });
+    };
+
     function iniciarProceso(orgId) {
         // 1. Cargamos el NOMBRE (Ruta pública, carga siempre)
-        db.ref('facturacion/' + orgId + '/cuenta/nombreOrg').on('value', function(snap) {
-            document.getElementById('t-org-name').innerText = snap.val() || "Tu Club";
+        db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
+            var cuenta = snap.val() || {};
+            document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
         });
 
         // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            if (!data.cuenta) return; 
+            if (!data.cuenta) return;
 
             var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
@@ -251,7 +279,7 @@
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         }, function(error) {
-            console.log("Métricas ocultas (modo espectador):", error);
+            console.log("Error de permisos en métricas:", error);
             document.getElementById('main-status-card').style.display = 'none';
         });
 
@@ -264,9 +292,7 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-            
-            // FIX 3: Solo descargar los últimos 50 IDs para que el móvil no agote la memoria
-            var ids = Array.isArray(hubData.canchas) ? hubData.canchas.slice(-50) : Object.values(hubData.canchas).slice(-50);
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {
@@ -505,7 +531,7 @@
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div class="mov-card"><div><strong>${m[k].concepto}</strong><br><span class="mov-badge ${m[k].estado==='pagado'?'mb-pagado':'mb-deuda'}">${m[k].estado}</span></div><div style="font-weight:800">$${m[k].monto}</div></div>`;
+                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });

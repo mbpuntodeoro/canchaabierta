@@ -205,7 +205,7 @@
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
             firebase.auth().signOut().then(() => {
-                window.location.href = window.location.pathname; 
+                location.reload(); // <-- ACÁ ESTÁ LA MAGIA: Recarga sin borrar la URL
             });
         }
     }
@@ -250,7 +250,7 @@
         
         btn.innerText = "Cargando...";
         firebase.auth().signInWithEmailAndPassword(e, p).then(() => {
-            window.location.href = window.location.pathname; 
+            location.reload(); // <-- ACÁ TAMBIÉN: Conserva el ?org=ID
         }).catch(err => {
             btn.innerText = "Ingresar";
             document.getElementById('login-error').innerText = "Usuario o contraseña incorrectos.";

@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=60"></script>
+    <script src="app-config.js?v=62"></script>
     
     <style>
         :root { 
@@ -204,7 +204,7 @@
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
             firebase.auth().signOut().then(() => {
-                window.location.href = window.location.pathname; 
+                window.location.href = window.location.pathname; // Limpia la URL sin recargar en loop
             });
         }
     }
@@ -217,31 +217,43 @@
             if (user) {
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
                     var myOrgId = snap.val();
-                    
+
+                    // Magia Invisible: Si es primera vez y entró con el link de su club, lo vinculamos
+                    if (!myOrgId && idDetectado) {
+                        myOrgId = decodeURIComponent(idDetectado);
+                        db.ref('organizadores/' + user.uid).set(myOrgId);
+                    }
+
+                    // Si entró "pelado" pero ya tiene club, lo mandamos a su panel
                     if (myOrgId && !idDetectado) {
                         window.location.replace('?org=' + myOrgId);
                         return;
                     }
 
-                    globalOrgId = myOrgId || (idDetectado ? decodeURIComponent(idDetectado) : null);
-                    
-                    if (globalOrgId) {
-                        iniciarProceso(globalOrgId);
-                    } else {
-                        // Por seguridad si algo raro pasa
-                        firebase.auth().signOut();
-                        location.reload();
+                    // Si no tiene club ni puso link, mostramos cartel de error para cortar el bucle
+                    if (!myOrgId && !idDetectado) {
+                        document.getElementById('t-org-name').innerText = "Falta Club";
+                        document.getElementById('loading-init').innerHTML = `
+                            <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--brand-red); max-width:320px; margin:40px auto; text-align:center;">
+                                <div style="font-size:18px; font-weight:800; color:var(--brand-red); margin-bottom:10px;">¡Casi listo!</div>
+                                <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px;">Como es la primera vez que entrás, necesitamos que uses el link personalizado de tu club (ejemplo: <b>d.html?org=tu_club</b>).</p>
+                                <button onclick="cerrarSesion()" class="btn-black-modal">Volver a intentar</button>
+                            </div>`;
+                        return;
                     }
+
+                    globalOrgId = myOrgId || decodeURIComponent(idDetectado);
+                    iniciarProceso(globalOrgId);
                 });
             } else {
                 if (idDetectado) {
-                    // MODO VISITANTE
+                    // Modo Visitante
                     globalOrgId = decodeURIComponent(idDetectado);
                     iniciarProceso(globalOrgId);
                     document.getElementById('main-status-card').style.display = 'none';
                     document.querySelector('.header-global > div:last-child').outerHTML = '<div style="font-size: 12px; font-weight: 700; color: var(--brand-purple); cursor: pointer;" onclick="window.location.href=window.location.pathname">Ingresar</div>';
                 } else {
-                    // MODO LOGIN LIMPIO (SOLO MAIL Y CONTRASEÑA)
+                    // Muestra el Login normal (sin auto-recargarse)
                     document.getElementById('t-org-name').innerText = "Acceso Organizadores";
                     document.getElementById('cards-container').style.display = 'none';
                     document.querySelector('.header-global > div:last-child').style.display = 'none';
@@ -262,48 +274,24 @@
     window.hacerLogin = function(btn) {
         var e = document.getElementById('login-email').value;
         var p = document.getElementById('login-pass').value;
-        
-        if(!e || !p) {
-            document.getElementById('login-error').innerText = "Completá email y contraseña.";
-            return;
-        }
+        if(!e || !p) { document.getElementById('login-error').innerText = "Completá email y contraseña."; return; }
         
         btn.innerText = "Cargando...";
-        firebase.auth().signInWithEmailAndPassword(e, p).then((cred) => {
-            var urlParams = new URLSearchParams(window.location.search);
-            var idDetectado = urlParams.get('org') || urlParams.get('id');
-
-            db.ref('organizadores/' + cred.user.uid).once('value', function(snap) {
-                var oid = snap.val();
-                if(oid) {
-                    // El tipo ya tenía su club vinculado de antes
-                    window.location.replace('?org=' + oid); 
-                } else if (idDetectado) {
-                    // MAGIA INVISIBLE: Es la primera vez, agarramos el ID de la URL y lo guardamos
-                    db.ref('organizadores/' + cred.user.uid).set(idDetectado).then(() => {
-                        window.location.replace('?org=' + idDetectado);
-                    });
-                } else {
-                    // No hay club vinculado ni hay ID en la URL
-                    btn.innerText = "Ingresar";
-                    document.getElementById('login-error').innerText = "Por favor, para tu primer ingreso utilizá el link personalizado de tu club.";
-                    firebase.auth().signOut();
-                }
-            });
-        }).catch(err => {
+        // El login ya no recarga la página. AuthStateChanged (arriba) detecta el ingreso automáticamente.
+        firebase.auth().signInWithEmailAndPassword(e, p).catch(err => {
             btn.innerText = "Ingresar";
             document.getElementById('login-error').innerText = "Usuario o contraseña incorrectos.";
         });
     };
 
     function iniciarProceso(orgId) {
-        // 1. Cargamos el NOMBRE (Ruta pública)
+        // 1. Cargamos el NOMBRE
         db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
             var cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
         });
 
-        // 2. Cargamos las MÉTRICAS (Ruta privada)
+        // 2. Cargamos las MÉTRICAS
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
             if (!data.cuenta) return;
@@ -330,7 +318,7 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-            var ids = Array.isArray(hubData.canchas) ? hubData.canchas.slice(-50) : Object.values(hubData.canchas).slice(-50);
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {

@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="app-config.js?v=55"></script>
+    <script src="app-config.js?v=60"></script>
     
     <style>
         :root { 
@@ -203,8 +203,9 @@
 
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
-            // Al salir, recargamos la página limpia sin parámetros
-            firebase.auth().signOut().then(() => window.location.href = window.location.pathname);
+            firebase.auth().signOut().then(() => {
+                window.location.href = window.location.pathname; 
+            });
         }
     }
 
@@ -214,12 +215,9 @@
 
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
-                // Usuario logueado: Buscamos a qué club pertenece
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
                     var myOrgId = snap.val();
                     
-                    // LÓGICA DE REDIRECCIÓN AUTOMÁTICA
-                    // Si entró "pelado" (sin ID en la URL) pero ya está logueado, lo mandamos a su panel
                     if (myOrgId && !idDetectado) {
                         window.location.replace('?org=' + myOrgId);
                         return;
@@ -230,22 +228,23 @@
                     if (globalOrgId) {
                         iniciarProceso(globalOrgId);
                     } else {
-                        document.getElementById('loading-init').innerHTML = "Tu cuenta no tiene un club asignado.";
+                        // Por seguridad si algo raro pasa
+                        firebase.auth().signOut();
+                        location.reload();
                     }
                 });
             } else {
-                // NO ESTÁ LOGUEADO
                 if (idDetectado) {
-                    // Modo Espectador (si alguien entra con el link del club pero sin contraseña)
+                    // MODO VISITANTE
                     globalOrgId = decodeURIComponent(idDetectado);
                     iniciarProceso(globalOrgId);
-                    document.getElementById('main-status-card').style.display = 'none'; // Ocultamos finanzas
+                    document.getElementById('main-status-card').style.display = 'none';
                     document.querySelector('.header-global > div:last-child').outerHTML = '<div style="font-size: 12px; font-weight: 700; color: var(--brand-purple); cursor: pointer;" onclick="window.location.href=window.location.pathname">Ingresar</div>';
                 } else {
-                    // Entró pelado y sin loguearse -> Mostrar Formulario de Login
+                    // MODO LOGIN LIMPIO (SOLO MAIL Y CONTRASEÑA)
                     document.getElementById('t-org-name').innerText = "Acceso Organizadores";
                     document.getElementById('cards-container').style.display = 'none';
-                    document.querySelector('.header-global > div:last-child').style.display = 'none'; // Oculta "Salir"
+                    document.querySelector('.header-global > div:last-child').style.display = 'none';
                     
                     document.getElementById('loading-init').innerHTML = `
                         <div style="background:var(--bg-white); padding:24px; border-radius:16px; border:1px solid var(--border); max-width:320px; margin:20px auto; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
@@ -263,15 +262,33 @@
     window.hacerLogin = function(btn) {
         var e = document.getElementById('login-email').value;
         var p = document.getElementById('login-pass').value;
-        if(!e || !p) return;
+        
+        if(!e || !p) {
+            document.getElementById('login-error').innerText = "Completá email y contraseña.";
+            return;
+        }
         
         btn.innerText = "Cargando...";
         firebase.auth().signInWithEmailAndPassword(e, p).then((cred) => {
-            // LOGIN ÉXITOSO: Buscamos su ID y lo redirigimos a SU URL automáticamente
+            var urlParams = new URLSearchParams(window.location.search);
+            var idDetectado = urlParams.get('org') || urlParams.get('id');
+
             db.ref('organizadores/' + cred.user.uid).once('value', function(snap) {
                 var oid = snap.val();
-                if(oid) window.location.replace('?org=' + oid); // Acá se completa la magia de la URL
-                else location.reload();
+                if(oid) {
+                    // El tipo ya tenía su club vinculado de antes
+                    window.location.replace('?org=' + oid); 
+                } else if (idDetectado) {
+                    // MAGIA INVISIBLE: Es la primera vez, agarramos el ID de la URL y lo guardamos
+                    db.ref('organizadores/' + cred.user.uid).set(idDetectado).then(() => {
+                        window.location.replace('?org=' + idDetectado);
+                    });
+                } else {
+                    // No hay club vinculado ni hay ID en la URL
+                    btn.innerText = "Ingresar";
+                    document.getElementById('login-error').innerText = "Por favor, para tu primer ingreso utilizá el link personalizado de tu club.";
+                    firebase.auth().signOut();
+                }
             });
         }).catch(err => {
             btn.innerText = "Ingresar";
@@ -280,16 +297,16 @@
     };
 
     function iniciarProceso(orgId) {
-        // 1. Cargamos el NOMBRE (Ruta pública, carga siempre)
+        // 1. Cargamos el NOMBRE (Ruta pública)
         db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
             var cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
         });
 
-        // 2. Cargamos las MÉTRICAS (Ruta privada, requiere estar logueado)
+        // 2. Cargamos las MÉTRICAS (Ruta privada)
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
-            if (!data.cuenta) return; // Si no hay datos, no mostramos la tarjeta aún
+            if (!data.cuenta) return;
 
             var cuenta = data.cuenta;
             document.getElementById('main-status-card').style.display = 'block';
@@ -301,7 +318,6 @@
                 document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
             }
         }, function(error) {
-            console.log("Error de permisos en métricas (modo espectador):", error);
             document.getElementById('main-status-card').style.display = 'none';
         });
 
@@ -314,22 +330,16 @@
                 document.getElementById('dash-actions').style.display = 'flex';
                 return;
             }
-            var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
+            var ids = Array.isArray(hubData.canchas) ? hubData.canchas.slice(-50) : Object.values(hubData.canchas).slice(-50);
             var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
 
             Promise.all(promesas).then(function(snapshots) {
                 eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
                     var val = s.val(); val.id = s.key; return val;
                 });
-                
-                try {
-                    renderDashboard();
-                } catch(e) { console.error(e); }
-
+                renderDashboard();
                 document.getElementById('loading-init').style.display = 'none';
                 document.getElementById('dash-actions').style.display = 'flex';
-            }).catch(function(e) {
-                console.error(e);
             });
         });
     }

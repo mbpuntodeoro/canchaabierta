@@ -405,9 +405,14 @@
             const limiteCreditoBase = 40000; 
             
             const config = firebase.app().options; let secApp;
-            try { secApp = firebase.app("SecApp"); } catch (e) { secApp = firebase.initializeApp(config, "SecApp"); }
-            await secApp.auth().createUserWithEmailAndPassword(email, pass); 
-            await secApp.auth().signOut();
+           try {
+    // Capturamos la credencial del usuario creado
+    const userCred = await secApp.auth().createUserWithEmailAndPassword(email, pass);
+    
+    // Anotamos en la base de datos: "Este UID de Firebase es el dueño de este ID de club"
+    await db.ref('organizadores/' + userCred.user.uid).set(id);
+    
+    await secApp.auth().signOut();
             
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             

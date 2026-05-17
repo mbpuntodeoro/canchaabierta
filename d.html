@@ -73,6 +73,7 @@
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
         .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 0.5px; }
 
+        .label-form { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
         
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
@@ -163,18 +164,38 @@
     <div id="view-form-cancha" class="view-modal" style="z-index: 150;">
         <div class="nav-modal"><div onclick="cerrarFormularioCancha()" style="cursor:pointer; font-weight:600;">✕ Cancelar</div><div style="font-weight: 700;">Configurar Cancha</div></div>
         <div class="modal-content" style="padding:16px;">
+            <label class="label-form">Fecha del partido</label>
             <input type="date" id="fc-fecha" class="input-clean">
-            <div style="display:flex; gap:8px;"><input type="time" id="fc-hora" class="input-clean"><input type="time" id="fc-horafin" class="input-clean"></div>
-            <input type="text" id="fc-titulo" class="input-clean" placeholder="Título de la cancha">
-            <input type="text" id="fc-lugar" class="input-clean" placeholder="Sede">
-            <div style="display:flex; gap:8px;"><input type="number" id="fc-precio" class="input-clean" placeholder="Precio"><input type="number" id="fc-cupo" class="input-clean" placeholder="Cupos"></div>
-            <input type="text" id="fc-alias" class="input-clean" placeholder="Alias CBU">
-            <input type="tel" id="fc-celu" class="input-clean" placeholder="WhatsApp">
-            
+            <div style="display:flex; gap:8px;">
+                <div style="flex:1;">
+                    <label class="label-form">Hora Inicio</label>
+                    <input type="time" id="fc-hora" class="input-clean">
+                </div>
+                <div style="flex:1;">
+                    <label class="label-form">Hora Fin</label>
+                    <input type="time" id="fc-horafin" class="input-clean">
+                </div>
+            </div>
+            <label class="label-form">Título o Categoría</label>
+            <input type="text" id="fc-titulo" class="input-clean" placeholder="Ej: Padel 5ta Categoría">
+            <label class="label-form">Sede / Club</label>
+            <input type="text" id="fc-lugar" class="input-clean" placeholder="Ej: Club Punto de Oro">
+            <div style="display:flex; gap:8px;">
+                <div style="flex:1;">
+                    <label class="label-form">Precio por jugador</label>
+                    <input type="number" id="fc-precio" class="input-clean" placeholder="Ej: 3000">
+                </div>
+                <div style="flex:1;">
+                    <label class="label-form">Cupos Totales</label>
+                    <input type="number" id="fc-cupo" class="input-clean" placeholder="Ej: 8">
+                </div>
+            </div>
+            <label class="label-form">Alias CBU (Recibir Pagos)</label>
+            <input type="text" id="fc-alias" class="input-clean" placeholder="Alias de MercadoPago o Banco">
+            <label class="label-form">WhatsApp del Organizador</label>
+            <input type="tel" id="fc-celu" class="input-clean" placeholder="Ej: 5491166463800">
             <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Guardar Cambios</button>
-            
             <button class="bs-btn" id="btn-suspender-cancha" style="margin-top:20px; width:100%; border-radius:12px; background:#FEF3C7; color:#92400E;" onclick="toggleSuspender()">Suspender Cancha</button>
-            
             <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
         </div>
     </div>
@@ -201,7 +222,6 @@
     var editandoCanchaId = null;
     var panelCanchaId = null;
 
-    // ELIMINA LA SESIÓN Y LIMPIA LA URL
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
             firebase.auth().signOut().then(() => {
@@ -210,7 +230,6 @@
         }
     }
 
-    // MUESTRA EL LOGIN INLINE SIN RECARGAR PÁGINA
     window.mostrarLogin = function() {
         document.getElementById('t-org-name').innerText = "Acceso Organizadores";
         
@@ -236,12 +255,35 @@
 
         firebase.auth().onAuthStateChanged(function(user) {
             if (user) {
-                // ESTÁ LOGUEADO: Verificamos a qué club pertenece
+                // --- CAMBIO CLAVE: MODO SÚPER ADMINISTRADOR ---
+                if (user.uid === '5OaMXxroVVMhWaVLERaT6accoYJ2') {
+                    if (idDetectado) {
+                        globalOrgId = decodeURIComponent(idDetectado);
+                        iniciarProceso(globalOrgId);
+                        
+                        var headerBtn = document.getElementById('btn-header-accion');
+                        if(headerBtn) {
+                            headerBtn.style.display = 'block';
+                            headerBtn.innerText = "Panel Maestro";
+                            headerBtn.style.color = "var(--brand-purple)";
+                            headerBtn.onclick = function() { window.location.href = 'm.html'; };
+                        }
+                    } else {
+                        document.getElementById('loading-init').innerHTML = `
+                            <div style="padding:24px; text-align:center;">
+                                <div style="font-weight:800; font-size:18px;">Modo Administrador</div>
+                                <p style="color:var(--text-sub); font-size:14px; margin-top:10px;">Para auditar un club, ingresá haciendo clic desde tu Panel Maestro (m.html).</p>
+                                <button onclick="window.location.href='m.html'" class="btn-black-modal" style="max-width:220px; margin:20px auto;">Ir al Panel Maestro</button>
+                            </div>`;
+                    }
+                    return;
+                }
+
+                // --- FLUJO PARA ORGANIZADORES COMUNES ---
                 db.ref('organizadores/' + user.uid).once('value', function(snap) {
                     var myOrgId = snap.val();
 
                     if (!myOrgId) {
-                        // LA MAGIA INVISIBLE: El Admin olvidó vincularlo. Lo reparamos.
                         if (idDetectado) {
                             myOrgId = idDetectado;
                             db.ref('organizadores/' + user.uid).set(myOrgId).then(() => {
@@ -249,26 +291,21 @@
                             });
                             return;
                         } else {
-                            // Error: No hay club vinculado ni ID en la URL. Prevenimos el loop.
                             firebase.auth().signOut().then(() => {
-                                document.getElementById('loading-init').innerHTML = `
-                                    <div style="padding:24px; text-align:center;">
-                                        <div style="color:var(--brand-red); font-weight:800; font-size:18px;">¡Falta tu Club!</div>
-                                        <p style="color:var(--text-sub); font-size:14px; margin-top:10px;">Para tu primer ingreso, tenés que usar el <b>link personalizado</b> de tu club.</p>
-                                    </div>`;
+                                window.location.reload();
                             });
                             return;
                         }
                     }
 
-                    // Si ya tiene club, pero entró a la URL pelada, lo mandamos a su panel
-                    if (!idDetectado) {
-                        window.location.replace('?org=' + myOrgId);
+                    // Aislamiento Multi-tenant: Forzamos SU club asignado
+                    globalOrgId = myOrgId;
+                    
+                    if (!idDetectado || decodeURIComponent(idDetectado) !== globalOrgId) {
+                        window.location.replace('?org=' + globalOrgId);
                         return;
                     }
 
-                    // FLUJO FELIZ
-                    globalOrgId = myOrgId;
                     iniciarProceso(globalOrgId);
                     
                     var headerBtn = document.getElementById('btn-header-accion');
@@ -280,10 +317,8 @@
                     }
                 });
             } else {
-                // NO ESTÁ LOGUEADO
                 if (idDetectado) {
-                    // MODO VISITANTE (Ve las canchas, pero ocultamos métricas y damos botón Ingresar)
-                    globalOrgId = idDetectado;
+                    globalOrgId = decodeURIComponent(idDetectado);
                     iniciarProceso(globalOrgId);
                     document.getElementById('main-status-card').style.display = 'none';
                     
@@ -292,7 +327,7 @@
                         headerBtn.style.display = 'block';
                         headerBtn.innerText = "Ingresar";
                         headerBtn.style.color = "var(--brand-purple)";
-                        headerBtn.onclick = mostrarLogin; // Carga el form SIN recargar la URL
+                        headerBtn.onclick = mostrarLogin;
                     }
                 } else {
                     mostrarLogin();
@@ -314,13 +349,11 @@
     };
 
     function iniciarProceso(orgId) {
-        // 1. Cargamos el NOMBRE
         db.ref('facturacion/' + orgId + '/cuenta').on('value', function(snap) {
             var cuenta = snap.val() || {};
             document.getElementById('t-org-name').innerText = cuenta.nombreOrg || "Tu Club";
         });
 
-        // 2. Cargamos las MÉTRICAS
         db.ref('facturacion/' + orgId).on('value', function(snap) {
             var data = snap.val() || {};
             if (!data.cuenta) return;
@@ -338,7 +371,6 @@
             document.getElementById('main-status-card').style.display = 'none';
         });
 
-        // 3. Cargamos las CANCHAS
         db.ref('hubs/' + orgId).on('value', function(snap) {
             var hubData = snap.val();
             if (!hubData || !hubData.canchas) {

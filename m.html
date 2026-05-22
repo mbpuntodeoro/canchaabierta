@@ -211,7 +211,7 @@
                 const mSnap = await db.ref(`facturacion/${id}/movimientos`).once('value');
                 let f = fSnap.val() || {};
                 
-                // 🔥 MAGIA LAZY EVALUATION (Con protección para Fundadores)
+                // 🔥 MAGIA LAZY EVALUATION
                 if (f.fechaAplicacionPrecios && Date.now() >= f.fechaAplicacionPrecios) {
                     if (!f.esFundador) {
                         await db.ref(`facturacion/${id}/cuenta`).update({
@@ -229,6 +229,7 @@
                     delete f.fechaAplicacionPrecios; delete f.proximoAbonoMensual; delete f.proximoCostoPorCancha;
                 }
 
+                // Restaurado a PadelSaaS para no romper tu lógica
                 const res = PadelSaaS.analizarCuenta(f, mSnap.val() || {});
                 if (!res) continue;
 
@@ -266,12 +267,12 @@
                 if (f.esFundador && !f.archivado) tag += `<span class="tag-status" style="background:#fff9e6; color:#856404; border:1px solid #ffeeba; margin-left:5px;">⭐ Fundador</span>`;
 
                 let btnCanchas = res.deudaCanchas > 0 ? `<button class="btn-action btn-green" onclick="saldarCanchas('${id}', ${res.deudaCanchas})">COBRAR ${PadelUtils.fmtDinero(res.deudaCanchas)}</button>` : `<span style="font-size:12px; color:var(--success); font-weight:800;">AL DÍA</span>`;
-                const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/v.html?org=${id}`;
+                const linkFinal = f.linkCorto ? f.linkCorto : `https://mbpuntodeoro.github.io/canchaabierta/index.html?org=${id}`;
 
                 let htmlAumento = "";
-                // 🔥 ESCUDO VIP: Ocultamos el mensaje de aumento en la lista principal del Hub si es Fundador
                 if (f.fechaAplicacionPrecios && !f.esFundador) {
-                    htmlAumento = `<div style="font-size:10px; color:var(--warning); font-weight:800; margin-top:5px;">⚠️ Aumento programado a ${PadelUtils.fmtDinero(f.proximoAbonoMensual)}</div>`;
+                    // Restaurado a PadelSaaS
+                    htmlAumento = `<div style="font-size:10px; color:var(--warning); font-weight:800; margin-top:5px;">⚠️ Aumento programado a ${PadelUtils.fmtDinero(f.proximoAbonoMensual)} a partir del ${PadelSaaS.fmtFecha(f.fechaAplicacionPrecios)}</div>`;
                 }
 
                 container.innerHTML += `
@@ -309,21 +310,19 @@
         });
     }
 
-    // 🔥 PROGRAMACIÓN DE AUMENTO MASIVO (Lazy Evaluation)
     async function actualizarPreciosMasivos() {
         const nuevoAbono = parseFloat(document.getElementById('bulk-abono').value);
         const nuevoExtra = parseFloat(document.getElementById('bulk-extra').value);
         
         if (!nuevoAbono || !nuevoExtra) return alert("Por favor, ingresá el Nuevo Abono y el Nuevo Costo Extra.");
         
-        // Calculamos el primer día del MES QUE VIENE
         const hoy = new Date();
         let añoProx = hoy.getFullYear();
-        let mesProx = hoy.getMonth() + 1; // getMonth() es 0-11
+        let mesProx = hoy.getMonth() + 1; 
         if (mesProx > 11) { mesProx = 0; añoProx++; }
         
         const fechaAplicacion = new Date(añoProx, mesProx, 1, 0, 0, 0).getTime();
-        const fechaTxt = PadelSaaS.fmtFecha(fechaAplicacion);
+        const fechaTxt = PadelSaaS.fmtFecha(fechaAplicacion); // Restaurado a PadelSaaS
 
         if (!confirm(`⚠️ ATENCIÓN: Vas a programar un aumento para TODOS los organizadores Regulares (no fundadores).\n\n- Nuevo Abono: $${nuevoAbono}\n- Nuevo Extra: $${nuevoExtra}\n\nEste aumento NO aplicará hoy. Entrará en vigencia automáticamente a partir del ${fechaTxt} (primer día del mes que viene).\n\n¿Estás seguro de programarlo?`)) return;
 
@@ -335,7 +334,6 @@
             
             for (let id in data) {
                 const cuenta = data[id].cuenta || {};
-                // Actualiza SOLO si NO es fundador y NO está archivado
                 if (!cuenta.esFundador && !cuenta.archivado) {
                     updates[`facturacion/${id}/cuenta/proximoAbonoMensual`] = nuevoAbono;
                     updates[`facturacion/${id}/cuenta/proximoCostoPorCancha`] = nuevoExtra;
@@ -350,7 +348,7 @@
                 document.getElementById('bulk-abono').value = '';
                 document.getElementById('bulk-extra').value = '';
             } else {
-                alert("No se encontraron clubes regulares activos. (Son todos fundadores o están archivados).");
+                alert("No se encontraron clubes regulares activos.");
             }
         } catch(e) {
             alert("Error al programar precios: " + e.message);
@@ -388,7 +386,9 @@
         const nom = document.getElementById('new-name').value.trim();
         const email = document.getElementById('new-email').value.trim();
         const pass = document.getElementById('new-pass').value.trim();
+        
         if(!id || !nom || !email || !pass) return alert("Faltan datos para crear el club.");
+        
         try {
             const snapFact = await db.ref('facturacion').once('value');
             const facturacion = snapFact.val() || {};
@@ -404,15 +404,21 @@
             const costoExtra = 5000;
             const limiteCreditoBase = 40000; 
             
-            const config = firebase.app().options; let secApp;
-           try {
-    // Capturamos la credencial del usuario creado
-    const userCred = await secApp.auth().createUserWithEmailAndPassword(email, pass);
-    
-    // Anotamos en la base de datos: "Este UID de Firebase es el dueño de este ID de club"
-    await db.ref('organizadores/' + userCred.user.uid).set(id);
-    
-    await secApp.auth().signOut();
+            const config = firebase.app().options; 
+            let secApp;
+            // RESTAURADO EL BLOQUE SEGURO DE TU CÓDIGO ORIGINAL
+            try { 
+                secApp = firebase.initializeApp(config, "Secondary"); 
+            } catch(e) { 
+                secApp = firebase.app("Secondary"); 
+            }
+            
+            const userCred = await secApp.auth().createUserWithEmailAndPassword(email, pass);
+            
+            // EL ÚNICO AGREGADO VITAL QUE NECESITÁBAMOS:
+            await db.ref('organizadores/' + userCred.user.uid).set(id);
+            
+            await secApp.auth().signOut();
             
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             
@@ -429,7 +435,7 @@
             document.querySelector('.new-org').removeAttribute('open');
             document.getElementById('new-id').value = ""; document.getElementById('new-name').value = "";
             document.getElementById('new-email').value = ""; document.getElementById('new-pass').value = "";
-        } catch(e) { alert("Error: " + e.message); }
+        } catch(e) { alert("Error al crear: " + e.message); }
     }
 
     async function eliminarClub(id) {
@@ -502,7 +508,6 @@
             document.getElementById('mod-founder').checked = f.esFundador || false; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             
-            // 🔥 ESCUDO VIP: Ocultamos el mensaje de aumento en el Modal de Parámetros si es Fundador
             const msgAumento = document.getElementById('msg-aumento-edit');
             if (f.fechaAplicacionPrecios && !f.esFundador) {
                 msgAumento.style.display = 'block';

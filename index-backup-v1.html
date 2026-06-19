@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cancher.App</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="app-config.js?v=43"></script>
+    
+    <style>
+        /* --- SISTEMA DE DISEÑO CANCHER --- */
+        :root { 
+            --bg-base: #F7F7F7;
+            --bg-white: #FFFFFF;
+            --text-main: #111111;
+            --text-sub: #6B7280;
+            --border: #E5E7EB;
+            --brand-purple: #7C3AED;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-base); color: var(--text-main); 
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+
+        .header-global {
+            background: var(--bg-white); padding: 16px;
+            position: sticky; top: 0; z-index: 50;
+        }
+        .header-brand { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .header-org { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-top: 2px; }
+        
+        .badge-fundador {
+            display: inline-block; background: #FFFBEB; color: #92400E; font-size: 10px; font-weight: 700;
+            padding: 4px 8px; border-radius: 6px; border: 1px solid #FDE68A; margin-top: 8px;
+            letter-spacing: 0.3px; text-transform: uppercase;
+        }
+
+        #app-content { background: var(--bg-white); min-height: 100vh; }
+        .cartelera-container { padding-bottom: 10px; }
+        .day-header {
+            background: #F3F4F6; color: #374151; font-size: 13px; font-weight: 600; text-transform: uppercase;
+            padding: 10px 16px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            position: sticky; top: 65px; z-index: 40;
+        }
+        .court-item {
+            padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer;
+            display: block; background: var(--bg-white); transition: background 0.1s ease;
+        }
+        .court-item:active { background: #F9FAFB; }
+        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+        .c-line-3 { font-size: 13px; color: var(--text-sub); }
+        .c-cat-bold { font-weight: 600; color: var(--text-main); }
+        #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
+
+        .view-inscripcion {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-base); z-index: 100;
+            transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow-y: auto; padding-bottom: 40px;
+        }
+        .view-inscripcion.active { transform: translateX(0); }
+
+        .nav-back {
+            padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; position: sticky; top: 0; z-index: 110;
+            font-weight: 600; color: var(--text-main); font-size: 16px; cursor: pointer;
+        }
+        .nav-back svg { margin-right: 8px; }
+
+        .content-pad { padding: 24px 16px; display: flex; flex-direction: column; min-height: calc(100% - 60px); }
+        
+        .info-card {
+            background: var(--bg-white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; margin-bottom: 12px;
+        }
+        .i-title { font-size: 18px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; text-transform: uppercase; }
+        .i-row { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center;}
+        .i-row span { margin-left: 6px; }
+        .i-price { margin-top: 16px; font-size: 16px; font-weight: 700; color: var(--text-main); }
+        
+        .scarcity-msg {
+            font-size: 13px; font-weight: 500; color: var(--text-sub); background: #F3F4F6;
+            padding: 10px 12px; border-radius: 8px; margin-bottom: 24px; text-align: center;
+        }
+
+        .form-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+        .input-group { margin-bottom: 16px; }
+        .input-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+        .input-clean {
+            width: 100%; height: 44px; padding: 10px 12px; font-size: 16px;
+            border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white);
+            font-family: inherit; outline: none; transition: border 0.2s; color: var(--text-main);
+        }
+        .input-clean:focus { border-color: #111111; }
+        select.input-clean {
+            appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+        }
+
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .total-box {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 32px; margin-bottom: 24px; padding-top: 16px; border-top: 1px solid var(--border);
+        }
+        .t-label { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+        .t-amount { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;}
+
+        .btn-black {
+            width: 100%; height: 48px; background: #111111; color: #FFFFFF;
+            border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s ease;
+        }
+        .btn-black:active { transform: scale(0.98); }
+        .btn-black:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .success-icon { font-size: 40px; line-height: 1; margin-bottom: 12px; }
+        .s-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.5px; }
+        .s-subtitle { font-size: 15px; font-weight: 500; color: var(--text-sub); margin-bottom: 32px; }
+        
+        .pay-block {
+            background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center;
+        }
+        .p-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
+        .p-monto { font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; margin-bottom: 24px; }
+        .p-alias { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; word-break: break-all; }
+        
+        .btn-outline {
+            background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;
+            padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-main);
+            cursor: pointer; transition: 0.1s ease;
+        }
+        .btn-outline:active { background: #F9FAFB; transform: scale(0.98); }
+
+        .s-microcopy { font-size: 13px; color: var(--text-sub); font-weight: 500; margin-bottom: 24px; text-align: center; }
+
+        .links-secundarios {
+            display: flex; flex-direction: column; gap: 16px; margin-top: 24px; text-align: center;
+        }
+        .link-sec {
+            font-size: 14px; font-weight: 600; color: var(--text-sub); text-decoration: none; cursor: pointer;
+            padding: 8px 0;
+        }
+        .link-sec:active { color: var(--text-main); }
+
+        .branding-footer {
+            font-size: 11px; font-weight: 600; color: var(--text-sub); text-align: center; margin-top: auto; padding-top: 40px; padding-bottom: 20px;
+        }
+        .link-cancher { color: var(--brand-purple); text-decoration: none; font-weight: 800; letter-spacing: 0.2px; }
+    </style>
+</head>
+<body>
+
+    <header class="header-global">
+        <div class="header-brand">CANCHER</div>
+        <div class="header-org" id="t-org-name">Cargando...</div>
+        <div id="badge-fundador-container" style="display: none;">
+            <span class="badge-fundador">⭐ Top 10 · Miembro Fundador</span>
+        </div>
+    </header>
+
+    <main id="app-content">
+        <div id="loading-init">Buscando canchas...</div>
+        <div id="court-list-container"></div>
+        
+        <div class="branding-footer" id="main-footer" style="display:none; padding-bottom: 30px;">
+            Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+        </div>
+    </main>
+
+    <div id="view-inscripcion" class="view-inscripcion">
+        <div class="nav-back" onclick="cerrarInscripcion()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span id="nav-text">Atrás</span>
+        </div>
+        <div class="content-pad">
+            
+            <div id="step-3-form">
+                <div class="info-card">
+                    <div class="i-title" id="ins-title">--</div>
+                    <div class="i-row">📅 <span id="ins-date">--</span></div>
+                    <div class="i-row" id="ins-loc-container">📍 <span id="ins-loc">--</span></div>
+                    <div class="i-row">👤 <span>Organiza: <span id="ins-org">--</span></span></div>
+                    <div class="i-price"><span id="ins-price">--</span> por jugador</div>
+                </div>
+                
+                <div class="scarcity-msg">⚡ Esta cancha suele completarse rápido</div>
+
+                <div class="form-title">Tus datos (Titular)</div>
+                <div style="display:flex; gap:12px;">
+                    <div class="input-group" style="flex:1;">
+                        <label class="input-label">Nombre</label>
+                        <input type="text" id="ins-nombre" class="input-clean" placeholder="Ej: Juan">
+                    </div>
+                    <div class="input-group" style="flex:1;">
+                        <label class="input-label">Apellido</label>
+                        <input type="text" id="ins-apellido" class="input-clean" placeholder="Ej: Pérez">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Tu WhatsApp</label>
+                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: 5491122334455">
+                </div>
+<div class="input-group">
+    <label class="input-label">Categoría</label>
+    <select id="ins-categoria" class="input-clean">
+        <option value="">Seleccionar categoría</option>
+        <option value="Principiante">Principiante</option>
+        <option value="8va">8va</option>
+        <option value="7ma">7ma</option>
+        <option value="6ta">6ta</option>
+        <option value="5ta">5ta</option>
+        <option value="4ta">4ta</option>
+        <option value="3ra">3ra</option>
+        <option value="2da">2da</option>
+        <option value="1ra">1ra</option>
+    </select>
+</div>
+                <div class="input-group" style="margin-top: 24px;">
+                    <label class="input-label" style="color: var(--text-sub);">¿A cuántos jugadores anotás?</label>
+                    <select id="ins-lugares" class="input-clean" onchange="actualizarTotal()">
+                        <option value="1">Solo yo</option>
+                        <option value="2">Yo + 1</option>
+                        <option value="3">Yo + 2</option>
+                        <option value="4">Yo + 3</option>
+                    </select>
+                </div>
+
+                <div id="extra-players-container"></div>
+
+                <div class="total-box">
+                    <div class="t-label">TOTAL</div>
+                    <div class="t-amount" id="ins-total-calc">$0</div>
+                </div>
+
+                <button class="btn-black" id="btn-submit" onclick="avanzarPaso4()">Anotarme ahora</button>
+            </div>
+
+            <div id="step-4-success" style="display: none; text-align: center; animation: fadeSlide 0.3s ease;">
+                <div class="success-icon">✔️</div>
+                <h2 class="s-title">Estás adentro</h2>
+                <p class="s-subtitle">Reservaste tu lugar</p>
+
+                <div class="pay-block">
+                    <div class="p-label">Total a pagar</div>
+                    <div class="p-monto" id="conf-total">$0</div>
+                    <div class="p-label">Alias / CBU</div>
+                    <div class="p-alias" id="conf-alias">--</div>
+                    <button class="btn-outline" onclick="copiarAlias(this)">Copiar alias</button>
+                </div>
+
+                <p class="s-microcopy">Enviá el comprobante para validar la reserva</p>
+
+                <button class="btn-black" onclick="yaTransferi()">Ya transferí</button>
+
+                <div class="links-secundarios">
+                    <a class="link-sec" onclick="pagarEnClub()">Prefiero pagar en el club</a>
+                    <a class="link-sec" onclick="sumarOtroJugador()">Sumar otro jugador</a>
+                    <a class="link-sec" onclick="cerrarInscripcion()">Ver más canchas</a>
+                </div>
+            </div>
+
+            <div class="branding-footer">
+                Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    // --- FUNCIÓN GLOBAL DE CUPOS ADAPTADA A OBJETOS Y ARRAYS ---
+    function calcularOcupados(list) {
+        if (!list) return 0;
+        const arr = Array.isArray(list) ? list : Object.values(list);
+        return arr.reduce((acc, p) => acc + (p.cantidad || 1), 0);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orgId = urlParams.get('org') || urlParams.get('id');
+    let dbEvents = [];
+    let currentEventData = null;
+
+    if(!orgId) {
+        document.getElementById('loading-init').innerText = "Enlace incompleto.";
+    } else {
+        cargarBase();
+    }
+
+    function cargarBase() {
+        db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
+            const cuenta = snap.val() || {};
+            document.getElementById('t-org-name').innerText = `Organizado por ${cuenta.nombreOrg || "Club"}`;
+            if (cuenta.esFundador && !cuenta.archivado) {
+                document.getElementById('badge-fundador-container').style.display = 'block';
+            }
+        });
+
+        db.ref('hubs/' + orgId).on('value', async (snap) => {
+            const listContainer = document.getElementById('court-list-container');
+            document.getElementById('loading-init').style.display = 'none';
+            document.getElementById('main-footer').style.display = 'block';
+
+            const hubData = snap.val();
+            if (!hubData || !hubData.canchas) {
+                listContainer.innerHTML = "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas.</div>";
+                return;
+            }
+            const promesas = hubData.canchas.map(cid => db.ref('eventos/' + cid).once('value'));
+            const snapshots = await Promise.all(promesas);
+            dbEvents = [];
+            snapshots.forEach(s => { if(s.exists()) dbEvents.push({ id: s.key, ...s.val() }); });
+            dbEvents.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
+
+            let htmlAcumulado = "<div class='cartelera-container'>";
+            let lastDate = ""; let canchasActivas = 0;
+            
+            dbEvents.forEach((d) => {
+                const ahora = new Date();
+                const hoyISO = ahora.toLocaleDateString('sv-SE'); 
+
+                if (d.fecha >= hoyISO) {
+                    canchasActivas++;
+                    
+                    if (d.fecha !== lastDate) {
+                        htmlAcumulado += `<div class="day-header">${formatearDiaHeader(d.fecha)}</div>`;
+                        lastDate = d.fecha;
+                    }
+
+                    let tituloCancha = d.organiza || 'Cancha';
+                    htmlAcumulado += `
+                        <div class="court-item" onclick="abrirInscripcion('${d.id}')">
+                            <div class="c-line-1"><span>${tituloCancha.toUpperCase()}</span><span>${PadelUtils.fmtDinero(d.valor)}</span></div>
+                            <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
+                            ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
+                            <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
+                        </div>`;
+                }
+            });
+            listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado + "</div>";
+        });
+    }
+
+    function abrirInscripcion(id) {
+        currentEventData = dbEvents.find(e => e.id === id);
+        if(!currentEventData) return;
+        
+        document.getElementById('step-3-form').style.display = 'block';
+        document.getElementById('step-4-success').style.display = 'none';
+        document.getElementById('nav-text').innerText = "Atrás";
+
+        document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha';
+        document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
+        document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
+        if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
+        document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || 'Organizador';
+        document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
+        
+        document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar';
+
+        document.getElementById('ins-lugares').value = "1";
+        actualizarTotal();
+        
+        document.getElementById('view-inscripcion').classList.add('active');
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function cerrarInscripcion() {
+        document.getElementById('view-inscripcion').classList.remove('active');
+        document.body.style.overflow = '';
+        currentEventData = null;
+    }
+
+    function actualizarTotal() {
+        if(!currentEventData) return;
+        const lugares = parseInt(document.getElementById('ins-lugares').value) || 1;
+        const total = lugares * (currentEventData.valor || 0);
+        document.getElementById('ins-total-calc').innerText = PadelUtils.fmtDinero(total);
+        document.getElementById('conf-total').innerText = PadelUtils.fmtDinero(total);
+        renderExtraPlayers(lugares);
+    }
+
+    function renderExtraPlayers(lugares) {
+    const container = document.getElementById('extra-players-container');
+    container.innerHTML = '';
+
+    for (let i = 2; i <= lugares; i++) {
+
+        const div = document.createElement('div');
+
+        div.style.marginTop = '24px';
+        div.style.animation = 'fadeSlide 0.2s ease';
+
+        div.innerHTML = `
+            <div class="form-title" style="font-size:14px; margin-bottom:12px; color: var(--text-sub);">
+                Datos Jugador ${i}
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Nombre</label>
+                    <input type="text" class="input-clean extra-nombre" placeholder="Nombre">
+                </div>
+
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Apellido</label>
+                    <input type="text" class="input-clean extra-apellido" placeholder="Apellido">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">WhatsApp</label>
+                <input
+                    type="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    class="input-clean extra-celular"
+                    placeholder="Ej: 5491122334455">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Categoría</label>
+                <select class="input-clean extra-categoria">
+                    <option value="">Seleccionar categoría</option>
+                    <option value="Principiante">Principiante</option>
+                    <option value="8va">8va</option>
+                    <option value="7ma">7ma</option>
+                    <option value="6ta">6ta</option>
+                    <option value="5ta">5ta</option>
+                    <option value="4ta">4ta</option>
+                    <option value="3ra">3ra</option>
+                    <option value="2da">2da</option>
+                    <option value="1ra">1ra</option>
+                </select>
+            </div>
+        `;
+
+        container.appendChild(div);
+    }
+}
+
+    // --- ACÁ ESTÁ EL CAMBIO CRÍTICO DE LA TRANSACCIÓN ---
+    function avanzarPaso4() {
+        const nom = document.getElementById('ins-nombre').value.trim();
+        const ape = document.getElementById('ins-apellido').value.trim();
+        const celu = document.getElementById('ins-celu').value.trim();
+        const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
+        
+        if(!nom || !ape || !celu) {
+            alert("Completá tus datos para avanzar."); return;
+        }
+
+        const personasExtra = [];
+        const extraNombres = document.querySelectorAll('.extra-nombre');
+        const extraApellidos = document.querySelectorAll('.extra-apellido');
+        
+        for (let i = 0; i < extraNombres.length; i++) {
+            const n = extraNombres[i].value.trim();
+            const a = extraApellidos[i].value.trim();
+            if(!n || !a) { alert(`Completá los datos del Jugador ${i + 2}`); return; }
+            personasExtra.push({
+                nombre: (n + " " + a).trim(),
+                celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now()
+            });
+        }
+
+        const btn = document.getElementById('btn-submit');
+        btn.innerText = "Procesando..."; btn.disabled = true;
+
+        const eventRef = db.ref(`eventos/${currentEventData.id}`);
+
+        eventRef.transaction((currentData) => {
+            if (currentData) {
+                if (!currentData.inscriptos) { currentData.inscriptos = {}; }
+                
+                // Extraemos array solo para validar
+                const arr = Array.isArray(currentData.inscriptos) ? currentData.inscriptos : Object.values(currentData.inscriptos);
+                const name = (nom + " " + ape).trim();
+
+                // 1. Validar duplicados
+                if (arr.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) { return; }
+
+                // 2. Validar cupo real
+                const ocupados = calcularOcupados(arr);
+                const cupoMax = currentData.cupo || 99;
+                if (ocupados + cant > cupoMax) { return; }
+
+                // 3. Convertimos a Objeto si era un Array (para compatibilidad)
+                let inscriptosObj = currentData.inscriptos;
+                if (Array.isArray(inscriptosObj)) { inscriptosObj = Object.assign({}, inscriptosObj); }
+
+                // 4. Inyectamos a los jugadores con IDs ÚNICOS
+                const mainKey = db.ref().push().key;
+                inscriptosObj[mainKey] = { nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() };
+                
+                personasExtra.forEach(p => {
+                    const extraKey = db.ref().push().key;
+                    inscriptosObj[extraKey] = p;
+                });
+
+                currentData.inscriptos = inscriptosObj;
+                return currentData; 
+            }
+            return currentData;
+        }, (error, committed, snapshot) => {
+            if (error) {
+                alert("Error de conexión. Intentá de nuevo.");
+                btn.innerText = "Anotarme ahora"; btn.disabled = false;
+            } else if (!committed) {
+                const data = snapshot.val();
+                const arr = data ? (Array.isArray(data.inscriptos) ? data.inscriptos : Object.values(data.inscriptos || {})) : [];
+                const ocupadosActuales = calcularOcupados(arr);
+                if (data && ocupadosActuales + cant > data.cupo) {
+                    alert("¡Cancha llena! No quedan lugares suficientes.");
+                } else {
+                    alert("Ya estás anotado o hubo un error.");
+                }
+                btn.innerText = "Anotarme ahora"; btn.disabled = false;
+            } else {
+                const name = (nom + " " + ape).trim();
+                localStorage.setItem('padelapp_cancha_' + currentEventData.id, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
+                
+                document.getElementById('step-3-form').style.display = 'none';
+                document.getElementById('step-4-success').style.display = 'block';
+                document.getElementById('nav-text').innerText = "Volver al inicio";
+                document.querySelector('.view-inscripcion').scrollTop = 0;
+                btn.innerText = "Anotarme ahora"; btn.disabled = false;
+            }
+        });
+    }
+
+    function copiarAlias(btn) {
+        navigator.clipboard.writeText(document.getElementById('conf-alias').innerText).then(() => {
+            const old = btn.innerText; 
+            btn.innerText = "¡Copiado!";
+            setTimeout(() => btn.innerText = old, 2000);
+        });
+    }
+
+    function yaTransferi() {
+        const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
+        if(!local) return;
+
+        const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
+        const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+
+        let tituloCancha = currentEventData.organiza || 'Cancha';
+        let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
+
+        let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
+        texto += `Nombre: ${local.nombre}\n`;
+        texto += `Personas: ${local.cantidad}\n`;
+        texto += `Evento: ${tituloCancha}${sede} - ${fechaFormateada} - ${currentEventData.hora}\n`;
+        texto += `Pago: Transferencia\n\nAdjunto comprobante.`;
+
+        const telefono = currentEventData.celuOrganizador.replace(/[^0-9]/g, '');
+        window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`, '_blank');
+    }
+
+    // --- ACÁ TAMBIÉN MEJORAMOS EL PAGO EN CLUB PARA QUE NO PISE NADA ---
+    function pagarEnClub() {
+        const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
+        if(!local) return;
+
+        db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
+            let list = s.val() || {};
+            let updates = {};
+            let updated = false;
+            
+            Object.keys(list).forEach(key => {
+                if (list[key].celular === local.celular) {
+                    updates[key + '/estado'] = 'paga-en-la-cancha';
+                    updated = true;
+                }
+            });
+
+            if(updated) {
+                // Hacemos un .update seguro en vez de un .set
+                db.ref(`eventos/${currentEventData.id}/inscriptos`).update(updates).then(() => {
+                    alert("¡Anotado! El organizador ya sabe que abonás en el club.");
+                    cerrarInscripcion();
+                });
+            }
+        });
+    }
+
+    function sumarOtroJugador() {
+        document.getElementById('ins-nombre').value = '';
+        document.getElementById('ins-apellido').value = '';
+        document.getElementById('ins-lugares').value = '1';
+        actualizarTotal();
+        
+        document.getElementById('step-4-success').style.display = 'none';
+        document.getElementById('step-3-form').style.display = 'block';
+        document.getElementById('nav-text').innerText = "Atrás";
+        document.querySelector('.view-inscripcion').scrollTop = 0;
+    }
+
+    function formatearDiaHeader(fechaStr) {
+        const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]}`;
+    }
+
+    function formatearDiaCorto(fechaStr) {
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const f = new Date(fechaStr + 'T12:00:00');
+        return `${dias[f.getDay()]} ${f.getDate()}`;
+    }
+</script>
+</body>
+</html>

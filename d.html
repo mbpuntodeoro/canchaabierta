@@ -616,71 +616,73 @@
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
-    function abrirFormularioCancha(id) {
-        editandoCanchaId = id;
-        var btnEliminar = document.getElementById('btn-eliminar-cancha');
-        var btnSusp = document.getElementById('btn-suspender-cancha');
-        if(id) {
-            var c = eventosCache.find(e => e.id === id);
-            btnEliminar.style.display = "block"; btnSusp.style.display = "block";
-            btnSusp.innerText = c.estado === 'suspendido' ? "Activar Cancha" : "Suspender Cancha";
-            btnSusp.style.background = c.estado === 'suspendido' ? "#DCFCE7" : "#FEF3C7";
-            document.getElementById('fc-fecha').value = c.fecha;
-            document.getElementById('fc-hora').value = c.hora;
-            document.getElementById('fc-horafin').value = c.horaFin || "";
-            document.getElementById('fc-titulo').value = c.organiza || "";
-            document.getElementById('fc-lugar').value = c.lugar || "";
-            document.getElementById('fc-precio').value = c.valor || "";
-            document.getElementById('fc-cupo').value = c.cupo || "";
-            document.getElementById('fc-alias').value = c.alias || "";
-document.getElementById('fc-celu').value = c.celuOrganizador || "";
+   function abrirFormularioCancha(id) {
 
-} else {
+    editandoCanchaId = id;
 
-    btnEliminar.style.display = "none";
-    btnSusp.style.display = "none";
+    var btnEliminar = document.getElementById('btn-eliminar-cancha');
+    var btnSusp = document.getElementById('btn-suspender-cancha');
 
-    document.getElementById('fc-fecha').value =
-        new Date().toLocaleDateString('sv-SE');
+    if (id) {
 
-    db.ref('facturacion/' + globalOrgId + '/cuenta')
-        .once('value')
-        .then(function(snap){
+        var c = eventosCache.find(e => e.id === id);
 
-            const cuenta = snap.val() || {};
+        btnEliminar.style.display = "block";
+        btnSusp.style.display = "block";
 
-            document.getElementById('fc-alias').value =
-                cuenta.aliasCobro || '';
+        btnSusp.innerText =
+            c.estado === 'suspendido'
+                ? "Activar Cancha"
+                : "Suspender Cancha";
 
-            document.getElementById('fc-celu').value =
-                cuenta.whatsappOrganizador || '';
+        btnSusp.style.background =
+            c.estado === 'suspendido'
+                ? "#DCFCE7"
+                : "#FEF3C7";
 
-        });
-}
+        document.getElementById('fc-fecha').value = c.fecha;
+        document.getElementById('fc-hora').value = c.hora;
+        document.getElementById('fc-horafin').value = c.horaFin || "";
+        document.getElementById('fc-titulo').value = c.organiza || "";
+        document.getElementById('fc-lugar').value = c.lugar || "";
+        document.getElementById('fc-precio').value = c.valor || "";
+        document.getElementById('fc-cupo').value = c.cupo || "";
+        document.getElementById('fc-alias').value = c.alias || "";
+        document.getElementById('fc-celu').value = c.celuOrganizador || "";
 
-    btnEliminar.style.display = "none";
-    btnSusp.style.display = "none";
+    } else {
 
-    document.getElementById('fc-fecha').value =
-        new Date().toLocaleDateString('sv-SE');
+        btnEliminar.style.display = "none";
+        btnSusp.style.display = "none";
 
-    db.ref('facturacion/' + globalOrgId + '/cuenta')
-        .once('value')
-        .then(function(snap){
+        document.getElementById('fc-fecha').value =
+            new Date().toLocaleDateString('sv-SE');
 
-            const cuenta = snap.val() || {};
+        document.getElementById('fc-hora').value = "";
+        document.getElementById('fc-horafin').value = "";
+        document.getElementById('fc-titulo').value = "";
+        document.getElementById('fc-lugar').value = "";
+        document.getElementById('fc-precio').value = "";
+        document.getElementById('fc-cupo').value = "";
 
-            document.getElementById('fc-alias').value =
-                cuenta.aliasCobro || '';
+        db.ref('facturacion/' + globalOrgId + '/cuenta')
+            .once('value')
+            .then(function(snap){
 
-            document.getElementById('fc-celu').value =
-                cuenta.whatsappOrganizador || '';
+                const cuenta = snap.val() || {};
 
-        });
-}
-        }
-        document.getElementById('view-form-cancha').classList.add('active');
+                document.getElementById('fc-alias').value =
+                    cuenta.aliasCobro || '';
+
+                document.getElementById('fc-celu').value =
+                    cuenta.whatsappOrganizador || '';
+
+            });
     }
+
+    document.getElementById('view-form-cancha')
+        .classList.add('active');
+}
 
     function cerrarFormularioCancha() { document.getElementById('view-form-cancha').classList.remove('active'); }
 

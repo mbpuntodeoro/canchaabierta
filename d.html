@@ -504,7 +504,9 @@ ${j.categoria || '-'} · ${j.celular || '-'}
                 }
             });
 
-          document.getElementById('lista-jugadores-container').innerHTML =
+          alert("DASH NUEVO");
+
+document.getElementById('lista-jugadores-container').innerHTML =
     (
         (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +
         (htmlEs.transferido.length ? '<div class="grupo-titulo">🟠 Dice que transfirió</div>' + htmlEs.transferido.join('') : '') +

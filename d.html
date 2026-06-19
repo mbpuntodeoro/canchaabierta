@@ -66,6 +66,9 @@
         .dot.pendiente { background: var(--brand-red); }
         .dot.pagado { background: var(--brand-green); }
         .dot.paga-en-la-cancha { background: var(--brand-orange); }
+        .dot.transferido {
+    background: var(--brand-orange);
+}
 
         .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
@@ -462,10 +465,22 @@
                 grupos[cel].push(jug);
             });
 
-            var htmlEs = { pagado: [], cancha: [], pendiente: [] };
+            var htmlEs = {
+    pagado: [],
+    transferido: [],
+    cancha: [],
+    pendiente: []
+};
             Object.keys(grupos).forEach(function(cel) {
                 var jgs = grupos[cel]; var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
-                var estG = jgs.some(j => j.estado === 'pendiente' || !j.estado) ? 'pendiente' : (jgs.some(j => j.estado === 'paga-en-la-cancha') ? 'cancha' : 'pagado');
+                var estG =
+    jgs.some(j => j.estado === 'pendiente' || !j.estado)
+        ? 'pendiente'
+        : jgs.some(j => j.estado === 'paga-en-la-cancha')
+            ? 'cancha'
+            : jgs.some(j => j.estado === 'dice-que-transfirio')
+                ? 'transferido'
+                : 'pagado';
 
                 if(jgs.length === 1 && totG === 1) {
                     var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago('${tit.originalIndex}', 'pagado')">✔</button>` : '';
@@ -487,10 +502,14 @@ ${j.categoria || '-'} · ${j.celular || '-'}
                 }
             });
 
-            document.getElementById('lista-jugadores-container').innerHTML = 
-                (htmlEs.pagado.length ? '<div class="grupo-titulo">Pagados</div>' + htmlEs.pagado.join('') : '') +
-                (htmlEs.cancha.length ? '<div class="grupo-titulo">En Club</div>' + htmlEs.cancha.join('') : '') +
-                (htmlEs.pendiente.length ? '<div class="grupo-titulo">Pendientes</div>' + htmlEs.pendiente.join('') : '') || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
+          document.getElementById('lista-jugadores-container').innerHTML =
+    (
+        (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +
+        (htmlEs.transferido.length ? '<div class="grupo-titulo">🟠 Dice que transfirió</div>' + htmlEs.transferido.join('') : '') +
+        (htmlEs.cancha.length ? '<div class="grupo-titulo">🟡 Paga en cancha</div>' + htmlEs.cancha.join('') : '') +
+        (htmlEs.pendiente.length ? '<div class="grupo-titulo">🔴 Pendiente de pago</div>' + htmlEs.pendiente.join('') : '')
+    )
+    || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
             
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;

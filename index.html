@@ -542,24 +542,34 @@
             if (Array.isArray(inscriptosObj)) {
                 inscriptosObj = Object.assign({}, inscriptosObj);
             }
-
+const reservaId = db.ref().push().key;
             const mainKey = db.ref().push().key;
 
             inscriptosObj[mainKey] = {
-                nombre: nom,
-                apellido: ape,
-                nombreCompleto: nombreCompleto,
-                celular: celu,
-                categoria: categoria,
-                cantidad: 1,
-                estado: 'pendiente',
-                fecha: Date.now()
-            };
+    nombre: nom,
+    apellido: ape,
+    nombreCompleto: nombreCompleto,
+    celular: celu,
+    categoria: categoria,
+    cantidad: 1,
+    estado: 'pendiente',
+    fecha: Date.now(),
+
+    reservaId: reservaId,
+    titularReserva: true
+};
 
             personasExtra.forEach(p => {
-                const extraKey = db.ref().push().key;
-                inscriptosObj[extraKey] = p;
-            });
+
+    const extraKey = db.ref().push().key;
+
+    inscriptosObj[extraKey] = {
+        ...p,
+
+        reservaId: reservaId,
+        titularReserva: false
+    };
+});
 
             currentData.inscriptos = inscriptosObj;
 
@@ -604,14 +614,15 @@
 
             const nombreCompleto = `${nom} ${ape}`.trim();
 
-            localStorage.setItem(
-                'padelapp_cancha_' + currentEventData.id,
-                JSON.stringify({
-                    nombre: nombreCompleto,
-                    celular: celu,
-                    cantidad: cant
-                })
-            );
+           localStorage.setItem(
+    'padelapp_cancha_' + currentEventData.id,
+    JSON.stringify({
+        nombre: nombreCompleto,
+        celular: celu,
+        cantidad: cant,
+        reservaId: reservaId
+    })
+);
 
             document.getElementById('step-3-form').style.display = 'none';
             document.getElementById('step-4-success').style.display = 'block';

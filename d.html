@@ -465,12 +465,14 @@
                 grupos[cel].push(jug);
             });
 
-            var htmlEs = {
+    var htmlEs = {
     pagado: [],
     transferido: [],
     cancha: [],
     pendiente: []
 };
+
+console.log("VERSION NUEVA DASH");
             Object.keys(grupos).forEach(function(cel) {
                 var jgs = grupos[cel]; var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
                 var estG =

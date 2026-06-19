@@ -644,11 +644,13 @@ const reservaId = db.ref().push().key;
         });
     }
 
-   function yaTransferi() {
+function yaTransferi() {
 
     const local = JSON.parse(
         localStorage.getItem('padelapp_cancha_' + currentEventData.id)
     );
+
+    console.log("LOCAL", local);
 
     if(!local) return;
 
@@ -656,7 +658,8 @@ const reservaId = db.ref().push().key;
 
         let list = s.val() || {};
 
-        // Buscar al titular por celular
+        console.log("LISTA", list);
+
         let reservaId = null;
 
         Object.keys(list).forEach(key => {
@@ -666,6 +669,8 @@ const reservaId = db.ref().push().key;
             }
 
         });
+
+        console.log("RESERVA ENCONTRADA", reservaId);
 
         if(!reservaId) return;
 
@@ -681,10 +686,13 @@ const reservaId = db.ref().push().key;
 
         });
 
+        console.log("UPDATES", updates);
+
         db.ref(`eventos/${currentEventData.id}/inscriptos`)
             .update(updates);
 
     });
+}
 
     const txt =
 `Hola! Te envío el comprobante de transferencia para la cancha "${currentEventData.nombre}".`;

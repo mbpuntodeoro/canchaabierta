@@ -674,19 +674,29 @@ function yaTransferi() {
 
         console.log("RESERVA ENCONTRADA", reservaId);
 
-        if(!reservaId) return;
-
         let updates = {};
 
-        Object.keys(list).forEach(key => {
+        if(reservaId){
 
-            if(list[key].reservaId === reservaId) {
+            Object.keys(list).forEach(key => {
 
-                updates[key + '/estado'] = 'dice-que-transfirio';
+                if(list[key].reservaId === reservaId){
+                    updates[key + '/estado'] = 'dice-que-transfirio';
+                }
 
-            }
+            });
 
-        });
+        } else {
+
+            Object.keys(list).forEach(key => {
+
+                if(list[key].celular === local.celular){
+                    updates[key + '/estado'] = 'dice-que-transfirio';
+                }
+
+            });
+
+        }
 
         console.log("UPDATES", updates);
 
@@ -694,36 +704,27 @@ function yaTransferi() {
             .update(updates);
 
     });
-}
 
-    const txt =
-`Hola! Te envío el comprobante de transferencia para la cancha "${currentEventData.nombre}".`;
+    const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
+    const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+
+    let tituloCancha = currentEventData.organiza || 'Cancha';
+    let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
+
+    let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
+    texto += `Nombre: ${local.nombre}\n`;
+    texto += `Personas: ${local.cantidad}\n`;
+    texto += `Evento: ${tituloCancha}${sede} - ${fechaFormateada} - ${currentEventData.hora}\n`;
+    texto += `Pago: Transferencia\n\nAdjunto comprobante.`;
+
+    const telefono = currentEventData.celuOrganizador.replace(/[^0-9]/g, '');
 
     window.open(
-        'https://wa.me/' +
-        (currentEventData.celuOrganizador || '').replace(/\D/g,'') +
-        '?text=' +
-        encodeURIComponent(txt),
+        `https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`,
         '_blank'
     );
 }
-
-        const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
-        const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const fechaFormateada = `${diasCurto[dateObj.getDay()]} ${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
-
-        let tituloCancha = currentEventData.organiza || 'Cancha';
-        let sede = currentEventData.lugar ? ` - ${currentEventData.lugar}` : '';
-
-        let texto = `NUEVA INSCRIPCIÓN CANCHA ABIERTA\n\n`;
-        texto += `Nombre: ${local.nombre}\n`;
-        texto += `Personas: ${local.cantidad}\n`;
-        texto += `Evento: ${tituloCancha}${sede} - ${fechaFormateada} - ${currentEventData.hora}\n`;
-        texto += `Pago: Transferencia\n\nAdjunto comprobante.`;
-
-        const telefono = currentEventData.celuOrganizador.replace(/[^0-9]/g, '');
-        window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`, '_blank');
-    }
 
     // --- ACÁ TAMBIÉN MEJORAMOS EL PAGO EN CLUB PARA QUE NO PISE NADA ---
     function pagarEnClub() {

@@ -451,93 +451,180 @@
 
     // --- ACÁ ESTÁ EL CAMBIO CRÍTICO DE LA TRANSACCIÓN ---
     function avanzarPaso4() {
-        const nom = document.getElementById('ins-nombre').value.trim();
-        const ape = document.getElementById('ins-apellido').value.trim();
-        const celu = document.getElementById('ins-celu').value.trim();
-        const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
-        
-        if(!nom || !ape || !celu) {
-            alert("Completá tus datos para avanzar."); return;
+
+    const nom = document.getElementById('ins-nombre').value.trim();
+    const ape = document.getElementById('ins-apellido').value.trim();
+    const celu = document.getElementById('ins-celu').value.trim();
+    const categoria = document.getElementById('ins-categoria').value;
+
+    const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
+
+    if (!nom || !ape || !celu || !categoria) {
+        alert("Completá todos tus datos para avanzar.");
+        return;
+    }
+
+    const personasExtra = [];
+
+    const extraNombres = document.querySelectorAll('.extra-nombre');
+    const extraApellidos = document.querySelectorAll('.extra-apellido');
+    const extraCelulares = document.querySelectorAll('.extra-celular');
+    const extraCategorias = document.querySelectorAll('.extra-categoria');
+
+    for (let i = 0; i < extraNombres.length; i++) {
+
+        const n = extraNombres[i].value.trim();
+        const a = extraApellidos[i].value.trim();
+        const c = extraCelulares[i].value.trim();
+        const cat = extraCategorias[i].value;
+
+        if (!n || !a || !c || !cat) {
+            alert(`Completá todos los datos del Jugador ${i + 2}`);
+            return;
         }
 
-        const personasExtra = [];
-        const extraNombres = document.querySelectorAll('.extra-nombre');
-        const extraApellidos = document.querySelectorAll('.extra-apellido');
-        
-        for (let i = 0; i < extraNombres.length; i++) {
-            const n = extraNombres[i].value.trim();
-            const a = extraApellidos[i].value.trim();
-            if(!n || !a) { alert(`Completá los datos del Jugador ${i + 2}`); return; }
-            personasExtra.push({
-                nombre: (n + " " + a).trim(),
-                celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now()
-            });
-        }
-
-        const btn = document.getElementById('btn-submit');
-        btn.innerText = "Procesando..."; btn.disabled = true;
-
-        const eventRef = db.ref(`eventos/${currentEventData.id}`);
-
-        eventRef.transaction((currentData) => {
-            if (currentData) {
-                if (!currentData.inscriptos) { currentData.inscriptos = {}; }
-                
-                // Extraemos array solo para validar
-                const arr = Array.isArray(currentData.inscriptos) ? currentData.inscriptos : Object.values(currentData.inscriptos);
-                const name = (nom + " " + ape).trim();
-
-                // 1. Validar duplicados
-                if (arr.some(p => p.celular === celu && p.nombre.toLowerCase() === name.toLowerCase())) { return; }
-
-                // 2. Validar cupo real
-                const ocupados = calcularOcupados(arr);
-                const cupoMax = currentData.cupo || 99;
-                if (ocupados + cant > cupoMax) { return; }
-
-                // 3. Convertimos a Objeto si era un Array (para compatibilidad)
-                let inscriptosObj = currentData.inscriptos;
-                if (Array.isArray(inscriptosObj)) { inscriptosObj = Object.assign({}, inscriptosObj); }
-
-                // 4. Inyectamos a los jugadores con IDs ÚNICOS
-                const mainKey = db.ref().push().key;
-                inscriptosObj[mainKey] = { nombre: name, celular: celu, cantidad: 1, estado: 'pendiente', fecha: Date.now() };
-                
-                personasExtra.forEach(p => {
-                    const extraKey = db.ref().push().key;
-                    inscriptosObj[extraKey] = p;
-                });
-
-                currentData.inscriptos = inscriptosObj;
-                return currentData; 
-            }
-            return currentData;
-        }, (error, committed, snapshot) => {
-            if (error) {
-                alert("Error de conexión. Intentá de nuevo.");
-                btn.innerText = "Anotarme ahora"; btn.disabled = false;
-            } else if (!committed) {
-                const data = snapshot.val();
-                const arr = data ? (Array.isArray(data.inscriptos) ? data.inscriptos : Object.values(data.inscriptos || {})) : [];
-                const ocupadosActuales = calcularOcupados(arr);
-                if (data && ocupadosActuales + cant > data.cupo) {
-                    alert("¡Cancha llena! No quedan lugares suficientes.");
-                } else {
-                    alert("Ya estás anotado o hubo un error.");
-                }
-                btn.innerText = "Anotarme ahora"; btn.disabled = false;
-            } else {
-                const name = (nom + " " + ape).trim();
-                localStorage.setItem('padelapp_cancha_' + currentEventData.id, JSON.stringify({ nombre: name, celular: celu, cantidad: cant }));
-                
-                document.getElementById('step-3-form').style.display = 'none';
-                document.getElementById('step-4-success').style.display = 'block';
-                document.getElementById('nav-text').innerText = "Volver al inicio";
-                document.querySelector('.view-inscripcion').scrollTop = 0;
-                btn.innerText = "Anotarme ahora"; btn.disabled = false;
-            }
+        personasExtra.push({
+            nombre: n,
+            apellido: a,
+            nombreCompleto: `${n} ${a}`.trim(),
+            celular: c,
+            categoria: cat,
+            cantidad: 1,
+            estado: 'pendiente',
+            fecha: Date.now()
         });
     }
+
+    const btn = document.getElementById('btn-submit');
+
+    btn.innerText = "Procesando...";
+    btn.disabled = true;
+
+    const eventRef = db.ref(`eventos/${currentEventData.id}`);
+
+    eventRef.transaction((currentData) => {
+
+        if (currentData) {
+
+            if (!currentData.inscriptos) {
+                currentData.inscriptos = {};
+            }
+
+            const arr = Array.isArray(currentData.inscriptos)
+                ? currentData.inscriptos
+                : Object.values(currentData.inscriptos);
+
+            const nombreCompleto = `${nom} ${ape}`.trim();
+
+            const yaExiste = arr.some(
+                p =>
+                    p &&
+                    p.celular === celu &&
+                    (
+                        p.nombreCompleto?.toLowerCase() === nombreCompleto.toLowerCase() ||
+                        p.nombre?.toLowerCase() === nombreCompleto.toLowerCase()
+                    )
+            );
+
+            if (yaExiste) {
+                return;
+            }
+
+            const ocupados = calcularOcupados(arr);
+            const cupoMax = currentData.cupo || 99;
+
+            if (ocupados + cant > cupoMax) {
+                return;
+            }
+
+            let inscriptosObj = currentData.inscriptos;
+
+            if (Array.isArray(inscriptosObj)) {
+                inscriptosObj = Object.assign({}, inscriptosObj);
+            }
+
+            const mainKey = db.ref().push().key;
+
+            inscriptosObj[mainKey] = {
+                nombre: nom,
+                apellido: ape,
+                nombreCompleto: nombreCompleto,
+                celular: celu,
+                categoria: categoria,
+                cantidad: 1,
+                estado: 'pendiente',
+                fecha: Date.now()
+            };
+
+            personasExtra.forEach(p => {
+                const extraKey = db.ref().push().key;
+                inscriptosObj[extraKey] = p;
+            });
+
+            currentData.inscriptos = inscriptosObj;
+
+            return currentData;
+        }
+
+        return currentData;
+
+    }, (error, committed, snapshot) => {
+
+        if (error) {
+
+            alert("Error de conexión. Intentá de nuevo.");
+
+            btn.innerText = "Anotarme ahora";
+            btn.disabled = false;
+
+        } else if (!committed) {
+
+            const data = snapshot.val();
+
+            const arr = data
+                ? (
+                    Array.isArray(data.inscriptos)
+                        ? data.inscriptos
+                        : Object.values(data.inscriptos || {})
+                )
+                : [];
+
+            const ocupadosActuales = calcularOcupados(arr);
+
+            if (data && ocupadosActuales + cant > data.cupo) {
+                alert("¡Cancha llena! No quedan lugares suficientes.");
+            } else {
+                alert("Ya estás anotado o hubo un error.");
+            }
+
+            btn.innerText = "Anotarme ahora";
+            btn.disabled = false;
+
+        } else {
+
+            const nombreCompleto = `${nom} ${ape}`.trim();
+
+            localStorage.setItem(
+                'padelapp_cancha_' + currentEventData.id,
+                JSON.stringify({
+                    nombre: nombreCompleto,
+                    celular: celu,
+                    cantidad: cant
+                })
+            );
+
+            document.getElementById('step-3-form').style.display = 'none';
+            document.getElementById('step-4-success').style.display = 'block';
+
+            document.getElementById('nav-text').innerText = "Volver al inicio";
+
+            document.querySelector('.view-inscripcion').scrollTop = 0;
+
+            btn.innerText = "Anotarme ahora";
+            btn.disabled = false;
+        }
+    });
+}
 
     function copiarAlias(btn) {
         navigator.clipboard.writeText(document.getElementById('conf-alias').innerText).then(() => {

@@ -637,6 +637,26 @@
     function yaTransferi() {
         const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
         if(!local) return;
+        db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
+
+    let list = s.val() || {};
+    let updates = {};
+    let updated = false;
+
+    Object.keys(list).forEach(key => {
+
+        if (list[key].celular === local.celular) {
+
+            updates[key + '/estado'] = 'dice-que-transfirio';
+            updated = true;
+        }
+    });
+
+    if(updated) {
+        db.ref(`eventos/${currentEventData.id}/inscriptos`)
+            .update(updates);
+    }
+});
 
         const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
         const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

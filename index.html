@@ -614,13 +614,12 @@ const reservaId = db.ref().push().key;
 
             const nombreCompleto = `${nom} ${ape}`.trim();
 
-           localStorage.setItem(
+          localStorage.setItem(
     'padelapp_cancha_' + currentEventData.id,
     JSON.stringify({
         nombre: nombreCompleto,
         celular: celu,
-        cantidad: cant,
-        reservaId: reservaId
+        cantidad: cant
     })
 );
 

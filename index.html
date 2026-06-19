@@ -644,29 +644,59 @@ const reservaId = db.ref().push().key;
         });
     }
 
-    function yaTransferi() {
-        const local = JSON.parse(localStorage.getItem('padelapp_cancha_' + currentEventData.id));
-        if(!local) return;
-        db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
+   function yaTransferi() {
 
-    let list = s.val() || {};
-    let updates = {};
-    let updated = false;
+    const local = JSON.parse(
+        localStorage.getItem('padelapp_cancha_' + currentEventData.id)
+    );
 
-    Object.keys(list).forEach(key => {
+    if(!local) return;
 
-        if (list[key].celular === local.celular) {
+    db.ref(`eventos/${currentEventData.id}/inscriptos`).once('value', s => {
 
-            updates[key + '/estado'] = 'dice-que-transfirio';
-            updated = true;
-        }
-    });
+        let list = s.val() || {};
 
-    if(updated) {
+        // Buscar al titular por celular
+        let reservaId = null;
+
+        Object.keys(list).forEach(key => {
+
+            if(list[key].celular === local.celular) {
+                reservaId = list[key].reservaId;
+            }
+
+        });
+
+        if(!reservaId) return;
+
+        let updates = {};
+
+        Object.keys(list).forEach(key => {
+
+            if(list[key].reservaId === reservaId) {
+
+                updates[key + '/estado'] = 'dice-que-transfirio';
+
+            }
+
+        });
+
         db.ref(`eventos/${currentEventData.id}/inscriptos`)
             .update(updates);
-    }
-});
+
+    });
+
+    const txt =
+`Hola! Te envío el comprobante de transferencia para la cancha "${currentEventData.nombre}".`;
+
+    window.open(
+        'https://wa.me/' +
+        (currentEventData.celuOrganizador || '').replace(/\D/g,'') +
+        '?text=' +
+        encodeURIComponent(txt),
+        '_blank'
+    );
+}
 
         const dateObj = new Date(currentEventData.fecha + 'T12:00:00');
         const diasCurto = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

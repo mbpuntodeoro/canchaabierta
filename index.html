@@ -212,7 +212,21 @@
                     <label class="input-label">Tu WhatsApp</label>
                     <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: 1122334455">
                 </div>
-
+<div class="input-group">
+    <label class="input-label">Categoría</label>
+    <select id="ins-categoria" class="input-clean">
+        <option value="">Seleccionar categoría</option>
+        <option value="Principiante">Principiante</option>
+        <option value="8va">8va</option>
+        <option value="7ma">7ma</option>
+        <option value="6ta">6ta</option>
+        <option value="5ta">5ta</option>
+        <option value="4ta">4ta</option>
+        <option value="3ra">3ra</option>
+        <option value="2da">2da</option>
+        <option value="1ra">1ra</option>
+    </select>
+</div>
                 <div class="input-group" style="margin-top: 24px;">
                     <label class="input-label" style="color: var(--text-sub);">¿A cuántos jugadores anotás?</label>
                     <select id="ins-lugares" class="input-clean" onchange="actualizarTotal()">
@@ -377,28 +391,63 @@
     }
 
     function renderExtraPlayers(lugares) {
-        const container = document.getElementById('extra-players-container');
-        container.innerHTML = '';
-        for (let i = 2; i <= lugares; i++) {
-            const div = document.createElement('div');
-            div.style.marginTop = '24px';
-            div.style.animation = 'fadeSlide 0.2s ease';
-            div.innerHTML = `
-                <div class="form-title" style="font-size: 14px; margin-bottom: 12px; color: var(--text-sub);">Datos Jugador ${i}</div>
-                <div style="display:flex; gap:12px;">
-                    <div class="input-group" style="flex:1;">
-                        <label class="input-label">Nombre</label>
-                        <input type="text" class="input-clean extra-nombre" placeholder="Nombre">
-                    </div>
-                    <div class="input-group" style="flex:1;">
-                        <label class="input-label">Apellido</label>
-                        <input type="text" class="input-clean extra-apellido" placeholder="Apellido">
-                    </div>
+    const container = document.getElementById('extra-players-container');
+    container.innerHTML = '';
+
+    for (let i = 2; i <= lugares; i++) {
+
+        const div = document.createElement('div');
+
+        div.style.marginTop = '24px';
+        div.style.animation = 'fadeSlide 0.2s ease';
+
+        div.innerHTML = `
+            <div class="form-title" style="font-size:14px; margin-bottom:12px; color: var(--text-sub);">
+                Datos Jugador ${i}
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Nombre</label>
+                    <input type="text" class="input-clean extra-nombre" placeholder="Nombre">
                 </div>
-            `;
-            container.appendChild(div);
-        }
+
+                <div class="input-group" style="flex:1;">
+                    <label class="input-label">Apellido</label>
+                    <input type="text" class="input-clean extra-apellido" placeholder="Apellido">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">WhatsApp</label>
+                <input
+                    type="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    class="input-clean extra-celular"
+                    placeholder="Ej: 1122334455">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Categoría</label>
+                <select class="input-clean extra-categoria">
+                    <option value="">Seleccionar categoría</option>
+                    <option value="Principiante">Principiante</option>
+                    <option value="8va">8va</option>
+                    <option value="7ma">7ma</option>
+                    <option value="6ta">6ta</option>
+                    <option value="5ta">5ta</option>
+                    <option value="4ta">4ta</option>
+                    <option value="3ra">3ra</option>
+                    <option value="2da">2da</option>
+                    <option value="1ra">1ra</option>
+                </select>
+            </div>
+        `;
+
+        container.appendChild(div);
     }
+}
 
     // --- ACÁ ESTÁ EL CAMBIO CRÍTICO DE LA TRANSACCIÓN ---
     function avanzarPaso4() {

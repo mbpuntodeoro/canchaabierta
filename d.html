@@ -512,28 +512,70 @@
     }
 
     function guardarCancha() {
-        var d = {
-            tipo: 'unica', fecha: document.getElementById('fc-fecha').value,
-            hora: document.getElementById('fc-hora').value, horaFin: document.getElementById('fc-horafin').value,
-            organiza: document.getElementById('fc-titulo').value, lugar: document.getElementById('fc-lugar').value,
-            valor: parseInt(document.getElementById('fc-precio').value) || 0, cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
-            alias: document.getElementById('fc-alias').value, celuOrganizador: document.getElementById('fc-celu').value
-        };
-        var btnSave = document.getElementById('btn-save-form');
-        btnSave.disabled = true;
-        if(editandoCanchaId) db.ref('eventos/'+editandoCanchaId).update(d).then(() => { btnSave.disabled = false; cerrarFormularioCancha(); });
-        else {
-            var ref = db.ref('eventos').push();
-            ref.set(Object.assign(d, {estado:'activo', inscriptos:{}})).then(function() {
-                db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
-                    var l = Array.isArray(s.val()) ? s.val() : Object.values(s.val() || {});
-                    l.push(ref.key);
-                    db.ref('hubs/' + globalOrgId + '/canchas').set(l).then(() => { btnSave.disabled = false; cerrarFormularioCancha(); });
-                });
-            });
-        }
-    }
 
+    var d = {
+        tipo: 'unica',
+        fecha: document.getElementById('fc-fecha').value,
+        hora: document.getElementById('fc-hora').value,
+        horaFin: document.getElementById('fc-horafin').value,
+        organiza: document.getElementById('fc-titulo').value,
+        lugar: document.getElementById('fc-lugar').value,
+        valor: parseInt(document.getElementById('fc-precio').value) || 0,
+        cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
+        alias: document.getElementById('fc-alias').value,
+        celuOrganizador: document.getElementById('fc-celu').value
+    };
+
+    // Guardar configuración permanente del organizador
+   if (d.alias || d.celuOrganizador) {
+    db.ref('facturacion/' + globalOrgId + '/cuenta').update({
+        aliasCobro: d.alias,
+        whatsappOrganizador: d.celuOrganizador
+    });
+}
+
+    var btnSave = document.getElementById('btn-save-form');
+    btnSave.disabled = true;
+
+    if (editandoCanchaId) {
+
+        db.ref('eventos/' + editandoCanchaId)
+            .update(d)
+            .then(() => {
+                btnSave.disabled = false;
+                cerrarFormularioCancha();
+            });
+
+    } else {
+
+        var ref = db.ref('eventos').push();
+
+        ref.set(
+            Object.assign(d, {
+                estado: 'activo',
+                inscriptos: {}
+            })
+        ).then(function() {
+
+            db.ref('hubs/' + globalOrgId + '/canchas')
+                .once('value', function(s) {
+
+                    var l = Array.isArray(s.val())
+                        ? s.val()
+                        : Object.values(s.val() || {});
+
+                    l.push(ref.key);
+
+                    db.ref('hubs/' + globalOrgId + '/canchas')
+                        .set(l)
+                        .then(() => {
+                            btnSave.disabled = false;
+                            cerrarFormularioCancha();
+                        });
+                });
+        });
+    }
+}
     function toggleSuspender() {
         if(!editandoCanchaId) return;
         var c = eventosCache.find(e => e.id === editandoCanchaId);
@@ -591,10 +633,51 @@
             document.getElementById('fc-precio').value = c.valor || "";
             document.getElementById('fc-cupo').value = c.cupo || "";
             document.getElementById('fc-alias').value = c.alias || "";
-            document.getElementById('fc-celu').value = c.celuOrganizador || "";
-        } else {
-            btnEliminar.style.display = "none"; btnSusp.style.display = "none";
-            document.getElementById('fc-fecha').value = new Date().toLocaleDateString('sv-SE');
+document.getElementById('fc-celu').value = c.celuOrganizador || "";
+
+} else {
+
+    btnEliminar.style.display = "none";
+    btnSusp.style.display = "none";
+
+    document.getElementById('fc-fecha').value =
+        new Date().toLocaleDateString('sv-SE');
+
+    db.ref('facturacion/' + globalOrgId + '/cuenta')
+        .once('value')
+        .then(function(snap){
+
+            const cuenta = snap.val() || {};
+
+            document.getElementById('fc-alias').value =
+                cuenta.aliasCobro || '';
+
+            document.getElementById('fc-celu').value =
+                cuenta.whatsappOrganizador || '';
+
+        });
+}
+
+    btnEliminar.style.display = "none";
+    btnSusp.style.display = "none";
+
+    document.getElementById('fc-fecha').value =
+        new Date().toLocaleDateString('sv-SE');
+
+    db.ref('facturacion/' + globalOrgId + '/cuenta')
+        .once('value')
+        .then(function(snap){
+
+            const cuenta = snap.val() || {};
+
+            document.getElementById('fc-alias').value =
+                cuenta.aliasCobro || '';
+
+            document.getElementById('fc-celu').value =
+                cuenta.whatsappOrganizador || '';
+
+        });
+}
         }
         document.getElementById('view-form-cancha').classList.add('active');
     }

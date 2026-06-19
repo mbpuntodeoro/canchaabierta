@@ -469,9 +469,20 @@
 
                 if(jgs.length === 1 && totG === 1) {
                     var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago('${tit.originalIndex}', 'pagado')">✔</button>` : '';
-                    htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)}</span><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', '${tit.originalIndex}', '${tit.celular}')">⋯</button></div></div>`);
+                    htmlEs[estG].push(`<div class="jugador-fila"><div class="jugador-main"><div>
+    <div style="font-weight:600;">
+        ${tit.nombreCompleto || ((tit.nombre || '') + ' ' + (tit.apellido || ''))}
+    </div>
+    <div style="font-size:12px;color:#6B7280;">
+        ${tit.categoria || '-'} · ${tit.celular || '-'}
+    </div>
+</div><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', '${tit.originalIndex}', '${tit.celular}')">⋯</button></div></div>`);
                 } else {
-                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${jugadorAbreviado(j.nombre)} <div class="dot ${j.estado || 'pendiente'}" style="width:8px; height:8px;"></div></div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">⋯</button></div></div>`).join('');
+                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">↳ ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
+<br>
+<span style="font-size:12px;color:#6B7280;">
+${j.categoria || '-'} · ${j.celular || '-'}
+</span><div class="dot ${j.estado || 'pendiente'}" style="width:8px; height:8px;"></div></div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">⋯</button></div></div>`).join('');
                     htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>${jugadorAbreviado(tit.nombre)} <span style="color:var(--text-sub); font-size:12px;">+${totG-1}</span></span><div class="dot ${estG}"></div></div><div class="acciones"><svg class="icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="grupo-detalle">${sub}</div></div>`);
                 }
             });

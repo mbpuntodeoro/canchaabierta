@@ -556,13 +556,18 @@ grupos[grupoId].push(jug);
 
            Object.keys(grupos).forEach(function(grupoId) {
                var jgs = grupos[grupoId];
-               console.log(
+              console.log(
     "GRUPO",
     grupoId,
-    jgs.map(j => ({
-        nombre: j.nombreCompleto,
-        estado: j.estado
-    }))
+    JSON.stringify(
+        jgs.map(j => ({
+            nombre: j.nombreCompleto || j.nombre,
+            estado: j.estado,
+            titular: j.titularReserva
+        })),
+        null,
+        2
+    )
 );
 
 // ordenar para que el titular quede primero

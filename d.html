@@ -391,23 +391,11 @@ background: var(--brand-orange);
                         headerBtn.onclick = cerrarSesion;
                     }
                 });
-            } else {
-                if (idDetectado) {
-                    globalOrgId = decodeURIComponent(idDetectado);
-                    iniciarProceso(globalOrgId);
-                    document.getElementById('main-status-card').style.display = 'none';
-                    
-                    var headerBtn = document.getElementById('btn-header-accion');
-                    if(headerBtn) {
-                        headerBtn.style.display = 'block';
-                        headerBtn.innerText = "Ingresar";
-                        headerBtn.style.color = "var(--brand-purple)";
-                        headerBtn.onclick = mostrarLogin;
-                    }
-                } else {
-                    mostrarLogin();
-                }
-            }
+          } else {
+
+    mostrarLogin();
+
+}
         });
     });
 

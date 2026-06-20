@@ -271,6 +271,12 @@ background: var(--brand-orange);
             <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Guardar Cambios</button>
             <button class="bs-btn" id="btn-suspender-cancha" style="margin-top:20px; width:100%; border-radius:12px; background:#FEF3C7; color:#92400E;" onclick="toggleSuspender()">Suspender Cancha</button>
             <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
+            <label class="label-form">Frecuencia</label>
+
+<select id="fc-tipo" class="input-clean">
+    <option value="unica">Una sola vez</option>
+    <option value="semanal">Semanal</option>
+</select>
         </div>
     </div>
 
@@ -443,19 +449,101 @@ background: var(--brand-orange);
                 return;
             }
             var ids = Array.isArray(hubData.canchas) ? hubData.canchas : Object.values(hubData.canchas);
-            var promesas = ids.map(function(cid) { return db.ref('eventos/' + cid).once('value'); });
-
+            var promesas = ids.map(function(cid) {
+    return db.ref('eventos/' + cid).once('value');
+});
             Promise.all(promesas).then(function(snapshots) {
-                eventosCache = snapshots.filter(function(s) { return s.exists(); }).map(function(s) {
-                    var val = s.val(); val.id = s.key; return val;
-                });
-                renderDashboard();
-                document.getElementById('loading-init').style.display = 'none';
-                document.getElementById('dash-actions').style.display = 'flex';
-            });
-        });
-    }
 
+    eventosCache = snapshots
+        .filter(function(s) { return s.exists(); })
+        .map(function(s) {
+            var val = s.val();
+            val.id = s.key;
+            return val;
+        });
+
+    procesarRecurrencias().then(() => {
+        renderDashboard();
+    });
+
+    document.getElementById('loading-init').style.display = 'none';
+    document.getElementById('dash-actions').style.display = 'flex';
+
+});
+
+
+async function procesarRecurrencias() {
+
+    const hoy = new Date();
+    const hoyStr =
+        hoy.getFullYear() + "-" +
+        String(hoy.getMonth()+1).padStart(2,'0') + "-" +
+        String(hoy.getDate()).padStart(2,'0');
+
+    for(const cancha of eventosCache){
+
+        if(cancha.tipo !== 'semanal'){
+            continue;
+        }
+
+        if(cancha.fecha >= hoyStr){
+            continue;
+        }
+
+        if(cancha.siguienteGenerada){
+            continue;
+        }
+
+        const f = new Date(cancha.fecha + 'T12:00:00');
+        f.setDate(f.getDate() + 7);
+
+        const nuevaFecha =
+            f.toISOString().split('T')[0];
+
+        const nuevaCancha = {
+            fecha: nuevaFecha,
+            hora: cancha.hora,
+            horaFin: cancha.horaFin || "",
+            organiza: cancha.organiza || "",
+            lugar: cancha.lugar || "",
+            valor: cancha.valor || 0,
+            cupo: cancha.cupo || 0,
+            alias: cancha.alias || "",
+            celuOrganizador: cancha.celuOrganizador || "",
+            estado: "activo",
+            tipo: "semanal",
+            siguienteGenerada: false,
+            inscriptos: {}
+        };
+
+        const refNueva =
+            db.ref('eventos').push();
+
+        await refNueva.set(nuevaCancha);
+
+        const hubSnap =
+            await db.ref('hubs/' + globalOrgId + '/canchas')
+            .once('value');
+
+        const lista =
+            Array.isArray(hubSnap.val())
+                ? hubSnap.val()
+                : Object.values(hubSnap.val() || {});
+
+        lista.push(refNueva.key);
+
+        await db.ref(
+            'hubs/' + globalOrgId + '/canchas'
+        ).set(lista);
+
+        await db.ref(
+            'eventos/' + cancha.id
+        ).update({
+            siguienteGenerada: true
+        });
+
+    }
+}
     function renderDashboard() {
         var container = document.getElementById('cards-container');
         var html = ''; var tRec = 0; var tJug = 0; var tPagados = 0;
@@ -835,9 +923,8 @@ document.querySelector(
     }
 
     function guardarCancha() {
-
     var d = {
-        tipo: 'unica',
+        tipo: document.getElementById('fc-tipo').value,
         fecha: document.getElementById('fc-fecha').value,
         hora: document.getElementById('fc-hora').value,
         horaFin: document.getElementById('fc-horafin').value,
@@ -847,6 +934,9 @@ document.querySelector(
         cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
         alias: document.getElementById('fc-alias').value,
         celuOrganizador: document.getElementById('fc-celu').value
+    
+
+
     };
 
     // Guardar configuración permanente del organizador
@@ -948,7 +1038,10 @@ document.querySelector(
 
     if (id) {
 
-        var c = eventosCache.find(e => e.id === id);
+    var c = eventosCache.find(e => e.id === id);
+
+    document.getElementById('fc-tipo').value =
+        c.tipo || 'unica';
 
         btnEliminar.style.display = "block";
         btnSusp.style.display = "block";
@@ -977,6 +1070,7 @@ document.querySelector(
 
         btnEliminar.style.display = "none";
         btnSusp.style.display = "none";
+        document.getElementById('fc-tipo').value = 'unica';
 
         document.getElementById('fc-fecha').value =
             new Date().toLocaleDateString('sv-SE');

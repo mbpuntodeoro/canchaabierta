@@ -489,7 +489,8 @@ jgs.sort(function(a,b){
 
     return 0;
 }); var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
-                var estG =
+               console.log("ESTADOS DEL GRUPO", jgs.map(j => j.estado)); 
+               var estG =
     jgs.some(j => j.estado === 'pendiente' || !j.estado)
         ? 'pendiente'
         : jgs.some(j => j.estado === 'paga-en-la-cancha')

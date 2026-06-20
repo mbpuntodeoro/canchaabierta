@@ -567,13 +567,15 @@ jgs.sort(function(a,b){
 }); var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
             
                var estG =
-    jgs.some(j => j.estado === 'pendiente' || !j.estado)
-        ? 'pendiente'
-        : jgs.some(j => j.estado === 'paga-en-la-cancha')
-            ? 'cancha'
-            : jgs.some(j => j.estado === 'dice-que-transfirio')
-                ? 'transferido'
-                : 'pagado';
+    jgs.every(j => j.estado === 'pagado')
+        ? 'pagado'
+        : jgs.some(j => j.estado === 'pendiente' || !j.estado)
+            ? 'pendiente'
+            : jgs.some(j => j.estado === 'paga-en-la-cancha')
+                ? 'cancha'
+                : jgs.some(j => j.estado === 'dice-que-transfirio')
+                    ? 'transferido'
+                    : 'pagado';
 
                 if(jgs.length === 1 && totG === 1) {
                     var btnOk = tit.estado !== 'pagado' ? `<button class="btn-check" onclick="event.stopPropagation(); setPago('${tit.originalIndex}', 'pagado')">✔</button>` : '';

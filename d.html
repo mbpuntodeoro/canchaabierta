@@ -460,9 +460,13 @@
                 jug.originalIndex = playerKey;
                 ocupados += (jug.cantidad || 1);
                 if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
-                var cel = jug.celular || `sin-celu-${playerKey}`;
-                if(!grupos[cel]) grupos[cel] = [];
-                grupos[cel].push(jug);
+                var grupoId = jug.reservaId || playerKey;
+
+if(!grupos[grupoId]) {
+    grupos[grupoId] = [];
+}
+
+grupos[grupoId].push(jug);
             });
 
     var htmlEs = {
@@ -472,9 +476,18 @@
     pendiente: []
 };
 
-console.log("VERSION NUEVA DASH");
-            Object.keys(grupos).forEach(function(cel) {
-                var jgs = grupos[cel]; var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
+
+           Object.keys(grupos).forEach(function(grupoId) {
+               var jgs = grupos[grupoId];
+
+// ordenar para que el titular quede primero
+jgs.sort(function(a,b){
+
+    if(a.titularReserva && !b.titularReserva) return -1;
+    if(!a.titularReserva && b.titularReserva) return 1;
+
+    return 0;
+}); var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
                 var estG =
     jgs.some(j => j.estado === 'pendiente' || !j.estado)
         ? 'pendiente'
@@ -504,7 +517,7 @@ ${j.categoria || '-'} · ${j.celular || '-'}
                 }
             });
 
-          alert("DASH NUEVO");
+          
 
 document.getElementById('lista-jugadores-container').innerHTML =
     (

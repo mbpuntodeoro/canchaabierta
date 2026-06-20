@@ -188,10 +188,41 @@
     const auth = firebase.auth();
     let isInitialized = false, currentVencimiento = 0, mostrarArchivados = false;
 
-    auth.onAuthStateChanged(user => {
-        if (user) { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-content').style.display = 'block'; if(!isInitialized) { render(); isInitialized = true; } }
-        else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-content').style.display = 'none'; isInitialized = false; }
-    });
+ auth.onAuthStateChanged(async user => {
+
+    if (!user) {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app-content').style.display = 'none';
+        isInitialized = false;
+        return;
+    }
+
+    const SUPER_ADMIN_UID = '5OaMXxroVVMhWaVLERaT6accoYJ2';
+
+if (user.uid !== SUPER_ADMIN_UID) {
+
+    const orgSnap = await db.ref('organizadores/' + user.uid).once('value');
+
+    if (orgSnap.exists()) {
+        alert('No tenés acceso al Panel Maestro.');
+        window.location.href = 'd.html?org=' + orgSnap.val();
+    } else {
+        alert('No tenés permisos para acceder al Panel Maestro.');
+        auth.signOut();
+    }
+
+    return;
+}
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-content').style.display = 'block';
+
+    if (!isInitialized) {
+        render();
+        isInitialized = true;
+    }
+
+});
 
     function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('log-email').value, document.getElementById('log-pass').value).catch(e => alert("Error de login")); }
 

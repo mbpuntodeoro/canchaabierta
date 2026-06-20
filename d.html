@@ -630,7 +630,10 @@ var htmlEs = {
             </div>
         `;
 
-        htmlEs[estadoKey].push(htmlJugador);
+        htmlEs[estadoKey].push({
+    nombre: (j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))).toUpperCase(),
+    html: htmlJugador
+});
 
     });
 
@@ -640,14 +643,18 @@ var htmlEs = {
             if(filtroJugadores === 'todos') {
 
     let htmlTodos = [
-        ...htmlEs.pagado,
-        ...htmlEs.transferido,
-        ...htmlEs.cancha,
-        ...htmlEs.pendiente
-    ];
+    ...htmlEs.pagado,
+    ...htmlEs.transferido,
+    ...htmlEs.cancha,
+    ...htmlEs.pendiente
+];
+
+htmlTodos.sort((a,b) =>
+    a.nombre.localeCompare(b.nombre, 'es')
+);
 
     document.getElementById('lista-jugadores-container').innerHTML =
-        htmlTodos.join('')
+        htmlTodos.map(x => x.html).join('')
         || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
 
 } else {

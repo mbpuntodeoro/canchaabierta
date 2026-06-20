@@ -181,21 +181,21 @@ background: var(--brand-orange);
         Todos
     </button>
 
-    <button class="btn-filtro" onclick="cambiarFiltro('pagado', this)">
-        Pagados
-    </button>
+   <button class="btn-filtro" onclick="cambiarFiltro('pagado', this)">
+    🟢 Pagados
+</button>
 
-    <button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
-        Transfirieron
-    </button>
+<button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
+    🟠 Transfirieron
+</button>
 
-    <button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
-        Paga en cancha
-    </button>
+<button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
+    🟡 Paga en cancha
+</button>
 
-    <button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
-        Pendientes
-    </button>
+<button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
+    🔴 Pendientes
+</button>
 
 </div>
             <div id="lista-jugadores-container"></div>
@@ -659,67 +659,79 @@ htmlTodos.sort((a,b) =>
 
 } else {
 
-    let htmlFiltro = '';
+  let jugadoresFiltrados = [];
 
-    Object.keys(grupos).forEach(function(grupoId){
+Object.keys(grupos).forEach(function(grupoId){
 
-        let jgs = grupos[grupoId];
+    let jgs = grupos[grupoId];
 
-        jgs.forEach(function(j){
+    jgs.forEach(function(j){
 
-            if((j.estado || 'pendiente') !== filtroJugadores){
-                return;
-            }
+        if((j.estado || 'pendiente') !== filtroJugadores){
+            return;
+        }
 
-            let titular = jgs.find(x => x.titularReserva);
+        let titular = jgs.find(x => x.titularReserva);
 
-            let invitadoPor =
-                !j.titularReserva && titular
-                    ? `<div style="font-size:11px;color:#9CA3AF;">
-                        Invitado por ${titular.nombreCompleto || titular.nombre}
-                       </div>`
-                    : '';
+        let invitadoPor =
+            !j.titularReserva && titular
+                ? `<div style="font-size:11px;color:#9CA3AF;">
+                    Invitado por ${titular.nombreCompleto || titular.nombre}
+                   </div>`
+                : '';
 
-            let btnOk =
-                j.estado !== 'pagado'
-                    ? `<button class="btn-check"
-                        onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>`
-                    : '';
+        let btnOk =
+            j.estado !== 'pagado'
+                ? `<button class="btn-check"
+                    onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>`
+                : '';
 
-            htmlFiltro += `
-                <div class="jugador-fila">
+        let htmlJugador = `
+            <div class="jugador-fila">
 
-                    <div>
+                <div>
 
-                        <div style="font-weight:600;">
-                            ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
-                        </div>
-
-                        <div style="font-size:12px;color:#6B7280;">
-                            ${j.categoria || '-'} · ${j.celular || '-'}
-                        </div>
-
-                        ${invitadoPor}
-
+                    <div style="font-weight:600;">
+                        ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
                     </div>
 
-                    <div style="display:flex; gap:10px; align-items:center;">
-
-                        ${btnOk}
-
-                        <button class="btn-menu"
-                            onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">
-                            ⋯
-                        </button>
-
+                    <div style="font-size:12px;color:#6B7280;">
+                        ${j.categoria || '-'} · ${j.celular || '-'}
                     </div>
+
+                    ${invitadoPor}
 
                 </div>
-            `;
 
+                <div style="display:flex; gap:10px; align-items:center;">
+
+                    ${btnOk}
+
+                    <button class="btn-menu"
+                        onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">
+                        ⋯
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        jugadoresFiltrados.push({
+            nombre: (j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))).toUpperCase(),
+            html: htmlJugador
         });
 
     });
+
+});
+
+jugadoresFiltrados.sort((a,b) =>
+    a.nombre.localeCompare(b.nombre, 'es')
+);
+
+let htmlFiltro =
+    jugadoresFiltrados.map(x => x.html).join('');
 
     document.getElementById('lista-jugadores-container').innerHTML =
         htmlFiltro ||
@@ -728,19 +740,19 @@ htmlTodos.sort((a,b) =>
             
             document.querySelector(
     "button[onclick=\"cambiarFiltro('pagado', this)\"]"
-).innerText = `Pagados (${contPagado})`;
+).innerText = `🟢 Pagados (${contPagado})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('dice-que-transfirio', this)\"]"
-).innerText = `Transfirieron (${contTransferido})`;
+).innerText = `🟠 Transfirieron (${contTransferido})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('paga-en-la-cancha', this)\"]"
-).innerText = `Paga en cancha (${contCancha})`;
+).innerText = `🟡 Paga en cancha (${contCancha})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('pendiente', this)\"]"
-).innerText = `Pendientes (${contPendiente})`;
+).innerText = `🔴 Pendientes (${contPendiente})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('todos', this)\"]"

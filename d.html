@@ -509,10 +509,32 @@ background: var(--brand-orange);
 
             var inscriptosObj = c.inscriptos || {};
             var ocupados = 0; var recaudado = 0; var grupos = {};
+            var contPagado = 0;
+var contTransferido = 0;
+var contCancha = 0;
+var contPendiente = 0;
 
             Object.keys(inscriptosObj).forEach(function(playerKey) {
                 var jug = inscriptosObj[playerKey];
                 jug.originalIndex = playerKey;
+                switch(jug.estado){
+
+    case 'pagado':
+        contPagado++;
+        break;
+
+    case 'dice-que-transfirio':
+        contTransferido++;
+        break;
+
+    case 'paga-en-la-cancha':
+        contCancha++;
+        break;
+
+    default:
+        contPendiente++;
+        break;
+}
                 ocupados += (jug.cantidad || 1);
                 if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
                 var grupoId = jug.reservaId || playerKey;
@@ -707,6 +729,25 @@ if(filtroJugadores === 'todos') {
         '<div style="text-align:center; padding:20px; color:#6B7280;">No hay jugadores en este estado.</div>';
 }
             
+            document.querySelector(
+    "button[onclick=\"cambiarFiltro('pagado', this)\"]"
+).innerText = `Pagados (${contPagado})`;
+
+document.querySelector(
+    "button[onclick=\"cambiarFiltro('dice-que-transfirio', this)\"]"
+).innerText = `Transferidos (${contTransferido})`;
+
+document.querySelector(
+    "button[onclick=\"cambiarFiltro('paga-en-la-cancha', this)\"]"
+).innerText = `Cancha (${contCancha})`;
+
+document.querySelector(
+    "button[onclick=\"cambiarFiltro('pendiente', this)\"]"
+).innerText = `Pendientes (${contPendiente})`;
+
+document.querySelector(
+    "button[onclick=\"cambiarFiltro('todos', this)\"]"
+).innerText = `Todos (${contPagado + contTransferido + contCancha + contPendiente})`;
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;
         });

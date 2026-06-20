@@ -175,6 +175,13 @@ background: var(--brand-orange);
                 <div id="pc-cupos">0 / 0</div>
                 <div id="pc-recaudado" style="color:var(--brand-green);">$0</div>
             </div>
+            <input
+    type="text"
+    id="buscador-jugador"
+    class="input-clean"
+    placeholder="🔍 Buscar jugador..."
+    oninput="if(panelCanchaId) abrirCancha(panelCanchaId)"
+    style="margin-bottom:12px;">
             <div id="filtros-estados" style="display:flex; gap:8px; padding:12px 0; overflow-x:auto;">
     
     <button class="btn-filtro active" onclick="cambiarFiltro('todos', this)">
@@ -509,6 +516,10 @@ background: var(--brand-orange);
 
             var inscriptosObj = c.inscriptos || {};
             var ocupados = 0; var recaudado = 0; var grupos = {};
+            var textoBusqueda =
+    (document.getElementById('buscador-jugador')?.value || '')
+        .toLowerCase()
+        .trim();
             var contPagado = 0;
 var contTransferido = 0;
 var contCancha = 0;
@@ -566,6 +577,17 @@ var htmlEs = {
     var titular = jgs[0];
 
     jgs.forEach(function(j){
+           var nombreJugador =
+        (j.nombreCompleto ||
+        ((j.nombre || '') + ' ' + (j.apellido || '')))
+        .toLowerCase();
+
+    if(
+        textoBusqueda &&
+        !nombreJugador.includes(textoBusqueda)
+    ){
+        return;
+    }
 
         var estadoKey =
             j.estado === 'pagado'
@@ -666,6 +688,17 @@ Object.keys(grupos).forEach(function(grupoId){
     let jgs = grupos[grupoId];
 
     jgs.forEach(function(j){
+        var nombreJugador =
+    (j.nombreCompleto ||
+    ((j.nombre || '') + ' ' + (j.apellido || '')))
+    .toLowerCase();
+
+if(
+    textoBusqueda &&
+    !nombreJugador.includes(textoBusqueda)
+){
+    return;
+}
 
         if((j.estado || 'pendiente') !== filtroJugadores){
             return;

@@ -225,6 +225,7 @@ background: var(--brand-orange);
     var activeEventRef = null;
     var editandoCanchaId = null;
     var panelCanchaId = null;
+    var filtroJugadores = 'todos';
 
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
@@ -573,7 +574,7 @@ jgs.sort(function(a,b){
             });
 
           
-
+console.log("GRUPOS", grupos);
 document.getElementById('lista-jugadores-container').innerHTML =
     (
         (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +

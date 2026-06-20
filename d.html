@@ -49,7 +49,31 @@
         .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
         .cc-dinero { color: var(--brand-green); }
 
-        .fab-crear { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; background: var(--text-main); color: var(--bg-white); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 90; cursor: pointer; }
+        .fab-crear {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+
+    height: 56px;
+    padding: 0 20px;
+
+    background: var(--text-main);
+    color: var(--bg-white);
+
+    border-radius: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+    z-index: 90;
+    cursor: pointer;
+}
 
         .view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-base); z-index: 100; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; padding-bottom: 40px; }
         .view-modal.active { transform: translateX(0); }
@@ -156,7 +180,9 @@ background: var(--brand-orange);
         </div>
     </main>
 
-    <div class="fab-crear" onclick="abrirFormularioCancha(null)">+</div>
+    <div class="fab-crear" onclick="abrirFormularioCancha(null)">
+    + Crear cancha
+</div>
 
     <div id="view-panel-cancha" class="view-modal">
         <div class="nav-modal">

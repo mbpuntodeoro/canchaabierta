@@ -485,6 +485,8 @@ background: var(--brand-orange);
 
     filtroJugadores = filtro;
 
+    console.log("FILTRO ACTUAL:", filtroJugadores);
+
     document
         .querySelectorAll('.btn-filtro')
         .forEach(b => b.classList.remove('active'));
@@ -625,7 +627,6 @@ jgs.sort(function(a,b){
             });
 
           
-console.log("GRUPOS", grupos);
 document.getElementById('lista-jugadores-container').innerHTML =
     (
         (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +

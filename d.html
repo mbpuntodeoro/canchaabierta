@@ -489,7 +489,7 @@ jgs.sort(function(a,b){
 
     return 0;
 }); var tit = jgs[0]; var totG = jgs.reduce((acc, j) => acc + (j.cantidad || 1), 0);
-               console.log("ESTADOS DEL GRUPO", jgs.map(j => j.estado)); 
+            
                var estG =
     jgs.some(j => j.estado === 'pendiente' || !j.estado)
         ? 'pendiente'
@@ -510,12 +510,59 @@ jgs.sort(function(a,b){
     </div>
 </div><div class="dot ${tit.estado || 'pendiente'}"></div></div><div style="display:flex; gap:10px; align-items:center;">${btnOk}<button class="btn-menu" onclick="event.stopPropagation(); opcionesJugador('${tit.nombre}', '${tit.originalIndex}', '${tit.celular}')">⋯</button></div></div>`);
                 } else {
-                    var sub = jgs.map(j => `<div class="sub-fila"><div class="jugador-main" style="font-size:14px;">${j.titularReserva ? '' : '└── '}
-${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
-<br>
-<span style="font-size:12px;color:#6B7280;">
-${j.categoria || '-'} · ${j.celular || '-'}</span>
-</div><div style="display:flex; gap:8px;">${j.estado!=='pagado' ? `<button class="btn-check" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>` : ''}<button class="btn-menu" style="font-size:14px;" onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">⋯</button></div></div>`).join('');
+                    var sub = jgs.map(j => {
+
+    var estadoTxt =
+        j.estado === 'pagado'
+            ? '🟢 Pagado'
+            : j.estado === 'dice-que-transfirio'
+                ? '🟠 Dice que transfirió'
+                : j.estado === 'paga-en-la-cancha'
+                    ? '🟡 Paga en cancha'
+                    : '🔴 Pendiente';
+
+    var invitadoPor =
+        !j.titularReserva && tit
+            ? `<div style="font-size:11px;color:#9CA3AF;">Invitado por ${tit.nombreCompleto || tit.nombre}</div>`
+            : '';
+
+    return `<div class="sub-fila">
+        <div class="jugador-main" style="font-size:14px;">
+
+            ${j.titularReserva ? '' : '└── '}
+            ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
+
+            <br>
+
+            <span style="font-size:12px;color:#6B7280;">
+                ${j.categoria || '-'} · ${j.celular || '-'}
+            </span>
+
+            <div style="font-size:12px; margin-top:2px;">
+                ${estadoTxt}
+            </div>
+
+            ${invitadoPor}
+
+        </div>
+
+        <div style="display:flex; gap:8px;">
+
+            ${j.estado !== 'pagado'
+                ? `<button class="btn-check"
+                    style="padding:4px 8px; font-size:12px;"
+                    onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>`
+                : ''}
+
+            <button class="btn-menu"
+                style="font-size:14px;"
+                onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">⋯</button>
+
+        </div>
+
+    </div>`;
+
+}).join('');
                     htmlEs[estG].push(`<div class="grupo-expandible"><div class="jugador-fila" onclick="this.nextElementSibling.classList.toggle('open')"><div class="jugador-main"><span>
     ${tit.nombreCompleto || ((tit.nombre || '') + ' ' + (tit.apellido || ''))}
     <span style="color:var(--text-sub); font-size:12px; margin-left:6px;">

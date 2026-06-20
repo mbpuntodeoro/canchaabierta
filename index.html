@@ -419,7 +419,7 @@
             </div>
 
             <div class="input-group">
-                <label class="input-label">WhatsApp</label>
+                <label class="input-label">WhatsApp (opcional)</label>
                 <input
                     type="tel"
                     inputmode="numeric"
@@ -478,9 +478,9 @@
         const c = extraCelulares[i].value.trim();
         const cat = extraCategorias[i].value;
 
-        if (!n || !a || !c || !cat) {
-            alert(`Completá todos los datos del Jugador ${i + 2}`);
-            return;
+        if (!n || !a || !cat) {
+    alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);
+    return;
         }
 
         personasExtra.push({

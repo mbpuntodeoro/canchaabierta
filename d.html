@@ -639,13 +639,15 @@ var htmlEs = {
         
             if(filtroJugadores === 'todos') {
 
+    let htmlTodos = [
+        ...htmlEs.pagado,
+        ...htmlEs.transferido,
+        ...htmlEs.cancha,
+        ...htmlEs.pendiente
+    ];
+
     document.getElementById('lista-jugadores-container').innerHTML =
-        (
-            (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +
-            (htmlEs.transferido.length ? '<div class="grupo-titulo">🟠 Dice que transfirió</div>' + htmlEs.transferido.join('') : '') +
-            (htmlEs.cancha.length ? '<div class="grupo-titulo">🟡 Paga en cancha</div>' + htmlEs.cancha.join('') : '') +
-            (htmlEs.pendiente.length ? '<div class="grupo-titulo">🔴 Pendiente de pago</div>' + htmlEs.pendiente.join('') : '')
-        )
+        htmlTodos.join('')
         || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
 
 } else {

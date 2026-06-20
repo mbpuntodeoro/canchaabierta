@@ -649,7 +649,11 @@ jgs.sort(function(a,b){
             });
 
           
-if(filtroJugadores === 'todos') {
+console.log("PAGADOS", htmlEs.pagado.length);
+console.log("TRANSFERIDO", htmlEs.transferido.length);
+console.log("CANCHA", htmlEs.cancha.length);
+console.log("PENDIENTE", htmlEs.pendiente.length);
+            if(filtroJugadores === 'todos') {
 
     document.getElementById('lista-jugadores-container').innerHTML =
         (

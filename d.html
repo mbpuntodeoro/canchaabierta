@@ -451,7 +451,7 @@ background: var(--brand-orange);
         var futuras = eventosCache.filter(e => e.fecha >= hoyStr);
         var pasadas = eventosCache.filter(e => e.fecha < hoyStr);
 
-        futuras.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
+        futuras.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
         pasadas.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
 
         function armarCard(d, esPasada) {

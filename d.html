@@ -627,14 +627,85 @@ jgs.sort(function(a,b){
             });
 
           
-document.getElementById('lista-jugadores-container').innerHTML =
-    (
-        (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +
-        (htmlEs.transferido.length ? '<div class="grupo-titulo">🟠 Dice que transfirió</div>' + htmlEs.transferido.join('') : '') +
-        (htmlEs.cancha.length ? '<div class="grupo-titulo">🟡 Paga en cancha</div>' + htmlEs.cancha.join('') : '') +
-        (htmlEs.pendiente.length ? '<div class="grupo-titulo">🔴 Pendiente de pago</div>' + htmlEs.pendiente.join('') : '')
-    )
-    || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
+if(filtroJugadores === 'todos') {
+
+    document.getElementById('lista-jugadores-container').innerHTML =
+        (
+            (htmlEs.pagado.length ? '<div class="grupo-titulo">🟢 Pagados</div>' + htmlEs.pagado.join('') : '') +
+            (htmlEs.transferido.length ? '<div class="grupo-titulo">🟠 Dice que transfirió</div>' + htmlEs.transferido.join('') : '') +
+            (htmlEs.cancha.length ? '<div class="grupo-titulo">🟡 Paga en cancha</div>' + htmlEs.cancha.join('') : '') +
+            (htmlEs.pendiente.length ? '<div class="grupo-titulo">🔴 Pendiente de pago</div>' + htmlEs.pendiente.join('') : '')
+        )
+        || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
+
+} else {
+
+    let htmlFiltro = '';
+
+    Object.keys(grupos).forEach(function(grupoId){
+
+        let jgs = grupos[grupoId];
+
+        jgs.forEach(function(j){
+
+            if((j.estado || 'pendiente') !== filtroJugadores){
+                return;
+            }
+
+            let titular = jgs.find(x => x.titularReserva);
+
+            let invitadoPor =
+                !j.titularReserva && titular
+                    ? `<div style="font-size:11px;color:#9CA3AF;">
+                        Invitado por ${titular.nombreCompleto || titular.nombre}
+                       </div>`
+                    : '';
+
+            let btnOk =
+                j.estado !== 'pagado'
+                    ? `<button class="btn-check"
+                        onclick="event.stopPropagation(); setPago('${j.originalIndex}', 'pagado')">✔</button>`
+                    : '';
+
+            htmlFiltro += `
+                <div class="jugador-fila">
+
+                    <div>
+
+                        <div style="font-weight:600;">
+                            ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
+                        </div>
+
+                        <div style="font-size:12px;color:#6B7280;">
+                            ${j.categoria || '-'} · ${j.celular || '-'}
+                        </div>
+
+                        ${invitadoPor}
+
+                    </div>
+
+                    <div style="display:flex; gap:10px; align-items:center;">
+
+                        ${btnOk}
+
+                        <button class="btn-menu"
+                            onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">
+                            ⋯
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+    });
+
+    document.getElementById('lista-jugadores-container').innerHTML =
+        htmlFiltro ||
+        '<div style="text-align:center; padding:20px; color:#6B7280;">No hay jugadores en este estado.</div>';
+}
             
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;

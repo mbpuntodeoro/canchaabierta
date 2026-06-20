@@ -186,7 +186,7 @@ background: var(--brand-orange);
     </button>
 
     <button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
-        Transferidos
+        Transfirieron
     </button>
 
     <button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
@@ -485,7 +485,7 @@ background: var(--brand-orange);
 
     filtroJugadores = filtro;
 
-    console.log("FILTRO ACTUAL:", filtroJugadores);
+   
 
     document
         .querySelectorAll('.btn-filtro')
@@ -735,11 +735,11 @@ if(filtroJugadores === 'todos') {
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('dice-que-transfirio', this)\"]"
-).innerText = `Transferidos (${contTransferido})`;
+).innerText = `Transfirieron (${contTransferido})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('paga-en-la-cancha', this)\"]"
-).innerText = `Cancha (${contCancha})`;
+).innerText = `Paga en cancha (${contCancha})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('pendiente', this)\"]"

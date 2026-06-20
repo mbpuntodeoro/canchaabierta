@@ -93,6 +93,20 @@ background: var(--brand-orange);
 
         .icon-chevron { transition: transform 0.2s; }
         .icon-chevron.open { transform: rotate(180deg); }
+        .btn-filtro {
+    border: 1px solid #E5E7EB;
+    background: white;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-filtro.active {
+    background: var(--brand-purple);
+    color: white;
+    border-color: var(--brand-purple);
+}
     </style>
 </head>
 <body>
@@ -161,6 +175,29 @@ background: var(--brand-orange);
                 <div id="pc-cupos">0 / 0</div>
                 <div id="pc-recaudado" style="color:var(--brand-green);">$0</div>
             </div>
+            <div id="filtros-estados" style="display:flex; gap:8px; padding:12px 0; overflow-x:auto;">
+    
+    <button class="btn-filtro active" onclick="cambiarFiltro('todos', this)">
+        Todos
+    </button>
+
+    <button class="btn-filtro" onclick="cambiarFiltro('pagado', this)">
+        Pagados
+    </button>
+
+    <button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
+        Transferidos
+    </button>
+
+    <button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
+        Paga en cancha
+    </button>
+
+    <button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
+        Pendientes
+    </button>
+
+</div>
             <div id="lista-jugadores-container"></div>
         </div>
     </div>
@@ -444,6 +481,20 @@ background: var(--brand-orange);
         document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(tRec);
     }
 
+    function cambiarFiltro(filtro, btn){
+
+    filtroJugadores = filtro;
+
+    document
+        .querySelectorAll('.btn-filtro')
+        .forEach(b => b.classList.remove('active'));
+
+    btn.classList.add('active');
+
+    if(panelCanchaId){
+        abrirCancha(panelCanchaId);
+    }
+}
     function abrirCancha(id) {
         panelCanchaId = id;
         if(activeEventRef) activeEventRef.off();

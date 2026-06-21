@@ -617,7 +617,8 @@ reservaIdCreada = reservaId;
         } else {
 const fechaAlta = Date.now();
 
-// Titular
+console.log("INTENTANDO GUARDAR HISTORICO");
+            // Titular
 db.ref('inscripcionesHistoricas').push({
     eventoId: currentEventData.id,
     reservaId: reservaIdCreada,
@@ -644,6 +645,7 @@ personasExtra.forEach(function(p) {
     });
 
 });
+            console.log("HISTORICO ENVIADO");
             const nombreCompleto = `${nom} ${ape}`.trim();
 
           localStorage.setItem(

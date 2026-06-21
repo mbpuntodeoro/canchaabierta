@@ -965,12 +965,13 @@ document.querySelector(
    function abrirFormularioCancha(id) {
 
     editandoCanchaId = id;
+       
 
     var btnEliminar = document.getElementById('btn-eliminar-cancha');
     var btnSusp = document.getElementById('btn-suspender-cancha');
 
     if (id) {
-
+document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
     var c = eventosCache.find(e => e.id === id);
 
     document.getElementById('fc-tipo').value =
@@ -1000,7 +1001,7 @@ document.querySelector(
         document.getElementById('fc-celu').value = c.celuOrganizador || "";
 
     } else {
-
+document.getElementById('btn-save-form').innerText = 'Crear Cancha';
         btnEliminar.style.display = "none";
         btnSusp.style.display = "none";
         document.getElementById('fc-tipo').value = 'unica';

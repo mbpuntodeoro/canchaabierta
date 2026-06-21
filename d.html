@@ -463,9 +463,7 @@ background: var(--brand-orange);
             return val;
         });
 
-    procesarRecurrencias().then(() => {
-        renderDashboard();
-    });
+    renderDashboard();
 
     document.getElementById('loading-init').style.display = 'none';
     document.getElementById('dash-actions').style.display = 'flex';
@@ -473,78 +471,7 @@ background: var(--brand-orange);
 });
 
 
-async function procesarRecurrencias() {
 
-    const hoy = new Date();
-    const hoyStr =
-        hoy.getFullYear() + "-" +
-        String(hoy.getMonth()+1).padStart(2,'0') + "-" +
-        String(hoy.getDate()).padStart(2,'0');
-
-    for(const cancha of eventosCache){
-
-        if(cancha.tipo !== 'semanal'){
-            continue;
-        }
-
-        if(cancha.fecha >= hoyStr){
-            continue;
-        }
-
-        if(cancha.siguienteGenerada){
-            continue;
-        }
-
-        const f = new Date(cancha.fecha + 'T12:00:00');
-        f.setDate(f.getDate() + 7);
-
-        const nuevaFecha =
-            f.toISOString().split('T')[0];
-
-        const nuevaCancha = {
-            fecha: nuevaFecha,
-            hora: cancha.hora,
-            horaFin: cancha.horaFin || "",
-            organiza: cancha.organiza || "",
-            lugar: cancha.lugar || "",
-            valor: cancha.valor || 0,
-            cupo: cancha.cupo || 0,
-            alias: cancha.alias || "",
-            celuOrganizador: cancha.celuOrganizador || "",
-            estado: "activo",
-            tipo: "semanal",
-            siguienteGenerada: false,
-            inscriptos: {}
-        };
-
-        const refNueva =
-            db.ref('eventos').push();
-
-        await refNueva.set(nuevaCancha);
-
-        const hubSnap =
-            await db.ref('hubs/' + globalOrgId + '/canchas')
-            .once('value');
-
-        const lista =
-            Array.isArray(hubSnap.val())
-                ? hubSnap.val()
-                : Object.values(hubSnap.val() || {});
-
-        lista.push(refNueva.key);
-
-        await db.ref(
-            'hubs/' + globalOrgId + '/canchas'
-        ).set(lista);
-
-        await db.ref(
-            'eventos/' + cancha.id
-        ).update({
-            siguienteGenerada: true
-        });
-
-    }
-}
     function renderDashboard() {
         var container = document.getElementById('cards-container');
         var html = ''; var tRec = 0; var tJug = 0; var tPagados = 0;

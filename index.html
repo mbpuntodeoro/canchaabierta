@@ -495,7 +495,9 @@
         });
     }
 
-    const btn = document.getElementById('btn-submit');
+    let reservaIdCreada = null;
+        
+        const btn = document.getElementById('btn-submit');
 
     btn.innerText = "Procesando...";
     btn.disabled = true;
@@ -543,6 +545,8 @@
                 inscriptosObj = Object.assign({}, inscriptosObj);
             }
 const reservaId = db.ref().push().key;
+
+reservaIdCreada = reservaId;
             const mainKey = db.ref().push().key;
 
             inscriptosObj[mainKey] = {
@@ -611,7 +615,35 @@ const reservaId = db.ref().push().key;
             btn.disabled = false;
 
         } else {
+const fechaAlta = Date.now();
 
+// Titular
+db.ref('inscripcionesHistoricas').push({
+    eventoId: currentEventData.id,
+    reservaId: reservaIdCreada,
+    nombre: nom,
+    apellido: ape,
+    celular: celu,
+    categoria: categoria,
+    titularReserva: true,
+    fechaAlta: fechaAlta
+});
+
+// Jugadores adicionales
+personasExtra.forEach(function(p) {
+
+    db.ref('inscripcionesHistoricas').push({
+        eventoId: currentEventData.id,
+        reservaId: reservaIdCreada,
+        nombre: p.nombre,
+        apellido: p.apellido,
+        celular: p.celular || '',
+        categoria: p.categoria,
+        titularReserva: false,
+        fechaAlta: fechaAlta
+    });
+
+});
             const nombreCompleto = `${nom} ${ape}`.trim();
 
           localStorage.setItem(

@@ -269,15 +269,17 @@ background: var(--brand-orange);
             <input type="text" id="fc-alias" class="input-clean" placeholder="Alias de MercadoPago o Banco">
             <label class="label-form">WhatsApp del Organizador</label>
             <input type="tel" id="fc-celu" class="input-clean" placeholder="Ej: 5491166463800">
-            <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Guardar Cambios</button>
+            <label class="label-form">Frecuencia</label>
+            <select id="fc-tipo" class="input-clean">
+    <option value="unica">Una sola vez</option>
+    <option value="semanal">Todas las semanas</option>
+</select>
+            <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Crear Cancha</button>
             <button class="bs-btn" id="btn-suspender-cancha" style="margin-top:20px; width:100%; border-radius:12px; background:#FEF3C7; color:#92400E;" onclick="toggleSuspender()">Suspender Cancha</button>
             <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
-            <label class="label-form">Frecuencia</label>
+            
 
-<select id="fc-tipo" class="input-clean">
-    <option value="unica">Una sola vez</option>
-    <option value="semanal">Semanal</option>
-</select>
+
         </div>
     </div>
 

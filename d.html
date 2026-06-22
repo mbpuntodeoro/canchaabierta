@@ -507,7 +507,7 @@ background: var(--brand-orange);
             let badgeEstado = '';
 
 if (d.estado === 'NO_REALIZADA') {
-    badgeEstado = '<span class="badge-susp">SUSPENDIDA</span>';
+    badgeEstado = '<span class="badge-susp">NO REALIZADA</span>';
 }
 
 if (d.estado === 'FINALIZADA') {
@@ -856,7 +856,7 @@ document.querySelector(
         var nc = {
             fecha: nuevaF, hora: c.hora, horaFin: c.horaFin || "", organiza: c.organiza || "", lugar: c.lugar || "",
             valor: c.valor || 0, cupo: c.cupo || 8, alias: c.alias || "", celuOrganizador: c.celuOrganizador || "",
-            estado: 'PROGRAMADA', tipo: 'unica', inscriptos: {} 
+            estado: 'PROGRAMADA', tipo: c.tipo || 'unica', inscriptos: {} 
         };
         var ref = db.ref('eventos').push();
         ref.set(nc).then(function() {
@@ -986,6 +986,7 @@ document.querySelector(
 
     var btnEliminar = document.getElementById('btn-eliminar-cancha');
     var btnSusp = document.getElementById('btn-suspender-cancha');
+       var btnFinalizar = document.getElementById('btn-finalizar-cancha');
 
     if (id) {
 document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
@@ -1016,6 +1017,10 @@ document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
         document.getElementById('fc-cupo').value = c.cupo || "";
         document.getElementById('fc-alias').value = c.alias || "";
         document.getElementById('fc-celu').value = c.celuOrganizador || "";
+        btnFinalizar.style.display =
+    c.estado === 'FINALIZADA'
+        ? 'none'
+        : 'block';
 
     } else {
 document.getElementById('btn-save-form').innerText = 'Crear Cancha';
@@ -1044,6 +1049,7 @@ document.getElementById('btn-save-form').innerText = 'Crear Cancha';
 
                 document.getElementById('fc-celu').value =
                     cuenta.whatsappOrganizador || '';
+                btnFinalizar.style.display = "none";
 
             });
     }
@@ -1085,6 +1091,28 @@ document.getElementById('btn-save-form').innerText = 'Crear Cancha';
     function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
     function obtenerNombreDia(f) { var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]; }
     function jugadorAbreviado(n) { return n || 'Jugador'; }
+    function finalizarCancha() {
+
+    if(!editandoCanchaId) return;
+
+    if(!confirm('¿Marcar cancha como FINALIZADA?')){
+        return;
+    }
+
+    db.ref('eventos/' + editandoCanchaId)
+        .update({
+            estado: 'FINALIZADA'
+        })
+        .then(() => {
+
+            alert('Cancha finalizada.');
+
+            cerrarFormularioCancha();
+            cerrarPanelCancha();
+
+        });
+
+}
 </script>
 </body>
 </html>

@@ -276,6 +276,15 @@ background: var(--brand-orange);
 </select>
             <button id="btn-save-form" class="btn-black-modal" onclick="guardarCancha()">Crear Cancha</button>
             <button class="bs-btn" id="btn-suspender-cancha" style="margin-top:20px; width:100%; border-radius:12px; background:#FEF3C7; color:#92400E;" onclick="toggleSuspender()">Suspender Cancha</button>
+            <button
+    class="bs-btn"
+    id="btn-finalizar-cancha"
+    style="margin-top:12px; background:#DCFCE7; color:#166534; display:none;"
+    onclick="finalizarCancha()">
+
+    Finalizar Cancha
+
+</button>
             <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
             
 
@@ -495,11 +504,19 @@ background: var(--brand-orange);
             var recaudado = pagadosCount * (d.valor || 0);
             
             if(!esPasada) { tRec += recaudado; tJug += ocupados; tPagados += pagadosCount; }
-            var badgeSusp = d.estado === 'suspendido' ? '<span class="badge-susp">SUSPENDIDA</span>' : '';
+            let badgeEstado = '';
+
+if (d.estado === 'NO_REALIZADA') {
+    badgeEstado = '<span class="badge-susp">SUSPENDIDA</span>';
+}
+
+if (d.estado === 'FINALIZADA') {
+    badgeEstado = '<span class="badge-pasada">FINALIZADA</span>';
+}
 
             return `<div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${esPasada ? 'card-pasada' : ''}" onclick="abrirCancha('${d.id}')">
                 <div class="cc-header">
-                    <div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs ${badgeSusp} ${esPasada ? '<span class="badge-pasada">HISTORIAL</span>' : ''}</div>
+                    <div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs ${badgeEstado} ${esPasada ? '<span class="badge-pasada">HISTORIAL</span>' : ''}</div>
                 </div>
                 <div class="cc-categoria">${d.organiza || 'Cancha'}</div>
                 <div class="cc-footer">
@@ -839,7 +856,7 @@ document.querySelector(
         var nc = {
             fecha: nuevaF, hora: c.hora, horaFin: c.horaFin || "", organiza: c.organiza || "", lugar: c.lugar || "",
             valor: c.valor || 0, cupo: c.cupo || 8, alias: c.alias || "", celuOrganizador: c.celuOrganizador || "",
-            estado: 'activo', tipo: 'unica', inscriptos: {} 
+            estado: 'PROGRAMADA', tipo: 'unica', inscriptos: {} 
         };
         var ref = db.ref('eventos').push();
         ref.set(nc).then(function() {
@@ -898,7 +915,7 @@ document.querySelector(
 
         ref.set(
             Object.assign(d, {
-                estado: 'activo',
+                estado: 'PROGRAMADA',
                 inscriptos: {}
             })
         ).then(function() {
@@ -925,20 +942,20 @@ document.querySelector(
     function toggleSuspender() {
         if(!editandoCanchaId) return;
         var c = eventosCache.find(e => e.id === editandoCanchaId);
-        var nuevoEstado = (c.estado === 'suspendido') ? 'activo' : 'suspendido';
+        var nuevoEstado = (c.estado === 'NO_REALIZADA') ? 'PROGRAMADA' : 'NO_REALIZADA';
 
         var ahora = new Date();
         var inicioCancha = new Date(c.fecha + 'T' + c.hora);
         var diferenciaHoras = (inicioCancha - ahora) / (1000 * 60 * 60);
 
-        if (nuevoEstado === 'suspendido' && diferenciaHoras < 1) {
+        if (nuevoEstado === 'NO_REALIZADA' && diferenciaHoras < 1) {
             const penalizacion = {
                 concepto: "Penalización: Suspensión tardía (" + c.fecha + " " + c.hora + ")",
                 monto: 500, tipo: 'cancha', estado: 'pendiente', fecha: ahora.toISOString()
             };
             db.ref('facturacion/' + globalOrgId + '/movimientos').push(penalizacion);
             alert("⚠️ Cancha suspendida. Se aplicó un cargo por suspensión tardía (menos de 1h).");
-        } else if (nuevoEstado === 'suspendido') {
+        } else if (nuevoEstado === 'NO_REALIZADA') {
             alert("✅ Cancha suspendida sin cargos adicionales.");
         }
 
@@ -981,12 +998,12 @@ document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
         btnSusp.style.display = "block";
 
         btnSusp.innerText =
-            c.estado === 'suspendido'
+            c.estado === 'NO_REALIZADA'
                 ? "Activar Cancha"
                 : "Suspender Cancha";
 
         btnSusp.style.background =
-            c.estado === 'suspendido'
+            c.estado === 'NO_REALIZADA'
                 ? "#DCFCE7"
                 : "#FEF3C7";
 

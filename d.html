@@ -991,7 +991,7 @@ document.querySelector(
     if (id) {
 document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
     var c = eventosCache.find(e => e.id === id);
-
+console.log("TIPO EN CACHE:", c.tipo);
     document.getElementById('fc-tipo').value =
         c.tipo || 'unica';
 

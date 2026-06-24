@@ -38,12 +38,43 @@
         .dsc-metric-label { font-size: 10px; color: #A1A1AA; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;}
         .dsc-metric-val { font-size: 20px; font-weight: 800; color: #FFFFFF;}
 
-        .card-cancha { background: var(--bg-white); border-radius: 14px; padding: 16px; margin: 0 16px 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid transparent; cursor: pointer; }
+        .card-cancha {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 18px;
+    margin: 0 16px 14px 16px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.08);
+
+    border: 1px solid rgba(0,0,0,.04);
+
+    cursor: pointer;
+}
         .card-completa { border: 1px solid var(--brand-green); }
         
         .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
         .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
         .badge-susp { background: var(--brand-red); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
+        .badge-hoy {
+    background: #10B981;
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 800;
+    margin-right: 8px;
+}
+
+.badge-manana {
+    background: #3B82F6;
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 800;
+    margin-right: 8px;
+}
 
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
         .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
@@ -527,38 +558,81 @@ noRealizadas.sort((a,b) =>
             if(!esPasada) { tRec += recaudado; tJug += ocupados; tPagados += pagadosCount; }
             let badgeEstado = '';
 
+let badgeFecha = '';
+
+const hoy = new Date();
+hoy.setHours(0,0,0,0);
+
+const fechaCancha =
+    new Date(d.fecha + 'T00:00:00');
+
+const diffDias =
+    Math.round(
+        (fechaCancha - hoy) /
+        (1000 * 60 * 60 * 24)
+    );
+
+if (diffDias === 0) {
+    badgeFecha =
+        '<span class="badge-hoy">HOY</span>';
+}
+else if (diffDias === 1) {
+    badgeFecha =
+        '<span class="badge-manana">MAÑANA</span>';
+}
+
 if (d.estado === 'NO_REALIZADA') {
-    badgeEstado = '<span class="badge-susp">NO REALIZADA</span>';
+    badgeEstado =
+        '<span class="badge-susp">NO REALIZADA</span>';
 }
 
 if (d.estado === 'FINALIZADA') {
-    badgeEstado = '<span class="badge-pasada">FINALIZADA</span>';
+    badgeEstado =
+        '<span class="badge-pasada">FINALIZADA</span>';
 }
 
             return `<div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${esPasada ? 'card-pasada' : ''}" onclick="abrirCancha('${d.id}')">
 
     <div class="cc-header">
-        <div>
-            ${formatearDiaCorto(d.fecha)}
-            ·
-            ${d.hora}${d.horaFin ? ' - ' + d.horaFin : ''}
-            hs
-            ${badgeEstado}
-        </div>
+    <div>
+        ${badgeFecha}
+        ${formatearDiaCorto(d.fecha)}
+        ·
+        ${d.hora}${d.horaFin ? ' - ' + d.horaFin : ''}
+        hs
+        ${badgeEstado}
     </div>
+</div>
 
-    <div class="cc-categoria">
-        ${d.organiza || 'Cancha'}
-    </div>
+    <div
+    class="cc-categoria"
+    style="
+        font-size:28px;
+        font-weight:800;
+        line-height:1.1;
+        margin:8px 0;
+    ">
+    ${d.organiza || 'Cancha'}
+</div>
 
     <div style="font-size:13px; color:#6B7280; margin-top:-4px;">
         📍 ${d.lugar || 'Sin sede'}
     </div>
 
     <div class="cc-footer">
-        <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
-        <span class="cc-dinero">$${recaudado}</span>
-    </div>
+
+    <span>
+        👥 ${ocupados} / ${d.cupo || '--'}
+        (${Math.round(
+            (ocupados / (d.cupo || 1)) * 100
+        )}%)
+    </span>
+
+    <span class="cc-dinero">
+        $${recaudado}
+    </span>
+
+</div>
 
 </div>`;
         }

@@ -41,7 +41,7 @@
         .card-cancha {
     background: var(--bg-white);
     border-radius: 16px;
-    padding: 18px;
+    padding: 16px;
     margin: 0 16px 14px 16px;
 
     box-shadow:
@@ -77,8 +77,21 @@
 }
 
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
-        .cc-categoria { font-size: 18px; font-weight: 700; margin: 8px 0; letter-spacing: -0.3px;}
-        .cc-footer { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 12px;}
+        .cc-categoria {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 6px 0;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+}
+        .cc-footer {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:14px;
+    font-weight:600;
+}
         .cc-dinero { color: var(--brand-green); }
 
         .fab-crear {
@@ -270,9 +283,6 @@ background: var(--brand-orange);
             <div id="pc-titulo" style="font-size:16px; font-weight:700; text-transform:uppercase;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             
-            <button class="btn-copy-week" id="btn-clonar-semana">
-                <span>🗓️</span> Duplicar para la próxima semana
-            </button>
 
             <div class="mj-resumen">
                 <div id="pc-cupos">0 / 0</div>
@@ -285,37 +295,58 @@ background: var(--brand-orange);
     placeholder="🔍 Buscar jugador..."
     oninput="if(panelCanchaId) abrirCancha(panelCanchaId)"
     style="margin-bottom:12px;">
-           <div id="filtros-estados"
-     style="
-        display:flex;
-        gap:6px;
-        padding:6px 0 12px 0;
-        overflow-x:auto;
-        scrollbar-width:none;
-     ">
-    
-    <button class="btn-filtro active" onclick="cambiarFiltro('todos', this)">
-        Todos
-    </button>
+         <details
+    style="
+        background:white;
+        border:1px solid #E5E7EB;
+        border-radius:12px;
+        margin-bottom:12px;
+    ">
 
-   <button class="btn-filtro" onclick="cambiarFiltro('pagado', this)">
-    🟢 Pagados
-</button>
+    <summary
+        style="
+            padding:12px;
+            cursor:pointer;
+            font-weight:600;
+        ">
+        Filtrar jugadores
+    </summary>
 
-<button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
-    🟠 Transfirieron
-</button>
+    <div
+        style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            padding:12px;
+        ">
 
-<button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
-    🟡 Paga en cancha
-</button>
+        <button class="btn-filtro active" onclick="cambiarFiltro('todos', this)">
+            Todos
+        </button>
 
-<button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
-    🔴 Pendientes
-</button>
+        <button class="btn-filtro" onclick="cambiarFiltro('pagado', this)">
+            🟢 Pagados
+        </button>
 
-</div>
+        <button class="btn-filtro" onclick="cambiarFiltro('dice-que-transfirio', this)">
+            🟠 Transfirieron
+        </button>
+
+        <button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
+            🟡 Paga en cancha
+        </button>
+
+        <button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
+            🔴 Pendientes
+        </button>
+
+    </div>
+
+</details>
             <div id="lista-jugadores-container"></div>
+            <button class="btn-copy-week" id="btn-clonar-semana">
+    <span>🗓️</span> Duplicar para la próxima semana
+</button>
         </div>
     </div>
 
@@ -672,7 +703,7 @@ if (d.estado === 'FINALIZADA') {
     <div
     class="cc-categoria"
     style="
-        font-size:16px;
+        font-size:15px;
         font-weight:700;
         line-height:1.20;
         margin:6px 0;
@@ -710,11 +741,10 @@ if (d.estado === 'FINALIZADA') {
 
     <div
         style="
-            width:${porcentaje}%;
-            min-width:12px;
-            height:100%;
-            background:${colorBarra};
-            border-radius:999px;
+           width:${porcentaje}%;
+height:100%;
+background:${colorBarra};
+border-radius:999px;
         ">
     </div>
 

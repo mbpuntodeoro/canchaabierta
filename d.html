@@ -160,10 +160,19 @@ background: var(--brand-orange);
         .btn-filtro {
     border: 1px solid #E5E7EB;
     background: white;
+
     border-radius: 999px;
-    padding: 6px 10px;
-    font-size: 11px;
+
+    padding: 6px 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
     cursor: pointer;
+
+    flex-shrink: 0;
 }
 
 .btn-filtro.active {
@@ -230,7 +239,7 @@ background: var(--brand-orange);
             <button id="btn-edit-gear" style="background:none; border:none; font-size:22px; cursor:pointer;">⚙️</button>
         </div>
         <div class="modal-content" style="padding:16px;">
-            <div id="pc-titulo" style="font-size:20px; font-weight:800; text-transform:uppercase;">--</div>
+            <div id="pc-titulo" style="font-size:16px; font-weight:700; text-transform:uppercase;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             
             <button class="btn-copy-week" id="btn-clonar-semana">
@@ -248,7 +257,14 @@ background: var(--brand-orange);
     placeholder="🔍 Buscar jugador..."
     oninput="if(panelCanchaId) abrirCancha(panelCanchaId)"
     style="margin-bottom:12px;">
-            <div id="filtros-estados" style="display:flex; gap:8px; padding:12px 0; overflow-x:auto;">
+           <div id="filtros-estados"
+     style="
+        display:flex;
+        gap:6px;
+        padding:6px 0 12px 0;
+        overflow-x:auto;
+        scrollbar-width:none;
+     ">
     
     <button class="btn-filtro active" onclick="cambiarFiltro('todos', this)">
         Todos
@@ -562,6 +578,19 @@ noRealizadas.sort((a,b) =>
             var ocupados = inscriptosArr.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
             var pagadosCount = inscriptosArr.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
             var recaudado = pagadosCount * (d.valor || 0);
+            var porcentaje =
+    d.cupo
+        ? Math.round(
+            (ocupados / d.cupo) * 100
+          )
+        : 0;
+
+var colorBarra =
+    porcentaje < 30
+        ? '#EF4444'
+        : porcentaje < 70
+            ? '#F59E0B'
+            : '#10B981';
             
             if(!esPasada) { tRec += recaudado; tJug += ocupados; tPagados += pagadosCount; }
             let badgeEstado = '';
@@ -627,18 +656,36 @@ if (d.estado === 'FINALIZADA') {
         📍 ${d.lugar || 'Sin sede'}
     </div>
 
-    <div class="cc-footer">
+  <div class="cc-footer">
 
     <span>
         👥 ${ocupados} / ${d.cupo || '--'}
-        (${Math.round(
-            (ocupados / (d.cupo || 1)) * 100
-        )}%)
+        (${porcentaje}%)
     </span>
 
     <span class="cc-dinero">
         $${recaudado}
     </span>
+
+</div>
+
+<div
+    style="
+        margin-top:10px;
+        height:6px;
+        background:#E5E7EB;
+        border-radius:999px;
+        overflow:hidden;
+    ">
+
+    <div
+        style="
+            width:${porcentaje}%;
+            height:100%;
+            background:${colorBarra};
+            border-radius:999px;
+        ">
+    </div>
 
 </div>
 

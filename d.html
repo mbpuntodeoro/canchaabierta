@@ -355,7 +355,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 </details>
             <div id="lista-jugadores-container"></div>
            <button class="btn-copy-week" id="btn-clonar-semana">
-    📅 Copiar cancha
+    Copiar cancha
 </button>
         </div>
     </div>
@@ -1067,7 +1067,7 @@ var htmlEs = {
 
                     <button class="btn-menu"
                         onclick="event.stopPropagation(); opcionesJugador(
-    '${j.nombre}',
+    '${j.nombreCompleto || ((j.nombre || "") + " " + (j.apellido || ""))}'
     '${j.originalIndex}',
     '${j.celular}',
     '${j.categoria || ""}'
@@ -1168,7 +1168,7 @@ if(
 
                     <button class="btn-menu"
     onclick="event.stopPropagation(); opcionesJugador(
-        '${j.nombre}',
+        '${j.nombreCompleto || ((j.nombre || "") + " " + (j.apellido || ""))}',
         '${j.originalIndex}',
         '${j.celular}',
         '${j.categoria || ""}'

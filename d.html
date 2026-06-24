@@ -1066,7 +1066,12 @@ var htmlEs = {
                     ${btnOk}
 
                     <button class="btn-menu"
-                        onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">
+                        onclick="event.stopPropagation(); opcionesJugador(
+    '${j.nombre}',
+    '${j.originalIndex}',
+    '${j.celular}',
+    '${j.categoria || ""}'
+)">
                         ⋯
                     </button>
 
@@ -1151,9 +1156,7 @@ if(
                         ${j.nombreCompleto || ((j.nombre || '') + ' ' + (j.apellido || ''))}
                     </div>
 
-                    <div style="font-size:12px;color:#6B7280;">
-                        ${j.categoria || '-'} · ${j.celular || '-'}
-                    </div>
+    
 
                     ${invitadoPor}
 
@@ -1164,9 +1167,14 @@ if(
                     ${btnOk}
 
                     <button class="btn-menu"
-                        onclick="event.stopPropagation(); opcionesJugador('${j.nombre}', '${j.originalIndex}', '${j.celular}')">
-                        ⋯
-                    </button>
+    onclick="event.stopPropagation(); opcionesJugador(
+        '${j.nombre}',
+        '${j.originalIndex}',
+        '${j.celular}',
+        '${j.categoria || ""}'
+    )">
+    ⋯
+</button>
 
                 </div>
 
@@ -1342,12 +1350,20 @@ document.querySelector(
 
     function setPago(playerKey, estado) { db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).update({ estado: estado }); }
 
-    function opcionesJugador(nombre, playerKey, celular) {
+    function opcionesJugador(
+    nombre,
+    playerKey,
+    celular,
+    categoria
+) {
         document.getElementById('bs-nombre-jugador').innerText = nombre;
         document.getElementById(
     'bs-info-jugador'
-).innerText =
-    celular || '';
+).innerHTML =
+`
+${categoria || 'Sin categoría'}<br>
+${celular || ''}
+`;;
         document.getElementById('btn-wa').onclick = () => window.open('https://wa.me/' + celular, '_blank');
         document.getElementById('btn-revertir').onclick = () => { setPago(playerKey, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
         document.getElementById('btn-eliminar').onclick = () => {

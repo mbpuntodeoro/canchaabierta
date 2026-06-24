@@ -424,8 +424,17 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     <div id="bs-menu" class="bs-overlay" onclick="if(event.target===this) cerrarMenuOpciones()">
         <div class="bs-content">
             <div id="bs-nombre-jugador" style="text-align:center; font-weight:700; margin-bottom:20px;">Opciones</div>
+            <div
+    id="bs-info-jugador"
+    style="
+        text-align:center;
+        font-size:13px;
+        color:#6B7280;
+        margin-bottom:20px;
+    ">
+</div>
             <button class="bs-btn" id="btn-wa" style="width:100%;">💬 Enviar WhatsApp</button>
-            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🏟️ Cambiar a Paga en Club</button>
+            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🟡 Marcar como paga en cancha</button>
             <button class="bs-btn" style="color:var(--brand-red); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
             <button class="bs-btn" style="background:none; width:100%;" onclick="cerrarMenuOpciones()">Cancelar</button>
         </div>
@@ -892,7 +901,13 @@ if (
 
     btn.classList.add('active');
 
-    if(panelCanchaId){
+    const details =
+    document.querySelector('details');
+
+if(details){
+    details.removeAttribute('open');
+}
+        if(panelCanchaId){
         abrirCancha(panelCanchaId);
     }
 }
@@ -1038,9 +1053,7 @@ var htmlEs = {
 
                         </div>
 
-                        <div style="font-size:12px;color:#6B7280; margin-left:18px;">
-                            ${j.categoria || '-'} · ${j.celular || '-'}
-                        </div>
+                        
 
                         ${invitadoPor}
 
@@ -1331,6 +1344,10 @@ document.querySelector(
 
     function opcionesJugador(nombre, playerKey, celular) {
         document.getElementById('bs-nombre-jugador').innerText = nombre;
+        document.getElementById(
+    'bs-info-jugador'
+).innerText =
+    celular || '';
         document.getElementById('btn-wa').onclick = () => window.open('https://wa.me/' + celular, '_blank');
         document.getElementById('btn-revertir').onclick = () => { setPago(playerKey, 'paga-en-la-cancha'); cerrarMenuOpciones(); };
         document.getElementById('btn-eliminar').onclick = () => {

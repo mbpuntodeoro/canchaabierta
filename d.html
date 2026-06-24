@@ -490,11 +490,32 @@ background: var(--brand-orange);
         var dObj = new Date();
         var hoyStr = dObj.getFullYear() + "-" + String(dObj.getMonth() + 1).padStart(2, '0') + "-" + String(dObj.getDate()).padStart(2, '0');
 
-        var futuras = eventosCache.filter(e => e.fecha >= hoyStr);
-        var pasadas = eventosCache.filter(e => e.fecha < hoyStr);
+  var programadas = eventosCache.filter(e =>
+    !e.estado || e.estado === 'PROGRAMADA'
+);
 
-        futuras.sort((a,b) => new Date(a.fecha+'T'+a.hora) - new Date(b.fecha+'T'+b.hora));
-        pasadas.sort((a,b) => new Date(b.fecha+'T'+b.hora) - new Date(a.fecha+'T'+a.hora));
+var finalizadas = eventosCache.filter(e =>
+    e.estado === 'FINALIZADA'
+);
+
+var noRealizadas = eventosCache.filter(e =>
+    e.estado === 'NO_REALIZADA'
+);
+
+programadas.sort((a,b) =>
+    new Date(a.fecha + 'T' + a.hora) -
+    new Date(b.fecha + 'T' + b.hora)
+);
+
+finalizadas.sort((a,b) =>
+    new Date(b.fecha + 'T' + b.hora) -
+    new Date(a.fecha + 'T' + a.hora)
+);
+
+noRealizadas.sort((a,b) =>
+    new Date(b.fecha + 'T' + b.hora) -
+    new Date(a.fecha + 'T' + a.hora)
+);
 
         function armarCard(d, esPasada) {
             var inscriptosObj = d.inscriptos || {};
@@ -515,28 +536,86 @@ if (d.estado === 'FINALIZADA') {
 }
 
             return `<div class="card-cancha ${ocupados >= (d.cupo||0) ? 'card-completa' : ''} ${esPasada ? 'card-pasada' : ''}" onclick="abrirCancha('${d.id}')">
-                <div class="cc-header">
-                    <div>${formatearDiaCorto(d.fecha)} · ${d.hora} hs ${badgeEstado} ${esPasada ? '<span class="badge-pasada">HISTORIAL</span>' : ''}</div>
-                </div>
-                <div class="cc-categoria">${d.organiza || 'Cancha'}</div>
-                <div class="cc-footer">
-                    <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
-                    <span class="cc-dinero">$${recaudado}</span>
-                </div>
-            </div>`;
+
+    <div class="cc-header">
+        <div>
+            ${formatearDiaCorto(d.fecha)}
+            ·
+            ${d.hora}${d.horaFin ? ' - ' + d.horaFin : ''}
+            hs
+            ${badgeEstado}
+        </div>
+    </div>
+
+    <div class="cc-categoria">
+        ${d.organiza || 'Cancha'}
+    </div>
+
+    <div style="font-size:13px; color:#6B7280; margin-top:-4px;">
+        📍 ${d.lugar || 'Sin sede'}
+    </div>
+
+    <div class="cc-footer">
+        <span>👥 ${ocupados} / ${d.cupo || '--'}</span>
+        <span class="cc-dinero">$${recaudado}</span>
+    </div>
+
+</div>`;
         }
 
-        futuras.forEach(d => html += armarCard(d, false));
-        if(pasadas.length > 0) {
-            html += '<div class="grupo-titulo" style="margin-left:16px;">Anteriores</div>';
-            pasadas.forEach(d => html += armarCard(d, true));
-        }
+        programadas.forEach(d =>
+    html += armarCard(d, false)
+);
+
+if (
+    finalizadas.length > 0 ||
+    noRealizadas.length > 0
+) {
+
+    html += `
+        <div
+            class="grupo-titulo"
+            style="margin-left:16px; cursor:pointer;"
+            onclick="toggleHistorial()">
+
+            ▼ Ver Historial (${finalizadas.length + noRealizadas.length})
+        </div>
+
+        <div
+            id="historial-container"
+            style="display:none;">
+    `;
+
+    finalizadas.forEach(d =>
+        html += armarCard(d, true)
+    );
+
+    noRealizadas.forEach(d =>
+        html += armarCard(d, true)
+    );
+
+    html += `</div>`;
+}
 
         container.innerHTML = html;
         document.getElementById('sc-jugadores').innerText = tJug;
         document.getElementById('sc-pagados').innerText = tPagados;
         document.getElementById('sc-gestionado').innerText = PadelUtils.fmtDinero(tRec);
     }
+    function toggleHistorial() {
+
+    const div =
+        document.getElementById(
+            'historial-container'
+        );
+
+    if (!div) return;
+
+    div.style.display =
+        div.style.display === 'none'
+            ? 'block'
+            : 'none';
+}
 
     function cambiarFiltro(filtro, btn){
 
@@ -886,7 +965,10 @@ document.querySelector(
     alias: document.getElementById('fc-alias').value,
     celuOrganizador: document.getElementById('fc-celu').value,
 
-    siguienteGenerada: false
+    siguienteGenerada:
+    editandoCanchaId
+        ? eventosCache.find(e => e.id === editandoCanchaId)?.siguienteGenerada ?? false
+        : false
 };
 
     // Guardar configuración permanente del organizador

@@ -111,7 +111,19 @@
         .view-modal.active { transform: translateX(0); }
         .nav-modal { padding: 16px; background: var(--bg-white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 110; }
         
-        .jugador-fila { display: flex; justify-content: space-between; align-items: center; background: var(--bg-white); padding: 16px; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .jugador-fila {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--bg-white);
+
+    padding:12px;
+
+    border-radius:10px;
+    margin-bottom:6px;
+
+    border:1px solid var(--border);
+}
         .grupo-expandible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-white); overflow: hidden;}
         .grupo-detalle { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; background: #F9FAFB; }
         .grupo-detalle.open { max-height: 1000px; }
@@ -127,8 +139,24 @@
 background: var(--brand-orange);
 }
 
-        .btn-check { background: #E5E7EB; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+        .btn-check {
+    background:#E5E7EB;
+    border:none;
+
+    padding:5px 9px;
+
+    border-radius:6px;
+    font-size:12px;
+    font-weight:700;
+}
+        .btn-menu {
+    background:none;
+    border:none;
+
+    font-size:16px;
+
+    color:var(--text-sub);
+}
         
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
         .grupo-titulo {
@@ -644,16 +672,18 @@ if (d.estado === 'FINALIZADA') {
     <div
     class="cc-categoria"
     style="
-        font-size:18px;
-        font-weight:800;
-        line-height:1.15;
-        margin:8px 0;
+        font-size:16px;
+        font-weight:700;
+        line-height:1.20;
+        margin:6px 0;
     ">
     ${d.organiza || 'Cancha'}
 </div>
 
     <div style="font-size:13px; color:#6B7280; margin-top:-4px;">
-        📍 ${d.lugar || 'Sin sede'}
+        <span style="font-weight:600;">
+📍 ${d.lugar || 'Sin sede'}
+</span>
     </div>
 
   <div class="cc-footer">

@@ -283,6 +283,15 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
         <div class="modal-content" style="padding:16px;">
             <div id="pc-titulo" style="font-size:14px; font-weight:700; text-transform:uppercase;line-height:1.2;">--</div>
             <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
+            <div
+    id="pc-lugar"
+    style="
+        font-size:13px;
+        color:#6B7280;
+        margin-top:-16px;
+        margin-bottom:20px;
+    ">
+</div>
             
 
             <div class="mj-resumen">
@@ -345,8 +354,8 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 
 </details>
             <div id="lista-jugadores-container"></div>
-            <button class="btn-copy-week" id="btn-clonar-semana">
-    <span>🗓️</span> Duplicar para la próxima semana
+           <button class="btn-copy-week" id="btn-clonar-semana">
+    📅 Copiar cancha
 </button>
         </div>
     </div>
@@ -415,7 +424,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     <div id="bs-menu" class="bs-overlay" onclick="if(event.target===this) cerrarMenuOpciones()">
         <div class="bs-content">
             <div id="bs-nombre-jugador" style="text-align:center; font-weight:700; margin-bottom:20px;">Opciones</div>
-            <button class="bs-btn" id="btn-wa" style="width:100%;">💬 WhatsApp</button>
+            <button class="bs-btn" id="btn-wa" style="width:100%;">💬 Enviar WhatsApp</button>
             <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🏟️ Cambiar a Paga en Club</button>
             <button class="bs-btn" style="color:var(--brand-red); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
             <button class="bs-btn" style="background:none; width:100%;" onclick="cerrarMenuOpciones()">Cancelar</button>
@@ -895,7 +904,25 @@ if (
             var c = snap.val(); if(!c) return;
             document.getElementById('pc-titulo').innerText = c.organiza || 'Cancha';
             document.getElementById('pc-fecha').innerText = formatearDiaCorto(c.fecha) + ' · ' + c.hora + ' hs';
+            document.getElementById('pc-lugar').innerText =
+    '📍 ' + (c.lugar || 'Sin sede');
             document.getElementById('btn-clonar-semana').onclick = function() { clonarCancha(c); };
+            const btnCopiar =
+    document.getElementById(
+        'btn-clonar-semana'
+    );
+
+if (c.tipo === 'unica') {
+
+    btnCopiar.style.display =
+        'flex';
+
+} else {
+
+    btnCopiar.style.display =
+        'none';
+
+}
 
             var inscriptosObj = c.inscriptos || {};
             var ocupados = 0; var recaudado = 0; var grupos = {};

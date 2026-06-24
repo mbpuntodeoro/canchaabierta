@@ -131,7 +131,15 @@ background: var(--brand-orange);
         .btn-menu { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
         
         .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .grupo-titulo { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 24px 0 10px 0; letter-spacing: 0.5px; }
+        .grupo-titulo {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    color: #6B7280;
+
+    margin:
+        24px 16px 12px 16px;
+}
 
         .label-form { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
@@ -636,10 +644,73 @@ if (d.estado === 'FINALIZADA') {
 
 </div>`;
         }
+const hoyEventos = [];
+const mananaEventos = [];
+const futurosEventos = [];
 
-        programadas.forEach(d =>
-    html += armarCard(d, false)
-);
+const hoy = new Date();
+hoy.setHours(0,0,0,0);
+
+programadas.forEach(d => {
+
+    const fechaEvento =
+        new Date(d.fecha + "T00:00:00");
+
+    const diffDias =
+        Math.round(
+            (fechaEvento - hoy) /
+            (1000 * 60 * 60 * 24)
+        );
+
+    if (diffDias === 0) {
+        hoyEventos.push(d);
+    }
+    else if (diffDias === 1) {
+        mananaEventos.push(d);
+    }
+    else {
+        futurosEventos.push(d);
+    }
+
+});
+        if (hoyEventos.length > 0) {
+
+    html += `
+        <div class="grupo-titulo">
+            HOY (${hoyEventos.length})
+        </div>
+    `;
+
+    hoyEventos.forEach(d =>
+        html += armarCard(d, false)
+    );
+}
+
+if (mananaEventos.length > 0) {
+
+    html += `
+        <div class="grupo-titulo">
+            MAÑANA (${mananaEventos.length})
+        </div>
+    `;
+
+    mananaEventos.forEach(d =>
+        html += armarCard(d, false)
+    );
+}
+
+if (futurosEventos.length > 0) {
+
+    html += `
+        <div class="grupo-titulo">
+            PRÓXIMOS DÍAS (${futurosEventos.length})
+        </div>
+    `;
+
+    futurosEventos.forEach(d =>
+        html += armarCard(d, false)
+    );
+}
 
 if (
     finalizadas.length > 0 ||

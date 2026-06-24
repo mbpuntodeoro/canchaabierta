@@ -329,7 +329,7 @@
                 const ahora = new Date();
                 const hoyISO = ahora.toLocaleDateString('sv-SE'); 
 
-                if (d.fecha >= hoyISO) {
+                if (d.estado === "PROGRAMADA") {
                     canchasActivas++;
                     
                     if (d.fecha !== lastDate) {

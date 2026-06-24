@@ -146,21 +146,30 @@
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
         .dot.pendiente { background: var(--brand-red); }
         .dot.pagado { background: var(--brand-green); }
-        .dot.paga-en-la-cancha { background: var(--brand-orange); }
-        .dot.transferido,
+        .dot.paga-en-la-cancha {
+    background: #3B82F6;
+}
+
+.dot.transferido,
 .dot.dice-que-transfirio {
-background: var(--brand-orange);
+    background: var(--brand-orange);
 }
 
         .btn-check {
+    width:32px;
+    height:32px;
+
     background:#E5E7EB;
     border:none;
 
-    padding:5px 9px;
+    border-radius:8px;
 
-    border-radius:6px;
-    font-size:12px;
+    font-size:16px;
     font-weight:700;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
         .btn-menu {
     background:none;
@@ -295,9 +304,20 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
             
 
             <div class="mj-resumen">
-                <div id="pc-cupos">0 / 0</div>
-                <div id="pc-recaudado" style="color:var(--brand-green);">$0</div>
-            </div>
+    <div id="pc-cupos">0 / 0</div>
+    <div id="pc-recaudado">$0</div>
+</div>
+
+<div
+    id="pc-categorias"
+    style="
+        font-size:12px;
+        color:#6B7280;
+        margin-top:-10px;
+        margin-bottom:16px;
+    ">
+</div>
+ 
             <input
     type="text"
     id="buscador-jugador"
@@ -343,7 +363,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
         </button>
 
         <button class="btn-filtro" onclick="cambiarFiltro('paga-en-la-cancha', this)">
-            🟡 Paga en cancha
+            🔵 Paga en cancha
         </button>
 
         <button class="btn-filtro" onclick="cambiarFiltro('pendiente', this)">
@@ -434,7 +454,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     ">
 </div>
             <button class="bs-btn" id="btn-wa" style="width:100%;">💬 Enviar WhatsApp</button>
-            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🟡 Marcar como paga en cancha</button>
+            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🔵 Marcar como paga en cancha</button>
             <button class="bs-btn" style="color:var(--brand-red); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
             <button class="bs-btn" style="background:none; width:100%;" onclick="cerrarMenuOpciones()">Cancelar</button>
         </div>
@@ -940,7 +960,7 @@ if (c.tipo === 'unica') {
 }
 
             var inscriptosObj = c.inscriptos || {};
-            var ocupados = 0; var recaudado = 0; var grupos = {};
+            var ocupados = 0; var recaudado = 0; var grupos = {}; var categorias = {};
             var textoBusqueda =
     (document.getElementById('buscador-jugador')?.value || '')
         .toLowerCase()
@@ -972,6 +992,11 @@ var contPendiente = 0;
         break;
 }
                 ocupados += (jug.cantidad || 1);
+
+const cat = jug.categoria || 'Sin categoría';
+
+categorias[cat] =
+    (categorias[cat] || 0) + 1;
                 if(jug.estado === 'pagado') recaudado += (c.valor * (jug.cantidad || 1));
                 var grupoId = jug.reservaId || playerKey;
 
@@ -1025,7 +1050,7 @@ var htmlEs = {
 
         var invitadoPor =
             !j.titularReserva && titular
-                ? `<div style="font-size:11px;color:#9CA3AF;">
+                ? `<div style="font-size:10px;color:#9CA3AF;">
                     Invitado por ${titular.nombreCompleto || titular.nombre}
                    </div>`
                 : '';
@@ -1136,7 +1161,7 @@ if(
 
         let invitadoPor =
             !j.titularReserva && titular
-                ? `<div style="font-size:11px;color:#9CA3AF;">
+                ? `<div style="font-size:10px;color:#9CA3AF;">
                     Invitado por ${titular.nombreCompleto || titular.nombre}
                    </div>`
                 : '';
@@ -1212,7 +1237,7 @@ document.querySelector(
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('paga-en-la-cancha', this)\"]"
-).innerText = `🟡 Paga en cancha (${contCancha})`;
+).innerText = `🔵 Paga en cancha (${contCancha})`;
 
 document.querySelector(
     "button[onclick=\"cambiarFiltro('pendiente', this)\"]"
@@ -1221,8 +1246,15 @@ document.querySelector(
 document.querySelector(
     "button[onclick=\"cambiarFiltro('todos', this)\"]"
 ).innerText = `Todos (${contPagado + contTransferido + contCancha + contPendiente})`;
+            const resumenCategorias =
+    Object.entries(categorias)
+    .sort((a,b) => b[1] - a[1])
+    .map(([cat,cant]) => `${cat}: ${cant}`)
+    .join(' • ');
             document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
             document.getElementById('pc-recaudado').innerText = '$' + recaudado;
+            document.getElementById('pc-categorias').innerText =
+    resumenCategorias;
         });
         document.getElementById('btn-edit-gear').onclick = function() { abrirFormularioCancha(id); };
         document.getElementById('view-panel-cancha').classList.add('active');

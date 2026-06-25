@@ -13,12 +13,22 @@
     <script src="app-config.js?v=65"></script>
     
     <style>
-        :root { 
-            --bg-base: #F3F4F6; --bg-white: #FFFFFF;
-            --text-main: #111111; --text-sub: #6B7280;
-            --border: #E5E7EB;
-            --brand-purple: #7C3AED; --brand-green: #10B981; --brand-red: #EF4444; --brand-orange: #F59E0B;
-        }
+        :root {
+
+    --bg-base: #F5F5F7;
+    --bg-white: #FFFFFF;
+
+    --text-main: #0B0B0C;
+    --text-sub: #6B7280;
+
+    --border: #E5E7EB;
+
+    --accent: #007AFF;
+
+    --success: #34C759;
+    --danger: #FF3B30;
+    --warning: #FF9500;
+}
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-main); -webkit-font-smoothing: antialiased; }
@@ -28,7 +38,18 @@
 
         .app-container { max-width: 600px; margin: 0 auto; padding: 0 0 80px 0; }
 
-        .status-card { background: #111111; color: #FFFFFF; border-radius: 16px; padding: 20px; margin: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; }
+        .status-card {
+    background: #111111;
+    color: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 16px;
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.05);
+
+    display: none;
+}
         .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
         .dsc-title { font-size: 15px; font-weight: 700; }
         .dsc-badge { background: rgba(255,255,255,0.15); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;}
@@ -45,35 +66,35 @@
     margin: 0 16px 14px 16px;
 
     box-shadow:
-        0 10px 25px rgba(0,0,0,.08);
+       0 2px 8px rgba(0,0,0,.05);
 
     border: 1px solid rgba(0,0,0,.04);
 
     cursor: pointer;
 }
-        .card-completa { border: 1px solid var(--brand-green); }
+        .card-completa { border: 1px solid var(--success); }
         
         .card-pasada { background: #E5E7EB !important; opacity: 0.65; border: 1px solid var(--border); }
         .badge-pasada { background: #9CA3AF; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
-        .badge-susp { background: var(--brand-red); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
+        .badge-susp { background: var(--danger); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 8px;}
         .badge-hoy {
-    background: #10B981;
-    color: white;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-weight: 800;
-    margin-right: 8px;
+    background: var(--accent);
+    color:white;
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:999px;
+    font-weight:800;
+    margin-right:8px;
 }
 
 .badge-manana {
-    background: #3B82F6;
-    color: white;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-weight: 800;
-    margin-right: 8px;
+    background:#D1D5DB;
+    color:#111;
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:999px;
+    font-weight:800;
+    margin-right:8px;
 }
 
         .cc-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-sub); align-items: center; }
@@ -92,7 +113,7 @@
     font-size:14px;
     font-weight:600;
 }
-        .cc-dinero { color: var(--brand-green); }
+        .cc-dinero { color: var(--success); }
 
         .fab-crear {
     position: fixed;
@@ -144,15 +165,15 @@
         .jugador-main { display: flex; align-items: center; gap: 8px; font-weight: 600; }
         
         .dot { width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
-        .dot.pendiente { background: var(--brand-red); }
-        .dot.pagado { background: var(--brand-green); }
+        .dot.pendiente { background: var(--danger); }
+        .dot.pagado { background: var(--success); }
         .dot.paga-en-la-cancha {
     background: #3B82F6;
 }
 
 .dot.transferido,
 .dot.dice-que-transfirio {
-    background: var(--brand-orange);
+    background: var(--warning);
 }
 
         .btn-check {
@@ -180,7 +201,15 @@
     color:var(--text-sub);
 }
         
-        .mj-resumen { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; background: var(--bg-white); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .mj-resumen {
+    background: var(--bg-white);
+    padding: 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+
+    line-height: 1.9;
+}
         .grupo-titulo {
     font-size: 12px;
     font-weight: 800;
@@ -197,7 +226,7 @@
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
         .btn-black-modal:disabled { opacity: 0.6; cursor: not-allowed; }
         
-        .btn-copy-week { width: 100%; height: 42px; background: var(--brand-purple); color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 13px; margin-top:32px;
+        .btn-copy-week { width: 100%; height: 42px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 13px; margin-top:32px;
 margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-copy-week:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -227,9 +256,9 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 }
 
 .btn-filtro.active {
-    background: var(--brand-purple);
+    background: var(--accent);
     color: white;
-    border-color: var(--brand-purple);
+    border-color: var(--accent);
 }
     </style>
 </head>
@@ -237,10 +266,10 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 
     <header class="header-global">
         <div>
-            <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--brand-purple);">Panel</span></div>
+            <div class="header-brand">CANCHER <span style="font-size: 10px; color: var(--accent);">Panel</span></div>
             <div id="t-org-name" style="font-size: 13px; color: var(--text-sub);">Cargando...</div>
         </div>
-        <div id="btn-header-accion" style="display:none; font-size: 12px; font-weight: 600; color: var(--brand-red); cursor: pointer;" onclick="cerrarSesion()">Salir</div>
+        <div id="btn-header-accion" style="display:none; font-size: 12px; font-weight: 600; color: var(--danger); cursor: pointer;" onclick="cerrarSesion()">Salir</div>
     </header>
 
     <main class="app-container">
@@ -259,7 +288,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
                     </div>
                     <div style="flex:1; text-align: center;">
                         <div class="dsc-metric-label">Pagaron</div>
-                        <div class="dsc-metric-val" style="font-size: 18px; color: var(--brand-green);" id="sc-pagados">0</div>
+                        <div class="dsc-metric-val" style="font-size: 18px; color: var(--success);" id="sc-pagados">0</div>
                     </div>
                     <div style="flex:1; text-align: center;">
                         <div class="dsc-metric-label">Cobrado</div>
@@ -303,19 +332,49 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 </div>
             
 
-            <div class="mj-resumen">
-    <div id="pc-cupos">0 / 0</div>
-    <div id="pc-recaudado">$0</div>
+<div class="mj-resumen">
+
+    <div id="pc-total-inscriptos" style="font-weight:600;"></div>
+
+<div id="pc-total-pagados" style="font-weight:600;"></div>
+
+<div id="pc-total-cobrado" style="font-weight:700;"></div>
+
+<hr style="
+margin:12px 0;
+border:none;
+border-top:1px solid #E5E7EB;
+">
+
+<div id="pc-total-pendientes"
+     style="
+        font-weight:600;
+        color:#FF3B30;
+     ">
 </div>
 
-<div
-    id="pc-categorias"
-    style="
-        font-size:12px;
-        color:#6B7280;
-        margin-top:-10px;
-        margin-bottom:16px;
-    ">
+</div>
+
+<div style="
+background:white;
+border:1px solid #E5E7EB;
+border-radius:16px;
+padding:18px;
+margin-bottom:20px;
+">
+
+<div style="
+font-size:12px;
+font-weight:700;
+letter-spacing:.08em;
+color:#6B7280;
+margin-bottom:12px;
+">
+JUGADORES POR CATEGORÍA
+</div>
+
+<div id="pc-categorias"></div>
+
 </div>
  
             <input
@@ -429,7 +488,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     Finalizar Cancha
 
 </button>
-            <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--brand-red); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
+            <button class="bs-btn" id="btn-eliminar-cancha" style="margin-top:12px; color:var(--danger); display:none; width:100%; border-radius:12px; background:#FEE2E2;" onclick="eliminarCancha()">Eliminar Cancha permanentemente</button>
             
 
 
@@ -454,8 +513,8 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     ">
 </div>
             <button class="bs-btn" id="btn-wa" style="width:100%;">💬 Enviar WhatsApp</button>
-            <button class="bs-btn" id="btn-revertir" style="color:var(--brand-orange); width:100%;">🔵 Marcar como paga en cancha</button>
-            <button class="bs-btn" style="color:var(--brand-red); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
+            <button class="bs-btn" id="btn-revertir" style="color:var(--warning); width:100%;">🔵 Marcar como paga en cancha</button>
+            <button class="bs-btn" style="color:var(--danger); width:100%;" id="btn-eliminar">🗑️ Eliminar Jugador</button>
             <button class="bs-btn" style="background:none; width:100%;" onclick="cerrarMenuOpciones()">Cancelar</button>
         </div>
     </div>
@@ -491,7 +550,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
                 <input type="email" id="login-email" class="input-clean" placeholder="Email" style="margin-bottom:12px;">
                 <input type="password" id="login-pass" class="input-clean" placeholder="Contraseña" style="margin-bottom:20px;">
                 <button class="btn-black-modal" onclick="hacerLogin(this)" style="margin-top:0;">Ingresar</button>
-                <div id="login-error" style="color:var(--brand-red); font-size:13px; margin-top:12px; text-align:center; font-weight:600;"></div>
+                <div id="login-error" style="color:var(--danger); font-size:13px; margin-top:12px; text-align:center; font-weight:600;"></div>
             </div>`;
     };
 
@@ -511,7 +570,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
                         if(headerBtn) {
                             headerBtn.style.display = 'block';
                             headerBtn.innerText = "Panel Maestro";
-                            headerBtn.style.color = "var(--brand-purple)";
+                            headerBtn.style.color = "var(--accent)";
                             headerBtn.onclick = function() { window.location.href = 'm.html'; };
                         }
                     } else {
@@ -558,7 +617,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
                     if(headerBtn) {
                         headerBtn.style.display = 'block';
                         headerBtn.innerText = "Salir";
-                        headerBtn.style.color = "var(--brand-red)";
+                        headerBtn.style.color = "var(--danger)";
                         headerBtn.onclick = cerrarSesion;
                     }
                 });
@@ -683,12 +742,7 @@ noRealizadas.sort((a,b) =>
           )
         : 0;
 
-var colorBarra =
-    porcentaje < 30
-        ? '#EF4444'
-        : porcentaje < 70
-            ? '#F59E0B'
-            : '#10B981';
+var colorBarra = 'var(--accent)';
             
             if(!esPasada) { tRec += recaudado; tJug += ocupados; tPagados += pagadosCount; }
             let badgeEstado = '';
@@ -1050,7 +1104,12 @@ var htmlEs = {
 
         var invitadoPor =
             !j.titularReserva && titular
-                ? `<div style="font-size:10px;color:#9CA3AF;">
+                ? `<div style="
+font-size:11px;
+color:#9CA3AF;
+font-style:italic;
+font-weight:400;
+">
                     Invitado por ${titular.nombreCompleto || titular.nombre}
                    </div>`
                 : '';
@@ -1161,7 +1220,12 @@ if(
 
         let invitadoPor =
             !j.titularReserva && titular
-                ? `<div style="font-size:10px;color:#9CA3AF;">
+                ? `<div style="
+font-size:11px;
+color:#9CA3AF;
+font-style:italic;
+font-weight:400;
+">
                     Invitado por ${titular.nombreCompleto || titular.nombre}
                    </div>`
                 : '';
@@ -1247,13 +1311,32 @@ document.querySelector(
     "button[onclick=\"cambiarFiltro('todos', this)\"]"
 ).innerText = `Todos (${contPagado + contTransferido + contCancha + contPendiente})`;
             const resumenCategorias =
-    Object.entries(categorias)
-    .sort((a,b) => b[1] - a[1])
-    .map(([cat,cant]) => `${cat}: ${cant}`)
-    .join(' • ');
-            document.getElementById('pc-cupos').innerText = ocupados + ' / ' + (c.cupo || '--');
-            document.getElementById('pc-recaudado').innerText = '$' + recaudado;
-            document.getElementById('pc-categorias').innerText =
+Object.entries(categorias)
+.sort((a,b) => b[1] - a[1])
+.map(([cat,cant]) => `
+<div style="
+display:flex;
+justify-content:space-between;
+padding:8px 0;
+border-bottom:1px solid #F3F4F6;
+">
+    <span>${cat}</span>
+    <strong>${cant}</strong>
+</div>
+`)
+.join('');
+            document.getElementById('pc-total-inscriptos').innerHTML =
+    `👥 ${ocupados} inscriptos`;
+
+document.getElementById('pc-total-pagados').innerHTML =
+    `🟢 ${contPagado} pagos confirmados`;
+
+document.getElementById('pc-total-cobrado').innerHTML =
+    `💰 ${PadelUtils.fmtDinero(recaudado)} cobrados`;
+
+document.getElementById('pc-total-pendientes').innerHTML =
+    `🔴 ${contPendiente} pendientes de pago`;
+           document.getElementById('pc-categorias').innerHTML =
     resumenCategorias;
         });
         document.getElementById('btn-edit-gear').onclick = function() { abrirFormularioCancha(id); };

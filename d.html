@@ -225,15 +225,66 @@
     color:var(--text-sub);
 }
         
-        .mj-resumen {
-    background: var(--bg-white);
-    padding: 18px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
+       .mj-resumen{
 
-    line-height: 1.9;
+    background:white;
+
+    border:1px solid #E5E7EB;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    margin-bottom:22px;
+
 }
+        .kpi-card{
+
+    background:#F8F8F8;
+
+    border-radius:14px;
+
+    padding:16px;
+
+    border:1px solid #ECECEC;
+
+}
+
+.kpi-number{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    line-height:1;
+
+    color:#111111;
+
+}
+
+.kpi-label{
+
+    margin-top:8px;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    color:#6B7280;
+
+    text-transform:uppercase;
+
+    letter-spacing:.05em;
+
+}
+
+.kpi-danger{
+
+    color:#FF3B30;
+
+}
+
+    
         .grupo-titulo {
     font-size: 12px;
     font-weight: 800;
@@ -495,23 +546,35 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 
 <div class="mj-resumen">
 
-    <div id="pc-total-inscriptos" style="font-weight:600;"></div>
+    <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:12px;
+    ">
 
-<div id="pc-total-pagados" style="font-weight:600;"></div>
+        <div class="kpi-card">
+            <div class="kpi-number" id="pc-total-inscriptos"></div>
+            <div class="kpi-label">Inscriptos</div>
+        </div>
 
-<div id="pc-total-cobrado" style="font-weight:700;"></div>
+        <div class="kpi-card">
+            <div class="kpi-number" id="pc-total-pagados"></div>
+            <div class="kpi-label">Pagados</div>
+        </div>
 
-<hr style="
-margin:12px 0;
-border:none;
-border-top:1px solid #E5E7EB;
-">
+        <div class="kpi-card">
+            <div class="kpi-number" id="pc-total-cobrado"></div>
+            <div class="kpi-label">Cobrado</div>
+        </div>
 
-<div id="pc-total-pendientes"
-     style="
-        font-weight:600;
-        color:#FF3B30;
-     ">
+        <div class="kpi-card">
+            <div class="kpi-number kpi-danger" id="pc-total-pendientes"></div>
+            <div class="kpi-label">Pendientes</div>
+        </div>
+
+    </div>
+
+</div>
 </div>
 
 </div>
@@ -1672,17 +1735,17 @@ border-bottom:1px solid #F3F4F6;
 </div>
 `)
 .join('');
-            document.getElementById('pc-total-inscriptos').innerHTML =
-    `👥 ${ocupados} inscriptos`;
+            document.getElementById('pc-total-inscriptos').textContent =
+    ocupados;
 
-document.getElementById('pc-total-pagados').innerHTML =
-    `🟢 ${contPagado} pagos confirmados`;
+document.getElementById('pc-total-pagados').textContent =
+    contPagado;
 
-document.getElementById('pc-total-cobrado').innerHTML =
-    `💰 ${PadelUtils.fmtDinero(recaudado)} cobrados`;
+document.getElementById('pc-total-cobrado').textContent =
+    PadelUtils.fmtDinero(recaudado);
 
-document.getElementById('pc-total-pendientes').innerHTML =
-    `🟠 ${contTransferido + contPendiente} pagos sin confirmar`;
+document.getElementById('pc-total-pendientes').textContent =
+    contTransferido + contPendiente;
            document.getElementById('pc-categorias').innerHTML =
     resumenCategorias;
         });

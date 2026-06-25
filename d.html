@@ -631,7 +631,48 @@ margin-bottom:18px;
 </label>
 
 </div>
+<script>
 
+document.addEventListener("change",function(e){
+
+    if(!e.target.closest("#fc-categorias input")) return;
+
+    const checks=[
+        ...document.querySelectorAll("#fc-categorias input")
+    ];
+
+    const todas=
+        checks.find(c=>c.value==="Todas");
+
+    if(e.target.value==="Todas" && e.target.checked){
+
+        checks.forEach(c=>{
+            if(c!==todas){
+                c.checked=false;
+            }
+        });
+
+        return;
+    }
+
+    if(e.target.value!=="Todas" && e.target.checked){
+
+        todas.checked=false;
+
+    }
+
+    const alguna=
+        checks.some(c=>c.checked && c.value!=="Todas");
+
+    if(!alguna){
+
+        todas.checked=true;
+
+    }
+
+});
+
+</script>
 <label class="label-form">Frecuencia</label>
             <select id="fc-tipo" class="input-clean">
     <option value="unica">Una sola vez</option>
@@ -1603,7 +1644,11 @@ document.getElementById('pc-total-pendientes').innerHTML =
     cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
     alias: document.getElementById('fc-alias').value,
     celuOrganizador: document.getElementById('fc-celu').value,
-
+categorias: [
+    ...document.querySelectorAll(
+        "#fc-categorias input:checked"
+    )
+].map(c => c.value),
     siguienteGenerada:
     editandoCanchaId
         ? eventosCache.find(e => e.id === editandoCanchaId)?.siguienteGenerada ?? false
@@ -1750,6 +1795,36 @@ console.log("TIPO EN CACHE:", c.tipo);
         document.getElementById('fc-cupo').value = c.cupo || "";
         document.getElementById('fc-alias').value = c.alias || "";
         document.getElementById('fc-celu').value = c.celuOrganizador || "";
+        // Categorías
+document
+    .querySelectorAll("#fc-categorias input")
+    .forEach(chk => {
+
+        chk.checked = false;
+
+    });
+
+if (c.categorias && c.categorias.length) {
+
+    c.categorias.forEach(cat => {
+
+        const chk = document.querySelector(
+            '#fc-categorias input[value="' + cat + '"]'
+        );
+
+        if (chk) chk.checked = true;
+
+    });
+
+} else {
+
+    const todas = document.querySelector(
+        '#fc-categorias input[value="Todas"]'
+    );
+
+    if (todas) todas.checked = true;
+
+}
         btnFinalizar.style.display =
     c.estado === 'FINALIZADA'
         ? 'none'
@@ -1782,6 +1857,15 @@ document.getElementById('btn-save-form').innerText = 'Crear Cancha';
 
                 document.getElementById('fc-celu').value =
                     cuenta.whatsappOrganizador || '';
+                document
+    .querySelectorAll("#fc-categorias input")
+    .forEach(chk => chk.checked = false);
+
+const todas = document.querySelector(
+    '#fc-categorias input[value="Todas"]'
+);
+
+if (todas) todas.checked = true;
                 btnFinalizar.style.display = "none";
 
             });

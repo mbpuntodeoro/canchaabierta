@@ -245,20 +245,19 @@
 }
         .grupo-card{
 
-    background:#FFFFFF;
-
     border:1px solid #E5E7EB;
 
     border-radius:16px;
 
     overflow:hidden;
 
-    margin-bottom:24px;
+    margin-bottom:16px;
 
-    box-shadow:0 1px 3px rgba(0,0,0,.03);
+    background:white;
 
 }
-       .grupo-header{
+
+.grupo-header{
 
     display:flex;
 
@@ -266,21 +265,55 @@
 
     align-items:center;
 
-    padding:14px 18px;
+    padding:16px 18px;
 
     background:#F7F7F8;
 
-    border-bottom:1px solid #ECECEC;
+    cursor:pointer;
 
-    font-size:11px;
+    user-select:none;
+
+    font-size:12px;
 
     font-weight:700;
 
-    letter-spacing:.12em;
-
     color:#6B7280;
 
+    letter-spacing:.08em;
+
     text-transform:uppercase;
+
+}
+
+.grupo-header:hover{
+
+    background:#F3F4F6;
+
+}
+
+.grupo-body{
+
+    display:none;
+
+    background:white;
+
+}
+
+.grupo-body.open{
+
+    display:block;
+
+}
+
+.chevron{
+
+    transition:.2s;
+
+}
+
+.chevron.open{
+
+    transform:rotate(90deg);
 
 }
 

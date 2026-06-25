@@ -238,63 +238,35 @@
     margin-bottom:22px;
 
 }
-        .kpi-card{
+.res-line{
 
-    background:#F8F8F8;
+    display:flex;
 
-    border-radius:14px;
+    justify-content:space-between;
 
-    padding:16px;
+    align-items:center;
 
-    border:1px solid #ECECEC;
+    padding:10px 0;
 
-}
+    border-bottom:1px solid #F3F4F6;
 
-.kpi-number{
-
-    font-size:26px;
-
-    font-weight:800;
-
-    line-height:1;
-
-    color:#111111;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-
-    white-space:nowrap;
-
-}
-        .kpi-card{
-
-    min-width:0;
+    font-size:14px;
 
 }
 
-.kpi-label{
+.res-line:last-child{
 
-    margin-top:8px;
-
-    font-size:12px;
-
-    font-weight:600;
-
-    color:#6B7280;
-
-    text-transform:uppercase;
-
-    letter-spacing:.05em;
+    border-bottom:none;
 
 }
 
-.kpi-danger{
+.res-line strong{
 
-    color:#FF3B30;
+    font-size:18px;
+
+    font-weight:700;
 
 }
-
     
         .grupo-titulo {
     font-size: 12px;
@@ -557,33 +529,30 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 
 <div class="mj-resumen">
 
-    <div style="
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:12px;
-    ">
-
-        <div class="kpi-card">
-            <div class="kpi-number" id="pc-total-inscriptos"></div>
-            <div class="kpi-label">Inscriptos</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-number" id="pc-total-pagados"></div>
-            <div class="kpi-label">Pagados</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-number" id="pc-total-cobrado"></div>
-            <div class="kpi-label">Cobrado</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-number kpi-danger" id="pc-total-pendientes"></div>
-            <div class="kpi-label">Pendientes</div>
-        </div>
-
+    <div class="res-line">
+        <span>Inscriptos</span>
+        <strong id="pc-total-inscriptos"></strong>
     </div>
+
+    <div class="res-line">
+        <span>Pagados</span>
+        <strong id="pc-total-pagados"></strong>
+    </div>
+
+    <div class="res-line">
+        <span>Cobrado</span>
+        <strong id="pc-total-cobrado"></strong>
+    </div>
+
+    <div class="res-line">
+        <span>Sin confirmar</span>
+        <strong
+            id="pc-total-pendientes"
+            style="color:#FF3B30">
+        </strong>
+    </div>
+
+</div>
 
 
 

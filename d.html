@@ -459,15 +459,36 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
             <button id="btn-edit-gear" style="background:none; border:none; font-size:22px; cursor:pointer;">⚙️</button>
         </div>
         <div class="modal-content" style="padding:16px;">
-            <div id="pc-titulo" style="font-size:14px; font-weight:700; text-transform:uppercase;line-height:1.2;">--</div>
-            <div id="pc-fecha" style="font-size:14px; color:var(--text-sub); margin-bottom:20px;">--</div>
             <div
+    id="pc-titulo"
+    style="
+        font-size:22px;
+        font-weight:700;
+        letter-spacing:-0.6px;
+        line-height:1.15;
+        margin-bottom:6px;
+    ">
+    --
+</div>
+
+<div
+    id="pc-fecha"
+    style="
+        font-size:13px;
+        font-weight:500;
+        color:#6B7280;
+        margin-bottom:4px;
+    ">
+    --
+</div>
+
+<div
     id="pc-lugar"
     style="
         font-size:13px;
+        font-weight:500;
         color:#6B7280;
-        margin-top:-16px;
-        margin-bottom:20px;
+        margin-bottom:24px;
     ">
 </div>
             
@@ -496,15 +517,27 @@ border-top:1px solid #E5E7EB;
 </div>
 
 <div style="
-background:white;
-border:1px solid #E5E7EB;
-border-radius:16px;
-padding:18px;
 margin-bottom:20px;
 ">
 
 
- 
+  <div style="
+font-size:12px;
+font-weight:700;
+letter-spacing:.08em;
+color:#6B7280;
+margin-bottom:12px;
+">
+JUGADORES POR CATEGORÍA
+</div>
+
+<div id="pc-categorias"></div>
+    <div style="
+    height:1px;
+    background:#E5E7EB;
+    margin:20px 0 24px 0;
+"></div>
+    
             <input
     type="text"
     id="buscador-jugador"
@@ -560,18 +593,26 @@ margin-bottom:20px;
     </div>
 
 </details>
-            <div id="lista-jugadores-container"></div>
-    <div style="
-font-size:12px;
-font-weight:700;
-letter-spacing:.08em;
-color:#6B7280;
-margin-bottom:12px;
-">
-JUGADORES POR CATEGORÍA
+
+<div style="
+    height:1px;
+    background:#E5E7EB;
+    margin:20px 0 20px 0;
+"></div>
+
+<div
+    style="
+        font-size:12px;
+        font-weight:700;
+        letter-spacing:.08em;
+        color:#6B7280;
+        margin-bottom:12px;
+    ">
+    JUGADORES
 </div>
 
-<div id="pc-categorias"></div>
+<div id="lista-jugadores-container"></div>
+   
 
 </div>
            <button class="btn-copy-week" id="btn-clonar-semana">

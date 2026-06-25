@@ -363,19 +363,7 @@ padding:18px;
 margin-bottom:20px;
 ">
 
-<div style="
-font-size:12px;
-font-weight:700;
-letter-spacing:.08em;
-color:#6B7280;
-margin-bottom:12px;
-">
-JUGADORES POR CATEGORÍA
-</div>
 
-<div id="pc-categorias"></div>
-
-</div>
  
             <input
     type="text"
@@ -398,7 +386,7 @@ JUGADORES POR CATEGORÍA
             cursor:pointer;
             font-weight:600;
         ">
-        Filtrar jugadores
+        Filtrar por pago
     </summary>
 
     <div
@@ -433,6 +421,19 @@ JUGADORES POR CATEGORÍA
 
 </details>
             <div id="lista-jugadores-container"></div>
+    <div style="
+font-size:12px;
+font-weight:700;
+letter-spacing:.08em;
+color:#6B7280;
+margin-bottom:12px;
+">
+JUGADORES POR CATEGORÍA
+</div>
+
+<div id="pc-categorias"></div>
+
+</div>
            <button class="btn-copy-week" id="btn-clonar-semana">
     Copiar cancha
 </button>
@@ -1174,22 +1175,66 @@ font-weight:400;
 });
 
         
-            if(filtroJugadores === 'todos') {
-
-    let htmlTodos = [
-    ...htmlEs.pagado,
-    ...htmlEs.transferido,
-    ...htmlEs.cancha,
-    ...htmlEs.pendiente
-];
-
-htmlTodos.sort((a,b) =>
-    a.nombre.localeCompare(b.nombre, 'es')
+            htmlEs.pagado.sort((a,b)=>
+    a.nombre.localeCompare(b.nombre,'es')
 );
 
-    document.getElementById('lista-jugadores-container').innerHTML =
-        htmlTodos.map(x => x.html).join('')
-        || '<div style="text-align:center; padding:20px; color:#6B7280;">Nadie anotado aún.</div>';
+htmlEs.transferido.sort((a,b)=>
+    a.nombre.localeCompare(b.nombre,'es')
+);
+
+htmlEs.cancha.sort((a,b)=>
+    a.nombre.localeCompare(b.nombre,'es')
+);
+
+htmlEs.pendiente.sort((a,b)=>
+    a.nombre.localeCompare(b.nombre,'es')
+);
+
+let htmlTodos = '';
+
+if(htmlEs.pagado.length){
+    htmlTodos += `
+        <div class="grupo-titulo">
+            🟢 PAGADOS (${htmlEs.pagado.length})
+        </div>
+    `;
+    htmlTodos += htmlEs.pagado.map(x=>x.html).join('');
+}
+
+if(htmlEs.transferido.length){
+    htmlTodos += `
+        <div class="grupo-titulo">
+            🟠 TRANSFIRIERON (${htmlEs.transferido.length})
+        </div>
+    `;
+    htmlTodos += htmlEs.transferido.map(x=>x.html).join('');
+}
+
+if(htmlEs.cancha.length){
+    htmlTodos += `
+        <div class="grupo-titulo">
+            🔵 PAGA EN CANCHA (${htmlEs.cancha.length})
+        </div>
+    `;
+    htmlTodos += htmlEs.cancha.map(x=>x.html).join('');
+}
+
+if(htmlEs.pendiente.length){
+    htmlTodos += `
+        <div class="grupo-titulo">
+            🔴 PENDIENTES (${htmlEs.pendiente.length})
+        </div>
+    `;
+    htmlTodos += htmlEs.pendiente.map(x=>x.html).join('');
+}
+
+document.getElementById(
+    'lista-jugadores-container'
+).innerHTML =
+    htmlTodos ||
+    '<div style="text-align:center;padding:20px;color:#6B7280;">Nadie anotado aún.</div>';
+ 
 
 } else {
 
@@ -1335,7 +1380,7 @@ document.getElementById('pc-total-cobrado').innerHTML =
     `💰 ${PadelUtils.fmtDinero(recaudado)} cobrados`;
 
 document.getElementById('pc-total-pendientes').innerHTML =
-    `🔴 ${contPendiente} pendientes de pago`;
+    `🟠 ${contTransferido + contPendiente} pagos sin confirmar`;
            document.getElementById('pc-categorias').innerHTML =
     resumenCategorias;
         });

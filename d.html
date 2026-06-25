@@ -1724,7 +1724,7 @@ document.getElementById('pc-total-cobrado').textContent =
     PadelUtils.fmtDinero(recaudado);
 
 document.getElementById('pc-total-pendientes').textContent =
-    contTransferido + contPendiente;
+    ocupados - contPagado;
            document.getElementById('pc-categorias').innerHTML =
     resumenCategorias;
         });

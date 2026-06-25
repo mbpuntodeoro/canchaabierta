@@ -1436,85 +1436,66 @@ htmlEs.pendiente.sort((a,b)=>
 
 let htmlTodos = '';
 
-htmlEs.pagado.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-htmlEs.transferido.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-htmlEs.cancha.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-htmlEs.pendiente.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-
-function crearGrupo(id,titulo,icono,lista){
-
-    if(!lista.length) return '';
-
-    return `
+if(htmlEs.pagado.length){
+    htmlTodos += `
         <div class="grupo-card">
 
-            <div
-                class="grupo-header"
-                onclick="toggleGrupo('${id}')">
-
-                <div>${icono} ${titulo} (${lista.length})</div>
-
-                <div
-                    id="chevron-${id}"
-                    class="chevron">
-
-                    ▶
-
-                </div>
-
+            <div class="grupo-header">
+                🟢 PAGADOS (${htmlEs.pagado.length})
             </div>
 
-            <div
-                id="body-${id}"
-                class="grupo-body">
-
-                ${lista.map(x=>x.html).join('')}
-
-            </div>
+            ${htmlEs.pagado.map(x=>x.html).join('')}
 
         </div>
     `;
+}
+            if(htmlEs.transferido.length){
+    htmlTodos += `
+        <div class="grupo-card">
 
+            <div class="grupo-header">
+                🟠 TRANSFIRIERON (${htmlEs.transferido.length})
+            </div>
+
+            ${htmlEs.transferido.map(x=>x.html).join('')}
+
+        </div>
+    `;
+}
+if(htmlEs.cancha.length){
+    htmlTodos += `
+        <div class="grupo-card">
+
+            <div class="grupo-header">
+                🔵 PAGA EN CANCHA (${htmlEs.cancha.length})
+            </div>
+
+            ${htmlEs.cancha.map(x=>x.html).join('')}
+
+        </div>
+    `;
 }
 
-let htmlTodos='';
+if(htmlEs.pendiente.length){
+    htmlTodos += `
+        <div class="grupo-card">
 
-htmlTodos+=crearGrupo(
-    'pagados',
-    'Pagados',
-    '🟢',
-    htmlEs.pagado
-);
+            <div class="grupo-header">
+                🔴 PENDIENTES (${htmlEs.pendiente.length})
+            </div>
 
-htmlTodos+=crearGrupo(
-    'transferidos',
-    'Transfirieron',
-    '🟠',
-    htmlEs.transferido
-);
+            ${htmlEs.pendiente.map(x=>x.html).join('')}
 
-htmlTodos+=crearGrupo(
-    'cancha',
-    'Paga en cancha',
-    '🔵',
-    htmlEs.cancha
-);
+        </div>
+    `;
+}
 
-htmlTodos+=crearGrupo(
-    'pendientes',
-    'Pendientes',
-    '🔴',
-    htmlEs.pendiente
-);
-
-document.getElementById('lista-jugadores-container').innerHTML =
-htmlTodos ||
-'<div style="text-align:center;padding:20px;color:#6B7280;">Nadie anotado aún.</div>';
- setTimeout(()=>{
-
-    toggleGrupo(grupoAbierto);
-
-},0);
+document.getElementById(
+    'lista-jugadores-container'
+).innerHTML =
+    htmlTodos ||
+    '<div style="text-align:center;padding:20px;color:#6B7280;">Nadie anotado aún.</div>';
+ 
 
 } else {
 
@@ -1817,57 +1798,6 @@ ${celular || ''}
     }
 
     function cerrarMenuOpciones() { document.getElementById('bs-menu').classList.remove('active'); }
-    let grupoAbierto = 'pendientes';
-
-function toggleGrupo(id){
-
-    const grupos = [
-        'pagados',
-        'transferidos',
-        'cancha',
-        'pendientes'
-    ];
-
-    grupos.forEach(g=>{
-
-        const body =
-            document.getElementById('body-'+g);
-
-        const chevron =
-            document.getElementById('chevron-'+g);
-
-        if(!body) return;
-
-        if(g===id){
-
-            const abrir =
-                !body.classList.contains('open');
-
-            body.classList.toggle(
-                'open',
-                abrir
-            );
-
-            chevron.classList.toggle(
-                'open',
-                abrir
-            );
-
-            if(abrir){
-                grupoAbierto=id;
-            }
-
-        }else{
-
-            body.classList.remove('open');
-
-            chevron.classList.remove('open');
-
-        }
-
-    });
-
-}
     function cerrarPanelCancha() { if(activeEventRef) activeEventRef.off(); document.getElementById('view-panel-cancha').classList.remove('active'); }
 
    function abrirFormularioCancha(id) {

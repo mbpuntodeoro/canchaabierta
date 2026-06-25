@@ -314,6 +314,49 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     color: white;
     border-color: var(--accent);
 }
+        .cat-chip{
+    cursor:pointer;
+}
+
+.cat-chip input{
+    display:none;
+}
+
+.cat-chip span{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    height:34px;
+
+    padding:0 14px;
+
+    border-radius:999px;
+
+    border:1px solid #D1D5DB;
+
+    background:white;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:#374151;
+
+    transition:.18s;
+
+}
+
+.cat-chip input:checked + span{
+
+    background:#111111;
+
+    color:white;
+
+    border-color:#111111;
+
+}
     </style>
 </head>
 <body>
@@ -525,9 +568,71 @@ JUGADORES POR CATEGORÍA
             </div>
             <label class="label-form">Alias CBU (Recibir Pagos)</label>
             <input type="text" id="fc-alias" class="input-clean" placeholder="Alias de MercadoPago o Banco">
-            <label class="label-form">WhatsApp del Organizador</label>
-            <input type="tel" id="fc-celu" class="input-clean" placeholder="Ej: 5491166463800">
-            <label class="label-form">Frecuencia</label>
+           <label class="label-form">WhatsApp del Organizador</label>
+<input type="tel" id="fc-celu" class="input-clean" placeholder="Ej: 5491166463800">
+
+<label class="label-form">Categorías</label>
+
+<div id="fc-categorias" style="
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-bottom:18px;
+">
+
+<label class="cat-chip">
+<input type="checkbox" value="Todas" checked>
+<span>Todas</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="Principiante">
+<span>Principiante</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="8va">
+<span>8va</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="7ma">
+<span>7ma</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="6ta">
+<span>6ta</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="5ta">
+<span>5ta</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="4ta">
+<span>4ta</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="3ra">
+<span>3ra</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="2da">
+<span>2da</span>
+</label>
+
+<label class="cat-chip">
+<input type="checkbox" value="1ra">
+<span>1ra</span>
+</label>
+
+</div>
+
+<label class="label-form">Frecuencia</label>
             <select id="fc-tipo" class="input-clean">
     <option value="unica">Una sola vez</option>
     <option value="semanal">Todas las semanas</option>

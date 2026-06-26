@@ -352,7 +352,39 @@
 }
 
         .label-form { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-clean { width: 100%; height: 48px; padding: 10px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); outline: none; margin-bottom: 16px; font-family: inherit;}
+        .input-clean{
+
+width:100%;
+
+height:46px;
+
+padding:0 16px;
+
+font-size:14px;
+
+font-family:inherit;
+
+border:none;
+
+border-radius:14px;
+
+background:#F3F4F6;
+
+outline:none;
+
+margin-bottom:16px;
+
+transition:.15s;
+
+}
+
+.input-clean:focus{
+
+background:white;
+
+box-shadow:0 0 0 2px rgba(0,122,255,.15);
+
+}
         
         .btn-black-modal { width: 100%; height: 50px; background: #111; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 10px; cursor: pointer;}
         .btn-black-modal:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -496,11 +528,11 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
             <div
     id="pc-titulo"
     style="
-        font-size:22px;
-        font-weight:700;
-        letter-spacing:-0.6px;
-        line-height:1.15;
-        margin-bottom:6px;
+       font-size:24px;
+font-weight:800;
+letter-spacing:-1px;
+line-height:1.08;
+margin-bottom:8px;
     ">
     --
 </div>
@@ -508,7 +540,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 <div
     id="pc-fecha"
     style="
-        font-size:13px;
+        font-size:14px;
         font-weight:500;
         color:#6B7280;
         margin-bottom:4px;
@@ -519,7 +551,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
 <div
     id="pc-lugar"
     style="
-        font-size:13px;
+        font-size:14px;
         font-weight:500;
         color:#6B7280;
         margin-bottom:24px;
@@ -564,10 +596,10 @@ margin-bottom:20px;
 
 
   <div style="
-font-size:12px;
+font-size:11px;
 font-weight:700;
-letter-spacing:.08em;
-color:#6B7280;
+letter-spacing:.12em;
+color:#9CA3AF;
 margin-bottom:12px;
 ">
 JUGADORES POR CATEGORÍA
@@ -584,7 +616,7 @@ JUGADORES POR CATEGORÍA
     type="text"
     id="buscador-jugador"
     class="input-clean"
-    placeholder="🔍 Buscar jugador..."
+    placeholder="Buscar jugador"
     oninput="if(panelCanchaId) abrirCancha(panelCanchaId)"
     style="margin-bottom:12px;">
          <details
@@ -644,10 +676,10 @@ JUGADORES POR CATEGORÍA
 
 <div
     style="
-        font-size:12px;
-        font-weight:700;
-        letter-spacing:.08em;
-        color:#6B7280;
+        font-size:11px;
+font-weight:700;
+letter-spacing:.12em;
+color:#9CA3AF;
         margin-bottom:12px;
     ">
     JUGADORES
@@ -1695,17 +1727,21 @@ document.querySelector(
 ).innerText = `Todos (${contPagado + contTransferido + contCancha + contPendiente})`;
             const resumenCategorias =
 Object.entries(categorias)
-.sort((a,b) => b[1] - a[1])
-.map(([cat,cant]) => `
-<div style="
-display:flex;
-justify-content:space-between;
-padding:8px 0;
-border-bottom:1px solid #F3F4F6;
+.sort((a,b)=>b[1]-a[1])
+.map(([cat,cant])=>`
+<span style="
+display:inline-flex;
+align-items:center;
+padding:6px 12px;
+margin:0 8px 8px 0;
+background:#F3F4F6;
+border-radius:999px;
+font-size:12px;
+font-weight:600;
+color:#374151;
 ">
-    <span>${cat}</span>
-    <strong>${cant}</strong>
-</div>
+${cat} · ${cant}
+</span>
 `)
 .join('');
             document.getElementById('pc-total-inscriptos').textContent =

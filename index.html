@@ -132,12 +132,24 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
         .s-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; letter-spacing: -0.5px; }
         .s-subtitle { font-size: 15px; font-weight: 500; color: var(--text-sub); margin-bottom: 32px; }
         
-        .pay-block {
-            background: #F3F4F6; border-radius: 16px; padding: 24px; margin-bottom: 16px; text-align: center;
-        }
+        .pay-block{
+    background:#FFFFFF;
+    border:1px solid #E5E7EB;
+    border-radius:18px;
+    padding:28px 24px;
+    margin-bottom:28px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.03);
+}
         .p-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
-        .p-monto { font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; margin-bottom: 24px; }
-        .p-alias { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; word-break: break-all; }
+        .p-monto { font-size: 40px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; margin-bottom: 24px; }
+        .p-alias{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:.3px;
+    margin:14px 0 18px;
+    color:#111;
+}
         
         .btn-outline {
             background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;
@@ -257,9 +269,38 @@ Conocé Cancher
             </div>
 
             <div id="step-4-success" style="display: none; text-align: center; animation: fadeSlide 0.3s ease;">
-                <div class="success-icon">✔️</div>
-                <h2 class="s-title">Estás adentro</h2>
-                <p class="s-subtitle">Reservaste tu lugar</p>
+              <div style="
+    width:72px;
+    height:72px;
+    border-radius:50%;
+    background:#16A34A;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:36px;
+    font-weight:700;
+    margin:0 auto 18px auto;
+">
+✓
+</div>
+
+<h2 class="s-title" style="text-transform:uppercase;">
+YA ESTÁS ANOTADO
+</h2>
+
+<p class="s-subtitle" style="
+max-width:320px;
+margin:12px auto 32px auto;
+line-height:1.5;
+font-size:16px;
+">
+Listo.<br>
+
+El organizador ya tiene tu lugar reservado.<br>
+
+<strong>Solo falta confirmar el pago.</strong>
+</p>
 
                 <div class="pay-block">
                     <div class="p-label">Total a pagar</div>
@@ -269,12 +310,12 @@ Conocé Cancher
                     <button class="btn-outline" onclick="copiarAlias(this)">Copiar alias</button>
                 </div>
 
-                <p class="s-microcopy">Enviá el comprobante para validar la reserva</p>
+                <p class="s-microcopy">Cuando hagas la transferencia, tocá el botón de abajo para avisarle al organizador.</p>
 
-                <button class="btn-black" onclick="yaTransferi()">Ya transferí</button>
+                <button class="btn-black" onclick="yaTransferi()">Ya hice la transferencia</button>
 
                 <div class="links-secundarios">
-                    <a class="link-sec" onclick="pagarEnClub()">Prefiero pagar en el club</a>
+                    <a class="link-sec" onclick="pagarEnClub()">Voy a pagar en el club</a>
                     <a class="link-sec" onclick="sumarOtroJugador()">Sumar otro jugador</a>
                     <a class="link-sec" onclick="cerrarInscripcion()">Ver más canchas</a>
                 </div>

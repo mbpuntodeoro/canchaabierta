@@ -34,12 +34,12 @@
             background: var(--bg-white); padding: 16px;
             position: sticky; top: 0; z-index: 50;
         }
-        .header-brand { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        .header-brand { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
         .header-org { font-size: 13px; font-weight: 400; color: var(--text-sub); margin-top: 2px; }
         
         .badge-fundador {
-            display: inline-block; background: #FFFBEB; color: #92400E; font-size: 10px; font-weight: 700;
-            padding: 4px 8px; border-radius: 6px; border: 1px solid #FDE68A; margin-top: 8px;
+            display: inline-block; background: #FFFBEB; color: #92400E; font-size: 9px; font-weight: 700;
+            padding: 4px 8px; border-radius: 6px; border: 1px solid #FDE68A; margin-top: 4px;
             letter-spacing: 0.3px; text-transform: uppercase;
         }
 
@@ -55,7 +55,7 @@
             display: block; background: var(--bg-white); transition: background 0.1s ease;
         }
         .court-item:active { background: #F9FAFB; }
-        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; line-height: 1.2; }
         .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
         .c-line-3 { font-size: 13px; color: var(--text-sub); }
         .c-cat-bold { font-weight: 600; color: var(--text-main); }
@@ -162,8 +162,21 @@
 <body>
 
     <header class="header-global">
-        <div class="header-brand">CANCHER</div>
-        <div class="header-org" id="t-org-name">Cargando...</div>
+        <div class="header-brand" id="t-org-name">
+    Cargando...
+</div>
+
+<div class="header-org">
+    Canchas Abiertas
+</div>
+
+<div style="
+    font-size:12px;
+    color:#6B7280;
+    margin-top:4px;
+    font-weight:500;">
+    con Cancher
+</div>
         <div id="badge-fundador-container" style="display: none;">
             <span class="badge-fundador">⭐ Top 10 · Miembro Fundador</span>
         </div>
@@ -300,7 +313,8 @@
     function cargarBase() {
         db.ref(`facturacion/${orgId}/cuenta`).once('value', snap => {
             const cuenta = snap.val() || {};
-            document.getElementById('t-org-name').innerText = `Organizado por ${cuenta.nombreOrg || "Club"}`;
+            document.getElementById('t-org-name').innerText =
+cuenta.nombreOrg || "Club";
             if (cuenta.esFundador && !cuenta.archivado) {
                 document.getElementById('badge-fundador-container').style.display = 'block';
             }

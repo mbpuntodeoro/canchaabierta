@@ -741,6 +741,17 @@ color:#9CA3AF;
            <label class="label-form">WhatsApp del Organizador</label>
 <input type="tel" id="fc-celu" class="input-clean" placeholder="Ej: 5491166463800">
 
+            <label class="label-form">Tipo de cancha</label>
+
+<select id="fc-genero" class="input-clean">
+
+<option value="Mixta">Mixta</option>
+
+<option value="Caballeros">Caballeros</option>
+
+<option value="Damas">Damas</option>
+
+</select>
 <label class="label-form">Categorías</label>
 
 <div id="fc-categorias" style="
@@ -1822,6 +1833,7 @@ document.getElementById('pc-total-pendientes').textContent =
     cupo: parseInt(document.getElementById('fc-cupo').value) || 8,
     alias: document.getElementById('fc-alias').value,
     celuOrganizador: document.getElementById('fc-celu').value,
+       genero: document.getElementById("fc-genero").value,
 categorias: [
     ...document.querySelectorAll(
         "#fc-categorias input:checked"
@@ -1973,6 +1985,8 @@ console.log("TIPO EN CACHE:", c.tipo);
         document.getElementById('fc-cupo').value = c.cupo || "";
         document.getElementById('fc-alias').value = c.alias || "";
         document.getElementById('fc-celu').value = c.celuOrganizador || "";
+        document.getElementById('fc-genero').value =
+    c.genero || "Mixta";
         // Categorías
 document
     .querySelectorAll("#fc-categorias input")
@@ -2035,6 +2049,8 @@ document.getElementById('btn-save-form').innerText = 'Crear Cancha';
 
                 document.getElementById('fc-celu').value =
                     cuenta.whatsappOrganizador || '';
+                document.getElementById('fc-genero').value =
+    "Mixta";
                 document
     .querySelectorAll("#fc-categorias input")
     .forEach(chk => chk.checked = false);

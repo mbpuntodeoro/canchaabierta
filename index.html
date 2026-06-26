@@ -489,6 +489,15 @@ Array.isArray(d.categorias)
     const nom = document.getElementById('ins-nombre').value.trim();
     const ape = document.getElementById('ins-apellido').value.trim();
     const celu = document.getElementById('ins-celu').value.trim();
+        const celuNormalizado = celu.replace(/\D/g, '');
+
+if (
+    celuNormalizado.length !== 10 &&
+    celuNormalizado.length !== 12
+) {
+    alert("Ingresá un WhatsApp válido.");
+    return;
+}
     const categoria = document.getElementById('ins-categoria').value;
 
     const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
@@ -510,6 +519,16 @@ Array.isArray(d.categorias)
         const n = extraNombres[i].value.trim();
         const a = extraApellidos[i].value.trim();
         const c = extraCelulares[i].value.trim();
+        const cNormalizado = c.replace(/\D/g, '');
+
+if (
+    c &&
+    cNormalizado.length !== 10 &&
+    cNormalizado.length !== 12
+) {
+    alert(`El WhatsApp del Jugador ${i + 2} no es válido.`);
+    return;
+}
         const cat = extraCategorias[i].value;
 
         if (!n || !a || !cat) {
@@ -521,7 +540,7 @@ Array.isArray(d.categorias)
             nombre: n,
             apellido: a,
             nombreCompleto: `${n} ${a}`.trim(),
-            celular: c,
+           celular: cNormalizado,
             categoria: cat,
             cantidad: 1,
             estado: 'pendiente',
@@ -587,7 +606,7 @@ reservaIdCreada = reservaId;
     nombre: nom,
     apellido: ape,
     nombreCompleto: nombreCompleto,
-    celular: celu,
+    celular: celuNormalizado,
     categoria: categoria,
     cantidad: 1,
     estado: 'pendiente',
@@ -658,7 +677,7 @@ db.ref('inscripcionesHistoricas').push({
     reservaId: reservaIdCreada,
     nombre: nom,
     apellido: ape,
-    celular: celu,
+    celular: celuNormalizado,
     categoria: categoria,
     titularReserva: true,
     fechaAlta: fechaAlta

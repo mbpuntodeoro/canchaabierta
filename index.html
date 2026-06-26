@@ -499,6 +499,12 @@ if (
     return;
 }
     const categoria = document.getElementById('ins-categoria').value;
+        const categoriasPermitidas = currentEventData.categorias || [];
+
+if (!categoriasPermitidas.includes(categoria)) {
+    alert(`Esta cancha no admite jugadores de ${categoria}.`);
+    return;
+}
 
     const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
 
@@ -530,6 +536,10 @@ if (
     return;
 }
         const cat = extraCategorias[i].value;
+        if (!categoriasPermitidas.includes(cat)) {
+    alert(`El Jugador ${i + 2} eligió una categoría que esta cancha no admite.`);
+    return;
+}
 
         if (!n || !a || !cat) {
     alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);

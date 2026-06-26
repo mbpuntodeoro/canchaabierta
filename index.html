@@ -397,7 +397,7 @@ Array.isArray(d.categorias)
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
         if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;
-        document.getElementById('ins-org').innerText = currentEventData.nombreOrganizador || 'Organizador';
+    
         document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
         
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar';

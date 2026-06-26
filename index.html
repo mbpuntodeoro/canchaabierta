@@ -154,9 +154,24 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
         .btn-outline {
             background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px;
             padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-main);
-            cursor: pointer; transition: 0.1s ease;
+            cursor: pointer; transition:
+    background .25s,
+    border-color .25s,
+    color .25s,
+    transform .15s;
         }
         .btn-outline:active { background: #F9FAFB; transform: scale(0.98); }
+        .btn-outline.success{
+
+    background:#ECFDF5;
+
+    border-color:#22C55E;
+
+    color:#15803D;
+
+    transform:scale(1.03);
+
+}
 
         .s-microcopy { font-size: 13px; color: var(--text-sub); font-weight: 500; margin-bottom: 24px; text-align: center; }
 
@@ -307,7 +322,7 @@ El organizador ya tiene tu lugar reservado.<br>
                     <div class="p-monto" id="conf-total">$0</div>
                     <div class="p-label">Alias / CBU</div>
                     <div class="p-alias" id="conf-alias">--</div>
-                    <button class="btn-outline" onclick="copiarAlias(this)">Copiar alias</button>
+                    <button class="btn-outline" onclick="copiarAlias(this)">📋 Copiar alias</button>
                 </div>
 
                 <p class="s-microcopy">Cuando hagas la transferencia, tocá el botón de abajo para avisarle al organizador.</p>
@@ -836,13 +851,31 @@ personasExtra.forEach(function(p) {
     });
 }
 
-    function copiarAlias(btn) {
-        navigator.clipboard.writeText(document.getElementById('conf-alias').innerText).then(() => {
-            const old = btn.innerText; 
-            btn.innerText = "¡Copiado!";
-            setTimeout(() => btn.innerText = old, 2000);
+    function copiarAlias(btn){
+
+    navigator.clipboard
+        .writeText(
+            document.getElementById("conf-alias").innerText
+        )
+        .then(()=>{
+
+            const textoOriginal=btn.innerHTML;
+
+            btn.classList.add("success");
+
+            btn.innerHTML="✓ Alias copiado";
+
+            setTimeout(()=>{
+
+                btn.classList.remove("success");
+
+                btn.innerHTML=textoOriginal;
+
+            },1500);
+
         });
-    }
+
+}
 
 function yaTransferi() {
 

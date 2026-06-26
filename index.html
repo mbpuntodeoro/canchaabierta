@@ -584,7 +584,7 @@ if (
             const yaExiste = arr.some(
                 p =>
                     p &&
-                    p.celular === celu &&
+                    p.celular === celuNormalizado &&
                     (
                         p.nombreCompleto?.toLowerCase() === nombreCompleto.toLowerCase() ||
                         p.nombre?.toLowerCase() === nombreCompleto.toLowerCase()
@@ -715,7 +715,7 @@ personasExtra.forEach(function(p) {
     'padelapp_cancha_' + currentEventData.id,
     JSON.stringify({
         nombre: nombreCompleto,
-        celular: celu,
+        celular: celuNormalizado,
         cantidad: cant
     })
 );

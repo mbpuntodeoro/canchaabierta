@@ -316,14 +316,57 @@ El organizador ya tiene tu lugar reservado.<br>
 
                 <div class="links-secundarios">
                     <a class="link-sec" onclick="pagarEnClub()">Voy a pagar en el club</a>
-                    <a class="link-sec" onclick="sumarOtroJugador()">Sumar otro jugador</a>
-                    <a class="link-sec" onclick="cerrarInscripcion()">Ver más canchas</a>
+              <div style="
+margin-top:26px;
+padding-top:26px;
+border-top:1px solid #E5E7EB;
+">
+
+<div style="
+font-size:14px;
+font-weight:600;
+color:#374151;
+margin-bottom:14px;
+line-height:1.5;
+">
+
+¿Conocés a alguien que quiera jugar?
+
+<br>
+
+Compartile esta cancha para que reserve su lugar.
+
+</div>
+
+<button
+class="btn-outline"
+style="width:100%;height:46px;"
+onclick="compartirCancha()">
+
+Compartir esta cancha
+
+</button>
+
+</div>
                 </div>
             </div>
 
-            <div class="branding-footer">
-                Organizado con <a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
-            </div>
+            <div style="
+font-size:13px;
+line-height:1.6;
+">
+
+Organizado con
+
+<br>
+
+<a href="https://wa.me/5491166463800?text=Hola%20Cancher!%20Me%20interesa%20usar%20el%20sistema%20para%20mis%20canchas." target="_blank" class="link-cancher">Cancher</a>
+            <br><br>
+
+La forma más simple de organizar
+canchas abiertas.
+
+</div>
 
         </div>
     </div>
@@ -922,6 +965,27 @@ function yaTransferi() {
         document.querySelector('.view-inscripcion').scrollTop = 0;
     }
 
+    function compartirCancha(){
+
+    const link=window.location.href;
+
+    if(navigator.share){
+
+        navigator.share({
+            title:"Cancha Abierta",
+            text:"¡Sumate a esta cancha!",
+            url:link
+        });
+
+    }else{
+
+        navigator.clipboard.writeText(link);
+
+        alert("Se copió el enlace para compartir.");
+
+    }
+
+}
     function formatearDiaHeader(fechaStr) {
         const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
         const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];

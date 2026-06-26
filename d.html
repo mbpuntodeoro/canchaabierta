@@ -687,11 +687,12 @@ JUGADORES POR CATEGORÍA
 "></div>
 
 <div
+    id="titulo-lista-jugadores"
     style="
         font-size:11px;
-font-weight:700;
-letter-spacing:.12em;
-color:#9CA3AF;
+        font-weight:700;
+        letter-spacing:.12em;
+        color:#9CA3AF;
         margin-bottom:12px;
     ">
     JUGADORES
@@ -1757,6 +1758,36 @@ document.querySelector(
 document.querySelector(
     "button[onclick=\"cambiarFiltro('todos', this)\"]"
 ).innerText = `Todos (${contPagado + contTransferido + contCancha + contPendiente})`;
+            const tituloLista =
+    document.getElementById("titulo-lista-jugadores");
+
+switch (filtroJugadores) {
+
+    case "pagado":
+        tituloLista.innerHTML =
+            `🟢 PAGADOS (${contPagado})`;
+        break;
+
+    case "dice-que-transfirio":
+        tituloLista.innerHTML =
+            `🟠 TRANSFIRIERON (${contTransferido})`;
+        break;
+
+    case "paga-en-la-cancha":
+        tituloLista.innerHTML =
+            `🔵 PAGA EN CANCHA (${contCancha})`;
+        break;
+
+    case "pendiente":
+        tituloLista.innerHTML =
+            `🔴 PENDIENTES (${contPendiente})`;
+        break;
+
+    default:
+        tituloLista.innerHTML =
+            `JUGADORES (${ocupados})`;
+
+}
             const resumenCategorias =
 Object.entries(categorias)
 .sort((a,b)=>b[1]-a[1])
@@ -1959,7 +1990,7 @@ ${celular || ''}
     if (id) {
 document.getElementById('btn-save-form').innerText = 'Guardar Cambios';
     var c = eventosCache.find(e => e.id === id);
-console.log("TIPO EN CACHE:", c.tipo);
+
     document.getElementById('fc-tipo').value =
         c.tipo || 'unica';
 

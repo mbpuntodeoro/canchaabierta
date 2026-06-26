@@ -372,35 +372,41 @@
         .label-form { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-clean{
 
-width:100%;
+ width:100%;
 
-height:46px;
+    height:48px;
 
-padding:0 16px;
+    padding:0 16px;
 
-font-size:14px;
+    font-size:14px;
 
-font-family:inherit;
+    font-family:inherit;
 
-border:none;
+    color:#111827;
 
-border-radius:14px;
+    background:#F9FAFB;
 
-background:#F3F4F6;
+    border:1px solid #E5E7EB;
 
-outline:none;
+    border-radius:14px;
 
-margin-bottom:16px;
+    outline:none;
 
-transition:.15s;
+    transition:all .18s ease;
+
+    box-sizing:border-box;
+
+    margin-bottom:16px;
 
 }
 
 .input-clean:focus{
 
-background:white;
+    background:white;
 
-box-shadow:0 0 0 2px rgba(0,122,255,.15);
+    border-color:#007AFF;
+
+    box-shadow:0 0 0 3px rgba(0,122,255,.12);
 
 }
         
@@ -631,7 +637,7 @@ JUGADORES POR CATEGORÍA
 "></div>
     
             <input
-    type="text"
+    type="search"
     id="buscador-jugador"
     class="input-clean"
     placeholder="Buscar jugador"

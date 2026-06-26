@@ -343,7 +343,21 @@
                             <div class="c-line-1"><span>${tituloCancha.toUpperCase()}</span><span>${PadelUtils.fmtDinero(d.valor)}</span></div>
                             <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
                             ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
-                            <div class="c-line-3">🎾 Categoría: <span class="c-cat-bold">${d.categorias || 'Todas'}</span></div>
+                            <div class="c-line-3">
+
+🎾
+
+<span class="c-cat-bold">
+
+${
+Array.isArray(d.categorias)
+? d.categorias.join(" • ")
+: (d.categorias || "Todas")
+}
+
+</span>
+
+</div>
                         </div>`;
                 }
             });

@@ -229,7 +229,7 @@ Conocé Cancher
 
                 <div class="input-group">
                     <label class="input-label">Tu WhatsApp</label>
-                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: 5491122334455">
+                    <input type="tel" inputmode="numeric" pattern="[0-9]*" id="ins-celu" class="input-clean" placeholder="Ej: +54 9 1122334455">
                 </div>
 <div class="input-group">
     <label class="input-label">Categoría</label>
@@ -505,9 +505,12 @@ function capitalizar(texto) {
         const celuNormalizado = celu.replace(/\D/g, '');
 
 if (
-    ![10,12,13].includes(celuNormalizado.length)
+    celuNormalizado.length < 8 ||
+    celuNormalizado.length > 15
 ) {
-    alert("Ingresá un WhatsApp válido.");
+    alert(
+        "Ingresá un número de WhatsApp válido.\n\nSi sos del exterior, agregá el código de país."
+    );
     return;
 }
     const categoria = document.getElementById('ins-categoria').value;

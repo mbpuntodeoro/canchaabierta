@@ -234,17 +234,7 @@ Conocé Cancher
 <div class="input-group">
     <label class="input-label">Categoría</label>
     <select id="ins-categoria" class="input-clean">
-        <option value="">Seleccionar categoría</option>
-        <option value="Principiante">Principiante</option>
-        <option value="8va">8va</option>
-        <option value="7ma">7ma</option>
-        <option value="6ta">6ta</option>
-        <option value="5ta">5ta</option>
-        <option value="4ta">4ta</option>
-        <option value="3ra">3ra</option>
-        <option value="2da">2da</option>
-        <option value="1ra">1ra</option>
-    </select>
+</select>
 </div>
                 <div class="input-group" style="margin-top: 24px;">
                     <label class="input-label" style="color: var(--text-sub);">¿A cuántos jugadores anotás?</label>
@@ -370,9 +360,10 @@ cuenta.nombreOrg || "Club";
 <span class="c-cat-bold">
 
 ${
-Array.isArray(d.categorias)
-? d.categorias.join(" • ")
-: (d.categorias || "Todas")
+[
+    d.genero,
+    ...(Array.isArray(d.categorias) ? d.categorias : [])
+].filter(Boolean).join(" • ")
 }
 
 </span>
@@ -401,6 +392,15 @@ Array.isArray(d.categorias)
         document.getElementById('ins-price').innerText = PadelUtils.fmtDinero(currentEventData.valor);
         
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar';
+        const selectCategoria = document.getElementById('ins-categoria');
+
+selectCategoria.innerHTML =
+    '<option value="">Seleccionar categoría</option>';
+
+(currentEventData.categorias || []).forEach(cat => {
+    selectCategoria.innerHTML +=
+        `<option value="${cat}">${cat}</option>`;
+});
 
         document.getElementById('ins-lugares').value = "1";
         actualizarTotal();
@@ -465,29 +465,42 @@ Array.isArray(d.categorias)
             <div class="input-group">
                 <label class="input-label">Categoría</label>
                 <select class="input-clean extra-categoria">
-                    <option value="">Seleccionar categoría</option>
-                    <option value="Principiante">Principiante</option>
-                    <option value="8va">8va</option>
-                    <option value="7ma">7ma</option>
-                    <option value="6ta">6ta</option>
-                    <option value="5ta">5ta</option>
-                    <option value="4ta">4ta</option>
-                    <option value="3ra">3ra</option>
-                    <option value="2da">2da</option>
-                    <option value="1ra">1ra</option>
-                </select>
+</select>
             </div>
         `;
 
         container.appendChild(div);
+        const sel = div.querySelector('.extra-categoria');
+
+sel.innerHTML =
+    '<option value="">Seleccionar categoría</option>';
+
+(currentEventData.categorias || []).forEach(cat => {
+    sel.innerHTML +=
+        `<option value="${cat}">${cat}</option>`;
+});
     }
 }
-
+function capitalizar(texto) {
+    return texto
+        .toLowerCase()
+        .split(' ')
+        .filter(Boolean)
+        .map(p =>
+            p.charAt(0).toUpperCase() +
+            p.slice(1)
+        )
+        .join(' ');
+}
     // --- ACÁ ESTÁ EL CAMBIO CRÍTICO DE LA TRANSACCIÓN ---
     function avanzarPaso4() {
 
-    const nom = document.getElementById('ins-nombre').value.trim();
-    const ape = document.getElementById('ins-apellido').value.trim();
+    const nom = capitalizar(
+    document.getElementById('ins-nombre').value.trim()
+);
+    const ape = capitalizar(
+    document.getElementById('ins-apellido').value.trim()
+);
     const celu = document.getElementById('ins-celu').value.trim();
         const celuNormalizado = celu.replace(/\D/g, '');
 
@@ -522,8 +535,12 @@ if (!categoriasPermitidas.includes(categoria)) {
 
     for (let i = 0; i < extraNombres.length; i++) {
 
-        const n = extraNombres[i].value.trim();
-        const a = extraApellidos[i].value.trim();
+        const n = capitalizar(
+    extraNombres[i].value.trim()
+);
+        const a = capitalizar(
+    extraApellidos[i].value.trim()
+);
         const c = extraCelulares[i].value.trim();
         const cNormalizado = c.replace(/\D/g, '');
 
@@ -680,7 +697,7 @@ reservaIdCreada = reservaId;
         } else {
 const fechaAlta = Date.now();
 
-console.log("INTENTANDO GUARDAR HISTORICO");
+
             // Titular
 db.ref('inscripcionesHistoricas').push({
     eventoId: currentEventData.id,
@@ -708,7 +725,7 @@ personasExtra.forEach(function(p) {
     });
 
 });
-            console.log("HISTORICO ENVIADO");
+            
             const nombreCompleto = `${nom} ${ape}`.trim();
 
           localStorage.setItem(
@@ -749,7 +766,7 @@ function yaTransferi() {
         localStorage.getItem('padelapp_cancha_' + currentEventData.id)
     );
 
-    console.log("LOCAL", local);
+    
 
     if(!local) return;
 
@@ -757,7 +774,7 @@ function yaTransferi() {
 
         let list = s.val() || {};
 
-        console.log("LISTA", list);
+        
 
         let reservaId = null;
 
@@ -769,7 +786,7 @@ function yaTransferi() {
 
         });
 
-        console.log("RESERVA ENCONTRADA", reservaId);
+        
 
         let updates = {};
 
@@ -795,7 +812,7 @@ function yaTransferi() {
 
         }
 
-        console.log("UPDATES", updates);
+        
 
         db.ref(`eventos/${currentEventData.id}/inscriptos`)
             .update(updates);

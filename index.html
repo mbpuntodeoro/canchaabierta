@@ -505,8 +505,7 @@ function capitalizar(texto) {
         const celuNormalizado = celu.replace(/\D/g, '');
 
 if (
-    celuNormalizado.length !== 10 &&
-    celuNormalizado.length !== 12
+    ![10,12,13].includes(celuNormalizado.length)
 ) {
     alert("Ingresá un WhatsApp válido.");
     return;

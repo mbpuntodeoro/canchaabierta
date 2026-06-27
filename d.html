@@ -50,10 +50,51 @@
 
     display: none;
 }
-        .dsc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;}
-        .dsc-title { font-size: 15px; font-weight: 700; }
-        .dsc-badge { background: rgba(255,255,255,0.15); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;}
-        .dsc-subtitle { font-size: 13px; color: #A1A1AA; margin-bottom: 16px; font-weight: 500;}
+        .dsc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.dsc-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 5px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.dsc-title.trial {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.dsc-title.activo {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.dsc-title.vencido {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.dsc-badge {
+    display: none;
+}
+
+.dsc-subtitle {
+    font-size: 13px;
+    color: #E5E7EB;
+    font-weight: 600;
+    text-align: right;
+    margin-bottom: 0;
+    line-height: 1.25;
+}
         .dsc-impact-box { border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); border-radius: 12px; padding: 16px; }
         .dsc-metrics { display: flex; justify-content: space-between; gap: 10px; }
         .dsc-metric-label { font-size: 10px; color: #A1A1AA; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;}
@@ -493,10 +534,10 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     <main class="app-container">
         <div class="status-card" id="main-status-card">
             <div class="dsc-header">
-                <div class="dsc-title" id="sc-title">Suscripción</div>
-                <div class="dsc-badge" id="sc-badge">TRIAL</div>
+                <div class="dsc-title trial" id="sc-title">PRUEBA GRATUITA</div>
+<div class="dsc-badge" id="sc-badge"></div>
             </div>
-            <div class="dsc-subtitle" id="sc-subtitle">⏳ Analizando...</div>
+            <div class="dsc-subtitle" id="sc-subtitle">Calculando...</div>
             
             <div class="dsc-impact-box">
                 <div class="dsc-metrics">
@@ -515,7 +556,7 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
                 </div>
             </div>
             
-            <button onclick="abrirViewMovimientos()" style="width:100%; margin-top:15px; padding:10px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer;">📋 Ver Movimientos</button>
+        
         </div>
 
         <div id="loading-init" style="text-align: center; padding: 40px; color: var(--text-sub);">Buscando tus canchas...</div>
@@ -909,6 +950,125 @@ document.addEventListener("change",function(e){
     var editandoCanchaId = null;
     var panelCanchaId = null;
     var filtroJugadores = 'todos';
+    function calcularDiasHasta(fecha) {
+
+    if (!fecha) return null;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const destino = new Date(fecha);
+    destino.setHours(0, 0, 0, 0);
+
+    if (isNaN(destino.getTime())) return null;
+
+    return Math.ceil(
+        (destino - hoy) / (1000 * 60 * 60 * 24)
+    );
+}
+
+function textoDias(cantidad) {
+
+    if (cantidad === null || cantidad === undefined) {
+        return '';
+    }
+
+    if (cantidad <= 0) {
+        return 'hoy';
+    }
+
+    if (cantidad === 1) {
+        return '1 día';
+    }
+
+    return cantidad + ' días';
+}
+
+function obtenerProximaRenovacion(cuenta, info) {
+
+    const fechaDirecta =
+        cuenta.proximaRenovacion ||
+        cuenta.fechaProximaRenovacion ||
+        cuenta.vencimientoAbono ||
+        info.vencimientoAbono;
+
+    if (fechaDirecta) {
+        return fechaDirecta;
+    }
+
+    const fechaBase =
+        cuenta.fechaActivacionAbono ||
+        cuenta.fechaActivacion ||
+        cuenta.fechaAlta ||
+        cuenta.createdAt;
+
+    if (!fechaBase) return null;
+
+    const base = new Date(fechaBase);
+
+    if (isNaN(base.getTime())) return null;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    let proxima = new Date(
+        hoy.getFullYear(),
+        hoy.getMonth(),
+        base.getDate()
+    );
+
+    if (proxima < hoy) {
+        proxima = new Date(
+            hoy.getFullYear(),
+            hoy.getMonth() + 1,
+            base.getDate()
+        );
+    }
+
+    return proxima;
+}
+
+function pintarEstadoCuenta(cuenta, info) {
+
+    const titulo = document.getElementById('sc-title');
+    const subtitulo = document.getElementById('sc-subtitle');
+
+    titulo.classList.remove('trial', 'activo', 'vencido');
+
+    if (info.enTrial) {
+
+        const dias = calcularDiasHasta(info.vencimientoAbono);
+
+        titulo.innerText = 'PRUEBA GRATUITA';
+        titulo.classList.add('trial');
+
+        if (dias !== null && dias > 0) {
+            subtitulo.innerText = 'Te quedan ' + textoDias(dias);
+        } else {
+            subtitulo.innerText = 'Termina hoy';
+        }
+
+        return;
+    }
+
+    const proximaRenovacion =
+        obtenerProximaRenovacion(cuenta, info);
+
+    const diasRenovacion =
+        calcularDiasHasta(proximaRenovacion);
+
+    titulo.innerText = 'ABONO ACTIVO';
+    titulo.classList.add('activo');
+
+    if (diasRenovacion !== null && diasRenovacion > 0) {
+        subtitulo.innerText =
+            'Se renueva en ' + textoDias(diasRenovacion);
+    } else if (diasRenovacion === 0) {
+        subtitulo.innerText = 'Se renueva hoy';
+    } else {
+        subtitulo.innerText = 'Abono activo';
+    }
+}
 
     function cerrarSesion() {
         if(confirm("¿Seguro que querés salir?")) {
@@ -1038,11 +1198,14 @@ document.addEventListener("change",function(e){
             document.getElementById('main-status-card').style.display = 'block';
 
             if (typeof PadelSaaS !== 'undefined') {
-                var info = PadelSaaS.analizarCuenta(cuenta, data.movimientos || {});
-                document.getElementById('sc-title').innerText = info.enTrial ? "Prueba vence: " + PadelSaaS.fmtFecha(info.vencimientoAbono) : 'Suscripción Activa';
-                document.getElementById('sc-badge').innerText = cuenta.plan ? cuenta.plan.toUpperCase() : 'TRIAL';
-                document.getElementById('sc-subtitle').innerText = info.enTrial ? "⏳ Quedan " + Math.max(0, info.limiteCanchasTrial - info.canchasUsadasEnPrueba) + " canchas" : "✅ Cuenta al día";
-            }
+
+    var info = PadelSaaS.analizarCuenta(
+        cuenta,
+        data.movimientos || {}
+    );
+
+    pintarEstadoCuenta(cuenta, info);
+}
         }, function(error) {
             document.getElementById('main-status-card').style.display = 'none';
         });

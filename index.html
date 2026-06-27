@@ -423,6 +423,59 @@ La forma más simple de organizar canchas abiertas.
 </div>
 
 <script>
+    const CATEGORIAS_OFICIALES = [
+    "Principiante",
+    "8va",
+    "7ma",
+    "6ta",
+    "5ta",
+    "4ta",
+    "3ra",
+    "2da",
+    "1ra"
+];
+
+function normalizarCategoriasPermitidas(categorias) {
+
+    if (
+        !categorias ||
+        !Array.isArray(categorias) ||
+        categorias.length === 0 ||
+        categorias.includes("Todas")
+    ) {
+        return CATEGORIAS_OFICIALES;
+    }
+
+    return categorias.filter(cat =>
+        CATEGORIAS_OFICIALES.includes(cat)
+    );
+}
+
+function textoCategoriasCancha(cancha) {
+
+    if (
+        cancha.modoCategorias === "todas" ||
+        (
+            Array.isArray(cancha.categorias) &&
+            cancha.categorias.includes("Todas")
+        )
+    ) {
+        return "Todas las categorías";
+    }
+
+    return normalizarCategoriasPermitidas(cancha.categorias).join(" • ");
+}
+
+function cargarOpcionesCategoria(select, categorias) {
+
+    select.innerHTML =
+        '<option value="">Seleccionar categoría</option>';
+
+    normalizarCategoriasPermitidas(categorias).forEach(cat => {
+        select.innerHTML +=
+            `<option value="${cat}">${cat}</option>`;
+    });
+}
     // --- FUNCIÓN GLOBAL DE CUPOS ADAPTADA A OBJETOS Y ARRAYS ---
     function calcularOcupados(list) {
         if (!list) return 0;
@@ -471,10 +524,8 @@ cuenta.nombreOrg || "Club";
             let lastDate = ""; let canchasActivas = 0;
             
             dbEvents.forEach((d) => {
-                const ahora = new Date();
-                const hoyISO = ahora.toLocaleDateString('sv-SE'); 
 
-                if (d.estado === "PROGRAMADA") {
+    if (d.estado === "PROGRAMADA") {
                     canchasActivas++;
                     
                     if (d.fecha !== lastDate) {
@@ -497,7 +548,7 @@ cuenta.nombreOrg || "Club";
 ${
 [
     d.genero,
-    ...(Array.isArray(d.categorias) ? d.categorias : [])
+    textoCategoriasCancha(d)
 ].filter(Boolean).join(" • ")
 }
 
@@ -529,13 +580,10 @@ ${
         document.getElementById('conf-alias').innerText = currentEventData.alias || 'Consultar';
         const selectCategoria = document.getElementById('ins-categoria');
 
-selectCategoria.innerHTML =
-    '<option value="">Seleccionar categoría</option>';
-
-(currentEventData.categorias || []).forEach(cat => {
-    selectCategoria.innerHTML +=
-        `<option value="${cat}">${cat}</option>`;
-});
+cargarOpcionesCategoria(
+    selectCategoria,
+    currentEventData.categorias
+);
 
         document.getElementById('ins-lugares').value = "1";
         actualizarTotal();
@@ -605,15 +653,12 @@ selectCategoria.innerHTML =
         `;
 
         container.appendChild(div);
-        const sel = div.querySelector('.extra-categoria');
+       const sel = div.querySelector('.extra-categoria');
 
-sel.innerHTML =
-    '<option value="">Seleccionar categoría</option>';
-
-(currentEventData.categorias || []).forEach(cat => {
-    sel.innerHTML +=
-        `<option value="${cat}">${cat}</option>`;
-});
+cargarOpcionesCategoria(
+    sel,
+    currentEventData.categorias
+);
     }
 }
 function capitalizar(texto) {
@@ -649,7 +694,14 @@ if (
     return;
 }
     const categoria = document.getElementById('ins-categoria').value;
-        const categoriasPermitidas = currentEventData.categorias || [];
+
+const categoriasPermitidas =
+    normalizarCategoriasPermitidas(currentEventData.categorias);
+
+if (!categoria) {
+    alert("Seleccioná tu categoría para avanzar.");
+    return;
+}
 
 if (!categoriasPermitidas.includes(categoria)) {
     alert(`Esta cancha no admite jugadores de ${categoria}.`);
@@ -658,10 +710,10 @@ if (!categoriasPermitidas.includes(categoria)) {
 
     const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
 
-    if (!nom || !ape || !celu || !categoria) {
-        alert("Completá todos tus datos para avanzar.");
-        return;
-    }
+    if (!nom || !ape || !celu) {
+    alert("Completá nombre, apellido y WhatsApp para avanzar.");
+    return;
+}
 
     const personasExtra = [];
 
@@ -690,15 +742,16 @@ if (
     return;
 }
         const cat = extraCategorias[i].value;
-        if (!categoriasPermitidas.includes(cat)) {
-    alert(`El Jugador ${i + 2} eligió una categoría que esta cancha no admite.`);
+
+if (!n || !a || !cat) {
+    alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);
     return;
 }
 
-        if (!n || !a || !cat) {
-    alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);
+if (!categoriasPermitidas.includes(cat)) {
+    alert(`El Jugador ${i + 2} eligió una categoría que esta cancha no admite.`);
     return;
-        }
+}
 
         personasExtra.push({
             nombre: n,
@@ -728,7 +781,20 @@ if (
             if (!currentData.inscriptos) {
                 currentData.inscriptos = {};
             }
+const categoriasActuales =
+    normalizarCategoriasPermitidas(currentData.categorias);
 
+if (!categoriasActuales.includes(categoria)) {
+    return;
+}
+
+const extrasValidos = personasExtra.every(p =>
+    categoriasActuales.includes(p.categoria)
+);
+
+if (!extrasValidos) {
+    return;
+}
             const arr = Array.isArray(currentData.inscriptos)
                 ? currentData.inscriptos
                 : Object.values(currentData.inscriptos);

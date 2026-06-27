@@ -1833,10 +1833,22 @@ document.getElementById('pc-total-pendientes').textContent =
         var fObj = new Date(c.fecha + 'T12:00:00'); fObj.setDate(fObj.getDate() + 7);
         var nuevaF = fObj.toISOString().split('T')[0];
         var nc = {
-            fecha: nuevaF, hora: c.hora, horaFin: c.horaFin || "", organiza: c.organiza || "", lugar: c.lugar || "",
-            valor: c.valor || 0, cupo: c.cupo || 8, alias: c.alias || "", celuOrganizador: c.celuOrganizador || "",
-            estado: 'PROGRAMADA', tipo: c.tipo || 'unica', inscriptos: {} 
-        };
+    fecha: nuevaF,
+    hora: c.hora,
+    horaFin: c.horaFin || "",
+    organiza: c.organiza || "",
+    lugar: c.lugar || "",
+    valor: c.valor || 0,
+    cupo: c.cupo || 8,
+    alias: c.alias || "",
+    celuOrganizador: c.celuOrganizador || "",
+    genero: c.genero || "Mixta",
+    categorias: normalizarCategoriasPermitidas(c.categorias),
+    modoCategorias: c.modoCategorias || detectarModoCategorias(c.categorias),
+    estado: 'PROGRAMADA',
+    tipo: c.tipo || 'unica',
+    inscriptos: {}
+};
         var ref = db.ref('eventos').push();
         ref.set(nc).then(function() {
             db.ref('hubs/' + globalOrgId + '/canchas').once('value', function(s) {
@@ -1848,7 +1860,71 @@ document.getElementById('pc-total-pendientes').textContent =
             });
         });
     }
+const CATEGORIAS_OFICIALES = [
+    "Principiante",
+    "8va",
+    "7ma",
+    "6ta",
+    "5ta",
+    "4ta",
+    "3ra",
+    "2da",
+    "1ra"
+];
+function normalizarCategoriasPermitidas(categorias) {
 
+    if (
+        !categorias ||
+        !Array.isArray(categorias) ||
+        categorias.length === 0 ||
+        categorias.includes("Todas")
+    ) {
+        return CATEGORIAS_OFICIALES;
+    }
+
+    return categorias.filter(cat =>
+        CATEGORIAS_OFICIALES.includes(cat)
+    );
+}
+
+function detectarModoCategorias(categorias) {
+
+    if (
+        !categorias ||
+        !Array.isArray(categorias) ||
+        categorias.length === 0 ||
+        categorias.includes("Todas")
+    ) {
+        return "todas";
+    }
+
+    return "seleccionadas";
+}
+function obtenerCategoriasSeleccionadas() {
+
+    const checks = [
+        ...document.querySelectorAll("#fc-categorias input:checked")
+    ];
+
+    const valores = checks.map(c => c.value);
+
+    if (valores.includes("Todas")) {
+        return CATEGORIAS_OFICIALES;
+    }
+
+    return valores.filter(v => v !== "Todas");
+}
+
+function obtenerModoCategorias() {
+
+    const todas = document.querySelector(
+        '#fc-categorias input[value="Todas"]'
+    );
+
+    return todas && todas.checked
+        ? "todas"
+        : "seleccionadas";
+}
     function guardarCancha() {
    var d = {
     tipo: document.getElementById('fc-tipo').value,
@@ -1865,11 +1941,8 @@ document.getElementById('pc-total-pendientes').textContent =
     alias: document.getElementById('fc-alias').value,
     celuOrganizador: document.getElementById('fc-celu').value,
        genero: document.getElementById("fc-genero").value,
-categorias: [
-    ...document.querySelectorAll(
-        "#fc-categorias input:checked"
-    )
-].map(c => c.value),
+categorias: obtenerCategoriasSeleccionadas(),
+modoCategorias: obtenerModoCategorias(),
     siguienteGenerada:
     editandoCanchaId
         ? eventosCache.find(e => e.id === editandoCanchaId)?.siguienteGenerada ?? false
@@ -2027,7 +2100,22 @@ document
 
     });
 
-if (c.categorias && c.categorias.length) {
+if (
+    c.modoCategorias === "todas" ||
+    (
+        c.categorias &&
+        c.categorias.length === 1 &&
+        c.categorias[0] === "Todas"
+    )
+) {
+
+    const todas = document.querySelector(
+        '#fc-categorias input[value="Todas"]'
+    );
+
+    if (todas) todas.checked = true;
+
+} else if (c.categorias && c.categorias.length) {
 
     c.categorias.forEach(cat => {
 

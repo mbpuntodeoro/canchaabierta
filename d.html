@@ -54,18 +54,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: nowrap;
 }
 
 .dsc-title {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 800;
-    letter-spacing: .06em;
+    letter-spacing: .05em;
     text-transform: uppercase;
-    padding: 5px 9px;
+    padding: 4px 8px;
     border-radius: 999px;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .dsc-title.trial {
@@ -88,12 +90,14 @@
 }
 
 .dsc-subtitle {
-    font-size: 13px;
-    color: #E5E7EB;
-    font-weight: 600;
+    font-size: 11px;
+    color: #FEF3C7;
+    font-weight: 700;
     text-align: right;
     margin-bottom: 0;
-    line-height: 1.25;
+    line-height: 1.15;
+    white-space: nowrap;
+    flex-shrink: 1;
 }
         .dsc-impact-box { border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); border-radius: 12px; padding: 16px; }
         .dsc-metrics { display: flex; justify-content: space-between; gap: 10px; }

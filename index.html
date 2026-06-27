@@ -60,9 +60,40 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
         }
         .court-item:active { background: #F9FAFB; }
         .c-line-1 { display: flex; justify-content: space-between; align-items: flex-start; font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; line-height: 1.2; }
-        .c-line-2 { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
-        .c-line-3 { font-size: 13px; color: var(--text-sub); }
-        .c-cat-bold { font-weight: 600; color: var(--text-main); }
+        .c-line-2,
+.c-line-3 {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 5px;
+}
+
+.c-line-3 {
+    margin-top: 2px;
+}
+
+.c-cat-bold {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.court-meta {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.35;
+}
+
+.court-icon {
+    width: 18px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.35;
+}
+
+.court-text {
+    flex: 1;
+    min-width: 0;
+}
         #loading-init { text-align: center; padding: 40px 20px; font-size: 14px; font-weight: 600; color: var(--text-sub); }
 
         .view-inscripcion {
@@ -248,17 +279,20 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
                 <div class="info-card">
     <div class="i-title" id="ins-title">--</div>
 
-    <div class="i-row">
-        🎾 <span id="ins-tipo-categorias">--</span>
-    </div>
+    <div class="i-row court-meta">
+    <span class="court-icon">🎾</span>
+    <span class="court-text" id="ins-tipo-categorias">--</span>
+</div>
 
-    <div class="i-row">
-        📅 <span id="ins-date">--</span>
-    </div>
+<div class="i-row court-meta">
+    <span class="court-icon">📅</span>
+    <span class="court-text" id="ins-date">--</span>
+</div>
 
-    <div class="i-row" id="ins-loc-container">
-        📍 <span id="ins-loc">--</span>
-    </div>
+<div class="i-row court-meta" id="ins-loc-container">
+    <span class="court-icon">📍</span>
+    <span class="court-text" id="ins-loc">--</span>
+</div>
 
     <div class="i-price">
         <span id="ins-price">--</span> por jugador
@@ -562,7 +596,12 @@ const tipoYCategorias = [
 
 const precioHtml =
     d.valor && Number(d.valor) > 0
-        ? `<div class="c-line-2">💰 ${PadelUtils.fmtDinero(d.valor)} por jugador</div>`
+        ? `
+            <div class="c-line-2 court-meta">
+                <span class="court-icon">💰</span>
+                <span class="court-text">${PadelUtils.fmtDinero(d.valor)} por jugador</span>
+            </div>
+        `
         : '';
 
 htmlAcumulado += `
@@ -570,18 +609,30 @@ htmlAcumulado += `
 
         ${tituloHtml}
 
-        <div class="c-line-3">
-            🎾
-            <span class="c-cat-bold">
+        <div class="c-line-3 court-meta">
+            <span class="court-icon">🎾</span>
+            <span class="court-text c-cat-bold">
                 ${tipoYCategorias}
             </span>
         </div>
 
-        <div class="c-line-2">
-            📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs
+        <div class="c-line-2 court-meta">
+            <span class="court-icon">📅</span>
+            <span class="court-text">
+                ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs
+            </span>
         </div>
 
-        ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
+        ${
+            d.lugar
+                ? `
+                    <div class="c-line-2 court-meta">
+                        <span class="court-icon">📍</span>
+                        <span class="court-text">${d.lugar}</span>
+                    </div>
+                `
+                : ''
+        }
 
         ${precioHtml}
 
@@ -1175,10 +1226,11 @@ function yaTransferi() {
     }
 
     function formatearDiaCorto(fechaStr) {
-        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const f = new Date(fechaStr + 'T12:00:00');
-        return `${dias[f.getDay()]} ${f.getDate()}`;
-    }
+    const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const f = new Date(fechaStr + 'T12:00:00');
+
+    return `${dias[f.getDay()]} ${f.getDate()}/${f.getMonth() + 1}`;
+}
 </script>
 </body>
 </html>

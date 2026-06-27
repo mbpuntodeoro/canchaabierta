@@ -560,6 +560,11 @@ const tipoYCategorias = [
     textoCategoriasCancha(d)
 ].filter(Boolean).join(" • ");
 
+const precioHtml =
+    d.valor && Number(d.valor) > 0
+        ? `<div class="c-line-2">💰 ${PadelUtils.fmtDinero(d.valor)} por jugador</div>`
+        : '';
+
 htmlAcumulado += `
     <div class="court-item" onclick="abrirInscripcion('${d.id}')">
 
@@ -577,6 +582,8 @@ htmlAcumulado += `
         </div>
 
         ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
+
+        ${precioHtml}
 
     </div>
 `;

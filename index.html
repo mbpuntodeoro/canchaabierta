@@ -117,9 +117,45 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
             background: var(--bg-white); border: 1px solid var(--border);
             border-radius: 12px; padding: 20px; margin-bottom: 12px;
         }
-        .i-title { font-size: 18px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; text-transform: uppercase; }
-        .i-row { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: flex; align-items: center;}
-        .i-row span { margin-left: 6px; }
+        .i-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    line-height: 1.18;
+    text-transform: uppercase;
+    letter-spacing: -0.3px;
+}
+        .i-row {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin-bottom: 7px;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.35;
+}
+
+.i-row span {
+    margin-left: 0;
+}
+
+.info-meta {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.35;
+}
+
+.info-icon {
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+    line-height: 1.35;
+}
+
+.info-text {
+    flex: 1;
+    min-width: 0;
+}
         .i-price { margin-top: 16px; font-size: 16px; font-weight: 700; color: var(--text-main); }
         
         .scarcity-msg {
@@ -279,19 +315,19 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
                 <div class="info-card">
     <div class="i-title" id="ins-title">--</div>
 
-    <div class="i-row court-meta">
-    <span class="court-icon">🎾</span>
-    <span class="court-text" id="ins-tipo-categorias">--</span>
+    <div class="i-row info-meta">
+    <span class="info-icon">🎾</span>
+    <span class="info-text" id="ins-tipo-categorias">--</span>
 </div>
 
-<div class="i-row court-meta">
-    <span class="court-icon">📅</span>
-    <span class="court-text" id="ins-date">--</span>
+<div class="i-row info-meta">
+    <span class="info-icon">📅</span>
+    <span class="info-text" id="ins-date">--</span>
 </div>
 
-<div class="i-row court-meta" id="ins-loc-container">
-    <span class="court-icon">📍</span>
-    <span class="court-text" id="ins-loc">--</span>
+<div class="i-row info-meta" id="ins-loc-container">
+    <span class="info-icon">📍</span>
+    <span class="info-text" id="ins-loc">--</span>
 </div>
 
     <div class="i-price">

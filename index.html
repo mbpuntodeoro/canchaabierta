@@ -246,12 +246,24 @@ text-transform:uppercase; font-weight: 400; color: var(--text-sub); margin-top: 
             
             <div id="step-3-form">
                 <div class="info-card">
-                    <div class="i-title" id="ins-title">--</div>
-                    <div class="i-row">📅 <span id="ins-date">--</span></div>
-                    <div class="i-row" id="ins-loc-container">📍 <span id="ins-loc">--</span></div>
-            
-                    <div class="i-price"><span id="ins-price">--</span> por jugador</div>
-                </div>
+    <div class="i-title" id="ins-title">--</div>
+
+    <div class="i-row">
+        🎾 <span id="ins-tipo-categorias">--</span>
+    </div>
+
+    <div class="i-row">
+        📅 <span id="ins-date">--</span>
+    </div>
+
+    <div class="i-row" id="ins-loc-container">
+        📍 <span id="ins-loc">--</span>
+    </div>
+
+    <div class="i-price">
+        <span id="ins-price">--</span> por jugador
+    </div>
+</div>
                 
                 <div class="scarcity-msg">⚡ Los lugares se asignan por orden de inscripción.</div>
 
@@ -533,29 +545,41 @@ cuenta.nombreOrg || "Club";
                         lastDate = d.fecha;
                     }
 
-                    let tituloCancha = d.organiza || 'Cancha';
-                    htmlAcumulado += `
-                        <div class="court-item" onclick="abrirInscripcion('${d.id}')">
-                            <div class="c-line-1"><span>${tituloCancha.toUpperCase()}</span><span>${PadelUtils.fmtDinero(d.valor)}</span></div>
-                            <div class="c-line-2">📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs</div>
-                            ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
-                            <div class="c-line-3">
+                    const tituloCancha = (d.organiza || '').trim();
 
-🎾
+const tituloHtml = tituloCancha
+    ? `
+        <div class="c-line-1">
+            <span>${tituloCancha.toUpperCase()}</span>
+        </div>
+    `
+    : '';
 
-<span class="c-cat-bold">
-
-${
-[
+const tipoYCategorias = [
     d.genero,
     textoCategoriasCancha(d)
-].filter(Boolean).join(" • ")
-}
+].filter(Boolean).join(" • ");
 
-</span>
+htmlAcumulado += `
+    <div class="court-item" onclick="abrirInscripcion('${d.id}')">
 
-</div>
-                        </div>`;
+        ${tituloHtml}
+
+        <div class="c-line-3">
+            🎾
+            <span class="c-cat-bold">
+                ${tipoYCategorias}
+            </span>
+        </div>
+
+        <div class="c-line-2">
+            📅 ${formatearDiaCorto(d.fecha)} · ${d.hora} a ${d.horaFin || '--'} hs
+        </div>
+
+        ${d.lugar ? `<div class="c-line-2">📍 ${d.lugar}</div>` : ''}
+
+    </div>
+`;
                 }
             });
             listContainer.innerHTML = canchasActivas === 0 ? "<div style='text-align:center; padding:40px; color:var(--text-sub); font-size:14px;'>No hay canchas publicadas hoy.</div>" : htmlAcumulado + "</div>";
@@ -570,7 +594,22 @@ ${
         document.getElementById('step-4-success').style.display = 'none';
         document.getElementById('nav-text').innerText = "Atrás";
 
-        document.getElementById('ins-title').innerText = currentEventData.organiza || 'Cancha';
+        const tituloCancha = (currentEventData.organiza || '').trim();
+
+const insTitle = document.getElementById('ins-title');
+
+if (tituloCancha) {
+    insTitle.style.display = 'block';
+    insTitle.innerText = tituloCancha.toUpperCase();
+} else {
+    insTitle.style.display = 'none';
+    insTitle.innerText = '';
+}
+        document.getElementById('ins-tipo-categorias').innerText =
+    [
+        currentEventData.genero,
+        textoCategoriasCancha(currentEventData)
+    ].filter(Boolean).join(" • ");
         document.getElementById('ins-date').innerText = `${formatearDiaCorto(currentEventData.fecha)} · ${currentEventData.hora} a ${currentEventData.horaFin || '--'} hs`;
         document.getElementById('ins-loc-container').style.display = currentEventData.lugar ? 'flex' : 'none';
         if(currentEventData.lugar) document.getElementById('ins-loc').innerText = currentEventData.lugar;

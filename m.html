@@ -166,11 +166,24 @@
                     <div><strong style="font-size:13px;">Modo Trial</strong><br><span style="font-size:10px; color:var(--sub);">Prueba gratuita</span></div>
                     <label style="position: relative; display: inline-block; width: 44px; height: 24px; margin:0;"><input type="checkbox" id="mod-trial-switch" style="opacity: 0; width: 0; height: 0;" onchange="actualizarTrial(this.checked)"><span style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .3s; border-radius: 34px;" id="slider-trial"></span><span style="position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" id="knob-trial"></span></label>
                 </div>
-                <label>Límite de Canchas Gratis</label>
-                <input id="mod-trial-limit" type="number" class="input-std" placeholder="Ej: 2">
-                <div style="display:flex; gap:8px; align-items:center; margin-top: 5px;">
-                    <input id="mod-trial-days" class="input-std" type="number" placeholder="Días extra..." style="margin-bottom:0; flex:1; padding: 10px;"><button onclick="sumarDiasVencimiento()" class="btn-action btn-blue" style="padding:10px 15px;">SUMAR</button>
-                </div>
+            
+              <label>Extender prueba gratuita</label>
+
+<div style="display:flex; gap:8px; align-items:center; margin-top: 5px;">
+    <input
+        id="mod-trial-days"
+        class="input-std"
+        type="number"
+        placeholder="Agregar días"
+        style="margin-bottom:0; flex:1; padding: 10px;">
+
+    <button
+        onclick="sumarDiasVencimiento()"
+        class="btn-action btn-blue"
+        style="padding:10px 15px;">
+        SUMAR DÍAS
+    </button>
+</div>
                 <p id="txt-venc-actual" style="font-size:11px; font-weight:800; color:var(--primary); text-align:center; margin-top: 10px;"></p>
             </div>
 
@@ -288,12 +301,27 @@ if (user.uid !== SUPER_ADMIN_UID) {
             hubsArray.forEach(data => {
                 const {id, f, res} = data;
                 let tag = "";
-                if (f.archivado) tag += `<span class="tag-status st-archived">Archivado</span>`;
-                else if (f.cuentaSuspendida) tag += `<span class="tag-status st-danger">Suspendido</span>`;
-                else if (res.enTrial) tag += `<span class="tag-status st-trial">Trial</span>`;
-                else if (res.isBlocked) tag += `<span class="tag-status st-danger">Vencido</span>`;
-                else if (res.deudaCanchas > 0) tag += `<span class="tag-status st-warn">Deuda</span>`;
-                else tag += `<span class="tag-status st-ok">Activo</span>`;
+                if (f.archivado) {
+    tag += `<span class="tag-status st-archived">Archivado</span>`;
+}
+else if (f.cuentaSuspendida) {
+    tag += `<span class="tag-status st-danger">Suspendido</span>`;
+}
+else if (res.enTrial) {
+    tag += `<span class="tag-status st-trial">Prueba gratuita</span>`;
+}
+else if (res.trialVencido) {
+    tag += `<span class="tag-status st-danger">Prueba finalizada</span>`;
+}
+else if (res.isBlocked) {
+    tag += `<span class="tag-status st-danger">Vencido</span>`;
+}
+else if (res.deudaCanchas > 0) {
+    tag += `<span class="tag-status st-warn">Deuda</span>`;
+}
+else {
+    tag += `<span class="tag-status st-ok">Activo</span>`;
+}
                 
                 if (f.esFundador && !f.archivado) tag += `<span class="tag-status" style="background:#fff9e6; color:#856404; border:1px solid #ffeeba; margin-left:5px;">⭐ Fundador</span>`;
 
@@ -432,8 +460,11 @@ if (user.uid !== SUPER_ADMIN_UID) {
 
             const hayCupoFundador = fundadoresActuales < 10;
             const abonoInicial = hayCupoFundador ? 29000 : 39000;
-            const costoExtra = 5000;
-            const limiteCreditoBase = 40000; 
+const costoExtra = 5000;
+const limiteCreditoBase = 40000;
+
+const diasTrialInicial = 15;
+const vencimientoTrial = Date.now() + (diasTrialInicial * 86400000);
             
             const config = firebase.app().options; 
             let secApp;
@@ -453,12 +484,22 @@ if (user.uid !== SUPER_ADMIN_UID) {
             
             await db.ref('hubs/'+id).set({ nombre: nom, canchas: [] });
             
-            await db.ref(`facturacion/${id}/cuenta`).set({ 
-                nombreOrg: nom, emailOrganizador: email, vencimientoAbono: Date.now() + (15 * 86400000), 
-                abonoMensual: abonoInicial, costoPorCancha: costoExtra, limiteCredito: limiteCreditoBase, 
-                limiteCanchasTrial: 2, esFundador: hayCupoFundador, cuentaSuspendida: false, 
-                enTrial: true, archivado: false 
-            });
+            await db.ref(`facturacion/${id}/cuenta`).set({
+    nombreOrg: nom,
+    emailOrganizador: email,
+
+    vencimientoAbono: vencimientoTrial,
+    diasTrialInicial: diasTrialInicial,
+
+    abonoMensual: abonoInicial,
+    costoPorCancha: costoExtra,
+    limiteCredito: limiteCreditoBase,
+
+    esFundador: hayCupoFundador,
+    cuentaSuspendida: false,
+    enTrial: true,
+    archivado: false
+});
             
             if (hayCupoFundador) alert(`✅ Club creado.\n⭐ Ocupa el cupo de Fundador ${fundadoresActuales + 1}/10.\nPrecio asignado: $29.000/mes.`);
             else alert(`✅ Club creado.\nCupo de fundadores lleno (10/10).\nModo Regular asignado: $39.000/mes.`);
@@ -490,8 +531,13 @@ if (user.uid !== SUPER_ADMIN_UID) {
         const ahora = Date.now(), refMovs = db.ref(`facturacion/${id}/movimientos`), refC = db.ref(`facturacion/${id}/cuenta`);
         await refMovs.push({ tipo: 'abono', descripcion: `Abono Mensual`, monto: monto, estado: 'pagado', fecha: ahora, fechaPago: ahora });
         const snapC = await refC.once('value'), cuenta = snapC.val() || {};
-        const nv = Math.max(ahora, (cuenta.vencimientoAbono || ahora)) + (30 * 86400000);
-        await refC.update({ vencimientoAbono: nv, enTrial: false });
+        const nv = ahora + (30 * 86400000);
+
+await refC.update({
+    vencimientoAbono: nv,
+    enTrial: false,
+    fechaActivacionAbono: ahora
+});
         alert("✅ Abono cobrado y Trial finalizado.");
     }
 
@@ -509,18 +555,38 @@ if (user.uid !== SUPER_ADMIN_UID) {
     }
     
     function guardarPerfil() { 
-        const id = document.getElementById('edit-id').value; 
-        const upd = { 
-            nombreOrg: document.getElementById('mod-nom').value, nombreContacto: document.getElementById('mod-con').value, 
-            celularContacto: document.getElementById('mod-cel').value, emailOrganizador: document.getElementById('mod-email-disp').value, 
-            aliasPredeterminado: document.getElementById('mod-ali').value, linkCorto: document.getElementById('mod-link-corto').value.trim(), 
-            abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0, costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
-            limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0, limiteCanchasTrial: parseInt(document.getElementById('mod-trial-limit').value) || 2, 
-            esFundador: document.getElementById('mod-founder').checked, vencimientoAbono: currentVencimiento, 
-            cuentaSuspendida: document.getElementById('mod-susp').checked, enTrial: document.getElementById('mod-trial-switch').checked 
-        }; 
-        db.ref(`facturacion/${id}/cuenta`).update(upd).then(() => { alert("✅ Cambios guardados."); cerrarModals(); }).catch(e => alert("Error: " + e.message)); 
-    }
+
+    const id = document.getElementById('edit-id').value; 
+
+    const upd = { 
+        nombreOrg: document.getElementById('mod-nom').value,
+        nombreContacto: document.getElementById('mod-con').value, 
+        celularContacto: document.getElementById('mod-cel').value,
+        emailOrganizador: document.getElementById('mod-email-disp').value, 
+
+        aliasPredeterminado: document.getElementById('mod-ali').value,
+        linkCorto: document.getElementById('mod-link-corto').value.trim(), 
+
+        abonoMensual: parseFloat(document.getElementById('mod-abono').value) || 0,
+        costoPorCancha: parseFloat(document.getElementById('mod-costo-cancha').value) || 0, 
+        limiteCredito: parseFloat(document.getElementById('mod-limite').value) || 0,
+
+        esFundador: document.getElementById('mod-founder').checked,
+
+        vencimientoAbono: currentVencimiento,
+
+        cuentaSuspendida: document.getElementById('mod-susp').checked,
+        enTrial: document.getElementById('mod-trial-switch').checked 
+    }; 
+
+    db.ref(`facturacion/${id}/cuenta`)
+        .update(upd)
+        .then(() => {
+            alert("✅ Cambios guardados.");
+            cerrarModals();
+        })
+        .catch(e => alert("Error: " + e.message)); 
+}
 
     function actualizarTrial(isT) {
         document.getElementById('slider-trial').style.backgroundColor = isT ? "var(--success)" : "#ccc";
@@ -535,7 +601,7 @@ if (user.uid !== SUPER_ADMIN_UID) {
             document.getElementById('mod-cel').value = f.celularContacto || ""; document.getElementById('mod-email-disp').value = f.emailOrganizador || ""; 
             document.getElementById('mod-ali').value = f.aliasPredeterminado || ""; document.getElementById('mod-link-corto').value = f.linkCorto || ""; 
             document.getElementById('mod-abono').value = f.abonoMensual || 39000; document.getElementById('mod-costo-cancha').value = f.costoPorCancha || 5000; 
-            document.getElementById('mod-limite').value = f.limiteCredito || 40000; document.getElementById('mod-trial-limit').value = f.limiteCanchasTrial || 2; 
+            document.getElementById('mod-limite').value = f.limiteCredito || 40000;
             document.getElementById('mod-founder').checked = f.esFundador || false; document.getElementById('mod-susp').checked = f.cuentaSuspendida || false; 
             const isT = f.enTrial || false; document.getElementById('mod-trial-switch').checked = isT; actualizarTrial(isT);
             

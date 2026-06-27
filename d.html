@@ -541,32 +541,57 @@ margin-bottom:8px; cursor: pointer; display: flex; align-items: center; justify-
     </header>
 
     <main class="app-container">
-       <div class="dsc-header">
-    <div class="dsc-title trial" id="sc-title">PRUEBA GRATUITA</div>
-    <div class="dsc-subtitle" id="sc-subtitle">Calculando...</div>
-</div>
+     <div class="status-card" id="main-status-card">
 
-<div class="dsc-badge" id="sc-badge"></div>
-            
-            <div class="dsc-impact-box">
-                <div class="dsc-metrics">
-                    <div style="flex:1; text-align: center;">
-                        <div class="dsc-metric-label">Anotados</div>
-                        <div class="dsc-metric-val" style="font-size: 18px;" id="sc-jugadores">0</div>
-                    </div>
-                    <div style="flex:1; text-align: center;">
-                        <div class="dsc-metric-label">Pagaron</div>
-                        <div class="dsc-metric-val" style="font-size: 18px; color: var(--success);" id="sc-pagados">0</div>
-                    </div>
-                    <div style="flex:1; text-align: center;">
-                        <div class="dsc-metric-label">Cobrado</div>
-                        <div class="dsc-metric-val" style="font-size: 18px;" id="sc-gestionado">$0</div>
-                    </div>
+    <div class="dsc-header">
+        <div class="dsc-title trial" id="sc-title">
+            PRUEBA GRATUITA
+        </div>
+
+        <div class="dsc-subtitle" id="sc-subtitle">
+            Calculando...
+        </div>
+    </div>
+
+    <div class="dsc-badge" id="sc-badge"></div>
+
+    <div class="dsc-impact-box">
+        <div class="dsc-metrics">
+
+            <div style="flex:1; text-align: center;">
+                <div class="dsc-metric-label">Anotados</div>
+                <div
+                    class="dsc-metric-val"
+                    style="font-size: 18px;"
+                    id="sc-jugadores">
+                    0
                 </div>
             </div>
-            
-        
+
+            <div style="flex:1; text-align: center;">
+                <div class="dsc-metric-label">Pagaron</div>
+                <div
+                    class="dsc-metric-val"
+                    style="font-size: 18px; color: var(--success);"
+                    id="sc-pagados">
+                    0
+                </div>
+            </div>
+
+            <div style="flex:1; text-align: center;">
+                <div class="dsc-metric-label">Cobrado</div>
+                <div
+                    class="dsc-metric-val"
+                    style="font-size: 18px;"
+                    id="sc-gestionado">
+                    $0
+                </div>
+            </div>
+
         </div>
+    </div>
+
+</div>
 
         <div id="loading-init" style="text-align: center; padding: 40px; color: var(--text-sub);">Buscando tus canchas...</div>
         <div id="cards-container"></div>

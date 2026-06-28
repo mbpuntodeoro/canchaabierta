@@ -558,12 +558,104 @@ function cargarOpcionesCategoria(select, categorias) {
             `<option value="${cat}">${cat}</option>`;
     });
 }
-    // --- FUNCIÓN GLOBAL DE CUPOS ADAPTADA A OBJETOS Y ARRAYS ---
-    function calcularOcupados(list) {
-        if (!list) return 0;
-        const arr = Array.isArray(list) ? list : Object.values(list);
-        return arr.reduce((acc, p) => acc + (p.cantidad || 1), 0);
-    }
+    function obtenerArrayDesdeObjeto(obj) {
+
+    if (!obj) return [];
+
+    return Array.isArray(obj)
+        ? obj
+        : Object.values(obj);
+}
+
+function contarOcupados(inscriptos) {
+
+    return obtenerArrayDesdeObjeto(inscriptos)
+        .reduce(function(acc, jugador) {
+            return acc + (jugador.cantidad || 1);
+        }, 0);
+}
+
+function hayCupoParaReserva(evento, cantidadSolicitada) {
+
+    const cupo = evento.cupo || 0;
+
+    if (!cupo) return true;
+
+    const ocupados = contarOcupados(evento.inscriptos);
+
+    return ocupados + cantidadSolicitada <= cupo;
+}
+    function mostrarConfirmacionListaEspera(posicion) {
+
+    alert(
+        "La cancha está completa.\n\n" +
+        "Te anotamos en lista de espera.\n" +
+        "Tu posición es: #" + posicion + ".\n\n" +
+        "El organizador te va a avisar si se libera un lugar.\n" +
+        "No hagas el pago todavía. Si entrás, te avisa para confirmar."
+    );
+}
+
+function mostrarErrorInscripcion() {
+
+    alert(
+        "No pudimos procesar la inscripción.\n\n" +
+        "Intentá nuevamente en unos segundos."
+    );
+}
+    function construirReservaParaGuardar(datos) {
+
+    const reservaId =
+        "reserva_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+
+    const jugadores = [];
+
+    jugadores.push({
+        nombre: datos.nombre,
+        apellido: datos.apellido,
+        nombreCompleto: datos.nombreCompleto,
+        celular: datos.celular,
+        categoria: datos.categoria,
+        cantidad: 1,
+        estado: datos.estado,
+        fecha: Date.now(),
+        reservaId: reservaId,
+        titularReserva: true
+    });
+
+    datos.personasExtra.forEach(function(p) {
+
+        jugadores.push({
+            nombre: p.nombre,
+            apellido: p.apellido,
+            nombreCompleto: p.nombreCompleto,
+            celular: p.celular || datos.celular,
+            categoria: p.categoria,
+            cantidad: 1,
+            estado: datos.estado,
+            fecha: Date.now(),
+            reservaId: reservaId,
+            titularReserva: false
+        });
+
+    });
+
+    return {
+        reservaId: reservaId,
+        jugadores: jugadores,
+        cantidad: jugadores.length,
+
+        nombre: datos.nombre,
+        apellido: datos.apellido,
+        nombreCompleto: datos.nombreCompleto,
+        celular: datos.celular,
+        categoria: datos.categoria,
+
+        estado: datos.estado,
+        createdAt: Date.now()
+    };
+}
+    
 
     const urlParams = new URLSearchParams(window.location.search);
     const orgId = urlParams.get('org') || urlParams.get('id');
@@ -809,88 +901,102 @@ function capitalizar(texto) {
     function avanzarPaso4() {
 
     const nom = capitalizar(
-    document.getElementById('ins-nombre').value.trim()
-);
-    const ape = capitalizar(
-    document.getElementById('ins-apellido').value.trim()
-);
-    const celu = document.getElementById('ins-celu').value.trim();
-        const celuNormalizado = celu.replace(/\D/g, '');
-
-if (
-    celuNormalizado.length < 8 ||
-    celuNormalizado.length > 15
-) {
-    alert(
-        "Ingresá un número de WhatsApp válido.\n\nSi sos del exterior, agregá el código de país."
+        document.getElementById('ins-nombre').value.trim()
     );
-    return;
-}
-    const categoria = document.getElementById('ins-categoria').value;
 
-const categoriasPermitidas =
-    normalizarCategoriasPermitidas(currentEventData.categorias);
+    const ape = capitalizar(
+        document.getElementById('ins-apellido').value.trim()
+    );
 
-if (!categoria) {
-    alert("Seleccioná tu categoría para avanzar.");
-    return;
-}
+    const celu = document.getElementById('ins-celu').value.trim();
+    const celuNormalizado = celu.replace(/\D/g, '');
 
-if (!categoriasPermitidas.includes(categoria)) {
-    alert(`Esta cancha no admite jugadores de ${categoria}.`);
-    return;
-}
+    if (
+        celuNormalizado.length < 8 ||
+        celuNormalizado.length > 15
+    ) {
+        alert(
+            "Ingresá un número de WhatsApp válido.\n\nSi sos del exterior, agregá el código de país."
+        );
+        return;
+    }
 
-    const cant = parseInt(document.getElementById('ins-lugares').value) || 1;
+    const categoria =
+        document.getElementById('ins-categoria').value;
+
+    const categoriasPermitidas =
+        normalizarCategoriasPermitidas(currentEventData.categorias);
+
+    if (!categoria) {
+        alert("Seleccioná tu categoría para avanzar.");
+        return;
+    }
+
+    if (!categoriasPermitidas.includes(categoria)) {
+        alert(`Esta cancha no admite jugadores de ${categoria}.`);
+        return;
+    }
+
+    const cant =
+        parseInt(document.getElementById('ins-lugares').value) || 1;
 
     if (!nom || !ape || !celu) {
-    alert("Completá nombre, apellido y WhatsApp para avanzar.");
-    return;
-}
+        alert("Completá nombre, apellido y WhatsApp para avanzar.");
+        return;
+    }
 
     const personasExtra = [];
 
-    const extraNombres = document.querySelectorAll('.extra-nombre');
-    const extraApellidos = document.querySelectorAll('.extra-apellido');
-    const extraCelulares = document.querySelectorAll('.extra-celular');
-    const extraCategorias = document.querySelectorAll('.extra-categoria');
+    const extraNombres =
+        document.querySelectorAll('.extra-nombre');
+
+    const extraApellidos =
+        document.querySelectorAll('.extra-apellido');
+
+    const extraCelulares =
+        document.querySelectorAll('.extra-celular');
+
+    const extraCategorias =
+        document.querySelectorAll('.extra-categoria');
 
     for (let i = 0; i < extraNombres.length; i++) {
 
         const n = capitalizar(
-    extraNombres[i].value.trim()
-);
+            extraNombres[i].value.trim()
+        );
+
         const a = capitalizar(
-    extraApellidos[i].value.trim()
-);
+            extraApellidos[i].value.trim()
+        );
+
         const c = extraCelulares[i].value.trim();
         const cNormalizado = c.replace(/\D/g, '');
 
-if (
-    c &&
-    cNormalizado.length !== 10 &&
-    cNormalizado.length !== 12
-) {
-    alert(`El WhatsApp del Jugador ${i + 2} no es válido.`);
-    return;
-}
+        if (
+            c &&
+            cNormalizado.length < 8
+        ) {
+            alert(`El WhatsApp del Jugador ${i + 2} no es válido.`);
+            return;
+        }
+
         const cat = extraCategorias[i].value;
 
-if (!n || !a || !cat) {
-    alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);
-    return;
-}
+        if (!n || !a || !cat) {
+            alert(`Completá nombre, apellido y categoría del Jugador ${i + 2}`);
+            return;
+        }
 
-if (!categoriasPermitidas.includes(cat)) {
-    alert(`El Jugador ${i + 2} eligió una categoría que esta cancha no admite.`);
-    return;
-}
+        if (!categoriasPermitidas.includes(cat)) {
+            alert(`El Jugador ${i + 2} eligió una categoría que esta cancha no admite.`);
+            return;
+        }
 
         personasExtra.push({
             nombre: n,
             apellido: a,
             nombreCompleto: `${n} ${a}`.trim(),
-           celular: cNormalizado,
+            celular: cNormalizado,
             categoria: cat,
             cantidad: 1,
             estado: 'pendiente',
@@ -898,180 +1004,250 @@ if (!categoriasPermitidas.includes(cat)) {
         });
     }
 
-    let reservaIdCreada = null;
-        
-        const btn = document.getElementById('btn-submit');
+    const nombreCompleto =
+        `${nom} ${ape}`.trim();
+
+    const datosReserva = construirReservaParaGuardar({
+        nombre: nom,
+        apellido: ape,
+        nombreCompleto: nombreCompleto,
+        celular: celuNormalizado,
+        categoria: categoria,
+        estado: 'pendiente',
+        personasExtra: personasExtra
+    });
+
+    let resultadoInscripcion = null;
+    let posicionListaEspera = null;
+    let reservaIdCreada = datosReserva.reservaId;
+
+    const btn = document.getElementById('btn-submit');
 
     btn.innerText = "Procesando...";
     btn.disabled = true;
 
-    const eventRef = db.ref(`eventos/${currentEventData.id}`);
+    const eventRef =
+        db.ref(`eventos/${currentEventData.id}`);
 
-    eventRef.transaction((currentData) => {
+    eventRef.transaction(function(currentData) {
 
-        if (currentData) {
+        if (!currentData) {
+            resultadoInscripcion = "evento_no_disponible";
+            return;
+        }
 
-            if (!currentData.inscriptos) {
-                currentData.inscriptos = {};
-            }
-const categoriasActuales =
-    normalizarCategoriasPermitidas(currentData.categorias);
+        const categoriasActuales =
+            normalizarCategoriasPermitidas(currentData.categorias);
 
-if (!categoriasActuales.includes(categoria)) {
-    return;
-}
+        if (!categoriasActuales.includes(categoria)) {
+            resultadoInscripcion = "categoria_invalida";
+            return;
+        }
 
-const extrasValidos = personasExtra.every(p =>
-    categoriasActuales.includes(p.categoria)
-);
-
-if (!extrasValidos) {
-    return;
-}
-            const arr = Array.isArray(currentData.inscriptos)
-                ? currentData.inscriptos
-                : Object.values(currentData.inscriptos);
-
-            const nombreCompleto = `${nom} ${ape}`.trim();
-
-            const yaExiste = arr.some(
-                p =>
-                    p &&
-                    p.celular === celuNormalizado &&
-                    (
-                        p.nombreCompleto?.toLowerCase() === nombreCompleto.toLowerCase() ||
-                        p.nombre?.toLowerCase() === nombreCompleto.toLowerCase()
-                    )
+        const extrasValidos =
+            personasExtra.every(p =>
+                categoriasActuales.includes(p.categoria)
             );
 
-            if (yaExiste) {
-                return;
+        if (!extrasValidos) {
+            resultadoInscripcion = "categoria_invalida";
+            return;
+        }
+
+        const inscriptosArr =
+            obtenerArrayDesdeObjeto(currentData.inscriptos);
+
+        const esperaArr =
+            obtenerArrayDesdeObjeto(currentData.listaEspera);
+
+        const jugadoresEnEspera = [];
+
+        esperaArr.forEach(function(item) {
+
+            if (Array.isArray(item.jugadores)) {
+                item.jugadores.forEach(j =>
+                    jugadoresEnEspera.push(j)
+                );
+            } else {
+                jugadoresEnEspera.push(item);
             }
 
-            const ocupados = calcularOcupados(arr);
-            const cupoMax = currentData.cupo || 99;
+        });
 
-            if (ocupados + cant > cupoMax) {
-                return;
+        const todosLosJugadores =
+            inscriptosArr.concat(jugadoresEnEspera);
+
+        const yaExiste =
+            todosLosJugadores.some(function(p) {
+
+                if (!p) return false;
+
+                const mismoCelular =
+                    p.celular === celuNormalizado;
+
+                const nombreActual =
+                    (
+                        p.nombreCompleto ||
+                        ((p.nombre || '') + ' ' + (p.apellido || ''))
+                    )
+                    .trim()
+                    .toLowerCase();
+
+                return (
+                    mismoCelular &&
+                    nombreActual === nombreCompleto.toLowerCase()
+                );
+            });
+
+        if (yaExiste) {
+            resultadoInscripcion = "duplicado";
+            return;
+        }
+
+        const cantidadSolicitada =
+            datosReserva.cantidad || cant || 1;
+
+        const hayLugar =
+            hayCupoParaReserva(
+                currentData,
+                cantidadSolicitada
+            );
+
+        if (hayLugar) {
+
+            if (
+                !currentData.inscriptos ||
+                Array.isArray(currentData.inscriptos)
+            ) {
+                currentData.inscriptos = {};
             }
 
-            let inscriptosObj = currentData.inscriptos;
+            datosReserva.jugadores.forEach(function(jugador) {
 
-            if (Array.isArray(inscriptosObj)) {
-                inscriptosObj = Object.assign({}, inscriptosObj);
-            }
-const reservaId = db.ref().push().key;
+                const key =
+                    db.ref().push().key;
 
-reservaIdCreada = reservaId;
-            const mainKey = db.ref().push().key;
+                currentData.inscriptos[key] = jugador;
 
-            inscriptosObj[mainKey] = {
-    nombre: nom,
-    apellido: ape,
-    nombreCompleto: nombreCompleto,
-    celular: celuNormalizado,
-    categoria: categoria,
-    cantidad: 1,
-    estado: 'pendiente',
-    fecha: Date.now(),
+            });
 
-    reservaId: reservaId,
-    titularReserva: true
-};
-
-            personasExtra.forEach(p => {
-
-    const extraKey = db.ref().push().key;
-
-    inscriptosObj[extraKey] = {
-        ...p,
-
-        reservaId: reservaId,
-        titularReserva: false
-    };
-});
-
-            currentData.inscriptos = inscriptosObj;
+            resultadoInscripcion = "inscripto";
 
             return currentData;
         }
 
+        if (
+            !currentData.listaEspera ||
+            Array.isArray(currentData.listaEspera)
+        ) {
+            currentData.listaEspera = {};
+        }
+
+        const listaActual =
+            currentData.listaEspera || {};
+
+        posicionListaEspera =
+            Object.keys(listaActual).length + 1;
+
+        const waitKey =
+            db.ref().push().key;
+
+        currentData.listaEspera[waitKey] = {
+            reservaId: datosReserva.reservaId,
+            createdAt: Date.now(),
+            cantidad: datosReserva.cantidad,
+
+            nombre: datosReserva.nombre,
+            apellido: datosReserva.apellido,
+            nombreCompleto: datosReserva.nombreCompleto,
+            celular: datosReserva.celular,
+            categoria: datosReserva.categoria,
+
+            jugadores: datosReserva.jugadores
+        };
+
+        resultadoInscripcion = "lista_espera";
+
         return currentData;
 
-    }, (error, committed, snapshot) => {
+    }, function(error, committed) {
+
+        btn.innerText = "Anotarme ahora";
+        btn.disabled = false;
 
         if (error) {
-
             alert("Error de conexión. Intentá de nuevo.");
+            return;
+        }
 
-            btn.innerText = "Anotarme ahora";
-            btn.disabled = false;
+        if (!committed) {
 
-        } else if (!committed) {
-
-            const data = snapshot.val();
-
-            const arr = data
-                ? (
-                    Array.isArray(data.inscriptos)
-                        ? data.inscriptos
-                        : Object.values(data.inscriptos || {})
-                )
-                : [];
-
-            const ocupadosActuales = calcularOcupados(arr);
-
-            if (data && ocupadosActuales + cant > data.cupo) {
-                alert("¡Cancha llena! No quedan lugares suficientes.");
-            } else {
-                alert("Ya estás anotado o hubo un error.");
+            if (resultadoInscripcion === "categoria_invalida") {
+                alert("La categoría elegida no está disponible para esta cancha.");
+                return;
             }
 
-            btn.innerText = "Anotarme ahora";
-            btn.disabled = false;
+            if (resultadoInscripcion === "duplicado") {
+                alert("Ya estás anotado o en lista de espera para esta cancha.");
+                return;
+            }
 
-        } else {
-const fechaAlta = Date.now();
+            if (resultadoInscripcion === "evento_no_disponible") {
+                alert("Esta cancha ya no está disponible.");
+                return;
+            }
 
+            mostrarErrorInscripcion();
+            return;
+        }
 
-            // Titular
-db.ref('inscripcionesHistoricas').push({
-    eventoId: currentEventData.id,
-    reservaId: reservaIdCreada,
-    nombre: nom,
-    apellido: ape,
-    celular: celuNormalizado,
-    categoria: categoria,
-    titularReserva: true,
-    fechaAlta: fechaAlta
-});
+        if (resultadoInscripcion === "lista_espera") {
 
-// Jugadores adicionales
-personasExtra.forEach(function(p) {
+            mostrarConfirmacionListaEspera(posicionListaEspera);
 
-    db.ref('inscripcionesHistoricas').push({
-        eventoId: currentEventData.id,
-        reservaId: reservaIdCreada,
-        nombre: p.nombre,
-        apellido: p.apellido,
-        celular: p.celular || '',
-        categoria: p.categoria,
-        titularReserva: false,
-        fechaAlta: fechaAlta
-    });
+            cerrarInscripcion();
 
-});
-            
-            const nombreCompleto = `${nom} ${ape}`.trim();
+            return;
+        }
 
-          localStorage.setItem(
-    'padelapp_cancha_' + currentEventData.id,
-    JSON.stringify({
-        nombre: nombreCompleto,
-        celular: celuNormalizado,
-        cantidad: cant
-    })
-);
+        if (resultadoInscripcion === "inscripto") {
+
+            const fechaAlta = Date.now();
+
+            db.ref('inscripcionesHistoricas').push({
+                eventoId: currentEventData.id,
+                reservaId: reservaIdCreada,
+                nombre: nom,
+                apellido: ape,
+                celular: celuNormalizado,
+                categoria: categoria,
+                titularReserva: true,
+                fechaAlta: fechaAlta
+            });
+
+            personasExtra.forEach(function(p) {
+
+                db.ref('inscripcionesHistoricas').push({
+                    eventoId: currentEventData.id,
+                    reservaId: reservaIdCreada,
+                    nombre: p.nombre,
+                    apellido: p.apellido,
+                    celular: p.celular || '',
+                    categoria: p.categoria,
+                    titularReserva: false,
+                    fechaAlta: fechaAlta
+                });
+
+            });
+
+            localStorage.setItem(
+                'padelapp_cancha_' + currentEventData.id,
+                JSON.stringify({
+                    nombre: nombreCompleto,
+                    celular: celuNormalizado,
+                    cantidad: cant
+                })
+            );
 
             document.getElementById('step-3-form').style.display = 'none';
             document.getElementById('step-4-success').style.display = 'block';
@@ -1080,9 +1256,11 @@ personasExtra.forEach(function(p) {
 
             document.querySelector('.view-inscripcion').scrollTop = 0;
 
-            btn.innerText = "Anotarme ahora";
-            btn.disabled = false;
+            return;
         }
+
+        mostrarErrorInscripcion();
+
     });
 }
 

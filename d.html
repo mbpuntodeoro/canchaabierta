@@ -349,6 +349,88 @@
     box-shadow:0 1px 3px rgba(0,0,0,.04);
 
 }
+        .lista-espera-card {
+    border: 1px solid #FEF3C7;
+    background: #FFFBEB;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.lista-espera-header {
+    padding: 9px 16px;
+    background: #FEF3C7;
+    color: #92400E;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.lista-espera-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 16px;
+    background: #FFFBEB;
+    border-top: 1px solid #FDE68A;
+}
+
+.lista-espera-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.lista-espera-pos {
+    min-width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #F59E0B;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.lista-espera-nombre {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.lista-espera-info {
+    font-size: 11px;
+    color: #92400E;
+    margin-top: 2px;
+}
+
+.btn-espera {
+    border: none;
+    border-radius: 999px;
+    background: #F59E0B;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 7px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-espera-wa {
+    border: none;
+    border-radius: 999px;
+    background: #25D366;
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 7px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
 
 .grupo-header{
 
@@ -774,6 +856,21 @@ JUGADORES POR CATEGORÍA
 </div>
 
 <div id="lista-jugadores-container"></div>
+
+<div
+    id="titulo-lista-espera"
+    style="
+        display:none;
+        font-size:11px;
+        font-weight:700;
+        letter-spacing:.12em;
+        color:#92400E;
+        margin:24px 0 12px 0;
+    ">
+    LISTA DE ESPERA
+</div>
+
+<div id="lista-espera-container"></div>
    
 
 </div>
@@ -1312,6 +1409,13 @@ noRealizadas.sort((a,b) =>
         function armarCard(d, esPasada) {
             var inscriptosObj = d.inscriptos || {};
             var inscriptosArr = Array.isArray(inscriptosObj) ? inscriptosObj : Object.values(inscriptosObj);
+            var listaEsperaObj = d.listaEspera || {};
+var listaEsperaArr =
+    Array.isArray(listaEsperaObj)
+        ? listaEsperaObj
+        : Object.values(listaEsperaObj);
+
+var enEspera = listaEsperaArr.length;
             var ocupados = inscriptosArr.reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
             var pagadosCount = inscriptosArr.filter(function(j) { return j.estado === 'pagado'; }).reduce(function(acc, j) { return acc + (j.cantidad || 1); }, 0);
             var recaudado = pagadosCount * (d.valor || 0);
@@ -1397,9 +1501,10 @@ letter-spacing:-0.2px;
   <div class="cc-footer">
 
     <span>
-        👥 ${ocupados} / ${d.cupo || '--'}
-        (${porcentaje}%)
-    </span>
+    👥 ${ocupados} / ${d.cupo || '--'}
+    (${porcentaje}%)
+    ${enEspera > 0 ? ' · 🕒 Espera ' + enEspera : ''}
+</span>
 
     <span class="cc-dinero">
         $${recaudado}
@@ -2018,6 +2123,7 @@ document.getElementById('pc-total-pendientes').textContent =
     ocupados - contPagado;
            document.getElementById('pc-categorias').innerHTML =
     resumenCategorias;
+            renderListaEspera(c, textoBusqueda);
         });
         document.getElementById('btn-edit-gear').onclick = function() { abrirFormularioCancha(id); };
         document.getElementById('view-panel-cancha').classList.add('active');
@@ -2044,7 +2150,8 @@ document.getElementById('pc-total-pendientes').textContent =
     modoCategorias: c.modoCategorias || detectarModoCategorias(c.categorias),
     estado: 'PROGRAMADA',
     tipo: c.tipo || 'unica',
-    inscriptos: {}
+    inscriptos: {},
+    listaEspera: {}
 };
         var ref = db.ref('eventos').push();
         ref.set(nc).then(function() {
@@ -2170,12 +2277,13 @@ modoCategorias: obtenerModoCategorias(),
 
         var ref = db.ref('eventos').push();
 
-        ref.set(
-            Object.assign(d, {
-                estado: 'PROGRAMADA',
-                inscriptos: {}
-            })
-        ).then(function() {
+       ref.set(
+    Object.assign(d, {
+        estado: 'PROGRAMADA',
+        inscriptos: {},
+        listaEspera: {}
+    })
+).then(function() {
 
             db.ref('hubs/' + globalOrgId + '/canchas')
                 .once('value', function(s) {
@@ -2222,7 +2330,256 @@ modoCategorias: obtenerModoCategorias(),
     }
 
     function setPago(playerKey, estado) { db.ref('eventos/' + panelCanchaId + '/inscriptos/' + playerKey).update({ estado: estado }); }
+function obtenerJugadoresListaEspera(item) {
 
+    if (Array.isArray(item.jugadores) && item.jugadores.length) {
+        return item.jugadores;
+    }
+
+    return [{
+        nombre: item.nombre || '',
+        apellido: item.apellido || '',
+        nombreCompleto:
+            item.nombreCompleto ||
+            ((item.nombre || '') + ' ' + (item.apellido || '')).trim(),
+        celular: item.celular || '',
+        categoria: item.categoria || '',
+        cantidad: 1
+    }];
+}
+
+function renderListaEspera(c, textoBusqueda) {
+
+    const titulo =
+        document.getElementById('titulo-lista-espera');
+
+    const container =
+        document.getElementById('lista-espera-container');
+
+    if (!titulo || !container) return;
+
+    const listaObj = c.listaEspera || {};
+
+    let lista = Object.keys(listaObj).map(key => {
+        return {
+            key: key,
+            data: listaObj[key]
+        };
+    });
+
+    lista.sort((a, b) =>
+        (a.data.createdAt || 0) - (b.data.createdAt || 0)
+    );
+
+    if (textoBusqueda) {
+        lista = lista.filter(item => {
+            const d = item.data;
+
+            const nombre =
+                (
+                    d.nombreCompleto ||
+                    ((d.nombre || '') + ' ' + (d.apellido || ''))
+                )
+                .toLowerCase();
+
+            return nombre.includes(textoBusqueda);
+        });
+    }
+
+    if (!lista.length) {
+        titulo.style.display = 'none';
+        container.innerHTML = '';
+        return;
+    }
+
+    titulo.style.display = 'block';
+    titulo.innerHTML = `LISTA DE ESPERA (${lista.length})`;
+
+    let html = `
+        <div class="lista-espera-card">
+            <div class="lista-espera-header">
+                En espera
+            </div>
+    `;
+
+    lista.forEach((item, index) => {
+
+        const d = item.data;
+
+        const nombre =
+            d.nombreCompleto ||
+            ((d.nombre || '') + ' ' + (d.apellido || '')).trim() ||
+            'Jugador';
+
+        const celular = d.celular || '';
+
+        const categoria = d.categoria || 'Sin categoría';
+
+        const cantidad =
+            d.cantidad ||
+            obtenerJugadoresListaEspera(d).length ||
+            1;
+
+        html += `
+            <div class="lista-espera-fila">
+
+                <div class="lista-espera-main">
+
+                    <div class="lista-espera-pos">
+                        ${index + 1}
+                    </div>
+
+                    <div>
+                        <div class="lista-espera-nombre">
+                            ${nombre}
+                        </div>
+
+                        <div class="lista-espera-info">
+                            ${categoria}
+                            ${cantidad > 1 ? ' · ' + cantidad + ' jugadores' : ''}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="display:flex; gap:8px; align-items:center;">
+
+                    ${
+                        celular
+                            ? `
+                                <button
+                                    class="btn-espera-wa"
+                                    onclick="event.stopPropagation(); contactarListaEspera('${celular}')">
+                                    WA
+                                </button>
+                            `
+                            : ''
+                    }
+
+                    <button
+                        class="btn-espera"
+                        onclick="event.stopPropagation(); pasarListaEsperaAInscriptos('${item.key}')">
+                        Dar lugar
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    container.innerHTML = html;
+}
+
+function contactarListaEspera(celular) {
+
+    if (!celular) return;
+
+    window.open(
+        'https://wa.me/' + celular.replace(/[^0-9]/g, ''),
+        '_blank'
+    );
+}
+
+function pasarListaEsperaAInscriptos(waitKey) {
+
+    if (!panelCanchaId || !waitKey) return;
+
+    const ref = db.ref('eventos/' + panelCanchaId);
+
+    ref.transaction(function(c) {
+
+        if (!c) return c;
+
+        const lista = c.listaEspera || {};
+        const item = lista[waitKey];
+
+        if (!item) return c;
+
+        const inscriptos = c.inscriptos || {};
+
+        const inscriptosArr =
+            Array.isArray(inscriptos)
+                ? inscriptos
+                : Object.values(inscriptos);
+
+        const ocupados = inscriptosArr.reduce(function(acc, j) {
+            return acc + (j.cantidad || 1);
+        }, 0);
+
+        const jugadores =
+            obtenerJugadoresListaEspera(item);
+
+        const cantidadNueva =
+            item.cantidad ||
+            jugadores.length ||
+            1;
+
+        const cupo = c.cupo || 0;
+
+        if (cupo && ocupados + cantidadNueva > cupo) {
+            alert('Todavía no hay lugar suficiente para pasar este jugador.');
+            return;
+        }
+
+        if (!c.inscriptos || Array.isArray(c.inscriptos)) {
+            c.inscriptos = {};
+        }
+
+        const reservaId =
+            item.reservaId ||
+            'reserva_' + Date.now();
+
+        jugadores.forEach(function(j, index) {
+
+            const key =
+                db.ref().push().key;
+
+            c.inscriptos[key] = {
+                nombre: j.nombre || '',
+                apellido: j.apellido || '',
+                nombreCompleto:
+                    j.nombreCompleto ||
+                    ((j.nombre || '') + ' ' + (j.apellido || '')).trim(),
+                celular: j.celular || item.celular || '',
+                categoria: j.categoria || item.categoria || '',
+                cantidad: 1,
+                estado: 'pendiente',
+                reservaId: reservaId,
+                titularReserva: index === 0,
+                vieneDeListaEspera: true,
+                fechaPromocion: Date.now()
+            };
+
+        });
+
+        delete c.listaEspera[waitKey];
+
+        return c;
+
+    }, function(error, committed) {
+
+        if (error) {
+            alert('No pudimos pasar el jugador. Intentá nuevamente.');
+            return;
+        }
+
+        if (committed) {
+            alert('Jugador pasado a inscriptos. Avisale para que confirme el pago.');
+        }
+
+    });
+}
+
+function eliminarDeListaEspera(waitKey) {
+
+    if (!confirm('¿Eliminar jugador de la lista de espera?')) return;
+
+    db.ref('eventos/' + panelCanchaId + '/listaEspera/' + waitKey)
+        .remove();
+}
     function opcionesJugador(
     nombre,
     playerKey,

@@ -871,10 +871,22 @@ JUGADORES POR CATEGORÍA
 </div>
 
 <div id="lista-espera-container"></div>
+
+<button
+    class="btn-copy-week"
+    id="btn-compartir-confirmados"
+    style="
+        background:#25D366;
+        margin-top:16px;
+        margin-bottom:24px;
+    ">
+    💬 Compartir lista al grupo
+</button>
    
 
 </div>
-           <button class="btn-copy-week" id="btn-clonar-semana">
+
+<button class="btn-copy-week" id="btn-clonar-semana">
     Copiar cancha
 </button>
         </div>
@@ -1685,6 +1697,9 @@ if(details){
             document.getElementById('pc-lugar').innerText =
     '📍 ' + (c.lugar || 'Sin sede');
             document.getElementById('btn-clonar-semana').onclick = function() { clonarCancha(c); };
+            document.getElementById('btn-compartir-confirmados').onclick = function() {
+    compartirListaConfirmados(c);
+};
             const btnCopiar =
     document.getElementById(
         'btn-clonar-semana'
@@ -2772,6 +2787,141 @@ if (todas) todas.checked = true;
     }
     function cerrarViewMovimientos() { document.getElementById('view-movimientos').classList.remove('active'); }
     function soporteWhatsapp() { window.open('https://wa.me/5491166463800?text=Ayuda%20Panel', '_blank'); }
+
+function compartirListaConfirmados(c) {
+
+    if (!c) {
+        alert('No pudimos cargar la cancha.');
+        return;
+    }
+
+    const inscriptosObj = c.inscriptos || {};
+
+    const inscriptosArr = Array.isArray(inscriptosObj)
+        ? inscriptosObj
+        : Object.values(inscriptosObj);
+
+    const listaEsperaObj = c.listaEspera || {};
+
+    const listaEsperaArr = Array.isArray(listaEsperaObj)
+        ? listaEsperaObj
+        : Object.values(listaEsperaObj);
+
+    const confirmados = inscriptosArr
+        .filter(j => j.estado === 'pagado')
+        .sort((a, b) =>
+            obtenerNombreParaCompartir(a).localeCompare(
+                obtenerNombreParaCompartir(b),
+                'es'
+            )
+        );
+
+    const suplentes = listaEsperaArr
+        .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+    const cupos = Number(c.cupo || 0);
+
+    const estaLlena = cupos > 0 && confirmados.length >= cupos;
+
+    const mensaje = armarMensajeConfirmadosWhatsapp({
+        cancha: c,
+        confirmados: confirmados,
+        suplentes: suplentes,
+        estaLlena: estaLlena
+    });
+
+    const url = 'https://wa.me/?text=' + encodeURIComponent(mensaje);
+
+    window.open(url, '_blank');
+}
+
+function armarMensajeConfirmadosWhatsapp(datos) {
+
+    const cancha = datos.cancha;
+    const confirmados = datos.confirmados;
+    const suplentes = datos.suplentes;
+    const estaLlena = datos.estaLlena;
+
+    const titulo = cancha.organiza || 'Cancha abierta';
+    const sede = cancha.lugar || 'Sin sede';
+    const fecha = formatearDiaCorto(cancha.fecha);
+
+    const horario = cancha.horaFin
+        ? cancha.hora + ' a ' + cancha.horaFin
+        : cancha.hora;
+
+    const cupos = Number(cancha.cupo || 0);
+    const valor = Number(cancha.valor || 0);
+    const alias = cancha.alias || '';
+    const linkCartelera = obtenerLinkCartelera();
+
+    let mensaje = '';
+
+    if (estaLlena) {
+        mensaje += '🎾 *Cancha abierta completa* ✅\n\n';
+    } else {
+        mensaje += '🎾 *Cancha abierta*\n\n';
+    }
+
+    mensaje += '📍 *Sede:* ' + sede + '\n';
+    mensaje += '📅 *Fecha:* ' + fecha + '\n';
+    mensaje += '🕒 *Horario:* ' + horario + '\n';
+    mensaje += '🏷️ *Categoría:* ' + titulo + '\n\n';
+
+    mensaje += '✅ *Confirmados (' + confirmados.length + '/' + cupos + '):*\n\n';
+
+    if (confirmados.length) {
+        mensaje += armarListaNumerada(confirmados);
+    } else {
+        mensaje += '_Todavía no hay jugadores confirmados._\n';
+    }
+
+    if (estaLlena) {
+
+        if (suplentes.length) {
+            mensaje += '\n⏳ *Lista de suplentes:*\n\n';
+            mensaje += armarListaNumerada(suplentes);
+        }
+
+        return mensaje.trim();
+    }
+
+    mensaje += '\nPara confirmar tu lugar, anotate y realizá el pago:\n\n';
+    mensaje += '*Valor:* $' + valor + '\n';
+    mensaje += '*Alias:* ' + alias + '\n\n';
+    mensaje += '*Anotate acá:* ' + linkCartelera;
+
+    return mensaje.trim();
+}
+
+function armarListaNumerada(jugadores) {
+
+    return jugadores
+        .map((j, index) => {
+            return (index + 1) + '. ' + obtenerNombreParaCompartir(j);
+        })
+        .join('\n') + '\n';
+}
+
+function obtenerNombreParaCompartir(jugador) {
+
+    if (!jugador) return 'Jugador';
+
+    const nombreCompleto =
+        jugador.nombreCompleto ||
+        ((jugador.nombre || '') + ' ' + (jugador.apellido || '')).trim();
+
+    return nombreCompleto || 'Jugador';
+}
+
+function obtenerLinkCartelera() {
+
+    return window.location.origin +
+        window.location.pathname.replace('d.html', 'index.html') +
+        '?org=' +
+        encodeURIComponent(globalOrgId);
+}
+
     function formatearDiaCorto(f) { var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1); }
     function obtenerNombreDia(f) { var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado']; var d=new Date(f+'T12:00:00'); return dias[d.getDay()]; }
     function jugadorAbreviado(n) { return n || 'Jugador'; }

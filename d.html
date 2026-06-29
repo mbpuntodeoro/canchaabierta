@@ -1518,9 +1518,9 @@ letter-spacing:-0.2px;
     ${enEspera > 0 ? ' · 🕒 Espera ' + enEspera : ''}
 </span>
 
-    <span class="cc-dinero">
-        $${recaudado}
-    </span>
+   <span class="cc-dinero">
+    $${formatearPlata(recaudado)}
+</span>
 
 </div>
 
@@ -2132,7 +2132,7 @@ document.getElementById('pc-total-pagados').textContent =
     contPagado;
 
 document.getElementById('pc-total-cobrado').textContent =
-    PadelUtils.fmtDinero(recaudado);
+    '$' + formatearPlata(recaudado);
 
 document.getElementById('pc-total-pendientes').textContent =
     ocupados - contPagado;
@@ -2780,7 +2780,7 @@ if (todas) todas.checked = true;
         db.ref('facturacion/' + globalOrgId + '/movimientos').once('value', snap => {
             var m = snap.val() || {}; var html = '';
             Object.keys(m).forEach(k => {
-                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${m[k].monto}</b></div>`;
+                html += `<div style="background:#fff; padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;"><div><strong>${m[k].concepto}</strong><br><small>${m[k].estado}</small></div><b>$${formatearPlata(m[k].monto)}</b></div>`;
             });
             document.getElementById('mov-container').innerHTML = html || "Sin movimientos.";
         });
@@ -2896,7 +2896,7 @@ function armarMensajeConfirmadosWhatsapp(datos) {
     }
 
     mensaje += '\nPara confirmar tu lugar, anotate y realizá el pago:\n\n';
-    mensaje += '*Valor:* $' + valor + '\n';
+    mensaje += '*Valor:* $' + formatearPlata(valor) + '\n';
     mensaje += '*Alias:* ' + alias + '\n\n';
     mensaje += '*Anotate acá:* ' + linkCartelera;
 
@@ -2937,7 +2937,14 @@ function obtenerNombreParaCompartir(jugador) {
     return nombreCompleto || 'Jugador';
 }
 
-function obtenerLinkCartelera() {
+function formatearPlata(numero) {
+    const n = Number(numero || 0);
+
+    return n.toLocaleString('es-AR', {
+        maximumFractionDigits: 0
+    });
+}
+    function obtenerLinkCartelera() {
 
     return window.location.origin +
         window.location.pathname.replace('d.html', 'index.html') +

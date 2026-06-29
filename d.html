@@ -1433,12 +1433,21 @@ var enEspera = listaEsperaArr.length;
             var recaudado = pagadosCount * (d.valor || 0);
             var porcentaje =
     d.cupo
-        ? Math.round(
-            (ocupados / d.cupo) * 100
-          )
+        ? Math.min(
+            Math.round((ocupados / d.cupo) * 100),
+            100
+        )
         : 0;
 
-var colorBarra = 'var(--accent)';
+var colorBarra = '#007AFF';
+
+if (porcentaje >= 100) {
+    colorBarra = '#34C759';
+} else if (porcentaje >= 75) {
+    colorBarra = '#FF9500';
+} else if (porcentaje >= 50) {
+    colorBarra = '#FFD60A';
+}
             
             if(!esPasada) { tRec += recaudado; tJug += ocupados; tPagados += pagadosCount; }
             let badgeEstado = '';

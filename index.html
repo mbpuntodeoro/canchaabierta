@@ -1027,7 +1027,18 @@ function capitalizar(texto) {
     btn.disabled = true;
 
     const eventRef =
-        db.ref(`eventos/${currentEventData.id}`);
+    db.ref(`eventos/${currentEventData.id}`);
+
+eventRef.once('value').then(function(preSnap) {
+
+    if (!preSnap.exists()) {
+
+        btn.innerText = "Anotarme ahora";
+        btn.disabled = false;
+
+        alert("Esta cancha ya no está disponible.");
+        return;
+    }
 
     eventRef.transaction(function(currentData) {
 
@@ -1262,9 +1273,18 @@ function capitalizar(texto) {
         mostrarErrorInscripcion();
 
     });
+
+}).catch(function() {
+
+    btn.innerText = "Anotarme ahora";
+    btn.disabled = false;
+
+    mostrarErrorInscripcion();
+
+});
 }
 
-    function copiarAlias(btn){
+function copiarAlias(btn){
 
     navigator.clipboard
         .writeText(

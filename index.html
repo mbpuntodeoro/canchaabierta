@@ -1040,7 +1040,13 @@ eventRef.once('value').then(function(preSnap) {
         return;
     }
 
+    const eventoPrecargado = preSnap.val();
+
     eventRef.transaction(function(currentData) {
+
+        if (!currentData) {
+            currentData = eventoPrecargado;
+        }
 
         if (!currentData) {
             resultadoInscripcion = "evento_no_disponible";

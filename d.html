@@ -2842,13 +2842,20 @@ function armarMensajeConfirmadosWhatsapp(datos) {
     const suplentes = datos.suplentes;
     const estaLlena = datos.estaLlena;
 
-    const titulo = cancha.organiza || 'Cancha abierta';
+    const nombreOrganizador =
+        document.getElementById('t-org-name')?.innerText ||
+        'Cancha abierta';
+
+    const nombreCancha = cancha.organiza || '';
+
     const sede = cancha.lugar || 'Sin sede';
     const fecha = formatearDiaCorto(cancha.fecha);
 
     const horario = cancha.horaFin
         ? cancha.hora + ' a ' + cancha.horaFin
         : cancha.hora;
+
+    const categoriasTexto = obtenerCategoriasTextoParaCompartir(cancha);
 
     const cupos = Number(cancha.cupo || 0);
     const valor = Number(cancha.valor || 0);
@@ -2857,16 +2864,16 @@ function armarMensajeConfirmadosWhatsapp(datos) {
 
     let mensaje = '';
 
-    if (estaLlena) {
-        mensaje += '🎾 *Cancha abierta completa* ✅\n\n';
-    } else {
-        mensaje += '🎾 *Cancha abierta*\n\n';
+    mensaje += '🎾 *' + nombreOrganizador + '*\n\n';
+
+    if (nombreCancha) {
+        mensaje += '*' + nombreCancha + '*\n\n';
     }
 
-    mensaje += '📍 *Sede:* ' + sede + '\n';
     mensaje += '📅 *Fecha:* ' + fecha + '\n';
     mensaje += '🕒 *Horario:* ' + horario + '\n';
-    mensaje += '🏷️ *Categoría:* ' + titulo + '\n\n';
+    mensaje += '📍 *Sede:* ' + sede + '\n';
+    mensaje += '🏷️ *Categorías:* ' + categoriasTexto + '\n\n';
 
     mensaje += '✅ *Confirmados (' + confirmados.length + '/' + cupos + '):*\n\n';
 
@@ -2878,8 +2885,10 @@ function armarMensajeConfirmadosWhatsapp(datos) {
 
     if (estaLlena) {
 
+        mensaje += '\n*CANCHA COMPLETA*\n';
+
         if (suplentes.length) {
-            mensaje += '\n⏳ *Lista de suplentes:*\n\n';
+            mensaje += '\n\n⏳ *Lista de suplentes:*\n\n';
             mensaje += armarListaNumerada(suplentes);
         }
 
@@ -2892,6 +2901,20 @@ function armarMensajeConfirmadosWhatsapp(datos) {
     mensaje += '*Anotate acá:* ' + linkCartelera;
 
     return mensaje.trim();
+}
+    function obtenerCategoriasTextoParaCompartir(cancha) {
+
+    const categorias = cancha.categorias || [];
+
+    if (
+        cancha.modoCategorias === 'todas' ||
+        !Array.isArray(categorias) ||
+        categorias.length === 0
+    ) {
+        return 'Todas';
+    }
+
+    return categorias.join(' / ');
 }
 
 function armarListaNumerada(jugadores) {
